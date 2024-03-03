@@ -27,8 +27,10 @@
   <div>
     <div class="font-bold">Demo Content</div>
     <div class="my-2">
-      This page is just a placeholder. Replace this page with your app's content
-      and functionality.
+      <input
+        type="file"
+        class="file-input file-input-bordered file-input-accent w-full max-w-xs"
+      />
     </div>
     <div class="my-2">
       The <a href="/account/billing" class="link">billing</a> and
@@ -39,16 +41,16 @@
 </div>
 
 <div class="my-6">
-  <h1 class="text-xl font-bold mb-1">Users</h1>
+  <h1 class="text-xl font-bold mb-1">Farm</h1>
   <div class="stats shadow stats-vertical sm:stats-horizontal sm:w-[420px]">
     <div class="stat place-items-center">
-      <div class="stat-title">Downloads</div>
-      <div class="stat-value">31K</div>
+      <div class="stat-title">Paddocks</div>
+      <div class="stat-value">3</div>
       <div class="stat-desc">↗︎ 546 (2%)</div>
     </div>
 
     <div class="stat place-items-center">
-      <div class="stat-title">Users</div>
+      <div class="stat-title">Hectares</div>
       <div class="stat-value text-secondary">4,200</div>
       <div class="stat-desc">↗︎ 40 (2%)</div>
     </div>

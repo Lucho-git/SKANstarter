@@ -138,36 +138,40 @@
   <title>{PUBLIC_SITE_NAME}</title>
   <meta name="description" content="{PUBLIC_SITE_NAME} Home Page" />
 </svelte:head>
-
+<!-- "Maximize your harvest with our AI-driven, precision paddock pathfinding solution
+Maximize your harvest with our AI-Optimized pathfinding solution -->
 <div class="hero min-h-[60vh]">
   <div class="hero-content text-center py-12">
     <div class="max-w-xl">
       <div
         class="text-xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent mb-4 md:mb-8"
       >
-        SaasStarter Demo
+        PathFinder Demo
       </div>
 
       <div
-        class="text-4xl md:text-6xl font-bold px-2"
+        class="text-4xl md:text-5xl font-bold px-2"
         style="line-height: 1.2;"
       >
-        The
         <span
           class="underline decoration-secondary decoration-4 md:decoration-[6px]"
-          >open source</span
-        >,
-        <span
-          class="underline decoration-secondary decoration-4 md:decoration-[6px]"
-          >fast</span
-        >, and
-        <span
-          class="underline decoration-secondary decoration-4 md:decoration-[6px]"
-          >free to host</span
+          >Maximize</span
         >
-        <span> SaaS template</span>
+        your harvest with our
+        <span
+          class="underline decoration-secondary decoration-4 md:decoration-[6px]"
+        ></span>
+        <span
+          class="underline decoration-secondary decoration-4 md:decoration-[6px]"
+          >AI-Optimized</span
+        >
+        Pathfinding Solution
+        <span
+          class="underline decoration-secondary decoration-4 md:decoration-[6px]"
+        ></span>
       </div>
-      <div class="mt-6 md:mt-10 text-sm md:text-lg">
+
+      <!-- <div class="mt-6 md:mt-10 text-sm md:text-lg">
         Built with <a
           href="https://kit.svelte.dev"
           class="link font-bold"
@@ -202,7 +206,7 @@
             >Read the Docs</button
           >
         </a>
-      </div>
+      </div> -->
     </div>
   </div>
 </div>
@@ -224,7 +228,17 @@
       </div>
     </div>
 
-    <div
+    <div class="pt-20 pb-8 px-7">
+      <div class="flex justify-center">
+        <img
+          alt="Picture of pathfinding icon"
+          class="aspect-[2044/2044]"
+          src="/images/MapLogo.PNG"
+        />
+      </div>
+    </div>
+
+    <!-- <div
       class="flex gap-6 mt-12 max-w-[1064px] mx-auto place-content-center flex-wrap"
     >
       {#each features as feature}
@@ -241,7 +255,6 @@
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <!-- eslint-disable-next-line svelte/no-at-html-tags -->
                 {@html feature.svgContent}
               </svg>
             </div>
@@ -266,7 +279,7 @@
           </div>
         </div>
       {/each}
-    </div>
+    </div> -->
   </div>
 </div>
 <div class="hero min-h-[60vh] mt-12">
@@ -280,7 +293,7 @@
       <div
         class="flex flex-col lg:flex-row mt-8 gap-6 place-content-center content-center"
       >
-        <div class="hidden md:block">
+        <!-- <div class="hidden md:block">
           <a href="https://criticalmoments.io" target="_blank" class="link">
             <div class="mockup-browser border">
               <div class="mockup-browser-toolbar">
@@ -308,25 +321,21 @@
               />
             </div></a
           >
-        </div>
+        </div> -->
         <div class="min-w-[270px] lg:min-w-[420px] flex mt-6 lg:mt-0">
           <div class="my-auto">
             <div class="px-4 text-lg md:text-xl">
               <a href="https://criticalmoments.io" class="" target="_blank"
-                >SaaS Starter was created by <span
-                  class="font-bold whitespace-nowrap">Critical Moments</span
-                >: a SDK to to help mobile apps
-                <span class="underline decoration-secondary decoration-[3px]"
-                  >increase conversion rates and app-ratings.</span
-                ></a
+                >Upload your paddock boundary files.</a
               >
             </div>
             <div class="px-4 mt-6 text-lg md:text-xl">
               Our <a
                 href="https://criticalmoments.io"
                 class="link font-bold"
-                target="_blank">webpage</a
-              > is the best example of SaaS Starter with style and real content.
+                target="_blank">pathfinder</a
+              > will show you an optimized route to most effectively seed, spray
+              or harvest your fields.
             </div>
             <div class="mt-4 text-large">
               <a href="https://criticalmoments.io" target="_blank">
