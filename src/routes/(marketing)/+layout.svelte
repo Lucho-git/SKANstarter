@@ -43,11 +43,13 @@
         >
       </label>
       <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+      <!-- mobile/smallscreen dropdown menu -->
+
       <ul
         tabindex="0"
         class="menu menu-lg dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52 font-bold"
       >
-        <li><a href="/blog">Blog</a></li>
+        <li><a href="/blog">Features</a></li>
         <li><a href="/pricing">Pricing</a></li>
         <li><a href="/account">Account</a></li>
         <li>
@@ -80,7 +82,11 @@
     </nav>
     <aside>
       <span class="footer-title opacity-80">Legal</span>
-      <a class="link link-hover mb-1" href="/">Terms of Use</a>
+      <a
+        class="link link-hover mb-1"
+        href="/docs/terms_of_service.pdf"
+        target="_blank">Terms of Service</a
+      >
       <a class="link link-hover mb-1" href="/">Privacy Policy</a>
       <a class="link link-hover mb-1" href="/">Data Security</a>
     </aside>
