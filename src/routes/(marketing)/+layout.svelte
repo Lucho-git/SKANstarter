@@ -53,10 +53,7 @@
         <li><a href="/pricing">Pricing</a></li>
         <li><a href="/account">Account</a></li>
         <li>
-          <a
-            href="https://github.com/CriticalMoments/CMSaasStarter"
-            class="border border-primary">★ us on Github</a
-          >
+          <a href="/login/sign_up" class="border border-primary">★ Join</a>
         </li>
       </ul>
     </div>
