@@ -1,14 +1,14 @@
 {
   "blogInfo": {
-    "name": "SaaS Starter Blog",
+    "name": "SKAN Features and Development",
     "description": "A sample blog"
   },
   "postList": [
     {
-      "title": "Example Blog Post 2",
-      "description": "Even more example content!",
-      "link": "/blog/awesome_post",
-      "date": "2022-9-23"
+      "title": "About Us",
+      "description": "Who are we?",
+      "link": "/blog/About_Us",
+      "date": "2024-2-23"
     },
     {
       "title": "How to build a SaaS Webpage in 12 easy steps",
@@ -17,10 +17,10 @@
       "date": "2022-12-26"
     },
     {
-      "title": "Example Blog Post",
+      "title": "About Us",
       "description": "A sample blog post, showing our blog engine",
-      "link": "/blog/example_blog_post",
-      "date": "2023-03-13"
+      "link": "/blog/About_Us",
+      "date": "2024-2-23"
     }
   ]
 }

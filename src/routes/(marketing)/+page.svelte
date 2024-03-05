@@ -173,8 +173,8 @@ Maximize your harvest with our AI-Optimized pathfinding solution -->
 
       <div class="pt-20 pb-8 px-7">
         <div class="flex justify-center">
-          <div class="card card-compact w-96 bg-green-200 shadow-xl">
-            <figure>
+          <div class="card w-96 bg-green-200 shadow-xl">
+            <figure class="px-10 pt-10">
               <img src="/images/MapLogo.PNG" alt="Shoes" />
             </figure>
             <div class="card-body">
@@ -222,6 +222,32 @@ Maximize your harvest with our AI-Optimized pathfinding solution -->
           >
         </a>
       </div> -->
+    </div>
+  </div>
+</div>
+
+<div class="hero min-h-[60vh] mt-12">
+  <div class="hero-content text-center pb-16 pt-4 px-4">
+    <div class="max-w-lg">
+      <div
+        class="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent mt-4"
+      >
+        What does it do?
+      </div>
+      <div
+        class="flex flex-col lg:flex-row mt-8 gap-6 place-content-center content-center"
+      >
+        <div class="min-w-[270px] lg:min-w-[420px] flex mt-6 lg:mt-0">
+          <div class="my-auto">
+            <div class="px-4 mt-6 text-lg md:text-xl">
+              Our <span class="font-bold">technology</span>
+              uses mathematical algorithms and GPS scanning technology to assess
+              various shapes, sizes and obstacles in any given paddock to determine
+              the most efficient way to traverse these paddocks.
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -291,6 +317,7 @@ Maximize your harvest with our AI-Optimized pathfinding solution -->
     </div>
   </div>
 </div>
+
 <div class="min-h-[60vh]">
   <div class="pt-20 pb-8 px-7">
     <div class="max-w-lg mx-auto text-center">
@@ -299,8 +326,12 @@ Maximize your harvest with our AI-Optimized pathfinding solution -->
       >
         Explore the Features
       </div>
-      <div class="mt-6 text-xl font-bold">
-        And try them on our fully functional demo
+      <div class="mt-6 text-xl">
+        We have an array of features in the pipeline, we are going to build a
+        platform growers can rely on to boost production, a one stop shop for
+        efficiency. Help us grow and learn, use SKAN to help your operations,
+        give us feedback and let us create a program farmers want to use every
+        time they drive in the paddock.
       </div>
     </div>
 
