@@ -29,14 +29,14 @@ export const pricingPlans = [
     name: "⭐ SKAN Ultimate",
     description:
       "The best plan you can get, giving you access to live paddock directions from within your vehicle",
-    price: "$99",
+    price: "$199.99",
     priceIntervalName: "per month",
     stripe_price_id: "price_1OdpxJK3At0l0k1HOx5Kxo9S",
     stripe_product_id: "prod_PSlUxQsqZIwjGk",
     features: [
       "Everything in Demo & Pro",
-      "Try the 'upgrade plan' UX",
-      "Still actually free!",
+      "Live display for operators to use ",
+      "Actual Paddock directions can be given to new and novice operators",
     ],
   },
 ]

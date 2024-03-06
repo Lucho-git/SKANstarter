@@ -5,20 +5,20 @@
   },
   "postList": [
     {
-      "title": "About Us",
-      "description": "Who are we?",
+      "title": "Who are we?",
+      "description": "Meet Lach and Ryan",
       "link": "/blog/About_Us",
       "date": "2024-2-23"
     },
     {
-      "title": "How to build a SaaS Webpage in 12 easy steps",
-      "description": "A getting started guide for saas websites.",
+      "title": "Planning for the future",
+      "description": "Make the most out of your machines",
       "link": "/blog/how_to_build_saas_page",
       "date": "2022-12-26"
     },
     {
-      "title": "About Us",
-      "description": "A sample blog post, showing our blog engine",
+      "title": "Problems with current Paddock Traversal",
+      "description": "Whats going wrong?",
       "link": "/blog/About_Us",
       "date": "2024-2-23"
     }

@@ -110,47 +110,61 @@
     <div class="collapse collapse-arrow join-item border border-primary">
       <input type="radio" name="faq-accordion" />
       <div class="collapse-title text-lg font-medium">
-        Is this template free to use?
-      </div>
-      <div class="collapse-content">
-        <p>Yup! This template is free to use for any project.</p>
-      </div>
-    </div>
-    <div class="collapse collapse-arrow join-item border border-primary">
-      <input type="radio" name="faq-accordion" />
-      <div class="collapse-title text-lg font-medium">
-        Why does a free template have a pricing page?
+        How do I get started using the free PaddockPath tool?
       </div>
       <div class="collapse-content">
         <p>
-          The pricing page is part of the boilerplate. It shows how the pricing
-          page integrates into the billing portal and the Stripe Checkout flows.
+          Simply create an account with SKAN, upload your mapping files from
+          your desktop to our portal and wait to receive your maps back with our
+          algorithm based mapping guide in your email inbox. We can accept all
+          mapping file types.
         </p>
       </div>
     </div>
     <div class="collapse collapse-arrow join-item border border-primary">
       <input type="radio" name="faq-accordion" />
       <div class="collapse-title text-lg font-medium">
-        What license is the template under?
-      </div>
-      <div class="collapse-content">
-        <p>The template is under the MIT license.</p>
-      </div>
-    </div>
-    <div class="collapse collapse-arrow join-item border border-primary">
-      <input type="radio" name="faq-accordion" />
-      <div class="collapse-title text-lg font-medium">
-        Can I try out purchase flows without real a credit card?
+        How will the pricing system work?
       </div>
       <div class="collapse-content">
         <p>
-          Our demo page <a href="https://saasstarter.work" class="link"
-            >SaasStarter.work</a
-          > has a functional demo page, using Stripe's test environment.
+          We are open to ideas on how you as a user would prefer to pay for this
+          service. The options are on a monthly/yearly subscription basis. Flat
+          payment per account, or scalable price based on hectare.
         </p>
         <p class="mt-4">
-          You can use the credit card number 4242 4242 4242 4242 with any future
-          expiry date to test the payment and upgrade flows.
+          We are interested to hear your thoughts. Please find the feedback page
+          and leave your thoughts for the team at SKAN.
+        </p>
+      </div>
+    </div>
+    <div class="collapse collapse-arrow join-item border border-primary">
+      <input type="radio" name="faq-accordion" />
+      <div class="collapse-title text-lg font-medium">
+        How will the live PaddockPath be displayed?
+      </div>
+      <div class="collapse-content">
+        <p>
+          The live PaddockPath will be displayed on either an IOS or Android
+          device mounted in whatever machine cab you are utilising.
+        </p>
+      </div>
+    </div>
+    <div class="collapse collapse-arrow join-item border border-primary">
+      <input type="radio" name="faq-accordion" />
+      <div class="collapse-title text-lg font-medium">
+        When will the live version be available?
+      </div>
+      <div class="collapse-content">
+        <p>
+          We are currently still in the development process of our live version
+          of PaddockPath. With your help as a user, by leaving feedback on our
+          simplified version of PaddockPath we can generate software that will
+          be beneficial to our user base.
+        </p>
+        <p class="mt-4">
+          Please find the feedback page and leave your thoughts for the team at
+          SKAN.
         </p>
       </div>
     </div>
@@ -183,7 +197,7 @@
     </symbol>
   </defs>
 </svg>
-
+<!-- 
 <h1 class="text-2xl font-bold text-center mt-16">Plan Features</h1>
 <h2 class="text-xl text-center text-slate-500 mt-1 pb-3">
   Example feature table
@@ -252,4 +266,4 @@
       {/each}
     </tbody>
   </table>
-</div>
+</div> -->
