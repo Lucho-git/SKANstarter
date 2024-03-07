@@ -1,6 +1,10 @@
 <script>
   import "../../app.css"
+  import ThemeSwitcher from "../../components/ThemeSwitcher.svelte"
+  import Error from "../+error.svelte"
 </script>
+
+<ThemeSwitcher />
 
 <div class="navbar bg-base-100 container mx-auto">
   <div class="flex-1">

@@ -9,8 +9,7 @@ export default {
     require("daisyui")
   ],
   daisyui: {
-    themes: ['autumn'
-    ],
+    themes:  ["autumn","light", "dark","cupcake","bumblebee","emerald","corporate","synthwave","retro","cyberpunk","valentine","halloween","garden","forest","aqua","lofi","pastel","fantasy","wireframe","black","luxury","dracula","cmyk","business","acid","lemonade","night","coffee","winter"],
   }
 }
 
