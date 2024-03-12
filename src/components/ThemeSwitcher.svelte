@@ -10,7 +10,6 @@
     "emerald",
     "corporate",
     "synthwave",
-    "retro",
     "cyberpunk",
     "valentine",
     "halloween",
@@ -32,8 +31,9 @@
     "night",
     "coffee",
     "winter",
+    "skantheme",
   ]
-  let selectedTheme = "retro"
+  let selectedTheme = "skantheme"
 
   function switchTheme(theme) {
     selectedTheme = theme

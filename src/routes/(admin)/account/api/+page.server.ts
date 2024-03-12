@@ -260,4 +260,90 @@ export const actions = {
       throw redirect(303, "/")
     }
   },
+  uploadFile: async ({ request, locals: { supabase, getSession } }) => {
+    const session = await getSession()
+    if (!session) {
+      throw redirect(303, "/login")
+    }
+
+    const formData = await request.formData()
+    const file = formData.get("file") as File
+
+    if (!file) {
+      return fail(400, {
+        errorMessage: "No file selected",
+      })
+    }
+
+    const { data, error } = await supabase.storage
+      .from("user_files")
+      .upload(`user_${session.user.id}/${file.name}`, file)
+
+    if (error) {
+      console.error("Error uploading file:", error)
+      return fail(500, {
+        errorMessage: "Error uploading file. If this persists please contact us.",
+      })
+    }
+
+    return {
+      data,
+    }
+  },
+  fetchUploadedFiles: async ({ locals: { supabase, getSession } }) => {
+    const session = await getSession();
+    if (!session) {
+      throw redirect(303, "/login");
+    }
+  
+    const { data, error } = await supabase.storage
+      .from("user_files")
+      .list(`user_${session.user.id}`, {
+        limit: 100,
+        offset: 0,
+        sortBy: { column: "name", order: "asc" },
+      });
+  
+    if (error) {
+      console.error("Error fetching uploaded files:", error);
+      return fail(500, {
+        errorMessage: "Error fetching uploaded files. If this persists please contact us.",
+      });
+    }
+  
+    return {
+      files: data.map((file) => file.name),
+    };
+  },
+  deleteFile: async ({ request, locals: { supabase, getSession } }) => {
+    const session = await getSession()
+    if (!session) {
+      throw redirect(303, "/login")
+    }
+
+    const formData = await request.formData()
+    const fileName = formData.get("fileName") as string
+
+    if (!fileName) {
+      return fail(400, {
+        errorMessage: "No file name provided",
+      })
+    }
+
+    const { error } = await supabase.storage
+      .from("user_files")
+      .remove([`user_${session.user.id}/${fileName}`])
+
+    if (error) {
+      console.error("Error deleting file:", error)
+      return fail(500, {
+        errorMessage: "Error deleting file. If this persists please contact us.",
+      })
+    }
+
+    return {
+      message: "File deleted successfully",
+    }
+  },
+
 }

@@ -3,6 +3,10 @@
   import { navigating } from "$app/stores"
   import { expoOut } from "svelte/easing"
   import { slide } from "svelte/transition"
+  import "@fontsource/archivo/400.css"
+  import "@fontsource/archivo/700.css"
+  import "@fontsource/archivo/800.css"
+  import "@fontsource/archivo/900.css"
 </script>
 
 {#if $navigating}

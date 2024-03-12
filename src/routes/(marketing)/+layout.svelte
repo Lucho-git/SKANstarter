@@ -2,23 +2,13 @@
   import "../../app.css"
   import ThemeSwitcher from "../../components/ThemeSwitcher.svelte"
   import Error from "../+error.svelte"
+  import LogoCard from "../../components/LogoCard.svelte"
 </script>
 
 <ThemeSwitcher />
 
 <div class="navbar bg-base-100 container mx-auto">
-  <div class="flex-1">
-    <a class="btn btn-ghost normal-case text-xl" href="/">
-      <img src="/images/gear.svg" alt="Gear" width="30" height="30" />
-
-      <!-- <img
-        alt="Critical Moments Logo"
-        src="/images/gear.svg"
-        class="w-[120px] mb-3 aspect-[420/154]"
-      /> -->
-      SKAN Farming Logistics</a
-    >
-  </div>
+  <LogoCard href="/" />
   <div class="flex-none">
     <ul class="menu menu-horizontal px-1 hidden sm:flex font-bold text-lg">
       <li class="md:mx-4">

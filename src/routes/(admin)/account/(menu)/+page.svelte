@@ -1,6 +1,8 @@
 <script lang="ts">
   import { getContext } from "svelte"
   import type { Writable } from "svelte/store"
+  import FileUpload from "../../../../components/FileUpload.svelte"
+  import UserFiles from "../../../../components/UserFiles.svelte"
 
   let adminSection: Writable<string> = getContext("adminSection")
   adminSection.set("home")
@@ -11,7 +13,7 @@
 </svelte:head>
 
 <h1 class="text-2xl font-bold mb-1">Dashboard</h1>
-<div class="alert alert-error max-w-lg mt-2">
+<div class="alert alert-success max-w-lg mt-2">
   <svg
     xmlns="http://www.w3.org/2000/svg"
     class="stroke-current shrink-0 h-6 w-6"
@@ -27,16 +29,19 @@
   <div>
     <div class="font-bold">Demo Content</div>
     <div class="my-2">
-      <input
-        type="file"
-        class="file-input file-input-bordered file-input-accent w-full max-w-xs"
-      />
+      <FileUpload />
     </div>
+    <div class="my-2"></div>
+  </div>
+</div>
+
+<div class="alert alert-success max-w-lg mt-2">
+  <div>
+    <div class="font-bold">User Files</div>
     <div class="my-2">
-      The <a href="/account/billing" class="link">billing</a> and
-      <a href="/account/settings" class="link">settings</a> pages are functional
-      demos.
+      <UserFiles />
     </div>
+    <div class="my-2"></div>
   </div>
 </div>
 

@@ -38,7 +38,7 @@
   {#each sortedPosts as post}
     <a href={post.link}>
       <div class="card my-6 bg-white shadow-xl flex-row overflow-hidden">
-        <div class="flex-none w-6 md:w-32 bg-accent"></div>
+        <div class="flex-none w-6 md:w-32 bg-secondary"></div>
         <div class="py-6 px-6">
           <div class="text-xl">{post.title}</div>
           <div class="text-sm text-accent">
