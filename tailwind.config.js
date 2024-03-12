@@ -4,7 +4,7 @@ export default {
     theme: {
         extend: {
           fontFamily: {
-            archivo: ['Archivo', 'cursive'],
+            archivo: ['Archivo', 'sans'],
           },
         },
       },
@@ -14,6 +14,19 @@ export default {
     ],
     daisyui: {
       themes: [
+                {
+          skantheme: {
+            "primary": "#63A375", //main button color and outlines
+            "primary-content": "#fefbf6", //Button text, contrasts primary
+            "neutral-content": "#fefbf6",
+            "secondary": "#F7DB5C", //Underlines some text, different color option to primary
+            "accent": "#D95D39",  //Some buttons
+            "neutral": "#180042",
+            "base-content": "#232322", //Base texts
+            "base-100": "#DEE3E7", //Background base website colour
+            
+          },
+        },
         "autumn",
         "light",
         "dark",
@@ -42,20 +55,7 @@ export default {
         "night",
         "coffee",
         "winter",
-        {
-          skantheme: {
-            "primary": "#63A375", //main button color and outlines
-            "primary-content": "#fefbf6", //Button text, contrasts primary
-            "neutral-content": "#fefbf6",
-            "secondary": "#F7DB5C", //Underlines some text, different color option to primary
-            "accent": "#D95D39",  //Some buttons
-            "neutral": "#180042",
-            "base-content": "#232322", //Base texts
-            "base-100": "#DEE3E7", //Background base website colour
-            
-            "--skan-font": "Archivo, sans-serif", // Add Archivo font for SKAN title
-          },
-        },
+
       ],
     },
   };

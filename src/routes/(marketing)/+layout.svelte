@@ -5,7 +5,7 @@
   import LogoCard from "../../components/LogoCard.svelte"
 </script>
 
-<ThemeSwitcher />
+<!-- <ThemeSwitcher /> -->
 
 <div class="navbar bg-base-100 container mx-auto">
   <LogoCard href="/" />
