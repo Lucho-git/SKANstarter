@@ -21,9 +21,19 @@
   const handleSubmit: SubmitFunction = () => {
     loading = true
     return async ({ update, result }) => {
+      console.log("Form submitted")
       await update({ reset: false })
+      console.log("Form updated")
       await applyAction(result)
+      console.log("Action applied")
       loading = false
+      console.log("handleSubmit completed")
+    }
+  }
+
+  $: {
+    if (form) {
+      console.log("Form result:", form)
     }
   }
 </script>

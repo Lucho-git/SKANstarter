@@ -47,9 +47,6 @@ export const _hasFullProfile = (
   if (!profile.company_name) {
     return false
   }
-  if (!profile.website) {
-    return false
-  }
 
   return true
 }

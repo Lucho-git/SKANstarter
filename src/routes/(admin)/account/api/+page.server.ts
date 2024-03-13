@@ -191,17 +191,20 @@ export const actions = {
     await supabase.auth.signOut()
     throw redirect(303, "/")
   },
+  
   updateProfile: async ({ request, locals: { supabase, getSession } }) => {
     const session = await getSession()
     if (!session) {
       throw redirect(303, "/login")
     }
-
+  
     const formData = await request.formData()
     const fullName = formData.get("fullName") as string
     const companyName = formData.get("companyName") as string
     const website = formData.get("website") as string
-
+  
+    console.log("Form data:", { fullName, companyName, website })
+  
     let validationError
     const errorFields = []
     if (!fullName) {
@@ -213,12 +216,8 @@ export const actions = {
         "Company name is required. If this is a hobby project or personal app, please put your name."
       errorFields.push("companyName")
     }
-    if (!website) {
-      validationError =
-        "Company website is required. An app store URL is a good alternative if you don't have a website."
-      errorFields.push("website")
-    }
     if (validationError) {
+      console.log("Validation error:", validationError)
       return fail(400, {
         errorMessage: validationError,
         errorFields,
@@ -227,16 +226,24 @@ export const actions = {
         website,
       })
     }
-
-    const { error } = await supabase.from("profiles").upsert({
+  
+    const profileData = {
       id: session?.user.id,
       full_name: fullName,
       company_name: companyName,
-      website: website,
       updated_at: new Date(),
-    })
-
+    }
+  
+    if (website) {
+      profileData.website = website
+    }
+  
+    console.log("Profile data:", profileData)
+  
+    const { error } = await supabase.from("profiles").upsert(profileData)
+  
     if (error) {
+      console.error("Supabase error:", error)
       return fail(500, {
         errorMessage: "Unknown error. If this persists please contact us.",
         fullName,
@@ -244,13 +251,20 @@ export const actions = {
         website,
       })
     }
-
-    return {
-      fullName,
-      companyName,
-      website,
+  
+    if (!error) {
+        const successResponse = {
+          success: true,
+          fullName,
+          companyName,
+          website: website || "",
+        }
+  
+      console.log("Success response:", successResponse)
+      return successResponse
     }
   },
+
   signout: async ({ locals: { supabase, getSession } }) => {
     const session = await getSession()
     if (session) {
