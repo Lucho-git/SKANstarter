@@ -4,7 +4,7 @@
   export let updateFarmData: () => void
 </script>
 
-<div class="farming-simulation bg-gray-100 rounded-lg p-4 h-full">
+<div class="farming-simulation bg-success rounded-lg p-4 h-full">
   <h3 class="text-xl font-bold mb-2">{farmData.name}</h3>
   <p>Crops: {farmData.crops.join(", ")}</p>
   <p>Area: {farmData.area} hectares</p>
