@@ -1,4 +1,4 @@
-<script lang="ts">
+<script>
   const features = [
     {
       name: "User Auth",
@@ -130,24 +130,66 @@
 `,
     },
   ]
-
-  import { PUBLIC_SITE_NAME } from "$env/static/public"
-  import FrontPageDisplay from "../../components/FrontPageDisplay.svelte"
-  import FrontPage_1 from "../../components/FrontPage_1.svelte"
-  import FrontPage_2 from "../../components/FrontPage_2.svelte"
-  import FrontPage_3 from "../../components/FrontPage_3.svelte"
-  import FrontPage_4 from "../../components/FrontPage_4.svelte"
 </script>
 
-<svelte:head>
-  <title>{PUBLIC_SITE_NAME}</title>
-  <meta name="description" content="{PUBLIC_SITE_NAME} Home Page" />
-</svelte:head>
-<!-- "Maximize your harvest with our AI-driven, precision paddock pathfinding solution
-Maximize your harvest with our AI-Optimized pathfinding solution -->
+<div class="min-h-[60vh]">
+  <div class="pt-20 pb-8 px-7">
+    <div class="max-w-lg mx-auto text-center">
+      <div
+        class="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent"
+      >
+        Explore the Features
+      </div>
+      <div class="mt-6 text-xl">
+        We have an array of features in the pipeline, we are going to build a
+        platform growers can rely on to boost production, a one stop shop for
+        efficiency. Help us grow and learn, use SKAN to help your operations,
+        give us feedback and let us create a program farmers want to use every
+        time they drive in the paddock.
+      </div>
+    </div>
 
-<FrontPageDisplay />
-<FrontPage_1 />
-<FrontPage_2 />
-<FrontPage_3 />
-<FrontPage_4 />
+    <!-- <div
+      class="flex gap-6 mt-12 max-w-[1064px] mx-auto place-content-center flex-wrap"
+    >
+      {#each features as feature}
+        <div
+          class="card bg-white w-[270px] md:w-[300px] min-h-[300px] flex-none shadow-xl"
+        >
+          <div class="card-body items-center text-center p-[24px] pt-[32px]">
+            <div>
+              <svg
+                width="50px"
+                height="50px"
+                class="mb-2 mt-1"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                {@html feature.svgContent}
+              </svg>
+            </div>
+            <h2 class="card-title">
+              {feature.name}
+            </h2>
+            <p class="text-sm">
+              {feature.description}
+            </p>
+            {#if feature.link}
+              <a
+                href={feature.link}
+                class="pb-4"
+                target={feature.newPage ? "_blank" : ""}
+              >
+                <button
+                  class="btn btn-xs btn-outline rounded-full btn-primary min-w-[100px]"
+                  >{feature.linkText ? feature.linkText : "Try It"}</button
+                >
+              </a>
+            {/if}
+          </div>
+        </div>
+      {/each}
+    </div> -->
+  </div>
+</div>
