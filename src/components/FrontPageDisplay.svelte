@@ -6,7 +6,7 @@
   <div class="hero-content text-left text-secondary pt-0 relative z-10">
     <div class="max-w-6xl w-full">
       <h1 class="mb-5 text-7xl font-bold whitespace-nowrap">
-        Unlock Your Farms Full Potential
+        Unlock Your Farms Max Potential
       </h1>
       <div class="flex justify-center">
         <button class="btn btn-primary mr-4">Get Started</button>
