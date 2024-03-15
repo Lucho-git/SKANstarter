@@ -3,7 +3,7 @@
   import { PUBLIC_SITE_NAME } from "$env/static/public"
   import FrontPageDisplay from "../../components/FrontPageDisplay.svelte"
   import FrontPageNew_1 from "../../components/FrontPageNew_1.svelte"
-  import FrontPage_2 from "../../components/FrontPage_2.svelte"
+  import FrontPageNew_2 from "../../components/FrontPageNew_2.svelte"
   import FrontPage_3 from "../../components/FrontPage_3.svelte"
   import FrontPage_4 from "../../components/FrontPage_4.svelte"
 
@@ -25,6 +25,6 @@ Maximize your harvest with our AI-Optimized pathfinding solution -->
 <div bind:this={frontPageNew1}>
   <FrontPageNew_1 />
 </div>
-<FrontPage_2 />
+<FrontPageNew_2 />
 <FrontPage_3 />
 <FrontPage_4 />
