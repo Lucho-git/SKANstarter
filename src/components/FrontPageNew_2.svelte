@@ -20,23 +20,7 @@
 </script>
 
 <div class="hero min-h-[60vh] mt-12">
-  <div class="hero-content flex-col lg:flex-row-reverse">
-    <div class="w-full lg:w-5/12">
-      <a
-        href="/blog"
-        class="card bg-base-100 shadow-xl hover:bg-base-200 transition duration-300"
-      >
-        <div class="card-body">
-          <div class="w-4/5 mx-auto" bind:this={animationContainer}></div>
-          <div class="card-actions justify-center mt-4">
-            <span
-              class="btn btn-ghost btn-lg text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary mt-4"
-              >Features</span
-            >
-          </div>
-        </div>
-      </a>
-    </div>
+  <div class="hero-content flex-col lg:flex-row">
     <div class="w-full lg:w-7/12 mt-6 lg:mt-0 lg:mr-12">
       <div
         class="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary mt-4"
@@ -61,6 +45,22 @@
           </div>
         </div>
       </div>
+    </div>
+    <div class="w-full lg:w-5/12 mt-8 lg:mt-0">
+      <a
+        href="/blog"
+        class="card bg-base-100 shadow-xl hover:bg-base-200 transition duration-300"
+      >
+        <div class="card-body">
+          <div class="w-4/5 mx-auto" bind:this={animationContainer}></div>
+          <div class="card-actions justify-center mt-4">
+            <span
+              class="btn btn-ghost btn-lg text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary mt-4"
+              >Features</span
+            >
+          </div>
+        </div>
+      </a>
     </div>
   </div>
 </div>
