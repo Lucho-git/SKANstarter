@@ -10,7 +10,7 @@
 
 <div
   class="hero min-h-[900px] relative flex flex-col justify-center"
-  style="background-image: url('/images/fieldpic_1.jpeg'); background-size: cover;"
+  style="background-image: url('/images/fieldpic_2.jpg'); background-size: cover;"
 >
   <div class="hero-overlay bg-opacity-40 absolute inset-0"></div>
   <div class="hero-content text-left text-secondary pt-0 relative z-10">
