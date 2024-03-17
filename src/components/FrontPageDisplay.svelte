@@ -60,36 +60,34 @@
 </script>
 
 <div class="carousel w-full relative">
-  <div class="carousel-inner relative w-full overflow-hidden">
+  <div
+    class="carousel-inner relative w-full h-[900px] overflow-hidden flex justify-center items-center"
+  >
     <div
-      class="carousel-items flex transition-transform duration-500 ease-in-out"
+      class="carousel-items absolute top-0 left-0 w-full h-full flex transition-transform duration-500 ease-in-out"
       style="transform: translateX(-{currentSlide * 100}%);"
     >
       {#each images as image}
-        <div class="carousel-item relative w-full flex-shrink-0">
+        <div class="carousel-item relative w-full h-full flex-shrink-0">
           <div
-            class="hero min-h-[900px] relative flex flex-col justify-center"
+            class="hero w-full h-full relative"
             style="background-image: url('{image}'); background-size: cover;"
           >
             <div class="hero-overlay bg-opacity-30 absolute inset-0"></div>
-            <div
-              class="hero-content text-left text-secondary pt-0 relative z-10"
-            >
-              <div class="max-w-6xl w-full">
-                <h1 class="mb-5 text-7xl font-bold">
-                  Unlock Your Farms Potential
-                </h1>
-                <div class="flex justify-center">
-                  <a href="/login/sign_up">
-                    <button class="btn btn-primary mr-4">Get Started</button>
-                  </a>
-                  <button on:click={handleLearnMoreClick}>Learn More</button>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       {/each}
+    </div>
+    <div class="hero-content text-center text-secondary absolute z-10">
+      <div class="max-w-6xl w-full">
+        <h1 class="mb-5 text-7xl font-bold">Unlock Your Farms Potential</h1>
+        <div class="flex justify-center">
+          <a href="/login/sign_up">
+            <button class="btn btn-primary mr-4">Get Started</button>
+          </a>
+          <button on:click={handleLearnMoreClick}>Learn More</button>
+        </div>
+      </div>
     </div>
   </div>
   <div
