@@ -77,6 +77,7 @@ export default {
         "winter",
 
       ],
+      darkTheme: "skanthemedark", // Set the default dark theme
     },
   };
 
