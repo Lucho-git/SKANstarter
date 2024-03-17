@@ -64,6 +64,7 @@
   <input
     type="file"
     class="file-input file-input-bordered file-input-accent w-full max-w-xs"
+    style="color: #000;"
     on:change={handleFileChange}
   />
 </div>

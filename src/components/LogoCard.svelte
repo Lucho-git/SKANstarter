@@ -11,7 +11,7 @@
         <div class="flex items-center pl-1">
           <img src="/images/gear_2.svg" alt="Gear" class="w-16 h-16" />
         </div>
-        <div class="flex-1">
+        <div class="flex-1 text-secondary-content">
           <div class="card-title font-black font-archivo text-4xl">SKAN</div>
           <p class="font-medium text-lg">Farming Logistics</p>
         </div>

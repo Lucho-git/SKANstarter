@@ -32,10 +32,12 @@
     "coffee",
     "winter",
     "skantheme",
+    "skanthemedark",
   ]
   let selectedTheme = "skantheme"
 
   function switchTheme(theme) {
+    console.log
     selectedTheme = theme
     document.documentElement.setAttribute("data-theme", theme)
   }

@@ -6,6 +6,7 @@
   import FrontPageNew_2 from "../../components/FrontPageNew_2.svelte"
   import FrontPageNew_3 from "../../components/FrontPageNew_3.svelte"
   import FrontPage_4 from "../../components/FrontPage_4.svelte"
+  import ThemeSwitcher from "../../components/ThemeSwitcher.svelte"
 
   let frontPageNew1
 
@@ -21,6 +22,7 @@
 <!-- "Maximize your harvest with our AI-driven, precision paddock pathfinding solution
 Maximize your harvest with our AI-Optimized pathfinding solution -->
 
+<!-- <ThemeSwitcher /> -->
 <FrontPageDisplay on:scrollToLearnMore={handleScrollToLearnMore} />
 <div bind:this={frontPageNew1}>
   <FrontPageNew_1 />
