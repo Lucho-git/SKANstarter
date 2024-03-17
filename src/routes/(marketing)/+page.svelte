@@ -4,7 +4,7 @@
   import FrontPageDisplay from "../../components/FrontPageDisplay.svelte"
   import FrontPageNew_1 from "../../components/FrontPageNew_1.svelte"
   import FrontPageNew_2 from "../../components/FrontPageNew_2.svelte"
-  import FrontPage_3 from "../../components/FrontPage_3.svelte"
+  import FrontPageNew_3 from "../../components/FrontPageNew_3.svelte"
   import FrontPage_4 from "../../components/FrontPage_4.svelte"
 
   let frontPageNew1
@@ -26,5 +26,5 @@ Maximize your harvest with our AI-Optimized pathfinding solution -->
   <FrontPageNew_1 />
 </div>
 <FrontPageNew_2 />
-<FrontPage_3 />
-<FrontPage_4 />
+<FrontPageNew_3 />
+<!-- <FrontPage_4 /> -->

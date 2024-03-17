@@ -51,7 +51,6 @@
         </p>
         <br />
       </div>
-
       <div class="flex flex-col lg:flex-row">
         <div
           class="text-3xl md:text-4xl font-bold text-base-content px-2 mb-8 md:mb-12 lg:mr-8 lg:w-1/2"
@@ -133,8 +132,21 @@
         </div>
 
         <div class="lg:w-1/2">
-          <!-- Animation container -->
-          <div class="w-4/5 mx-auto" bind:this={animationContainer}></div>
+          <a
+            href="/login/sign_up"
+            class="card bg-base-100 shadow-xl hover:bg-base-200 transition duration-300"
+          >
+            <div class="card-body">
+              <!-- Animation container -->
+              <div class="w-4/5 mx-auto" bind:this={animationContainer}></div>
+              <div class="card-actions justify-center mt-4">
+                <span
+                  class="btn btn-ghost btn-lg text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent mt-4"
+                  >PaddockPath</span
+                >
+              </div>
+            </div>
+          </a>
         </div>
       </div>
     </div>
