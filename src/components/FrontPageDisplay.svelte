@@ -57,9 +57,38 @@
       window.removeEventListener("keydown", handleKeydown)
     }
   })
+
+  let touchStartX = 0
+  let touchEndX = 0
+
+  function handleTouchStart(event) {
+    touchStartX = event.touches[0].clientX
+  }
+
+  function handleTouchMove(event) {
+    touchEndX = event.touches[0].clientX
+  }
+
+  function handleTouchEnd() {
+    const touchDistance = touchEndX - touchStartX
+
+    if (touchDistance > 50) {
+      previousSlide()
+    } else if (touchDistance < -50) {
+      nextSlide()
+    }
+
+    touchStartX = 0
+    touchEndX = 0
+  }
 </script>
 
-<div class="carousel w-full relative">
+<div
+  class="carousel w-full relative"
+  on:touchstart={handleTouchStart}
+  on:touchmove={handleTouchMove}
+  on:touchend={handleTouchEnd}
+>
   <div
     class="carousel-inner relative w-full h-[900px] overflow-hidden flex justify-center items-center"
   >
