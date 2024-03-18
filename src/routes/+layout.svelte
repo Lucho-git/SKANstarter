@@ -7,6 +7,12 @@
   import "@fontsource/archivo/700.css"
   import "@fontsource/archivo/800.css"
   import "@fontsource/archivo/900.css"
+  import { onMount } from "svelte"
+  import { getProfile } from "../stores/user"
+
+  onMount(async () => {
+    await getProfile()
+  })
 </script>
 
 {#if $navigating}

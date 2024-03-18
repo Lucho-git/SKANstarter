@@ -51,7 +51,7 @@
             <div class="px-4 mt-6 text-xl md:text-3xl">
               <span class="font-bold">SKAN</span> has leveraged AI to analyse
               your paddocks. Our <span class="font-bold">technology</span> will
-              find the most efficient routes to work your paddock. From
+              find the most efficient routes for
               <span class="font-bold"
                 >Seeding, Spraying, Fertilising to Harvest.</span
               >

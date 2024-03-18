@@ -3,6 +3,7 @@
   import ThemeSwitcher from "../../components/ThemeSwitcher.svelte"
   import Error from "../+error.svelte"
   import LogoCard from "../../components/LogoCard.svelte"
+  import { user } from "../../stores/user.ts"
 </script>
 
 <!-- <ThemeSwitcher /> -->
@@ -11,12 +12,16 @@
   <LogoCard href="/" />
   <div class="flex-none">
     <ul class="menu menu-horizontal px-1 hidden sm:flex font-bold text-lg">
-      <li class="md:mx-4">
-        <a href="/login/sign_up" class="border border-primary">★ Join</a>
-      </li>
       <li class="md:mx-2"><a href="/blog">Features</a></li>
+      <li class="md:mx-2"><a href="/account">Team</a></li>
       <li class="md:mx-2"><a href="/pricing">Pricing</a></li>
-      <li class="md:mx-2"><a href="/account">Account</a></li>
+      <li class="md:mx-4">
+        {#if $user}
+          <a href="/account" class="border border-primary">Dashboard</a>
+        {:else}
+          <a href="/login/sign_up" class="border border-primary">★ Join</a>
+        {/if}
+      </li>
     </ul>
     <div class="dropdown dropdown-end sm:hidden">
       <!-- svelte-ignore a11y-label-has-associated-control -->
@@ -46,8 +51,16 @@
         <li><a href="/blog">Features</a></li>
         <li><a href="/pricing">Pricing</a></li>
         <li><a href="/account">Account</a></li>
+
         <li>
-          <a href="/login/sign_up" class="border border-primary">★ Join</a>
+          {#if $user}
+            <a href="/account" class="border border-primary">★ Dashboard</a>
+            <div class="text-sm font-bold mt-1">
+              Welcome, {$user.user_metadata.name}!
+            </div>
+          {:else}
+            <a href="/login/sign_up" class="border border-primary">★ Join</a>
+          {/if}
         </li>
       </ul>
     </div>

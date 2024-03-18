@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from "$app/stores"
   import { postList } from "./../posts.json"
+  import { goto } from "$app/navigation"
 
   let currentPost: Post | null = null
   for (const post of postList) {
@@ -24,6 +25,10 @@
       "WARNING: rendering blog post, which is not listed in posts.json",
     )
   }
+
+  function goBack() {
+    goto("/blog")
+  }
 </script>
 
 <svelte:head>
@@ -34,18 +39,23 @@
   />
 </svelte:head>
 
-<article class="prose mx-auto py-12 px-6 font-sans">
-  {#if currentPost == null}
-    <h1>Blog post not found</h1>
-  {:else}
-    <div class="text-sm text-accent">
-      {currentPost.parsedDate?.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })}
-    </div>
-    <h1>{currentPost.title}</h1>
-    <slot />
-  {/if}
-</article>
+<div class="py-12 px-6 font-sans">
+  <article class="prose mx-auto">
+    <button class="btn btn-primary mb-6" on:click={goBack}>
+      &larr; Back to Features
+    </button>
+    {#if currentPost == null}
+      <h1>Post not found</h1>
+    {:else}
+      <div class="text-sm text-accent">
+        {currentPost.parsedDate?.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })}
+      </div>
+      <h1>{currentPost.title}</h1>
+      <slot />
+    {/if}
+  </article>
+</div>
