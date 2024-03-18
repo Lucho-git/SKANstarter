@@ -19,8 +19,6 @@
   <title>{PUBLIC_SITE_NAME}</title>
   <meta name="description" content="{PUBLIC_SITE_NAME} Home Page" />
 </svelte:head>
-<!-- "Maximize your harvest with our AI-driven, precision paddock pathfinding solution
-Maximize your harvest with our AI-Optimized pathfinding solution -->
 
 <!-- <ThemeSwitcher /> -->
 <FrontPageDisplay on:scrollToLearnMore={handleScrollToLearnMore} />
@@ -28,5 +26,15 @@ Maximize your harvest with our AI-Optimized pathfinding solution -->
   <FrontPageNew_1 />
 </div>
 <FrontPageNew_2 />
-<FrontPageNew_3 />
+<div class="hide-on-mobile">
+  <FrontPageNew_3 />
+</div>
 <!-- <FrontPage_4 /> -->
+
+<style>
+  @media (max-width: 768px) {
+    .hide-on-mobile {
+      display: none;
+    }
+  }
+</style>
