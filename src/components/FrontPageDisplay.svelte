@@ -10,9 +10,9 @@
   const images = [
     "/images/fieldpic_2.jpg",
     "/images/fieldpic_3.jpg",
-    "/images/fieldpic_1.jpg",
     "/images/fieldpic_4.jpg",
     "/images/fieldpic_5.jpg",
+    "/images/fieldpic_1.jpg",
   ]
 
   let currentSlide = 0
@@ -91,7 +91,7 @@
     </div>
   </div>
   <div
-    class="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2"
+    class="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2 z-20"
   >
     <button class="btn btn-circle" on:click={previousSlide}>❮</button>
     <button class="btn btn-circle" on:click={nextSlide}>❯</button>

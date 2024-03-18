@@ -2,9 +2,7 @@
 export default {
     content: ['./src/**/*.{html,js,svelte,ts}'],
     theme: {
-        screens: {
-            'sm': '700px', // Add your custom breakpoint here
-            },
+        
       extend: {
         fontFamily: {
           archivo: ['Archivo', 'sans'],

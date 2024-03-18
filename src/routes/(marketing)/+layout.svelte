@@ -13,7 +13,7 @@
   <div class="flex-none">
     <ul class="menu menu-horizontal px-1 hidden sm:flex font-bold text-lg">
       <li class="md:mx-2"><a href="/blog">Features</a></li>
-      <li class="md:mx-2"><a href="/account">Team</a></li>
+      <li class="md:mx-2"><a href="/team">Team</a></li>
       <li class="md:mx-2"><a href="/pricing">Pricing</a></li>
       <li class="md:mx-4">
         {#if $user}
