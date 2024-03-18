@@ -20,7 +20,7 @@
 </script>
 
 <div class="hero min-h-[60vh] mt-12">
-  <div class="hero-content flex-col lg:flex-row">
+  <div class="hero-content flex-col-reverse lg:flex-row">
     <div class="w-full lg:w-5/12 mt-8 lg:mt-0">
       <a
         href="/blog"
