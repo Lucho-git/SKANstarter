@@ -8,7 +8,7 @@
       class="card card-side bg-secondary shadow-md hover:bg-secondary-focus rounded-3xl"
     >
       <div class="card-body flex flex-row">
-        <div class="flex items-center pl-1">
+        <div class="flex items-center pl-0">
           <div class="w-16 h-16 flex justify-center items-center">
             <img
               src="/images/gear_2.svg"
