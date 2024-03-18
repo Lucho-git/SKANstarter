@@ -19,7 +19,7 @@
         {#if $user}
           <a href="/account" class="border border-primary">Dashboard</a>
         {:else}
-          <a href="/login/sign_up" class="border border-primary">★ Join</a>
+          <a href="/login/sign_up" class="border border-primary">★ Enter</a>
         {/if}
       </li>
     </ul>
@@ -49,9 +49,8 @@
         class="menu menu-lg dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52 font-bold"
       >
         <li><a href="/blog">Features</a></li>
+        <li><a href="/team">Team</a></li>
         <li><a href="/pricing">Pricing</a></li>
-        <li><a href="/account">Account</a></li>
-
         <li>
           {#if $user}
             <a href="/account" class="border border-primary">★ Dashboard</a>
@@ -59,7 +58,7 @@
               Welcome, {$user.user_metadata.name}!
             </div>
           {:else}
-            <a href="/login/sign_up" class="border border-primary">★ Join</a>
+            <a href="/login/sign_up" class="border border-primary">★ Enter</a>
           {/if}
         </li>
       </ul>
