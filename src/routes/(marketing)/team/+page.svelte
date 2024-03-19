@@ -43,7 +43,7 @@
         >20 years</strong
       >. We both chose vastly different career paths but somehow ended up right
       back together all these years later. We are combining the life skills and
-      knowledge we have acquired since entering the workforce to sole an
+      knowledge we have acquired since entering the workforce to solve an
       immense, real world problem that hits home for both of us.
     </p>
   </div>

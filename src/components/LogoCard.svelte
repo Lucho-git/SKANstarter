@@ -2,6 +2,16 @@
   export let href = "/"
 </script>
 
+<svelte:head>
+  <link
+    rel="preload"
+    href="node_modules/@fontsource/archivo/files/archivo-latin-900-normal.woff2"
+    as="font"
+    type="font/woff2"
+    crossorigin
+  />
+</svelte:head>
+
 <div class="flex-1">
   <a {href} class="inline-block mt-4">
     <div
@@ -27,3 +37,18 @@
     </div>
   </a>
 </div>
+
+<style>
+  @font-face {
+    font-family: "Archivo";
+    src: url("node_modules/@fontsource/archivo/files/archivo-latin-900-normal.woff2")
+      format("woff2");
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  .font-archivo {
+    font-family: "Archivo", Arial, sans-serif;
+  }
+</style>
