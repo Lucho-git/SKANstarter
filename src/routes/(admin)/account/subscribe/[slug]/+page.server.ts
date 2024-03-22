@@ -54,6 +54,9 @@ export const load: PageServerLoad = async ({
       mode: "subscription",
       success_url: `${url.origin}/account`,
       cancel_url: `${url.origin}/account/billing`,
+      consent_collection: {
+        terms_of_service: 'required',
+      },
     })
     checkoutUrl = stripeSession.url
   } catch (e) {

@@ -8,7 +8,7 @@ export const pricingPlans = [
     price: "Free",
     priceIntervalName: "forever",
     stripe_price_id: null,
-    features: ["Paddock Upload", "Pathplanning for up to 4 paddocks"],
+    features: ["Paddock Upload", "PaddockPath for up to 10 paddocks", "Tramline Optimization Tool"],
   },
   {
     id: "pro",
@@ -20,23 +20,23 @@ export const pricingPlans = [
     stripe_product_id: "prod_Pe5OlROS4oPoC7",
     features: [
       "Everything in Free",
-      "Unlimited Paddock Pathplanning",
-      "Download and keep your path files",
+      "Unlimited PaddockPaths",
+      "Export your PaddockPath files",
     ],
   },
+
   {
     id: "enterprise",
-    name: "⭐ SKAN Ultimate",
+    name: "⭐ SKAN Unlimited",
     description:
-      "The best plan you can get, giving you access to live paddock directions from within your vehicle",
-    price: "$199.99",
-    priceIntervalName: "per month",
-    stripe_price_id: "price_1OdpxJK3At0l0k1HOx5Kxo9S",
+      "This plan is only avaliable for a limited time and is our way of rewarding our founding clients.",
+    price: "$999",
+    priceIntervalName: "Once only",
+    stripe_price_id: "price_1Ox3igK3At0l0k1H6Gh0IINk",
     stripe_product_id: "prod_PSlUxQsqZIwjGk",
     features: [
-      "Everything in Demo & Pro",
-      "Live display for operators to use ",
-      "Actual Paddock directions can be given to new and novice operators",
+      "One time payment for lifetime access to all SKAN products",
+      "Never pay a subscription fee, guaranteed",
     ],
   },
 ]

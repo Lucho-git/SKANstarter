@@ -1,5 +1,17 @@
 {
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "svelte.svelte-vscode",
-    "eslint.validate": ["javascript", "javascriptreact", "svelte"]
+  "[typescript]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  },
+  "deno.enablePaths": [
+    "supabase/functions"
+  ],
+  "deno.lint": true,
+  "deno.unstable": true,
+  "editor.defaultFormatter": "svelte.svelte-vscode",
+  "editor.formatOnSave": true,
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "svelte"
+  ]
 }
