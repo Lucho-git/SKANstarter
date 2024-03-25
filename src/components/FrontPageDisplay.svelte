@@ -102,7 +102,9 @@
             class="hero w-full h-full relative"
             style="background-image: url('{image}'); background-size: cover;"
           >
-            <div class="hero-overlay bg-opacity-30 absolute inset-0"></div>
+            <div
+              class="hero-overlay bg-opacity-45 bg-black absolute inset-0"
+            ></div>
           </div>
         </div>
       {/each}
