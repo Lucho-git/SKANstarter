@@ -15,6 +15,6 @@
   </h2>
 
   <div class="w-full my-8">
-    <PricingModule callToAction="Get Started" highlightedPlanId="pro" />
+    <PricingModule callToAction="Get Started" highlightedPlanId="enterprise" />
   </div>
 </div>

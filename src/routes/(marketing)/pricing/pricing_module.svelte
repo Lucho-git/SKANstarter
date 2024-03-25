@@ -2,7 +2,7 @@
   import { pricingPlans } from "./pricing_plans"
 
   // Module context
-  export let highlightedPlanId: string = ""
+  export let highlightedPlanId: string = "free"
   export let callToAction: string
   export let currentPlanId: string = ""
   export let center = true
