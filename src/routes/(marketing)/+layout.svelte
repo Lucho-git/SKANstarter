@@ -4,6 +4,7 @@
   import Error from "../+error.svelte"
   import LogoCard from "../../components/LogoCard.svelte"
   import { user } from "../../stores/user.ts"
+  import FloatingContact from "../../components/FloatingContact.svelte"
 </script>
 
 <!-- <ThemeSwitcher /> -->
@@ -66,6 +67,8 @@
   </div>
 </div>
 
+<FloatingContact />
+
 <div class="">
   <slot />
 </div>
@@ -95,18 +98,3 @@
     </aside>
   </footer>
 </div>
-
-<!-- <aside>
-    <span class="footer-title opacity-80">Sponsor</span>
-    <a
-      class="link link-hover max-w-[260px]"
-      href="https://criticalmoments.io"
-    >
-      <img
-        alt="Critical Moments Logo"
-        src="/images/cm_logo.svg"
-        class="w-[180px] mb-3 aspect-[420/154]"
-      />
-      Make mobile apps? Improve conversion rates and ratings with Critical Moments.
-    </a>
-  </aside> -->
