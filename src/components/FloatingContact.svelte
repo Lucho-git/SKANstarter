@@ -11,7 +11,7 @@
   }
 </script>
 
-<div class="fixed bottom-8 right-8 z-50 sm:bottom-8 sm:right-8">
+<div class="fixed bottom-8 left-8 z-50 sm:bottom-8 sm:right-8">
   <button class="btn btn-circle btn-lg btn-primary" on:click={togglePopover}>
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -30,7 +30,7 @@
   </button>
 
   {#if isOpen}
-    <div class="fixed bottom-8 right-8 z-50 sm:bottom-20 sm:right-8">
+    <div class="fixed bottom-20 left-8 z-50 sm:bottom-20 sm:right-8">
       <div class="card w-64 sm:w-80 h-auto sm:h-64 bg-base-100 shadow-xl">
         <div class="card-body relative">
           <button
