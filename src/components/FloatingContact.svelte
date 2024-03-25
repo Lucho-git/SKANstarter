@@ -11,7 +11,7 @@
   }
 </script>
 
-<div class="fixed bottom-8 right-8 z-50">
+<div class="fixed bottom-8 right-8 z-50 sm:bottom-8 sm:right-8">
   <button class="btn btn-circle btn-lg btn-primary" on:click={togglePopover}>
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -30,8 +30,8 @@
   </button>
 
   {#if isOpen}
-    <div class="fixed bottom-8 right-8 z-50">
-      <div class="card w-80 h-64 bg-base-100 shadow-xl">
+    <div class="fixed bottom-8 right-8 z-50 sm:bottom-20 sm:right-8">
+      <div class="card w-64 sm:w-80 h-auto sm:h-64 bg-base-100 shadow-xl">
         <div class="card-body relative">
           <button
             class="btn btn-sm btn-circle absolute top-2 right-2"
@@ -55,8 +55,8 @@
           <h3 class="card-title">Got Questions?</h3>
           <p class="text-lg font-bold">Let's Chat</p>
           <div class="mt-4">
-            <p>Phone: 0439 405 248</p>
-            <p>Email: ryan@skanfarming.com</p>
+            <p>0439 405 248</p>
+            <p>ryan@skanfarming.com</p>
           </div>
           <div class="mt-4">
             <p>We're here to help!</p>
