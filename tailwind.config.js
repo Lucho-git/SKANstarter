@@ -36,7 +36,7 @@ export default {
             "secondary-content": "#232322",
             "accent": "#D95D39",
             "accent-content": "#fefbf6",
-            "neutral": "#180042",
+            "neutral": "#F7DB5C",
             "neutral-content": "#fefbf6",
             "base-100": "#1f2937", // Dark gray background
             "base-200": "#374151", // Slightly lighter dark gray
