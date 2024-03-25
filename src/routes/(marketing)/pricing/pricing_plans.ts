@@ -13,7 +13,7 @@ export const pricingPlans = [
   {
     id: "pro",
     name: "★ SKAN Pro ",
-    description: "Unlimited access to pathplanning for all your harvest needs",
+    description: "Unlimited access to our PathPlanner for all your farming needs",
     price: "$49.99",
     priceIntervalName: "per month",
     stripe_price_id: "price_1OonE0K3At0l0k1HWV3Z1vF7",

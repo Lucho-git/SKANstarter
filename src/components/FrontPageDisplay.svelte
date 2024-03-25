@@ -109,7 +109,7 @@
     </div>
     <div class="hero-content text-center text-secondary absolute z-10">
       <div class="max-w-6xl w-full">
-        <h1 class="mb-5 text-7xl font-bold">Unlock Your Farms Potential</h1>
+        <h1 class="mb-5 text-7xl font-bold">Unlock Your Farm's Potential</h1>
         <div class="flex justify-center">
           <a href="/login/sign_up">
             <button class="btn btn-primary mr-4">Get Started</button>
