@@ -102,7 +102,7 @@
           </svg>
         </a>
         <a
-          href="mailto:info@your_company.com"
+          href="mailto:ryan@skanfarming.com"
           class="hover:text-primary transition duration-300"
         >
           <svg
