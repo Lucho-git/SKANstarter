@@ -7,11 +7,15 @@
   import FloatingContact from "../../components/FloatingContact.svelte"
   import Footer from "../../components/Footer.svelte"
   import Footer2 from "../../components/Footer2.svelte"
+  import { deviceStore } from "../../stores/deviceStore"
+
   let innerWidth = 0
-  const breakpoint = 768 // Adjust this value to your desired breakpoint
+
+  $: deviceStore.updateInnerWidth(innerWidth)
 </script>
 
 <!-- <ThemeSwitcher /> -->
+<svelte:window bind:innerWidth />
 
 <div class="navbar bg-base-100 container mx-auto">
   <LogoCard href="/" />
@@ -78,8 +82,8 @@
 </div>
 
 <!-- Spacer grows so the footer can be at bottom on short pages -->
-{#if innerWidth >= breakpoint}
-  <Footer2 />
-{:else}
+{#if !$deviceStore}
   <Footer />
+{:else}
+  <Footer2 />
 {/if}

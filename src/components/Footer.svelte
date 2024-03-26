@@ -6,7 +6,7 @@
 <div class="bg-base-200">
   <div class="border-t max-w-[1000px] mx-auto"></div>
   <footer
-    class="footer p-10 gap-x-48 lg:gap-x-64 xl:gap-x-96 place-content-center text-base text-base-content"
+    class="footer p-16 gap-x-48 lg:gap-x-64 xl:gap-x-96 place-content-center text-base text-base-content"
   >
     <nav class="flex justify-center items-center pt-3">
       <div class="flex items-center">
