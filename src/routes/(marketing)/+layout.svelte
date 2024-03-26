@@ -7,6 +7,8 @@
   import FloatingContact from "../../components/FloatingContact.svelte"
   import Footer from "../../components/Footer.svelte"
   import Footer2 from "../../components/Footer2.svelte"
+  let innerWidth = 0
+  const breakpoint = 768 // Adjust this value to your desired breakpoint
 </script>
 
 <!-- <ThemeSwitcher /> -->
@@ -76,5 +78,8 @@
 </div>
 
 <!-- Spacer grows so the footer can be at bottom on short pages -->
-<Footer />
-<Footer2 />
+{#if innerWidth >= breakpoint}
+  <Footer2 />
+{:else}
+  <Footer />
+{/if}
