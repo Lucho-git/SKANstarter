@@ -11,16 +11,17 @@
     </div>
 
     <div>
-      <div class="grid grid-flow-col gap-4">
+      <div class="grid grid-flow-col gap-6">
         <a
           href="https://twitter.com/SKANfarming"
           target="_blank"
           rel="noopener noreferrer"
+          class="hover:text-primary transition duration-300"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
+            width="32"
+            height="32"
             viewBox="0 0 24 24"
             class="fill-current"
           >
@@ -29,11 +30,14 @@
             ></path>
           </svg>
         </a>
-        <a href="tel:+1234567890">
+        <a
+          href="tel:+1234567890"
+          class="hover:text-primary transition duration-300"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
+            width="32"
+            height="32"
             viewBox="0 0 24 24"
             class="fill-current"
           >
@@ -45,11 +49,14 @@
             ></path>
           </svg>
         </a>
-        <a href="mailto:info@your_company.com">
+        <a
+          href="mailto:info@your_company.com"
+          class="hover:text-primary transition duration-300"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
+            width="32"
+            height="32"
             viewBox="0 0 24 24"
             class="fill-current"
           >
@@ -62,7 +69,7 @@
     </div>
 
     <div>
-      <nav class="footer-center grid-flow-col gap-4">
+      <nav class="footer-center grid grid-flow-col gap-4">
         <a
           class="link link-hover"
           href="/docs/terms_of_service.pdf"

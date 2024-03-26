@@ -8,17 +8,15 @@
   <footer
     class="footer p-10 gap-x-48 lg:gap-x-64 xl:gap-x-96 place-content-center text-base text-base-content"
   >
-    <nav class="flex flex-col items-center justify-center">
-      <div class="text-center">
-        <img
-          src="/images/gear_2.svg"
-          alt="Gear"
-          class="w-12 h-12 mx-auto mb-4"
-        />
-        <p class="font-bold text-lg mb-2">SKAN Farming Logistics Pty Ltd</p>
-        <p class="text-sm text-black-500">
-          Copyright © 2024 - All rights reserved
-        </p>
+    <nav class="flex justify-center items-center pt-3">
+      <div class="flex items-center">
+        <img src="/images/gear_2.svg" alt="Gear" class="w-12 h-12 mr-4" />
+        <div class="flex flex-col text-center">
+          <p class="font-bold text-sm">SKAN Farming Logistics Pty Ltd</p>
+          <p class="text-sm text-black-500">
+            Copyright © 2024 - All rights reserved
+          </p>
+        </div>
       </div>
     </nav>
     <aside class="flex flex-col items-center justify-center">
