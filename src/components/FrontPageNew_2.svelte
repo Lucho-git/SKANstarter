@@ -50,12 +50,11 @@
           <div class="my-auto">
             <div class="px-4 mt-6 text-xl md:text-3xl">
               <span class="font-bold">SKAN</span> is a product for farmers and
-              tractor operators. It uses an<span class="font-bold"
-                >AI algorithm</span
-              >
+              tractor operators. <br /><br />It uses an
+              <span class="font-bold">AI algorithm</span>
               to assess the shape of your paddock and find the
               <span class="font-bold">most efficient</span>
-              way to work it. Useful all year round from
+              way to work it. <br /><br />Useful all year round from
               <span class="font-bold"
                 >seeding, spraying, fertilising to harvest.</span
               >
@@ -70,7 +69,7 @@
               <br />
 
               <br />
-              <a href="/blog" class="link"> Find out how. </a>
+              <!-- <a href="/blog" class="link"> Find out how. </a> -->
             </div>
           </div>
         </div>
