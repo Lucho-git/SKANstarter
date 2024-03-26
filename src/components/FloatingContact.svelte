@@ -31,7 +31,7 @@
 
   {#if isOpen}
     <div class="fixed bottom-8 right-8 z-50">
-      <div class="card w-80 h-64 bg-base-100 shadow-xl">
+      <div class="card w-80 h-80 bg-base-100 shadow-xl">
         <div class="card-body relative">
           <button
             class="btn btn-sm btn-circle absolute top-2 right-2"
@@ -57,6 +57,11 @@
           <div class="mt-4">
             <p>Phone: 0439 405 248</p>
             <p>Email: ryan@skanfarming.com</p>
+            <p>
+              <a href="https://twitter.com/SKANfarming"
+                >Twitter: twitter.com/SKANfarming</a
+              >
+            </p>
           </div>
           <div class="mt-4">
             <p>We're here to help!</p>
