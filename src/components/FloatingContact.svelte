@@ -58,7 +58,7 @@
             <p>Phone: 0439 405 248</p>
             <p>Email: ryan@skanfarming.com</p>
             <p>
-              <a href="https://twitter.com/SKANfarming"
+              <a href="https://twitter.com/SKANfarming" target="_blank"
                 >Twitter: twitter.com/SKANfarming</a
               >
             </p>
