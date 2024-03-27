@@ -1,6 +1,8 @@
 <div class="space-y-8">
   <div class="bg-green-100 p-6 rounded-lg shadow-md">
-    <h2 class="text-3xl font-bold mb-4 text-green-800">PaddockPath Live</h2>
+    <h2 class="text-3xl font-bold mb-4 text-green-800 mt-0">
+      PaddockPath Live
+    </h2>
     <p class="text-lg text-gray-700 mb-4">
       This is where we want to be as a company, a live, interactive tool with
       all the features of our stationary product. This tool will auto-update in
@@ -15,8 +17,9 @@
       fill. Saving minutes, saving money.
     </blockquote>
   </div>
+
   <div class="bg-blue-100 p-6 rounded-lg shadow-md">
-    <h2 class="text-3xl font-bold mb-4 text-blue-800">
+    <h2 class="text-3xl font-bold mb-4 text-blue-800 mt-0">
       Virtual Paddock Planner
     </h2>
     <p class="text-lg text-gray-700">
@@ -36,8 +39,9 @@
       </ul>
     </div>
   </div>
+
   <div class="bg-yellow-100 p-6 rounded-lg shadow-md">
-    <h2 class="text-3xl font-bold mb-4 text-yellow-800">
+    <h2 class="text-3xl font-bold mb-4 text-yellow-800 mt-0">
       PaddockPlan - Harvest
     </h2>
     <p class="text-lg text-gray-700 mb-4">
