@@ -29,7 +29,7 @@
       and every time you have to travel just a bit too far to fill up the
       sprayer.
     </p>
-    <div class="bg-blue-200 border-l-4 border-blue-500 p-4 mt-4">
+    <div class="bg-blue-200 border-l-4 border-blue-500 p-4 mt-4 text-blue-800">
       <p class="font-semibold mb-2">Key Benefits:</p>
       <ul class="list-disc list-inside">
         <li>Reconfigure fences, laneways, tank locations, and obstacles</li>
