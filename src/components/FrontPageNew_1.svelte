@@ -81,19 +81,24 @@
               <p>Time</p>
             </div>
             <div class="flex items-center">
-              <img
-                src="/images/farm-tractor-icon.svg"
-                alt="Tractor Icon"
+              <svg
                 class="h-6 w-6 mr-2"
-              />
+                viewBox="0 0 122.88 95.45"
+                fill="currentColor"
+                stroke="currentColor"
+              >
+                <use xlink:href="/images/farm-tractor-icon.svg#icon"></use>
+              </svg>
               <p>Machine Hours</p>
             </div>
             <div class="flex items-center">
-              <img
-                src="/images/fuel1.svg"
-                alt="Tractor Icon"
+              <svg
                 class="h-6 w-6 mr-2"
-              />
+                viewBox="0 0 964.000000 1280.000000"
+                fill="currentColor"
+              >
+                <use xlink:href="/images/fuel1.svg#icon"></use>
+              </svg>
               <p>Fuel</p>
             </div>
             <div class="flex items-center">
