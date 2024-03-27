@@ -63,7 +63,7 @@
 <div class="my-2">
   <input
     type="file"
-    class="file-input file-input-bordered file-input-primary text-primary w-full max-w-xs"
+    class="file-input file-input-bordered file-input-primary file-input-bg-primary w-full max-w-xs"
     on:change={handleFileChange}
   />
 </div>

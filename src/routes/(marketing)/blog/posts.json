@@ -5,22 +5,16 @@
   },
   "postList": [
     {
-      "title": "Who are we?",
-      "description": "Meet Lach and Ryan",
-      "link": "/blog/About_Us",
-      "date": "2024-2-23"
-    },
-    {
-      "title": "Planning for the future",
-      "description": "Make the most out of your machines",
-      "link": "/blog/how_to_build_saas_page",
-      "date": "2022-12-26"
-    },
-    {
-      "title": "Problems with current Paddock Traversal",
-      "description": "Whats going wrong?",
-      "link": "/blog/About_Us",
-      "date": "2024-2-23"
-    }
+        "title": "PaddockPath",
+        "description": "Optimise your farming routes",
+        "link": "/blog/paddock_path",
+        "date": "2024-01-05"
+      },
+      {
+        "title": "SKAN Pipeline",
+        "description": "We have big dreams like the rest of you, read through our projects in the Pipeline and come along this journey with us, see how we can help your farm.",
+        "link": "/blog/pipeline",
+        "date": "2024-01-01"
+      }
   ]
 }
