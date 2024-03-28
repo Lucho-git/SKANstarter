@@ -59,10 +59,25 @@ export const load: PageServerLoad = async ({
       },
     })
     checkoutUrl = stripeSession.url
-  } catch (e) {
+  } catch (err) {
+    console.error("Error creating Stripe Checkout session:", err)
+    
+    // Log the error details
+    console.error("Error message:", err.message)
+    console.error("Error stack trace:", err.stack)
+    
+    // Check if the error is a Stripe-specific error
+    if (err.type === 'StripeError') {
+      console.error("Stripe error details:")
+      console.error("  Type:", err.type)
+      console.error("  Code:", err.code)
+      console.error("  Param:", err.param)
+      console.error("  Docs:", err.docs)
+    }
+    
     throw error(
       500,
-      "Unknown Error (SSE): If issue persists please contact us.",
+      "An error occurred while creating the Stripe Checkout session. Please check the server logs for more details.",
     )
   }
 
