@@ -7,7 +7,7 @@
       name: "Lachie",
       role: "Technical Founder",
       bio: "Lachie is a Software Engineer and has been involved in multiple <strong>startup's</strong> and <strong>tech innovations</strong>. His dad grew up on a farm in WA, Lachie may be removed from agriculture but it's certainly in his history, he is striving for a better agriculture industry for the future.",
-      image: "/images/lach.png",
+      image: "/images/lach-gif.gif",
     },
     {
       name: "Ryan",
