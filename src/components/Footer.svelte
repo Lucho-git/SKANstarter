@@ -66,8 +66,9 @@
         <div class="flex flex-col text-center">
           <p class="font-bold text-sm">SKAN Farming Logistics Pty Ltd</p>
           <p class="text-sm text-black-500">
-            Copyright © 2024 - All rights reserved
+            Copyright © 2024 - ACN: 675 693 464
           </p>
+          <p class="text-xs"></p>
         </div>
       </div>
     </nav>

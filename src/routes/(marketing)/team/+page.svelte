@@ -7,13 +7,13 @@
       name: "Lachie",
       role: "Technical Founder",
       bio: "Lachie is a Software Engineer and has been involved in multiple <strong>startup's</strong> and <strong>tech innovations</strong>. His dad grew up on a farm in WA, Lachie may be removed from agriculture but it's certainly in his history, he is striving for a better agriculture industry for the future.",
-      image: "https://via.placeholder.com/150",
+      image: "/images/lach.png",
     },
     {
       name: "Ryan",
       role: "Managing Founder",
       bio: "Ryan is a <strong>carpenter</strong> by trade, growing up in Perth, WA he had a calling for greener pastures in his early 20's. He has now been working full time in the <strong>agricultural industry</strong> for the past 5 years and has countless machine operating hours under his belt. This is a problem he lives and breathes every day, and that's why he is so energised to fix it.",
-      image: "https://via.placeholder.com/150",
+      image: "/images/ryan.jpg",
     },
   ]
 
@@ -55,7 +55,7 @@
           <img
             src={member.image}
             alt={member.name}
-            class="mask mask-squircle h-48 w-48 object-cover"
+            class="mask mask-squircle h-64 w-64 object-cover"
           />
         </figure>
         <div class="card-body items-center text-center">

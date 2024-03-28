@@ -27,25 +27,25 @@
       >
         <p class="mb-2 md:mb-4">
           <span
-            class="underline decoration-secondary decoration-4 md:decoration-[6px] bg-clip-text text-transparent bg-gradient-to-r from-primary to-base-content"
+            class="decoration-secondary decoration-4 md:decoration-[6px] bg-clip-text text-transparent bg-gradient-to-r from-primary to-base-content"
             >Operating Expenses</span
           > getting out of hand?
         </p>
         <p class="mb-2 md:mb-4">
           <span
-            class="underline decoration-secondary decoration-4 md:decoration-[6px] bg-clip-text text-transparent bg-gradient-to-r from-primary to-base-content"
+            class="decoration-secondary decoration-4 md:decoration-[6px] bg-clip-text text-transparent bg-gradient-to-r from-primary to-base-content"
             >Fuel</span
           > Prices hitting home?
         </p>
         <p class="mb-2 md:mb-4">
           <span
-            class="underline decoration-secondary decoration-4 md:decoration-[6px] bg-clip-text text-transparent bg-gradient-to-r from-primary to-base-content"
+            class="decoration-secondary decoration-4 md:decoration-[6px] bg-clip-text text-transparent bg-gradient-to-r from-primary to-base-content"
             >Skilled</span
           > Labour hard to find?
         </p>
         <p>
           You <span
-            class="underline decoration-secondary decoration-4 md:decoration-[6px] bg-clip-text text-transparent bg-gradient-to-r from-primary to-base-content"
+            class="decoration-secondary decoration-4 md:decoration-[6px] bg-clip-text text-transparent bg-gradient-to-r from-primary to-base-content"
             >are not alone</span
           >
         </p>
@@ -58,7 +58,7 @@
         >
           <p class="mb-2 md:mb-4">
             <span
-              class="underline decoration-secondary decoration-4 md:decoration-[6px] bg-clip-text text-transparent bg-gradient-to-r from-primary to-base-content"
+              class="   decoration-secondary decoration-4 md:decoration-[6px] bg-clip-text text-transparent bg-gradient-to-r from-primary to-base-content"
               >SKAN</span
             > will save you
           </p>
