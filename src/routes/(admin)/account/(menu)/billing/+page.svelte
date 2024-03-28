@@ -13,6 +13,11 @@
 
   export let data
 
+  // Log messages to the browser's console
+  data.logMessages.forEach((message) => {
+    console.log(message)
+  })
+
   let currentPlanId = data.currentPlanId ?? defaultPlanId
   let currentPlanName = pricingPlans.find(
     (x) => x.id === data.currentPlanId,

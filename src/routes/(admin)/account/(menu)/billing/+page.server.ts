@@ -13,20 +13,18 @@ export const load: PageServerLoad = async ({
     throw redirect(303, "/login")
   }
 
-  console.log("Session:", session) // Debugging message
-
   const { error: idError, customerId } = await getOrCreateCustomerId({
     supabaseServiceRole,
     session,
   })
   if (idError || !customerId) {
-    console.error("Error creating customer ID:", idError) // Debugging message
-    throw error(500, {
-      message: "Unknown error. If issue persists, please contact us.",
-    })
+    return {
+      logMessages: [`Error creating customer ID: ${idError}`],
+      isActiveCustomer: false,
+      hasEverHadSubscription: false,
+      currentPlanId: null,
+    }
   }
-
-  console.log("Customer ID:", customerId) // Debugging message
 
   const {
     primarySubscription,
@@ -36,16 +34,19 @@ export const load: PageServerLoad = async ({
     customerId,
   })
   if (fetchErr) {
-    console.error("Error fetching subscription:", fetchErr) // Debugging message
-    throw error(500, {
-      message: "Unknown error. If issue persists, please contact us.",
-    })
+    return {
+      logMessages: [`Error fetching subscription: ${fetchErr}`],
+      isActiveCustomer: false,
+      hasEverHadSubscription: false,
+      currentPlanId: null,
+    }
   }
 
-  console.log("Primary Subscription:", primarySubscription) // Debugging message
-  console.log("Has Ever Had Subscription:", hasEverHadSubscription) // Debugging message
-
   return {
+    logMessages: [
+      `Primary Subscription: ${JSON.stringify(primarySubscription)}`,
+      `Has Ever Had Subscription: ${hasEverHadSubscription}`,
+    ],
     isActiveCustomer: !!primarySubscription,
     hasEverHadSubscription,
     currentPlanId: primarySubscription?.appSubscription?.id,
