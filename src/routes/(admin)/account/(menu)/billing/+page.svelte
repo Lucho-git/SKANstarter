@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getContext } from "svelte"
+  import { getContext, onMount } from "svelte"
   import type { Writable } from "svelte/store"
   import SettingsModule from "../settings/settings_module.svelte"
   import PricingModule from "../../../../(marketing)/pricing/pricing_module.svelte"
@@ -13,15 +13,17 @@
 
   export let data
 
-  // Log messages to the browser's console
-  data.logMessages.forEach((message) => {
-    console.log(message)
-  })
-
   let currentPlanId = data.currentPlanId ?? defaultPlanId
   let currentPlanName = pricingPlans.find(
     (x) => x.id === data.currentPlanId,
   )?.name
+
+  onMount(() => {
+    // Log messages to the browser's console
+    data.logMessages.forEach((message) => {
+      console.log(message)
+    })
+  })
 </script>
 
 <svelte:head>
