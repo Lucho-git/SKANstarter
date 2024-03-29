@@ -10,20 +10,20 @@ export const pricingPlans = [
     stripe_price_id: null,
     features: ["Paddock Upload", "PaddockPath for up to 5 paddocks", "Tramline Optimization Tool"],
   },
-//   {
-//     id: "pro",
-//     name: "★ SKAN Pro ",
-//     description: "Unlimited access to our PathPlanner for all your farming needs",
-//     price: "$49.99",
-//     priceIntervalName: "per month",
-//     stripe_price_id: "price_1OzChIK3At0l0k1He2S2jBKD",
-//     stripe_product_id: "prod_PoqONAH5P73MD4",
-//     features: [
-//       "Everything in Free",
-//       "Unlimited PaddockPaths",
-//       "Export your PaddockPath files",
-//     ],
-//   },
+  {
+    id: "pro",
+    name: "★ SKAN Pro ",
+    description: "Unlimited access to our PathPlanner for all your farming needs",
+    price: "$49.99",
+    priceIntervalName: "per month",
+    stripe_price_id: "price_1OzChIK3At0l0k1He2S2jBKD",
+    stripe_product_id: "prod_PoqONAH5P73MD4",
+    features: [
+      "Everything in Free",
+      "Unlimited PaddockPaths",
+      "Export your PaddockPath files",
+    ],
+  },
 
   {
     id: "enterprise",
