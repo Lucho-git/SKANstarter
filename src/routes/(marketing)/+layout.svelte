@@ -21,7 +21,7 @@
   <LogoCard href="/" />
   <div class="flex-none">
     <ul class="menu menu-horizontal px-1 hidden sm:flex font-bold text-lg">
-      <li class="md:mx-2"><a href="/blog">Features</a></li>
+      <li class="md:mx-2"><a href="/features">Features</a></li>
       <li class="md:mx-2"><a href="/team">Team</a></li>
       <li class="md:mx-2"><a href="/pricing">Pricing</a></li>
       <li class="md:mx-4">
@@ -57,7 +57,7 @@
         tabindex="0"
         class="menu menu-lg dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52 font-bold"
       >
-        <li><a href="/blog">Features</a></li>
+        <li><a href="/features">Features</a></li>
         <li><a href="/team">Team</a></li>
         <li><a href="/pricing">Pricing</a></li>
         <li>

@@ -22,12 +22,12 @@
     ) // Note: months are 0-based
   } else {
     console.log(
-      "WARNING: rendering blog post, which is not listed in posts.json",
+      "WARNING: rendering features post, which is not listed in posts.json",
     )
   }
 
   function goBack() {
-    goto("/blog")
+    goto("/features")
   }
 </script>
 
@@ -35,7 +35,9 @@
   <title>{currentPost?.title ? currentPost.title : "Not Found"}</title>
   <meta
     name="description"
-    content={currentPost?.description ? currentPost.description : "Blog post"}
+    content={currentPost?.description
+      ? currentPost.description
+      : "features post"}
   />
 </svelte:head>
 

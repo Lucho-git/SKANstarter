@@ -23,7 +23,7 @@
   <div class="hero-content flex-col-reverse lg:flex-row">
     <div class="w-full lg:w-5/12 mt-8 lg:mt-0">
       <a
-        href="/blog"
+        href="/features"
         class="card bg-base-100 shadow-xl hover:bg-base-200 transition duration-300"
       >
         <div class="card-body">

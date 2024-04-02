@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { blogInfo } from "./posts.json"
+  import { featuresInfo } from "./posts.json"
 </script>
 
 <svelte:head>
-  <title>{blogInfo.name}</title>
-  <meta name="description" content="Our blog posts." />
+  <title>{featuresInfo.name}</title>
+  <meta name="description" content="Our features posts." />
 </svelte:head>
 
 <div class="py-8 lg:py-12 px-6 max-w-lg mx-auto">
@@ -14,13 +14,13 @@
     <div
       class="text-center leading-relaxed font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent"
     >
-      {blogInfo.name}
+      {featuresInfo.name}
     </div>
   </div>
   <div class="text-lg font-bold text-center">Current Features</div>
 
-  <!-- Blog Post 1 -->
-  <a href="/blog/paddock_path">
+  <!-- features Post 1 -->
+  <a href="/features/paddock_path">
     <div class="card my-6 bg-white shadow-xl flex-row overflow-hidden">
       <div class="flex-none w-6 md:w-32 bg-secondary"></div>
       <div class="py-6 px-6">
@@ -33,8 +33,8 @@
   <!-- Add any elements between posts here -->
   <div class="text-lg font-bold text-center">Future Projects</div>
 
-  <!-- Blog Post 2 -->
-  <a href="/blog/pipeline">
+  <!-- features Post 2 -->
+  <a href="/features/pipeline">
     <div class="card my-6 bg-white shadow-xl flex-row overflow-hidden">
       <div class="flex-none w-6 md:w-32 bg-secondary"></div>
       <div class="py-6 px-6">
@@ -48,5 +48,5 @@
     </div>
   </a>
 
-  <!-- Add more blog posts as needed -->
+  <!-- Add more features posts as needed -->
 </div>
