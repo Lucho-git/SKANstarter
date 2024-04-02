@@ -43,6 +43,10 @@ export const load: PageServerLoad = async ({
 
   let checkoutUrl
   try {
+
+    //We add this here to know if we should use the stripe subscription model or the stripe one time payment model, could be made cleaner
+    const isOneTimePayment = params.slug === "price_1Oy7FOK3At0l0k1HrMFJ1gcc";
+
     const stripeSession = await stripe.checkout.sessions.create({
       line_items: [
         {
@@ -51,7 +55,7 @@ export const load: PageServerLoad = async ({
         },
       ],
       customer: customerId,
-      mode: "subscription",
+      mode: isOneTimePayment ? "payment" : "subscription",
       success_url: `${url.origin}/account`,
       cancel_url: `${url.origin}/account/billing`,
       consent_collection: {

@@ -69,7 +69,7 @@
               <br />
 
               <br />
-              <!-- <a href="/blog" class="link"> Find out how. </a> -->
+              <!-- <a href="/features" class="link"> Find out how. </a> -->
             </div>
           </div>
         </div>

@@ -32,7 +32,7 @@ export const pricingPlans = [
       "This plan is only avaliable for a limited time and is our way of rewarding our founding clients.",
     price: "$999",
     priceIntervalName: "Once only",
-    stripe_price_id: "price_1Oy7FOK3At0l0k1H5eXHAYEz",
+    stripe_price_id: "price_1Oy7FOK3At0l0k1HrMFJ1gcc",
     stripe_product_id: "prod_Pniga3XFPsLAuM",
     features: [
       "One time payment for lifetime access to all SKAN products",
