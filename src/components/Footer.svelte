@@ -130,7 +130,7 @@
             href="/docs/terms_of_service.pdf"
             target="_blank">Terms of Service</a
           >
-          <a class="link link-hover" href="\docs\SKAN-Privacy-Policy.pdf"
+          <a class="link link-hover" href="/docs/SKAN-Privacy-Policy.pdf"
             >Privacy Policy</a
           >
           <a class="link link-hover" href="/">Data Security</a>
