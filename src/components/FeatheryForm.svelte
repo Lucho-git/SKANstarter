@@ -1,9 +1,12 @@
 <!-- FeatheryForm.svelte -->
 <script context="module">
   export const prerender = true
+  export const ssr = false // Disable server-side rendering for this component
 </script>
 
 <script>
+  import { session } from "/src/stores/user.ts"
+
   const formId = "7d624884-1198-4af8-b49d-4b8b5efcb85c"
   const formName = "Customer Survey"
 
@@ -11,7 +14,7 @@
 
   let isFormCompleted = false
 
-  onMount(() => {
+  onMount(async () => {
     const script = document.createElement("script")
     script.src =
       "https://cdn.jsdelivr.net/npm/@feathery/react@latest/umd/index.js"
@@ -31,8 +34,11 @@
           initialContainerHeight: "600px",
           initialContainerWidth: "100%",
         },
-        onFormComplete: () => {
+        onFormComplete: async () => {
           isFormCompleted = true
+        },
+        variables: {
+          userId: $session ? $session.user.id : null,
         },
       })
     }
@@ -44,13 +50,21 @@
   })
 </script>
 
+<!-- Main form component -->
 <div
   class="max-w-2xl mx-auto p-4 bg-green-200 rounded-lg shadow-md overflow-auto"
 >
   {#if isFormCompleted}
     <div class="text-center">
       <h2 class="text-2xl font-bold mb-4">Form Completed!</h2>
-      <p class="text-lg">Thank you for submitting the form.</p>
+      {#if $session && $session.user}
+        <p class="text-lg">
+          Thank you, {$session.user.user_metadata.name} (ID: {$session.user
+            .id}), for submitting the form!
+        </p>
+      {:else}
+        <p class="text-lg">Thank you for submitting the form!</p>
+      {/if}
       <button
         class="btn btn-primary mt-6"
         on:click={() => (location.href = "/account")}
@@ -60,5 +74,19 @@
     </div>
   {:else}
     <div id="container_{formId}" class="min-h-[90vh] overflow-auto"></div>
+  {/if}
+</div>
+
+<!-- User authentication status section -->
+<div class="mt-8 text-center">
+  {#if !$session}
+    <p class="text-lg text-gray-500">Loading user authentication status...</p>
+  {:else if $session.user}
+    <p class="text-lg text-green-600">
+      User authenticated: {$session.user.user_metadata.name} (ID: {$session.user
+        .id})
+    </p>
+  {:else}
+    <p class="text-lg text-red-600">User not authenticated</p>
   {/if}
 </div>

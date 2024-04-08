@@ -3,15 +3,21 @@
   import ThemeSwitcher from "../../components/ThemeSwitcher.svelte"
   import Error from "../+error.svelte"
   import LogoCard from "../../components/LogoCard.svelte"
-  import { user } from "../../stores/user.ts"
+  import { session } from "../../stores/user.ts"
   import FloatingContact from "../../components/FloatingContact.svelte"
   import Footer from "../../components/Footer.svelte"
   import Footer2 from "../../components/Footer2.svelte"
   import { deviceStore } from "../../stores/deviceStore"
+  import { onMount } from "svelte"
 
   let innerWidth = 0
 
   $: deviceStore.updateInnerWidth(innerWidth)
+
+  onMount(async () => {
+    // Trigger the authentication state fetch
+    $session
+  })
 </script>
 
 <!-- <ThemeSwitcher /> -->
@@ -25,7 +31,7 @@
       <li class="md:mx-2"><a href="/team">Team</a></li>
       <li class="md:mx-2"><a href="/pricing">Pricing</a></li>
       <li class="md:mx-4">
-        {#if $user}
+        {#if $session}
           <a href="/account" class="border border-primary">Dashboard</a>
         {:else}
           <a href="/login/sign_up" class="border border-primary">★ Enter</a>
@@ -42,17 +48,17 @@
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
-          ><path
+        >
+          <path
             stroke-linecap="round"
             stroke-linejoin="round"
             stroke-width="2"
             d="M4 6h16M4 12h16M4 18h7"
-          /></svg
-        >
+          />
+        </svg>
       </label>
       <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
       <!-- mobile/smallscreen dropdown menu -->
-
       <ul
         tabindex="0"
         class="menu menu-lg dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52 font-bold"
@@ -61,10 +67,10 @@
         <li><a href="/team">Team</a></li>
         <li><a href="/pricing">Pricing</a></li>
         <li>
-          {#if $user}
+          {#if $session}
             <a href="/account" class="border border-primary">★ Dashboard</a>
             <div class="text-sm font-bold mt-1">
-              Welcome, {$user.user_metadata.name}!
+              Welcome, {$session.user.user_metadata.name}!
             </div>
           {:else}
             <a href="/login/sign_up" class="border border-primary">★ Enter</a>
