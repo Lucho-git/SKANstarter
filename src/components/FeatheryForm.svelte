@@ -1,9 +1,4 @@
 <!-- FeatheryForm.svelte -->
-<script context="module">
-  export const prerender = true
-  export const ssr = false // Disable server-side rendering for this component
-</script>
-
 <script>
   import { session } from "/src/stores/user.ts"
 
@@ -13,6 +8,7 @@
   import { onMount } from "svelte"
 
   let isFormCompleted = false
+  let responseData = null
 
   onMount(async () => {
     const script = document.createElement("script")
@@ -21,24 +17,38 @@
     script.async = true
     script.onload = () => {
       Feathery.init(formId)
+
+      // Update the Feathery user ID to match the Supabase user ID
+      if ($session && $session.user) {
+        Feathery.updateUserId($session.user.id)
+      }
+
       Feathery.renderAt(`container_${formId}`, {
         formName,
         initialLoader: {
           show: true,
           loader: `
-              <div class="flex flex-col items-center space-y-4">
-                <div class="border-t-4 border-primary animate-spin rounded-full w-12 h-12 mb-4"></div>
-                <p class="text-lg text-primary-content">Loading form...</p>
-              </div>
-            `,
+                <div class="flex flex-col items-center space-y-4">
+                  <div class="border-t-4 border-primary animate-spin rounded-full w-12 h-12 mb-4"></div>
+                  <p class="text-lg text-primary-content">Loading form...</p>
+                </div>
+              `,
           initialContainerHeight: "600px",
           initialContainerWidth: "100%",
         },
-        onFormComplete: async () => {
+        onFormComplete: async (response) => {
           isFormCompleted = true
-        },
-        variables: {
-          userId: $session ? $session.user.id : null,
+          responseData = {}
+
+          // Iterate over the fields in the response
+          for (const fieldKey in response.fields) {
+            if (response.fields.hasOwnProperty(fieldKey)) {
+              const field = response.fields[fieldKey]
+              responseData[fieldKey] = field.value
+            }
+          }
+
+          console.log("Feathery Survey Response:", responseData)
         },
       })
     }
@@ -64,6 +74,13 @@
         </p>
       {:else}
         <p class="text-lg">Thank you for submitting the form!</p>
+      {/if}
+      {#if responseData}
+        <pre class="text-left mt-4">{JSON.stringify(
+            responseData,
+            null,
+            2,
+          )}</pre>
       {/if}
       <button
         class="btn btn-primary mt-6"
