@@ -55,8 +55,8 @@
         use:enhance={handleSubmit}
       >
         <div class="mt-4">
-          <label for="fullName">
-            <span class="text-l text-center">Your Name</span>
+          <label for="fullName" class="label">
+            <span class="label-text">Name</span>
           </label>
           <input
             id="fullName"
@@ -65,20 +65,21 @@
             placeholder="Your full name"
             class="{fieldError(form, 'fullName')
               ? 'input-error'
-              : ''} mt-1 input input-bordered w-full max-w-xs"
+              : ''} mt-1 input input-bordered w-full max-w-xs border-2 border-primary"
             value={form?.fullName ?? fullName}
+            required
           />
         </div>
 
         <div class="mt-4">
-          <label for="companyName">
-            <span class="text-l text-center">Company Name</span>
+          <label for="companyName" class="label">
+            <span class="label-text">Company Name</span>
           </label>
           <input
             id="companyName"
             name="companyName"
             type="text"
-            placeholder="Company name"
+            placeholder="Homewood Farms"
             class="{fieldError(form, 'companyName')
               ? 'input-error'
               : ''} mt-1 input input-bordered w-full max-w-xs"
@@ -87,14 +88,14 @@
         </div>
 
         <div class="mt-4">
-          <label for="website">
-            <span class="text-l text-center">Company Website</span>
+          <label for="website" class="label">
+            <span class="label-text">Company Website</span>
           </label>
           <input
             id="website"
             name="website"
             type="text"
-            placeholder="Company website"
+            placeholder="Company.com"
             class="{fieldError(form, 'website')
               ? 'input-error'
               : ''} mt-1 input input-bordered w-full max-w-xs"
@@ -103,6 +104,7 @@
         </div>
 
         {#if form?.errorMessage}
+          <div class="mt-4"></div>
           <p class="text-red-700 text-sm font-bold text-center mt-3">
             {form?.errorMessage}
           </p>

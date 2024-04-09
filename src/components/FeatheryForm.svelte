@@ -104,13 +104,6 @@
       {:else}
         <p class="text-lg">Thank you for submitting the form!</p>
       {/if}
-      {#if responseData}
-        <pre class="text-left mt-4">{JSON.stringify(
-            responseData,
-            null,
-            2,
-          )}</pre>
-      {/if}
       <button
         class="btn btn-primary mt-6"
         on:click={() => (location.href = "/account")}
@@ -124,7 +117,7 @@
 </div>
 
 <!-- User authentication status section -->
-<div class="mt-8 text-center">
+<!-- <div class="mt-8 text-center">
   {#if !$session}
     <p class="text-lg text-gray-500">Loading user authentication status...</p>
   {:else if $session.user}
@@ -135,4 +128,4 @@
   {:else}
     <p class="text-lg text-red-600">User not authenticated</p>
   {/if}
-</div>
+</div> -->
