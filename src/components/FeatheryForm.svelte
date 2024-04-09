@@ -1,6 +1,7 @@
 <!-- FeatheryForm.svelte -->
 <script>
   import { session } from "/src/stores/user.ts"
+  import { supabase } from "$lib/supabaseClient"
 
   const formId = "7d624884-1198-4af8-b49d-4b8b5efcb85c"
   const formName = "Customer Survey"
@@ -38,17 +39,41 @@
         },
         onFormComplete: async (response) => {
           isFormCompleted = true
-          responseData = {}
-
+          responseData = {
+            id: response.userId, // Set the "ID" field to the User_ID value
+          }
           // Iterate over the fields in the response
           for (const fieldKey in response.fields) {
             if (response.fields.hasOwnProperty(fieldKey)) {
               const field = response.fields[fieldKey]
-              responseData[fieldKey] = field.value
+              const columnName = fieldKey.replace(/[#\s]/g, "_").toLowerCase()
+              const fieldValue = Array.isArray(field.value)
+                ? field.value.join(", ")
+                : field.value
+
+              // Only include fields with a defined value
+              if (fieldValue !== undefined) {
+                responseData[columnName] = fieldValue
+              }
             }
           }
 
-          console.log("Feathery Survey Response:", responseData)
+          // Insert the filtered responseData object into the database
+          try {
+            const { data, error } = await supabase
+              .from("survey_response")
+              .upsert(responseData, { onConflict: "id" })
+
+            if (error) {
+              console.error("Error inserting survey response:", error)
+            } else {
+              console.log("Survey response inserted successfully:", data)
+            }
+          } catch (error) {
+            console.error("Error inserting survey response:", error)
+          }
+
+          console.log(responseData)
         },
       })
     }
