@@ -2,6 +2,9 @@
 <script>
   import { session } from "/src/stores/user.ts"
   import { supabase } from "$lib/supabaseClient"
+  import { createEventDispatcher } from "svelte"
+
+  const dispatch = createEventDispatcher()
 
   const formId = "7d624884-1198-4af8-b49d-4b8b5efcb85c"
   const formName = "Customer Survey"
@@ -73,6 +76,7 @@
             console.error("Error inserting survey response:", error)
           }
 
+          dispatch("complete")
           console.log(responseData)
         },
       })
