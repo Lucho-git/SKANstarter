@@ -193,75 +193,81 @@ export const actions = {
   },
   
   updateProfile: async ({ request, locals: { supabase, getSession } }) => {
-    const session = await getSession()
+    const session = await getSession();
     if (!session) {
-      throw redirect(303, "/login")
+      throw redirect(303, "/login");
     }
   
-    const formData = await request.formData()
-    const fullName = formData.get("fullName") as string
-    const companyName = formData.get("companyName") as string
-    const website = formData.get("website") as string
+    const formData = await request.formData();
+    const fullName = formData.get("fullName") as string;
+    const companyName = formData.get("companyName") as string;
+    const website = formData.get("website") as string;
+    const surveyCompleted = formData.get("surveyCompleted") as string;
   
-    console.log("Form data:", { fullName, companyName, website })
+    console.log("Form data:", { fullName, companyName, website });
   
-    let validationError
-    const errorFields = []
+    let validationError;
+    const errorFields = [];
     if (!fullName) {
-      validationError = "Name is required"
-      errorFields.push("fullName")
+      validationError = "Name is required";
+      errorFields.push("fullName");
     }
-    if (!companyName) {
-      validationError =
-        "Company name is required. If this is a hobby project or personal app, please put your name."
-      errorFields.push("companyName")
-    }
+  
     if (validationError) {
-      console.log("Validation error:", validationError)
+      console.log("Validation error:", validationError);
       return fail(400, {
         errorMessage: validationError,
         errorFields,
         fullName,
         companyName,
         website,
-      })
+      });
     }
   
     const profileData = {
       id: session?.user.id,
       full_name: fullName,
-      company_name: companyName,
       updated_at: new Date(),
+    };
+  
+    if (companyName) {
+      profileData.companyName = companyName;
     }
   
     if (website) {
-      profileData.website = website
+      profileData.website = website;
     }
   
-    console.log("Profile data:", profileData)
+    if (surveyCompleted !== undefined) {
+      profileData.survey_completed = surveyCompleted === "true";
+    }
   
-    const { error } = await supabase.from("profiles").upsert(profileData)
+    console.log("Profile data:", profileData);
+  
+    const { error } = await supabase.from("profiles").upsert(profileData);
   
     if (error) {
-      console.error("Supabase error:", error)
+      console.error("Supabase error:", error);
       return fail(500, {
         errorMessage: "Unknown error. If this persists please contact us.",
         fullName,
         companyName,
         website,
-      })
+        surveyCompleted,
+      });
     }
   
     if (!error) {
-        const successResponse = {
-          success: true,
-          fullName,
-          companyName,
-          website: website || "",
-        }
+      const successResponse = {
+        success: true,
+        fullName,
+        companyName: companyName || "",
+        website: website || "",
+        surveyCompleted: profileData.survey_completed,
+      };
   
-      console.log("Success response:", successResponse)
-      return successResponse
+      console.log("Success response:", successResponse);
+      return successResponse;
     }
   },
 
@@ -275,59 +281,127 @@ export const actions = {
     }
   },
   uploadFile: async ({ request, locals: { supabase, getSession } }) => {
-    const session = await getSession()
-    if (!session) {
-      throw redirect(303, "/login")
-    }
-
-    const formData = await request.formData()
-    const file = formData.get("file") as File
-
-    if (!file) {
-      return fail(400, {
-        errorMessage: "No file selected",
-      })
-    }
-
-    const { data, error } = await supabase.storage
-      .from("user_files")
-      .upload(`user_${session.user.id}/${file.name}`, file)
-
-    if (error) {
-      console.error("Error uploading file:", error)
-      return fail(500, {
-        errorMessage: "Error uploading file. If this persists please contact us.",
-      })
-    }
-
-    return {
-      data,
-    }
-  },
-  fetchUploadedFiles: async ({ locals: { supabase, getSession } }) => {
     const session = await getSession();
     if (!session) {
       throw redirect(303, "/login");
     }
-  
-    const { data, error } = await supabase.storage
-      .from("user_files")
-      .list(`user_${session.user.id}`, {
-        limit: 100,
-        offset: 0,
-        sortBy: { column: "name", order: "asc" },
-      });
-  
-    if (error) {
-      console.error("Error fetching uploaded files:", error);
-      return fail(500, {
-        errorMessage: "Error fetching uploaded files. If this persists please contact us.",
-      });
+
+    const contentType = request.headers.get("content-type");
+
+    if (contentType && contentType.includes("application/json")) {
+      const { file, ...rest } = await request.json();
+
+      if (!file) {
+        return fail(400, {
+          errorMessage: "No file selected",
+        });
+      }
+
+      const { data, error } = await supabase.storage
+        .from("user_files")
+        .upload(`user_${session.user.id}/${file.name}`, file);
+
+      if (error) {
+        console.error("Error uploading file:", error);
+        return fail(500, {
+          errorMessage: "Error uploading file. If this persists please contact us.",
+        });
+      }
+
+      return {
+        data,
+      };
     }
-  
-    return {
-      files: data.map((file) => file.name),
-    };
+
+    if (contentType && contentType.includes("multipart/form-data")) {
+      const formData = await request.formData();
+      const file = formData.get("file") as File;
+
+      if (!file) {
+        return fail(400, {
+          errorMessage: "No file selected",
+        });
+      }
+
+      const { data, error } = await supabase.storage
+        .from("user_files")
+        .upload(`user_${session.user.id}/${file.name}`, file);
+
+      if (error) {
+        console.error("Error uploading file:", error);
+        return fail(500, {
+          errorMessage: "Error uploading file. If this persists please contact us.",
+        });
+      }
+
+      return {
+        data,
+      };
+    }
+
+    return fail(400, {
+      errorMessage: "Invalid request format",
+    });
+  },
+
+  fetchUploadedFiles: async ({ request, locals: { supabase, getSession } }) => {
+    const session = await getSession();
+    if (!session) {
+      throw redirect(303, "/login");
+    }
+
+    const contentType = request.headers.get("content-type");
+
+    if (contentType && contentType.includes("application/json")) {
+      const { data, error } = await supabase.storage
+        .from("user_files")
+        .list(`user_${session.user.id}`, {
+          limit: 100,
+          offset: 0,
+          sortBy: { column: "name", order: "asc" },
+        });
+
+      if (error) {
+        console.error("Error fetching uploaded files:", error);
+        return fail(500, {
+          errorMessage: "Error fetching uploaded files. If this persists please contact us.",
+        });
+      }
+
+      return {
+        files: data.map((file) => file.name),
+      };
+    }
+
+    if (contentType && contentType.includes("multipart/form-data")) {
+      const formData = await request.formData();
+      const action = formData.get("action") as string;
+
+      if (action === "fetchUploadedFiles") {
+        const { data, error } = await supabase.storage
+          .from("user_files")
+          .list(`user_${session.user.id}`, {
+            limit: 100,
+            offset: 0,
+            sortBy: { column: "name", order: "asc" },
+          });
+
+        if (error) {
+          console.error("Error fetching uploaded files:", error);
+          return fail(500, {
+            errorMessage: "Error fetching uploaded files. If this persists please contact us.",
+          });
+        }
+
+        return {
+          files: data.map((file) => file.name),
+        };
+      }
+    }
+
+    return fail(400, {
+      errorMessage: "Invalid request format",
+    });
   },
   deleteFile: async ({ request, locals: { supabase, getSession } }) => {
     const session = await getSession()

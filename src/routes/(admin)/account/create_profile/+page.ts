@@ -6,7 +6,7 @@ export async function load({ parent }) {
 
   // They completed their profile! Redirect to "Select a Plan" screen.
   if (_hasFullProfile(data?.profile)) {
-    throw redirect(303, "/account/select_plan")
+    throw redirect(303, "/account/user_survey")
   }
 
   return data

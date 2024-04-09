@@ -30,6 +30,50 @@ export const POST: RequestHandler = async ({ request, locals: { getSession } }) 
 
       return json({ files: data.map((file) => file.file_name) });
     }
+
+    if (action === 'updateProfile') {
+        const { surveyCompleted } = rest;
+    
+        const profileData = {
+          id: session?.user.id,
+          survey_completed: surveyCompleted,
+          updated_at: new Date(),
+        };
+      
+        const { error } = await supabase.from("profiles").upsert(profileData);
+      
+        if (error) {
+          console.error("Supabase error:", error);
+          
+          if (error.code === '42501') {
+            return new Response(JSON.stringify({
+              message: "Unauthorized: You don't have permission to update this profile.",
+              error: error,
+              profileData: profileData,
+              session: {
+                userId: session?.user.id,
+                userEmail: session?.user.email,
+              },
+            }), {
+              status: 403,
+              headers: { 'Content-Type': 'application/json' },
+            });
+          }
+          
+          return new Response(JSON.stringify({
+            message: "Unknown error. If this persists please contact us.",
+          }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+    
+          return new Response(JSON.stringify({ success: true }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          });
+      }
+
   }
 
 

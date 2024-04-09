@@ -17,14 +17,16 @@ export interface Database {
           updated_at: string | null
           company_name: string | null
           website: string | null
+          survey_completed: boolean | null
         }
         Insert: {
           avatar_url?: string | null
           full_name?: string | null
           id: string
-          updated_at?: Date | null
+          updated_at?: string | null
           company_name?: string | null
           website?: string | null
+          survey_completed?: boolean | null
         }
         Update: {
           avatar_url?: string | null
@@ -33,6 +35,7 @@ export interface Database {
           updated_at?: string | null
           company_name?: string | null
           website?: string | null
+          survey_completed?: boolean | null
         }
         Relationships: [
           {
