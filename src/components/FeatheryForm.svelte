@@ -98,8 +98,7 @@
       <h2 class="text-2xl font-bold mb-4">Form Completed!</h2>
       {#if $session && $session.user}
         <p class="text-lg">
-          Thank you, {$session.user.user_metadata.name} (ID: {$session.user
-            .id}), for submitting the form!
+          Thankyou {$session.user.user_metadata.name}
         </p>
       {:else}
         <p class="text-lg">Thank you for submitting the form!</p>

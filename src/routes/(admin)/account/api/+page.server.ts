@@ -244,10 +244,11 @@ export const actions = {
   
     console.log("Profile data:", profileData);
   
-    const { error } = await supabase.from("profiles").upsert(profileData);
+    // Update the user's profile in your database
+    const { error: profileError } = await supabase.from("profiles").upsert(profileData);
   
-    if (error) {
-      console.error("Supabase error:", error);
+    if (profileError) {
+      console.error("Supabase profile error:", profileError);
       return fail(500, {
         errorMessage: "Unknown error. If this persists please contact us.",
         fullName,
@@ -257,18 +258,36 @@ export const actions = {
       });
     }
   
-    if (!error) {
-      const successResponse = {
-        success: true,
-        fullName,
-        companyName: companyName || "",
-        website: website || "",
-        surveyCompleted: profileData.survey_completed,
-      };
+    // Update the user's metadata in Supabase
+    const { data: userData, error: metadataError } = await supabase.auth.updateUser({
+      data: { name: fullName }
+    });
   
-      console.log("Success response:", successResponse);
-      return successResponse;
+    if (metadataError) {
+      console.error("Supabase metadata error:", metadataError);
+      return fail(500, {
+        errorMessage: "Unknown error. If this persists please contact us.",
+        fullName,
+        companyName,
+        website,
+        surveyCompleted,
+      });
     }
+  
+    console.log("User metadata updated successfully:", userData);
+    // Refresh the session to reflect the updated metadata
+    const { data: sessionData, error: sessionError } = await supabase.auth.refreshSession();
+
+    const successResponse = {
+      success: true,
+      fullName,
+      companyName: companyName || "",
+      website: website || "",
+      surveyCompleted: profileData.survey_completed,
+    };
+  
+    console.log("Success response:", successResponse);
+    return successResponse;
   },
 
   signout: async ({ locals: { supabase, getSession } }) => {
