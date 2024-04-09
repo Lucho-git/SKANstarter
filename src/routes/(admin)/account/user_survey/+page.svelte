@@ -70,9 +70,6 @@
         <button class="btn btn-secondary mt-4" on:click={handleSkipSurvey}>
           Skip Survey
         </button>
-      {:else}
-        <p>Thank you for completing the survey!</p>
-      {/if}
     </div>
   </div>
 </div>
