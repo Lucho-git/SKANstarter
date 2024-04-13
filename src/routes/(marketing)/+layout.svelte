@@ -5,8 +5,8 @@
   import LogoCard from "../../components/LogoCard.svelte"
   import { session } from "../../stores/user.ts"
   import FloatingContact from "../../components/FloatingContact.svelte"
-  import Footer from "../../components/Footer.svelte"
-  import Footer2 from "../../components/Footer2.svelte"
+  import Footer from "./Footer.svelte"
+  import Footer2 from "./Footer2.svelte"
   import { deviceStore } from "../../stores/deviceStore"
   import { onMount } from "svelte"
 
