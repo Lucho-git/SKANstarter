@@ -16,7 +16,7 @@
     if (isValidFile(file)) {
       dispatch("validFile", { file })
     } else {
-      dispatch("invalidFile", { file })
+      dispatch("validFile", { file })
     }
   }
 
