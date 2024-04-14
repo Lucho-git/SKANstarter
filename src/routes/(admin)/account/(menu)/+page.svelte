@@ -3,9 +3,88 @@
   import type { Writable } from "svelte/store"
   import FileUpload from "../../../../components/FileUpload.svelte"
   import UserFiles from "../../../../components/UserFiles.svelte"
+  import { userFilesStore } from "../../../../stores/userFilesStore"
+  import { onMount } from "svelte"
 
   let adminSection: Writable<string> = getContext("adminSection")
   adminSection.set("home")
+
+  async function fetchUploadedFiles() {
+    try {
+      const response = await fetch("/account/api", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action: "fetchUploadedFiles" }),
+      })
+
+      if (response.ok) {
+        const { files } = await response.json()
+        userFilesStore.set(files)
+      } else {
+        console.error("Error fetching uploaded files")
+      }
+    } catch (error) {
+      console.error("Error fetching uploaded files")
+    }
+  }
+
+  async function deleteFile(event: CustomEvent) {
+    const file = event.detail.file
+    try {
+      const formData = new FormData()
+      formData.append("action", "deleteFile")
+      formData.append("fileName", file)
+
+      const response = await fetch("/account/api", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (response.ok) {
+        // File deleted successfully, update the userFilesStore
+        userFilesStore.update((files) => files.filter((f) => f !== file))
+      } else {
+        console.error("Error deleting file")
+      }
+    } catch (error) {
+      console.error("Error deleting file")
+    }
+  }
+
+  async function handleValidFile(event: CustomEvent) {
+    const file = event.detail.file
+    try {
+      const formData = new FormData()
+      formData.append("action", "uploadFile")
+      formData.append("file", file)
+
+      const response = await fetch("/account/api", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (response.ok) {
+        // File uploaded successfully, update the userFilesStore
+        userFilesStore.update((files) => [...files, file.name])
+      } else {
+        console.error("Error uploading file")
+      }
+    } catch (error) {
+      console.error("Error uploading file")
+    }
+  }
+
+  function handleInvalidFile(event: CustomEvent) {
+    const invalidFile = event.detail.file
+    console.error("Invalid file:", invalidFile.name)
+    // Handle invalid file scenario, e.g., show an error message
+  }
+
+  onMount(() => {
+    fetchUploadedFiles()
+  })
 </script>
 
 <svelte:head>
@@ -19,7 +98,10 @@
   <div>
     <div class="font-bold">Upload Paddock</div>
     <div class="my-2">
-      <FileUpload />
+      <FileUpload
+        on:validFile={handleValidFile}
+        on:invalidFile={handleInvalidFile}
+      />
     </div>
     <div class="my-2"></div>
   </div>
@@ -29,7 +111,10 @@
   <div>
     <div class="font-bold">User Files</div>
     <div class="my-2">
-      <UserFiles />
+      <UserFiles
+        on:fetchUploadedFiles={fetchUploadedFiles}
+        on:deleteFile={deleteFile}
+      />
     </div>
     <div class="my-2"></div>
   </div>

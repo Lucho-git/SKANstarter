@@ -88,10 +88,14 @@ export const POST: RequestHandler = async ({ request, locals: { getSession } }) 
     .from('user_files_bucket')
     .upload(`user_${session.user.id}/${file.name}`, file);
 
-  if (uploadError) {
-    console.error('Error uploading file:', uploadError);
-    throw error(500, { message: 'Error uploading file. If this persists please contact us.' });
-  }
+    if (uploadError) {
+        console.error('Error uploading file:', uploadError);
+        const errorMessage = uploadError.message || 'Unknown error';
+        const errorCode = uploadError.statusCode || 'UNKNOWN_CODE';
+        throw error(500, {
+          message: `${errorCode} Error uploading file: ${errorMessage}`
+        });
+      }
 
   const { data: insertData, error: insertError } = await supabase
     .from('user_files')

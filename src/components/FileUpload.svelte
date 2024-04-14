@@ -1,22 +1,49 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte"
   import { userFilesStore } from "../stores/userFilesStore"
+  import FileInspector from "./FileInspector.svelte"
 
   let file: File | null = null
+  let isFileValid = false
   let uploading = false
   let errorMessage = ""
+  let successMessage = ""
+  let fileInfo = ""
 
   const dispatch = createEventDispatcher()
 
   const handleFileChange = (event: Event) => {
     const target = event.target as HTMLInputElement
     file = target.files?.[0] || null
+    isFileValid = false
+    errorMessage = ""
+    successMessage = ""
+    fileInfo = ""
+    if (file) {
+      const inspector = new FileInspector({
+        target: document.createElement("div"),
+        props: { file },
+      })
+    }
+  }
+
+  const handleValidFile = (event: CustomEvent) => {
+    isFileValid = true
+    errorMessage = ""
+    fileInfo = event.detail.info
+  }
+
+  const handleInvalidFile = () => {
+    isFileValid = false
+    errorMessage = "Invalid file format. Please select a CSV file."
+    fileInfo = ""
   }
 
   const handleFileUpload = async () => {
-    if (file) {
+    if (file && isFileValid) {
       uploading = true
       errorMessage = ""
+      successMessage = ""
 
       const formData = new FormData()
       formData.append("action", "uploadFile")
@@ -31,9 +58,10 @@
         if (response.ok) {
           console.log("File uploaded successfully")
           file = null
-          dispatch("fileUploaded") // Dispatch an event to notify the parent component
+          isFileValid = false
+          successMessage = "File uploaded successfully"
+          dispatch("fileUploaded")
 
-          // Fetch the updated list of files from the server
           const fetchResponse = await fetch("/account/api", {
             method: "POST",
             headers: {
@@ -46,13 +74,27 @@
             const { files } = await fetchResponse.json()
             userFilesStore.set(files)
           } else {
-            errorMessage = "Error fetching uploaded files"
+            const error = await fetchResponse.json()
+            console.error("Error fetching uploaded files:", error)
+            errorMessage = "Error fetching uploaded files. Please try again."
           }
         } else {
-          errorMessage = "Error uploading file"
+          const error = await response.json()
+          console.error("Error uploading file:", error)
+
+          if (error.message) {
+            errorMessage = error.message
+          } else if (error.error) {
+            errorMessage = error.error
+          } else {
+            errorMessage =
+              "An error occurred while uploading the file. Please try again."
+          }
         }
       } catch (error) {
-        errorMessage = "Error uploading file"
+        console.error("Error uploading file:", error)
+        errorMessage =
+          "An unexpected error occurred while uploading the file. Please try again."
       } finally {
         uploading = false
       }
@@ -68,20 +110,36 @@
   />
 </div>
 
-{#if file}
+<FileInspector
+  {file}
+  on:validFile={handleValidFile}
+  on:invalidFile={handleInvalidFile}
+/>
+
+{#if file && !uploading}
   <button
     class="btn btn-primary"
+    class:animate-pulse={isFileValid}
+    class:opacity-50={!isFileValid}
+    disabled={!isFileValid}
     on:click={handleFileUpload}
-    disabled={uploading}
   >
-    {#if uploading}
-      Uploading...
-    {:else}
-      Upload File
-    {/if}
+    Upload File
   </button>
+{/if}
+
+{#if uploading}
+  <p>Uploading...</p>
 {/if}
 
 {#if errorMessage}
   <p class="text-red-500">{errorMessage}</p>
+{/if}
+
+{#if successMessage}
+  <p class="text-green-500">{successMessage}</p>
+{/if}
+
+{#if fileInfo}
+  <p>File Info: {fileInfo}</p>
 {/if}
