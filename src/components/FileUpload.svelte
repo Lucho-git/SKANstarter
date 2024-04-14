@@ -77,6 +77,7 @@
             const error = await fetchResponse.json()
             console.error("Error fetching uploaded files:", error)
             errorMessage = "Error fetching uploaded files. Please try again."
+            isFileValid = false // Set isFileValid to false on error
           }
         } else {
           const error = await response.json()
@@ -90,11 +91,13 @@
             errorMessage =
               "An error occurred while uploading the file. Please try again."
           }
+          isFileValid = false // Set isFileValid to false on error
         }
       } catch (error) {
         console.error("Error uploading file:", error)
         errorMessage =
           "An unexpected error occurred while uploading the file. Please try again."
+        isFileValid = false // Set isFileValid to false on error
       } finally {
         uploading = false
       }
@@ -118,7 +121,7 @@
 
 {#if file && !uploading}
   <button
-    class="btn btn-primary"
+    class="btn btn-secondary"
     class:animate-pulse={isFileValid}
     class:opacity-50={!isFileValid}
     disabled={!isFileValid}
