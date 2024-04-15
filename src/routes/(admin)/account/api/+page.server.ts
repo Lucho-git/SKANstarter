@@ -422,35 +422,4 @@ export const actions = {
       errorMessage: "Invalid request format",
     });
   },
-  deleteFile: async ({ request, locals: { supabase, getSession } }) => {
-    const session = await getSession()
-    if (!session) {
-      throw redirect(303, "/login")
-    }
-
-    const formData = await request.formData()
-    const fileName = formData.get("fileName") as string
-
-    if (!fileName) {
-      return fail(400, {
-        errorMessage: "No file name provided",
-      })
-    }
-
-    const { error } = await supabase.storage
-      .from("user_files")
-      .remove([`user_${session.user.id}/${fileName}`])
-
-    if (error) {
-      console.error("Error deleting file:", error)
-      return fail(500, {
-        errorMessage: "Error deleting file. If this persists please contact us.",
-      })
-    }
-
-    return {
-      message: "File deleted successfully",
-    }
-  },
-
 }

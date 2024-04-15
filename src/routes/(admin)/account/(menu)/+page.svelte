@@ -30,26 +30,40 @@
     }
   }
 
-  async function deleteFile(event: CustomEvent) {
-    const file = event.detail.file
-    try {
-      const formData = new FormData()
-      formData.append("action", "deleteFile")
-      formData.append("fileName", file)
+  console.log("Parent component mounted")
 
+  async function deleteFile(event: CustomEvent) {
+    console.log("deleteFile event received with file:", event.detail.file)
+    const fileName = event.detail.file
+    try {
+      console.log("Sending delete request for file:", fileName)
       const response = await fetch("/account/api", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "deleteFile",
+          fileName: fileName,
+        }),
       })
 
-      if (response.ok) {
-        // File deleted successfully, update the userFilesStore
-        userFilesStore.update((files) => files.filter((f) => f !== file))
-      } else {
-        console.error("Error deleting file")
+      console.log(
+        "Delete request response:",
+        response.status,
+        response.statusText,
+      )
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error("Error response:", errorText)
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
+
+      console.log("File deleted successfully:", fileName)
+      userFilesStore.update((files) => files.filter((f) => f !== fileName))
     } catch (error) {
-      console.error("Error deleting file")
+      console.error(`Error deleting file ${fileName}:`, error.message)
     }
   }
 
@@ -57,7 +71,6 @@
     const file = event.detail.file
     try {
       const formData = new FormData()
-      formData.append("action", "uploadFile")
       formData.append("file", file)
 
       const response = await fetch("/account/api", {

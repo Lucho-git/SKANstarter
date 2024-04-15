@@ -1,17 +1,16 @@
 <script lang="ts">
-  import { onMount } from "svelte"
+  import { onMount, createEventDispatcher } from "svelte"
   import { userFilesStore } from "../stores/userFilesStore"
+
+  const dispatch = createEventDispatcher()
 
   let errorMessage = ""
   $: userFiles = $userFilesStore
 
   function deleteFile(file: string) {
-    const event = new CustomEvent("deleteFile", {
-      detail: { file },
-    })
-    dispatchEvent(event)
+    console.log("deleteFile event dispatched with file:", file)
+    dispatch("deleteFile", { file })
   }
-
   onMount(() => {
     const event = new CustomEvent("fetchUploadedFiles")
     dispatchEvent(event)
