@@ -1,7 +1,12 @@
+<!-- FileUpload.svelte -->
 <script lang="ts">
   import { createEventDispatcher } from "svelte"
   import { userFilesStore } from "../stores/userFilesStore"
   import FileInspector from "./FileInspector.svelte"
+  import { LottiePlayer } from "@lottiefiles/svelte-lottie-player"
+
+  export let acceptedFileTypes = ".zip, .isoxml, .csv"
+  export let isPopoverOpen = false
 
   let file: File | null = null
   let isFileValid = false
@@ -9,9 +14,9 @@
   let errorMessage = ""
   let successMessage = ""
   let fileInfo = ""
+  let dragOver = false
 
   const dispatch = createEventDispatcher()
-
   const handleFileChange = (event: Event) => {
     const target = event.target as HTMLInputElement
     file = target.files?.[0] || null
@@ -103,46 +108,202 @@
       }
     }
   }
+
+  function handleDragOver(event: DragEvent) {
+    event.preventDefault()
+    dragOver = true
+  }
+
+  function handleDragLeave(event: DragEvent) {
+    event.preventDefault()
+    dragOver = false
+  }
+
+  function handleDrop(event: DragEvent) {
+    event.preventDefault()
+    dragOver = false
+    const droppedFile = event.dataTransfer?.files[0]
+    if (droppedFile) {
+      file = droppedFile
+      isFileValid = false
+      errorMessage = ""
+      successMessage = ""
+      fileInfo = ""
+      const inspector = new FileInspector({
+        target: document.createElement("div"),
+        props: { file },
+      })
+    }
+  }
+
+  function closePopover() {
+    isPopoverOpen = false
+  }
 </script>
 
-<div class="my-2">
-  <input
-    type="file"
-    class="file-input file-input-bordered file-input-primary file-input-bg-primary w-full max-w-xs"
-    on:change={handleFileChange}
-  />
-</div>
+{#if isPopoverOpen}
+  <div class="fixed inset-0 flex items-center justify-center z-50">
+    <div class="overlay absolute inset-0 bg-black opacity-50"></div>
+    <div class="card w-full max-w-3xl bg-base-100 shadow-xl z-10">
+      <div class="card-body relative">
+        <button
+          class="btn btn-sm btn-circle absolute top-2 right-2"
+          on:click={closePopover}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+        <h3 class="card-title justify-center text-2xl font-bold mb-4">
+          Upload Files
+        </h3>
+        <h3 class="card-title justify-center text-lg mb-4">
+          Upload your farms paddock boundary files
+        </h3>
 
-<FileInspector
-  {file}
-  on:validFile={handleValidFile}
-  on:invalidFile={handleInvalidFile}
-/>
+        <div
+          class="flex flex-col items-center justify-center w-full max-w-7xl mx-auto"
+        >
+          <label
+            for="dropzone-file"
+            class="flex flex-col items-center justify-center w-3/4 h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
+            on:dragover={handleDragOver}
+            on:dragleave={handleDragLeave}
+            on:drop={handleDrop}
+          >
+            {#if file && !errorMessage}
+              <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                <LottiePlayer
+                  src="/animations/OneFileMovement.json"
+                  autoplay={true}
+                  loop={true}
+                  controls={false}
+                  renderer="svg"
+                  background="transparent"
+                  height={150}
+                  width={200}
+                />
+                <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                  <span class="font-semibold">{file.name}</span>
+                </p>
+              </div>
+            {:else if errorMessage}
+              <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                <LottiePlayer
+                  src="/animations/Error2.json"
+                  autoplay={true}
+                  loop={true}
+                  controls={false}
+                  renderer="svg"
+                  background="transparent"
+                  height={200}
+                  width={200}
+                />
+              </div>
+            {:else}
+              <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                <LottiePlayer
+                  src="/animations/IdleFile.json"
+                  autoplay={true}
+                  loop={true}
+                  controls={false}
+                  renderer="svg"
+                  background="transparent"
+                  height={150}
+                  width={150}
+                />
+                <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                  <span class="font-semibold">Click to upload</span> or drag and
+                  drop
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  ZIP, ISOXML or .KML files (Max: 50mb)
+                </p>
+              </div>
+            {/if}
+            <input
+              id="dropzone-file"
+              type="file"
+              class="hidden"
+              on:change={handleFileChange}
+            />
+          </label>
 
-{#if file && !uploading}
-  <button
-    class="btn btn-secondary"
-    class:animate-pulse={isFileValid}
-    class:opacity-50={!isFileValid}
-    disabled={!isFileValid}
-    on:click={handleFileUpload}
-  >
-    Upload File
-  </button>
-{/if}
+          <button
+            class="btn mt-4"
+            class:bg-gray-400={!file || !isFileValid}
+            class:bg-green-500={file && isFileValid}
+            class:hover:bg-green-600={file && isFileValid}
+            class:opacity-50={!file || !isFileValid}
+            disabled={!file || !isFileValid || uploading}
+            on:click={handleFileUpload}
+          >
+            {#if uploading}
+              Uploading...
+            {:else}
+              Upload File
+            {/if}
+          </button>
+        </div>
 
-{#if uploading}
-  <p>Uploading...</p>
-{/if}
+        <div class="justify-center mx-auto">
+          {#if errorMessage}
+            <p class="text-red-500">{errorMessage}</p>
+          {/if}
 
-{#if errorMessage}
-  <p class="text-red-500">{errorMessage}</p>
-{/if}
+          {#if successMessage}
+            <p class="text-green-500">{successMessage}</p>
+          {/if}
 
-{#if successMessage}
-  <p class="text-green-500">{successMessage}</p>
-{/if}
+          {#if fileInfo}
+            <p>File Info: {fileInfo}</p>
+          {/if}
+        </div>
 
-{#if fileInfo}
-  <p>File Info: {fileInfo}</p>
+        <div class="mt-2 max-w-6xl mx-auto">
+          <h3 class="text-lg font-bold mb-2">File Upload Requirements</h3>
+          <ul class="list-disc pl-6 mb-4">
+            <li>Zipped Shapefiles, .KML files and ISOXML files are accepted</li>
+            <li>Shapefile ZIP must contain .dbf, .shx and .shp files.</li>
+            <li>
+              Multiple ZIP files or an ISOXML can be contained in a single ZIP
+              file.
+            </li>
+
+            <li>
+              If the .dbf file is missing, the shapefile will be considered
+              invalid.
+            </li>
+            <li>
+              If the .shp file is missing, the shapefile will be considered
+              empty.
+            </li>
+          </ul>
+
+          <h3 class="text-lg font-bold mb-2">Supported Polygon Types</h3>
+          <ul class="list-disc pl-6">
+            <li>Polygon</li>
+            <li>Multipolygon</li>
+          </ul>
+        </div>
+        <FileInspector
+          {file}
+          {acceptedFileTypes}
+          on:validFile={handleValidFile}
+          on:invalidFile={handleInvalidFile}
+        />
+      </div>
+    </div>
+  </div>
 {/if}

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getContext } from "svelte"
   import type { Writable } from "svelte/store"
-  import FileUpload from "../../../../components/FileUpload.svelte"
+  import UploadPopoverTrigger from "../../../../components/UploadPopoverTrigger.svelte"
   import UserFiles from "../../../../components/UserFiles.svelte"
   import { userFilesStore } from "../../../../stores/userFilesStore"
   import { onMount } from "svelte"
@@ -111,7 +111,7 @@
   <div>
     <div class="font-bold">Upload Paddock</div>
     <div class="my-2">
-      <FileUpload
+      <UploadPopoverTrigger
         on:validFile={handleValidFile}
         on:invalidFile={handleInvalidFile}
       />
