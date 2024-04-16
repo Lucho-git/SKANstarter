@@ -5,7 +5,6 @@
   import FileInspector from "./FileInspector.svelte"
   import { LottiePlayer } from "@lottiefiles/svelte-lottie-player"
 
-  export let acceptedFileTypes = ".zip, .isoxml, .csv"
   export let isPopoverOpen = false
 
   let file: File | null = null
@@ -137,7 +136,13 @@
   }
 
   function closePopover() {
-    isPopoverOpen = false
+    errorMessage = ""
+    successMessage = ""
+    fileInfo = ""
+    isFileValid = false
+    file = null
+
+    dispatch("close")
   }
 </script>
 
@@ -189,6 +194,7 @@
                   autoplay={true}
                   loop={true}
                   controls={false}
+                  controlsLayout={null}
                   renderer="svg"
                   background="transparent"
                   height={150}
@@ -205,6 +211,7 @@
                   autoplay={true}
                   loop={true}
                   controls={false}
+                  controlsLayout={null}
                   renderer="svg"
                   background="transparent"
                   height={200}
@@ -218,6 +225,7 @@
                   autoplay={true}
                   loop={true}
                   controls={false}
+                  controlsLayout={null}
                   renderer="svg"
                   background="transparent"
                   height={150}
@@ -398,7 +406,6 @@
 
         <FileInspector
           {file}
-          {acceptedFileTypes}
           on:validFile={handleValidFile}
           on:invalidFile={handleInvalidFile}
         />

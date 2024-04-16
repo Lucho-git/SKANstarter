@@ -18,9 +18,5 @@
     Upload File
   </button>
 
-  <FileUpload
-    {isPopoverOpen}
-    acceptedFileTypes=".zip, .isoxml, .csv"
-    on:close={handlePopoverClose}
-  />
+  <FileUpload {isPopoverOpen} on:close={handlePopoverClose} />
 </div>
