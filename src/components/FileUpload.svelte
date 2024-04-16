@@ -273,30 +273,129 @@
 
         <div class="mt-2 max-w-6xl mx-auto">
           <h3 class="text-lg font-bold mb-2">File Upload Requirements</h3>
-          <ul class="list-disc pl-6 mb-4">
-            <li>Zipped Shapefiles, .KML files and ISOXML files are accepted</li>
-            <li>Shapefile ZIP must contain .dbf, .shx and .shp files.</li>
-            <li>
-              Multiple ZIP files or an ISOXML can be contained in a single ZIP
-              file.
+          <ul class="list-none pl-6 mb-4">
+            <li class="mb-2">
+              <span class="inline-block w-4 h-4 mr-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </span>
+              Zipped Shapefiles, .KML files and ISOXML files are all accepted
             </li>
-
-            <li>
-              If the .dbf file is missing, the shapefile will be considered
-              invalid.
+            <li class="mb-2">
+              <span class="inline-block w-4 h-4 mr-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </span>
+              Shapefile ZIP must contain .dbf, .shx and .shp files.
+            </li>
+            <li class="mb-2">
+              <span class="inline-block w-4 h-4 mr-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </span>
+              Multiple ZIP files or an ISOXML can be contained in a single ZIP file.
             </li>
             <li>
-              If the .shp file is missing, the shapefile will be considered
-              empty.
+              <span class="inline-block w-4 h-4 mr-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </span>
+              <a
+                href="docs\skan_sample_shapefile.zip"
+                class="text-blue-500 hover:text-blue-700 underline"
+              >
+                Download Example Paddock
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 inline-block ml-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                  />
+                </svg>
+              </a>
             </li>
           </ul>
 
           <h3 class="text-lg font-bold mb-2">Supported Polygon Types</h3>
-          <ul class="list-disc pl-6">
-            <li>Polygon</li>
-            <li>Multipolygon</li>
+          <ul class="list-none pl-6">
+            <li class="mb-2">
+              <span class="inline-block w-4 h-4 mr-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </span>
+              Polygon
+            </li>
+            <li>
+              <span class="inline-block w-4 h-4 mr-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </span>
+              Multipolygon
+            </li>
           </ul>
         </div>
+
         <FileInspector
           {file}
           {acceptedFileTypes}
