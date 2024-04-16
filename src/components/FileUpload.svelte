@@ -40,7 +40,7 @@
 
   const handleInvalidFile = () => {
     isFileValid = false
-    errorMessage = "Invalid file format. Please select a CSV file."
+    errorMessage = "Invalid file format. Please select a Valid file."
     fileInfo = ""
   }
 

@@ -6,10 +6,12 @@
   const dispatch = createEventDispatcher()
 
   function isValidFile(file: File): boolean {
-    // Implement your file validation logic here
-    // Return true if the file is valid, false otherwise
-    // Example validation: Check if the file is a CSV file
-    return file.type === "text/csv"
+    // Check if the file has a valid extension
+    const validExtensions = [".zip", ".kml", ".isoxml"]
+    const fileExtension = file.name
+      .toLowerCase()
+      .slice(file.name.lastIndexOf("."))
+    return validExtensions.includes(fileExtension)
   }
 
   function validateFile() {
