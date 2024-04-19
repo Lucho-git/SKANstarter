@@ -6,7 +6,7 @@
   let farmData = []
   let currentIndex = 0
   let isPlaying = false
-  let speedFactor = 40 // Adjust this value to control the animation speed
+  let speedFactor = 10 // Adjust this value to control the animation speed
 
   onMount(async () => {
     const response = await fetch("/data/supershedseeding.geojson")
