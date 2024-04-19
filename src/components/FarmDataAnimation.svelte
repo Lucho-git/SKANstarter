@@ -7,12 +7,71 @@
   let currentIndex = 0
   let isPlaying = false
   let speedFactor = 10 // Adjust this value to control the animation speed
+  let brushStrokeWidth
+
+  let minLon, maxLon, minLat, maxLat, scaleX, scaleY
+
+  function calculateScaleFactors() {
+    // Find the minimum and maximum coordinates
+    minLon = Math.min(
+      ...farmData.map((feature) => feature.geometry.coordinates[0]),
+    )
+    maxLon = Math.max(
+      ...farmData.map((feature) => feature.geometry.coordinates[0]),
+    )
+    minLat = Math.min(
+      ...farmData.map((feature) => feature.geometry.coordinates[1]),
+    )
+    maxLat = Math.max(
+      ...farmData.map((feature) => feature.geometry.coordinates[1]),
+    )
+
+    // Calculate the scale factors
+    scaleX = canvasRef.width / (maxLon - minLon)
+    scaleY = canvasRef.height / (maxLat - minLat)
+  }
 
   onMount(async () => {
     const response = await fetch("/data/supershedseeding.geojson")
     const geojsonData = await response.json()
     farmData = geojsonData.features
+
+    // Call calculateBrushStrokeWidth after farmData is populated
+    calculateBrushStrokeWidth()
+    calculateScaleFactors()
   })
+
+  function calculateBrushStrokeWidth() {
+    const canvas = canvasRef
+
+    // Find the minimum and maximum coordinates
+    const minLon = Math.min(
+      ...farmData.map((feature) => feature.geometry.coordinates[0]),
+    )
+    const maxLon = Math.max(
+      ...farmData.map((feature) => feature.geometry.coordinates[0]),
+    )
+    const minLat = Math.min(
+      ...farmData.map((feature) => feature.geometry.coordinates[1]),
+    )
+    const maxLat = Math.max(
+      ...farmData.map((feature) => feature.geometry.coordinates[1]),
+    )
+
+    // Calculate the distance represented by 12 meters on the canvas
+    const earthRadius = 6371000 // Earth's radius in meters
+    const lonDiff = (maxLon - minLon) * (Math.PI / 180)
+    const latDiff = (maxLat - minLat) * (Math.PI / 180)
+    const a =
+      Math.sin(latDiff / 2) ** 2 +
+      Math.cos(minLat * (Math.PI / 180)) *
+        Math.cos(maxLat * (Math.PI / 180)) *
+        Math.sin(lonDiff / 2) ** 2
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    const distance = earthRadius * c
+    const pixelsPerMeter = canvas.width / distance
+    brushStrokeWidth = 12 * pixelsPerMeter
+  }
 
   function getColorForSectionId(sectionId) {
     const colors = [
@@ -73,35 +132,18 @@
 
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-    // Find the minimum and maximum coordinates
-    const minLon = Math.min(
-      ...farmData.map((feature) => feature.geometry.coordinates[0]),
-    )
-    const maxLon = Math.max(
-      ...farmData.map((feature) => feature.geometry.coordinates[0]),
-    )
-    const minLat = Math.min(
-      ...farmData.map((feature) => feature.geometry.coordinates[1]),
-    )
-    const maxLat = Math.max(
-      ...farmData.map((feature) => feature.geometry.coordinates[1]),
-    )
-
-    // Calculate the scale factors
-    const scaleX = canvas.width / (maxLon - minLon)
-    const scaleY = canvas.height / (maxLat - minLat)
-
     for (let i = 1; i <= currentIndex; i++) {
       const prevPoint = farmData[i - 1].geometry.coordinates
       const currentPoint = farmData[i].geometry.coordinates
 
       // Scale the coordinates to canvas pixels
       const prevX = (prevPoint[0] - minLon) * scaleX
-      const prevY = canvas.height - (prevPoint[1] - minLat) * scaleY
+      const prevY = canvasRef.height - (prevPoint[1] - minLat) * scaleY
       const currentX = (currentPoint[0] - minLon) * scaleX
-      const currentY = canvas.height - (currentPoint[1] - minLat) * scaleY
+      const currentY = canvasRef.height - (currentPoint[1] - minLat) * scaleY
 
       ctx.strokeStyle = getColorForSectionId(farmData[i].properties.SECTIONID)
+      ctx.lineWidth = brushStrokeWidth
 
       ctx.beginPath()
       ctx.moveTo(prevX, prevY)
