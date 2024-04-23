@@ -45,6 +45,7 @@
 		"@supabase/auth-ui-svelte": "^0.2.2",
 		"@supabase/supabase-js": "^2.33.0",
 		"chart.js": "^4.4.2",
+		"gsap": "^3.12.5",
 		"lottie-web": "^5.12.2",
 		"plotly.js-basic-dist": "^2.31.1",
 		"plotly.js-dist-min": "^2.31.1",
