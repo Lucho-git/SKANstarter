@@ -7,6 +7,7 @@
   let timeline
   let farmData = []
   let minLon, maxLon, minLat, maxLat, scaleX, scaleY
+  let progress = 0
 
   onMount(async () => {
     await loadData()
@@ -36,6 +37,10 @@
 
     scaleX = animationSvg.clientWidth / (maxLon - minLon)
     scaleY = animationSvg.clientHeight / (maxLat - minLat)
+  }
+
+  function handleSliderInput() {
+    timeline.progress(progress)
   }
 
   function calculateBrushStrokeWidth() {
@@ -147,6 +152,7 @@
     }
 
     timeline = gsap.timeline()
+    progress = 0 // Set progress to 0 when the animation starts
 
     for (let i = 0; i < pathData.length - 1; i++) {
       const startIndex = i
@@ -175,6 +181,11 @@
   function clearAnimation() {
     timeline.clear()
     animationSvg.innerHTML = ""
+    progress = 0
+  }
+
+  function updateProgress() {
+    progress = timeline.progress()
   }
 </script>
 
@@ -189,6 +200,14 @@
   <button on:click={pause}>Pause</button>
   <button on:click={moveForward}>Forward</button>
   <button on:click={clearAnimation}>Clear</button>
+  <input
+    type="range"
+    min="0"
+    max="1"
+    step="0.001"
+    bind:value={progress}
+    on:input={handleSliderInput}
+  />
 </div>
 
 <style>
