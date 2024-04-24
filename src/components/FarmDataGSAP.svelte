@@ -8,11 +8,15 @@
   let farmData = []
   let minLon, maxLon, minLat, maxLat, scaleX, scaleY
   let progress = 0
+  let isDragging = false
 
   onMount(async () => {
     await loadData()
     calculateScaleFactors()
     animatePath()
+    addEventListener("animationprogress", (event) => {
+      progress = event.detail
+    })
   })
 
   async function loadData() {
@@ -40,7 +44,10 @@
   }
 
   function handleSliderInput() {
-    timeline.progress(progress)
+    if (timeline) {
+      timeline.pause()
+      timeline.progress(progress)
+    }
   }
 
   function calculateBrushStrokeWidth() {
@@ -151,7 +158,14 @@
       })
     }
 
-    timeline = gsap.timeline()
+    timeline = gsap.timeline({
+      onUpdate: () => {
+        progress = timeline.progress()
+        dispatchEvent(
+          new CustomEvent("animationprogress", { detail: progress }),
+        )
+      },
+    })
     progress = 0 // Set progress to 0 when the animation starts
 
     for (let i = 0; i < pathData.length - 1; i++) {
@@ -207,6 +221,20 @@
     step="0.001"
     bind:value={progress}
     on:input={handleSliderInput}
+    on:mousedown={() => (isDragging = true)}
+    on:touchstart={() => (isDragging = true)}
+    on:mouseup={() => {
+      isDragging = false
+      if (timeline) timeline.resume()
+    }}
+    on:touchend={() => {
+      isDragging = false
+      if (timeline) timeline.resume()
+    }}
+    on:mouseleave={() => {
+      isDragging = false
+      if (timeline) timeline.resume()
+    }}
   />
 </div>
 
