@@ -7,6 +7,7 @@
   import FeatheryForm from "../../../../../components/FeatheryForm.svelte"
   import FarmDataAnimation from "../../../../../components/FarmDataAnimation.svelte"
   import FarmDataGsap from "../../../../../components/FarmDataGSAP.svelte"
+  import StubContainer from "../../../../../components/StubContainer.svelte"
 
   let adminSection: Writable<string> = getContext("adminSection")
   adminSection.set("pathplanner")
@@ -22,13 +23,20 @@
   }
 </script>
 
+<!-- <FarmingSimulation {farmData} {updateFarmData} /> -->
+
 <!-- ... -->
 
-<div class="responsive-layout">
-  <div class="relative" style="padding-bottom: 63.25%;">
-    <div class="absolute inset-0 overflow-auto">
-      <!-- <FarmingSimulation {farmData} {updateFarmData} /> -->
-      <FarmDataGsap />
-    </div>
-  </div>
+<div class="app-container">
+  <StubContainer />
 </div>
+
+<style>
+  .app-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100vh;
+  }
+</style>
