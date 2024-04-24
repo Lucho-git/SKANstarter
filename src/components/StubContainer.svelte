@@ -49,15 +49,11 @@
 
   .animation-wrapper {
     width: 75%;
-    padding-bottom: 56.25%; /* Maintain 4:3 aspect ratio */
-    position: relative;
+    aspect-ratio: 4 / 3; /* Maintain 4:3 aspect ratio */
   }
 
   #animation-container {
     border: 2px solid black;
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
     height: 100%;
   }
@@ -69,5 +65,15 @@
     width: 75%;
     box-sizing: border-box;
     margin-top: -1px;
+  }
+
+  @media (max-width: 600px) {
+    .animation-wrapper {
+      width: 100%;
+    }
+
+    .controls {
+      width: 100%;
+    }
   }
 </style>
