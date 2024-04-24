@@ -28,7 +28,7 @@
 <!-- ... -->
 
 <div class="app-container">
-  <StubContainer />
+  <FarmDataGsap />
 </div>
 
 <style>

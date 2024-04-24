@@ -8,7 +8,6 @@
   let farmData = []
   let minLon, maxLon, minLat, maxLat, scaleX, scaleY
   let progress = 0
-  let isDragging = false
 
   onMount(async () => {
     await loadData()
@@ -42,6 +41,8 @@
     scaleX = animationSvg.clientWidth / (maxLon - minLon)
     scaleY = animationSvg.clientHeight / (maxLat - minLat)
   }
+
+  let isDragging = false
 
   function handleSliderInput() {
     if (timeline) {
@@ -203,48 +204,81 @@
   }
 </script>
 
-<div id="animation-container" bind:this={animationContainer}>
-  <svg id="animation-svg" bind:this={animationSvg} width="1120" height="840"
-  ></svg>
-</div>
-
-<div class="controls">
-  <button on:click={moveBackward}>Backward</button>
-  <button on:click={play}>Play</button>
-  <button on:click={pause}>Pause</button>
-  <button on:click={moveForward}>Forward</button>
-  <button on:click={clearAnimation}>Clear</button>
-  <input
-    type="range"
-    min="0"
-    max="1"
-    step="0.001"
-    bind:value={progress}
-    on:input={handleSliderInput}
-    on:mousedown={() => (isDragging = true)}
-    on:touchstart={() => (isDragging = true)}
-    on:mouseup={() => {
-      isDragging = false
-      if (timeline) timeline.resume()
-    }}
-    on:touchend={() => {
-      isDragging = false
-      if (timeline) timeline.resume()
-    }}
-    on:mouseleave={() => {
-      isDragging = false
-      if (timeline) timeline.resume()
-    }}
-  />
+<div class="container">
+  <div class="content-wrapper">
+    <div class="animation-wrapper">
+      <div id="animation-container" bind:this={animationContainer}>
+        <svg id="animation-svg" bind:this={animationSvg} viewBox="0 0 1120 840">
+          ></svg
+        >
+      </div>
+    </div>
+    <div class="controls">
+      <button on:click={moveBackward}>Backward</button>
+      <button on:click={play}>Play</button>
+      <button on:click={pause}>Pause</button>
+      <button on:click={moveForward}>Forward</button>
+      <button on:click={clearAnimation}>Clear</button>
+      <input
+        type="range"
+        min="0"
+        max="1"
+        step="0.001"
+        bind:value={progress}
+        on:input={handleSliderInput}
+        on:mousedown={() => (isDragging = true)}
+        on:touchstart={() => (isDragging = true)}
+        on:mouseup={() => {
+          isDragging = false
+          if (timeline) timeline.resume()
+        }}
+        on:touchend={() => {
+          isDragging = false
+          if (timeline) timeline.resume()
+        }}
+        on:mouseleave={() => {
+          isDragging = false
+          if (timeline) timeline.resume()
+        }}
+      />
+    </div>
+  </div>
 </div>
 
 <style>
+  .container {
+    display: flex;
+    justify-content: left;
+    align-items: left;
+    width: 100%;
+    height: 100%;
+  }
+
+  .content-wrapper {
+    width: 75%;
+  }
+
+  .animation-wrapper {
+    width: 100%;
+    padding-bottom: 75%; /* Maintain 4:3 aspect ratio */
+    position: relative;
+  }
+
   #animation-container {
     border: 2px solid black;
-    display: inline-block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
   }
 
   .controls {
-    margin-top: 10px;
+    border: 2px solid black;
+    padding: 10px;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: -1px;
   }
 </style>
