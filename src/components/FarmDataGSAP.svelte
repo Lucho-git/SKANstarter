@@ -208,7 +208,12 @@
   <div class="content-wrapper">
     <div class="animation-wrapper">
       <div id="animation-container" bind:this={animationContainer}>
-        <svg id="animation-svg" bind:this={animationSvg} viewBox="0 0 1120 840">
+        <svg
+          id="animation-svg"
+          bind:this={animationSvg}
+          width="100%"
+          height="100%"
+        >
           ></svg
         >
       </div>
