@@ -5,6 +5,7 @@
 
   let animationContainer
   let animationSvg
+  let brushStrokeWidth
   let timeline
   let farmData = []
   let minLon, maxLon, minLat, maxLat, scaleX, scaleY
@@ -16,16 +17,27 @@
   let tractorAnimation
   let pathData = [] // Initialize pathData as an empty array
   let colorIndex = 0
+  let isPlaying = false
+  let pathLengths = []
+  let totalDuration = 0
+  let durationScalingFactor = 0.1
 
   gsap.registerPlugin(MotionPathPlugin)
 
   onMount(async () => {
     await loadData()
+    const simplifiedData = simplifyPath(farmData, 0.000001) // Adjust the tolerance as needed
+    console.log(`Original data points: ${farmData.length}`)
+    console.log(`Simplified data points: ${simplifiedData.length}`)
+    farmData = simplifiedData
     calculateScaleFactors()
+    brushStrokeWidth = calculateBrushStrokeWidth()
+
     pathData = generatePathData() // Generate the path data and assign it to pathData
     preprocessPathData() // Call the preprocessing function after pathData is populated
     preprocessSectionColors() // Call the preprocessing function
     preprocessTractorAnimation() // Call the preprocessing function
+    preprocessPathLengths() // Add this line to preprocess path lengths
     animatePath()
 
     addEventListener("animationprogress", (event) => {
@@ -39,9 +51,75 @@
     farmData = geojsonData.features
   }
 
-  function preprocessPathData() {
-    const brushStrokeWidth = calculateBrushStrokeWidth()
+  function calculateDistance(point1, point2) {
+    const dx = point2.x - point1.x
+    const dy = point2.y - point1.y
+    return Math.sqrt(dx * dx + dy * dy)
+  }
 
+  function preprocessPathLengths() {
+    pathLengths = []
+    totalDuration = 0
+
+    for (let i = 1; i < pathData.length; i++) {
+      const startPoint = pathData[i - 1]
+      const endPoint = pathData[i]
+      const distance = calculateDistance(startPoint, endPoint)
+      pathLengths.push(distance)
+      totalDuration += distance
+    }
+
+    totalDuration *= durationScalingFactor
+  }
+
+  function simplifyPath(data, tolerance) {
+    const points = data.map((feature) => ({
+      x: feature.geometry.coordinates[0],
+      y: feature.geometry.coordinates[1],
+    }))
+
+    if (points.length <= 2) {
+      return data
+    }
+
+    let dmax = 0
+    let index = 0
+
+    for (let i = 1; i < points.length - 1; i++) {
+      const d = perpendicularDistance(
+        points[i],
+        points[0],
+        points[points.length - 1],
+      )
+      if (d > dmax) {
+        index = i
+        dmax = d
+      }
+    }
+
+    if (dmax > tolerance) {
+      const results1 = simplifyPath(data.slice(0, index + 1), tolerance)
+      const results2 = simplifyPath(data.slice(index), tolerance)
+      return [...results1.slice(0, -1), ...results2]
+    } else {
+      return [data[0], data[data.length - 1]]
+    }
+  }
+
+  function perpendicularDistance(point, lineStart, lineEnd) {
+    const dx = lineEnd.x - lineStart.x
+    const dy = lineEnd.y - lineStart.y
+    const numerator = Math.abs(
+      dy * point.x -
+        dx * point.y +
+        lineEnd.x * lineStart.y -
+        lineEnd.y * lineStart.x,
+    )
+    const denominator = Math.sqrt(dx * dx + dy * dy)
+    return numerator / denominator
+  }
+
+  function preprocessPathData() {
     path = document.createElementNS("http://www.w3.org/2000/svg", "path")
     path.setAttribute("fill", "none")
     path.setAttribute("stroke", "transparent")
@@ -90,17 +168,14 @@
   }
 
   function preprocessTractorAnimation() {
-    const brushStrokeWidth = calculateBrushStrokeWidth()
-
     tractor = document.createElementNS("http://www.w3.org/2000/svg", "image")
     tractor.setAttributeNS(
       "http://www.w3.org/1999/xlink",
       "xlink:href",
       "/images/tractor.svg",
     )
-    tractor.setAttribute("width", brushStrokeWidth * 2)
-    tractor.setAttribute("height", brushStrokeWidth * 2)
-    animationSvg.appendChild(tractor)
+    tractor.setAttribute("width", brushStrokeWidth * 4)
+    tractor.setAttribute("height", brushStrokeWidth * 4)
 
     tractorAnimation = gsap.to(tractor, {
       motionPath: motionPath,
@@ -181,9 +256,6 @@
   }
 
   function animatePath() {
-    let animationDuration = 1 / 100
-    const brushStrokeWidth = calculateBrushStrokeWidth()
-
     timeline = gsap.timeline({
       onUpdate: () => {
         progress = timeline.progress()
@@ -194,20 +266,25 @@
     })
     progress = 0
 
+    let cumulativeDuration = 0
+
     for (let i = 1; i < pathData.length; i++) {
       const startIndex = i - 1
       const endIndex = i
-      const duration = animationDuration
+      const duration = (pathLengths[i - 1] / totalDuration) * 10
 
-      createLineAnimation(startIndex, endIndex, duration, brushStrokeWidth)
+      createLineAnimation(startIndex, endIndex, duration, cumulativeDuration)
+      cumulativeDuration += duration
     }
+
+    animationSvg.appendChild(tractor)
 
     timeline.to(
       tractorAnimation,
       {
         progress: 1,
         ease: "linear",
-        duration: pathData.length * animationDuration,
+        duration: cumulativeDuration,
       },
       0,
     )
@@ -217,7 +294,7 @@
     startIndex,
     endIndex,
     duration,
-    brushStrokeWidth,
+    cumulativeDuration,
   ) {
     const line = document.createElementNS("http://www.w3.org/2000/svg", "line")
 
@@ -233,11 +310,24 @@
     line.setAttribute("stroke-width", brushStrokeWidth)
     animationSvg.appendChild(line)
 
-    timeline.to(line, {
-      duration: duration,
-      attr: { x2: pathData[endIndex].x, y2: pathData[endIndex].y },
-      ease: "linear",
-    })
+    timeline.to(
+      line,
+      {
+        duration: duration,
+        attr: { x2: pathData[endIndex].x, y2: pathData[endIndex].y },
+        ease: "linear",
+      },
+      cumulativeDuration,
+    )
+  }
+
+  function togglePlayPause() {
+    if (isPlaying) {
+      timeline.pause()
+    } else {
+      timeline.play()
+    }
+    isPlaying = !isPlaying
   }
 
   function play() {
@@ -278,7 +368,9 @@
       </div>
     </div>
     <div class="controls">
-      <!-- ... -->
+      <button on:click={togglePlayPause}>{isPlaying ? "Pause" : "Play"}</button>
+      <button on:click={moveBackward}>Backward</button>
+      <button on:click={moveForward}>Forward</button>
       <input
         type="range"
         min="0"
