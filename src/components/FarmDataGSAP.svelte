@@ -1,6 +1,7 @@
 <script>
   import { onMount } from "svelte"
   import { gsap } from "gsap"
+  import { MotionPathPlugin } from "gsap/MotionPathPlugin"
 
   let animationContainer
   let animationSvg
@@ -8,11 +9,25 @@
   let farmData = []
   let minLon, maxLon, minLat, maxLat, scaleX, scaleY
   let progress = 0
+  let path
+  let motionPath
+  let sectionColors = {}
+  let tractor
+  let tractorAnimation
+  let pathData = [] // Initialize pathData as an empty array
+  let colorIndex = 0
+
+  gsap.registerPlugin(MotionPathPlugin)
 
   onMount(async () => {
     await loadData()
     calculateScaleFactors()
+    pathData = generatePathData() // Generate the path data and assign it to pathData
+    preprocessPathData() // Call the preprocessing function after pathData is populated
+    preprocessSectionColors() // Call the preprocessing function
+    preprocessTractorAnimation() // Call the preprocessing function
     animatePath()
+
     addEventListener("animationprogress", (event) => {
       progress = event.detail
     })
@@ -22,6 +37,77 @@
     const response = await fetch("/data/supershedseeding.geojson")
     const geojsonData = await response.json()
     farmData = geojsonData.features
+  }
+
+  function preprocessPathData() {
+    const brushStrokeWidth = calculateBrushStrokeWidth()
+
+    path = document.createElementNS("http://www.w3.org/2000/svg", "path")
+    path.setAttribute("fill", "none")
+    path.setAttribute("stroke", "transparent")
+    path.setAttribute("stroke-width", brushStrokeWidth)
+    path.setAttribute(
+      "d",
+      `M${pathData.map((point) => `${point.x},${point.y}`).join("L")}`,
+    )
+    animationSvg.appendChild(path)
+
+    motionPath = {
+      path: path,
+      autoRotate: true,
+      align: path,
+      alignOrigin: [0.5, 0.5],
+      start: 0,
+      end: 1,
+    }
+  }
+
+  function preprocessSectionColors() {
+    const availableColors = [
+      "red",
+      "blue",
+      "green",
+      "orange",
+      "purple",
+      "cyan",
+      "magenta",
+      "teal",
+      "brown",
+      "lime",
+    ]
+
+    farmData.forEach((data, index) => {
+      const sectionId = data.properties && data.properties.SECTIONID
+      if (sectionId && !sectionColors[sectionId]) {
+        sectionColors[sectionId] =
+          availableColors.length > 0
+            ? availableColors[colorIndex % availableColors.length]
+            : `hsl(${Math.random() * 360}, 50%, 50%)`
+
+        colorIndex++
+      }
+    })
+  }
+
+  function preprocessTractorAnimation() {
+    const brushStrokeWidth = calculateBrushStrokeWidth()
+
+    tractor = document.createElementNS("http://www.w3.org/2000/svg", "image")
+    tractor.setAttributeNS(
+      "http://www.w3.org/1999/xlink",
+      "xlink:href",
+      "/images/tractor.svg",
+    )
+    tractor.setAttribute("width", brushStrokeWidth * 2)
+    tractor.setAttribute("height", brushStrokeWidth * 2)
+    animationSvg.appendChild(tractor)
+
+    tractorAnimation = gsap.to(tractor, {
+      motionPath: motionPath,
+      duration: 1,
+      ease: "linear",
+      paused: true,
+    })
   }
 
   function calculateScaleFactors() {
@@ -42,8 +128,6 @@
     scaleY = animationSvg.clientHeight / (maxLat - minLat)
   }
 
-  let isDragging = false
-
   function handleSliderInput() {
     if (timeline) {
       timeline.pause()
@@ -51,6 +135,17 @@
     }
   }
 
+  function handleSliderStart() {
+    if (timeline) {
+      timeline.pause()
+    }
+  }
+
+  function handleSliderEnd() {
+    if (timeline) {
+      timeline.resume()
+    }
+  }
   function calculateBrushStrokeWidth() {
     const earthRadius = 6371000 // Earth's radius in meters
     const lonDiff = (maxLon - minLon) * (Math.PI / 180)
@@ -70,94 +165,24 @@
     const pathData = []
 
     for (let i = 0; i < farmData.length; i++) {
-      const currentPoint = farmData[i].geometry.coordinates
+      const {
+        geometry: {
+          coordinates: [lon, lat],
+        },
+      } = farmData[i]
 
-      const currentX = (currentPoint[0] - minLon) * scaleX
-      const currentY =
-        animationSvg.clientHeight - (currentPoint[1] - minLat) * scaleY
+      const x = (lon - minLon) * scaleX
+      const y = animationSvg.clientHeight - (lat - minLat) * scaleY
 
-      pathData.push({ x: currentX, y: currentY })
+      pathData.push({ x, y })
     }
 
     return pathData
   }
 
-  const sectionColors = {}
-
-  function getColorForSectionId(sectionId) {
-    if (sectionColors[sectionId]) {
-      return sectionColors[sectionId]
-    }
-
-    const availableColors = [
-      "red",
-      "blue",
-      "green",
-      "orange",
-      "purple",
-      "cyan",
-      "magenta",
-      "teal",
-      "brown",
-      "lime",
-    ]
-
-    let color
-
-    if (availableColors.length > 0) {
-      color = availableColors[sectionId % availableColors.length]
-    } else {
-      color = `hsl(${Math.random() * 360}, 50%, 50%)`
-    }
-
-    sectionColors[sectionId] = color
-    return color
-  }
-
   function animatePath() {
-    const pathData = generatePathData()
+    let animationDuration = 1 / 100
     const brushStrokeWidth = calculateBrushStrokeWidth()
-
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path")
-    path.setAttribute("fill", "none")
-    path.setAttribute("stroke", "black")
-    path.setAttribute("stroke-width", brushStrokeWidth)
-    animationSvg.appendChild(path)
-
-    const drawLine = (startIndex, endIndex, duration) => {
-      const startPoint = pathData[startIndex]
-      const endPoint = pathData[endIndex]
-
-      const line = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "line",
-      )
-      line.setAttribute("x1", startPoint.x)
-      line.setAttribute("y1", startPoint.y)
-      line.setAttribute("x2", startPoint.x)
-      line.setAttribute("y2", startPoint.y)
-      if (
-        farmData[endIndex] &&
-        farmData[endIndex].properties &&
-        farmData[endIndex].properties.SECTIONID
-      ) {
-        line.setAttribute(
-          "stroke",
-          getColorForSectionId(farmData[endIndex].properties.SECTIONID),
-        )
-      } else {
-        line.setAttribute("stroke", "black") // Default color if SECTIONID is missing
-      }
-
-      line.setAttribute("stroke-width", brushStrokeWidth)
-      animationSvg.appendChild(line)
-
-      timeline.to(line, {
-        duration: duration,
-        attr: { x2: endPoint.x, y2: endPoint.y },
-        ease: "linear",
-      })
-    }
 
     timeline = gsap.timeline({
       onUpdate: () => {
@@ -167,14 +192,52 @@
         )
       },
     })
-    progress = 0 // Set progress to 0 when the animation starts
+    progress = 0
 
-    for (let i = 0; i < pathData.length - 1; i++) {
-      const startIndex = i
-      const endIndex = i + 1
-      const duration = 0.00015 // Adjust the duration as needed
-      drawLine(startIndex, endIndex, duration)
+    for (let i = 1; i < pathData.length; i++) {
+      const startIndex = i - 1
+      const endIndex = i
+      const duration = animationDuration
+
+      createLineAnimation(startIndex, endIndex, duration, brushStrokeWidth)
     }
+
+    timeline.to(
+      tractorAnimation,
+      {
+        progress: 1,
+        ease: "linear",
+        duration: pathData.length * animationDuration,
+      },
+      0,
+    )
+  }
+
+  function createLineAnimation(
+    startIndex,
+    endIndex,
+    duration,
+    brushStrokeWidth,
+  ) {
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line")
+
+    line.setAttribute("x1", pathData[startIndex].x)
+    line.setAttribute("y1", pathData[startIndex].y)
+    line.setAttribute("x2", pathData[startIndex].x)
+    line.setAttribute("y2", pathData[startIndex].y)
+
+    const sectionId =
+      farmData[endIndex].properties && farmData[endIndex].properties.SECTIONID
+    const color = sectionId ? sectionColors[sectionId] : "black"
+    line.setAttribute("stroke", color)
+    line.setAttribute("stroke-width", brushStrokeWidth)
+    animationSvg.appendChild(line)
+
+    timeline.to(line, {
+      duration: duration,
+      attr: { x2: pathData[endIndex].x, y2: pathData[endIndex].y },
+      ease: "linear",
+    })
   }
 
   function play() {
@@ -198,10 +261,6 @@
     animationSvg.innerHTML = ""
     progress = 0
   }
-
-  function updateProgress() {
-    progress = timeline.progress()
-  }
 </script>
 
 <div class="container">
@@ -219,11 +278,7 @@
       </div>
     </div>
     <div class="controls">
-      <button on:click={moveBackward}>Backward</button>
-      <button on:click={play}>Play</button>
-      <button on:click={pause}>Pause</button>
-      <button on:click={moveForward}>Forward</button>
-      <button on:click={clearAnimation}>Clear</button>
+      <!-- ... -->
       <input
         type="range"
         min="0"
@@ -231,20 +286,11 @@
         step="0.001"
         bind:value={progress}
         on:input={handleSliderInput}
-        on:mousedown={() => (isDragging = true)}
-        on:touchstart={() => (isDragging = true)}
-        on:mouseup={() => {
-          isDragging = false
-          if (timeline) timeline.resume()
-        }}
-        on:touchend={() => {
-          isDragging = false
-          if (timeline) timeline.resume()
-        }}
-        on:mouseleave={() => {
-          isDragging = false
-          if (timeline) timeline.resume()
-        }}
+        on:mousedown={handleSliderStart}
+        on:touchstart={handleSliderStart}
+        on:mouseup={handleSliderEnd}
+        on:touchend={handleSliderEnd}
+        on:mouseleave={handleSliderEnd}
       />
     </div>
   </div>
