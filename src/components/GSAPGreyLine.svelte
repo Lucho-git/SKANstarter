@@ -257,6 +257,8 @@
   }
 
   function animatePath() {
+    const completePath = createCompletePath()
+
     timeline = gsap.timeline({
       onUpdate: () => {
         progress = timeline.progress()
@@ -267,16 +269,20 @@
     })
     progress = 0
 
-    let cumulativeDuration = 0
+    const drawLength = completePath.getTotalLength()
 
-    for (let i = 1; i < pathData.length; i++) {
-      const startIndex = i - 1
-      const endIndex = i
-      const duration = (pathLengths[i - 1] / totalDuration) * 10
-
-      createPathAnimation(startIndex, endIndex, duration, cumulativeDuration)
-      cumulativeDuration += duration
-    }
+    timeline.fromTo(
+      completePath,
+      {
+        strokeDasharray: drawLength + " " + drawLength,
+        strokeDashoffset: drawLength,
+      },
+      {
+        strokeDashoffset: 0,
+        duration: 10,
+        ease: "linear",
+      },
+    )
 
     animationSvg.appendChild(tractor)
 
@@ -285,7 +291,7 @@
       {
         progress: 1,
         ease: "linear",
-        duration: cumulativeDuration,
+        duration: 10,
       },
       0,
     )
@@ -325,67 +331,6 @@
     )
   }
 
-  function createPathAnimation(
-    startIndex,
-    endIndex,
-    duration,
-    cumulativeDuration,
-  ) {
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path")
-
-    const startPoint = pathData[startIndex]
-    const endPoint = pathData[endIndex]
-
-    const midPoint = {
-      x: (startPoint.x + endPoint.x) / 2,
-      y: (startPoint.y + endPoint.y) / 2,
-    }
-
-    const controlPoint1 = {
-      x: (startPoint.x + midPoint.x) / 2,
-      y: (startPoint.y + midPoint.y) / 2,
-    }
-    const controlPoint2 = {
-      x: (midPoint.x + endPoint.x) / 2,
-      y: (midPoint.y + endPoint.y) / 2,
-    }
-
-    const pathDefinition = `M${startPoint.x},${startPoint.y} C${controlPoint1.x},${controlPoint1.y} ${controlPoint2.x},${controlPoint2.y} ${endPoint.x},${endPoint.y}`
-    path.setAttribute("d", pathDefinition)
-
-    const sectionId =
-      farmData[endIndex].properties && farmData[endIndex].properties.SECTIONID
-    const color = sectionId ? sectionColors[sectionId] : "black"
-    path.setAttribute("stroke", color)
-    path.setAttribute("fill", "none")
-    path.setAttribute("stroke-width", brushStrokeWidth)
-    path.setAttribute("stroke-linecap", "round")
-    path.setAttribute("stroke-linejoin", "round")
-    path.style.opacity = 0
-    animationSvg.appendChild(path)
-
-    const drawLength = path.getTotalLength()
-
-    timeline.fromTo(
-      path,
-      {
-        strokeDasharray: drawLength + " " + drawLength,
-        strokeDashoffset: drawLength,
-      },
-      {
-        strokeDashoffset: 0,
-        duration: duration,
-        ease: "linear",
-        onUpdate: () => {
-          const progress = timeline.progress()
-          path.style.opacity =
-            progress >= cumulativeDuration / timeline.duration() ? 1 : 0
-        },
-      },
-      cumulativeDuration,
-    )
-  }
-
   function createCompletePath() {
     const completePath = document.createElementNS(
       "http://www.w3.org/2000/svg",
@@ -400,11 +345,13 @@
 
     completePath.setAttribute("stroke", "black")
     completePath.setAttribute("fill", "none")
-    completePath.setAttribute("stroke-width", brushStrokeWidth * 0.05) // Adjust the width as needed
+    completePath.setAttribute("stroke-width", brushStrokeWidth)
     completePath.setAttribute("stroke-linecap", "round")
     completePath.setAttribute("stroke-linejoin", "round")
-    completePath.setAttribute("opacity", 0.3) // Adjust the opacity as needed
+    completePath.setAttribute("opacity", 0.3)
     animationSvg.appendChild(completePath)
+
+    return completePath
   }
 
   function togglePlayPause() {

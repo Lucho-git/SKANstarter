@@ -376,10 +376,8 @@
         strokeDashoffset: 0,
         duration: duration,
         ease: "linear",
-        onUpdate: () => {
-          const progress = timeline.progress()
-          path.style.opacity =
-            progress >= cumulativeDuration / timeline.duration() ? 1 : 0
+        onStart: () => {
+          path.style.opacity = 1
         },
       },
       cumulativeDuration,
@@ -400,7 +398,7 @@
 
     completePath.setAttribute("stroke", "black")
     completePath.setAttribute("fill", "none")
-    completePath.setAttribute("stroke-width", brushStrokeWidth * 0.05) // Adjust the width as needed
+    completePath.setAttribute("stroke-width", brushStrokeWidth * 0.5) // Adjust the width as needed
     completePath.setAttribute("stroke-linecap", "round")
     completePath.setAttribute("stroke-linejoin", "round")
     completePath.setAttribute("opacity", 0.3) // Adjust the opacity as needed
