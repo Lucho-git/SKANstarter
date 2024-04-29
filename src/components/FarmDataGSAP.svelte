@@ -1,7 +1,5 @@
 <script>
   import { onMount } from "svelte"
-  import { gsap } from "gsap"
-  import { MotionPathPlugin } from "gsap/MotionPathPlugin"
 
   let animationContainer
   let animationSvg
@@ -22,9 +20,9 @@
   let totalDuration = 0
   let durationScalingFactor = 0.1
 
-  gsap.registerPlugin(MotionPathPlugin)
-
   onMount(async () => {
+    gsap.registerPlugin(MotionPathPlugin)
+
     await loadData()
     const simplifiedData = simplifyPath(farmData, 0.000001) // Adjust the tolerance as needed
     console.log(`Original data points: ${farmData.length}`)
