@@ -15,10 +15,13 @@
   let tractorAnimation
   let pathData = [] // Initialize pathData as an empty array
   let colorIndex = 0
-  let isPlaying = false
+  let isPlaying = true // Set initial state to playing
+  let buttonText = "Pause" // Set initial button text to "Pause"
   let pathLengths = []
   let totalDuration = 0
   let durationScalingFactor = 0.1
+  let diffResizer
+  let isDragging = false
 
   onMount(async () => {
     gsap.registerPlugin(MotionPathPlugin)
@@ -206,6 +209,13 @@
     if (timeline) {
       timeline.pause()
       timeline.progress(progress)
+      if (progress === 1) {
+        isPlaying = false
+        buttonText = "Restart"
+      } else {
+        isPlaying = true
+        buttonText = "Pause"
+      }
     }
   }
 
@@ -216,10 +226,11 @@
   }
 
   function handleSliderEnd() {
-    if (timeline) {
+    if (timeline && progress !== 1) {
       timeline.resume()
     }
   }
+
   function calculateBrushStrokeWidth() {
     const earthRadius = 6371000 // Earth's radius in meters
     const lonDiff = (maxLon - minLon) * (Math.PI / 180)
@@ -265,6 +276,9 @@
     })
     progress = 0
 
+    // Clear the existing timeline
+    timeline.clear()
+
     let cumulativeDuration = 0
 
     for (let i = 1; i < pathData.length; i++) {
@@ -276,51 +290,19 @@
       cumulativeDuration += duration
     }
 
+    // Re-append the tractor to the animation SVG
     animationSvg.appendChild(tractor)
 
-    timeline.to(
-      tractorAnimation,
-      {
-        progress: 1,
-        ease: "linear",
-        duration: cumulativeDuration,
-      },
-      0,
-    )
-  }
+    // Update the existing tractor animation to match the new timeline
+    tractorAnimation.duration(cumulativeDuration)
+    tractorAnimation.restart()
 
-  function createLineAnimation(
-    startIndex,
-    endIndex,
-    duration,
-    cumulativeDuration,
-  ) {
-    const line = document.createElementNS("http://www.w3.org/2000/svg", "line")
+    timeline.add(tractorAnimation, 0)
 
-    line.setAttribute("x1", pathData[startIndex].x)
-    line.setAttribute("y1", pathData[startIndex].y)
-    line.setAttribute("x2", pathData[startIndex].x)
-    line.setAttribute("y2", pathData[startIndex].y)
-
-    const sectionId =
-      farmData[endIndex].properties && farmData[endIndex].properties.SECTIONID
-    const color = sectionId ? sectionColors[sectionId] : "black"
-    line.setAttribute("stroke", color)
-    line.setAttribute("stroke-width", brushStrokeWidth)
-    // line.setAttribute("stroke-linecap", "round")
-    // line.setAttribute("stroke-linejoin", "round")
-
-    animationSvg.appendChild(line)
-
-    timeline.to(
-      line,
-      {
-        duration: duration,
-        attr: { x2: pathData[endIndex].x, y2: pathData[endIndex].y },
-        ease: "linear",
-      },
-      cumulativeDuration,
-    )
+    timeline.eventCallback("onComplete", () => {
+      isPlaying = false
+      buttonText = "Restart"
+    })
   }
 
   function createPathAnimation(
@@ -408,8 +390,19 @@
   function togglePlayPause() {
     if (isPlaying) {
       timeline.pause()
+      buttonText = "Play"
     } else {
-      timeline.play()
+      if (timeline.progress() === 1) {
+        // Clear the existing path and tractor
+        animationSvg.innerHTML = ""
+        // Redraw the complete path
+        createCompletePath()
+        // Restart the combined animation from the beginning
+        animatePath()
+      } else {
+        timeline.play()
+      }
+      buttonText = "Pause"
     }
     isPlaying = !isPlaying
   }
@@ -452,7 +445,7 @@
       </div>
     </div>
     <div class="controls">
-      <button on:click={togglePlayPause}>{isPlaying ? "Pause" : "Play"}</button>
+      <button on:click={togglePlayPause}>{buttonText}</button>
       <button on:click={moveBackward}>Backward</button>
       <button on:click={moveForward}>Forward</button>
       <input
