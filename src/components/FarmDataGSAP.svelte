@@ -22,6 +22,8 @@
   let durationScalingFactor = 0.1
   let diffResizer
   let isDragging = false
+  let scale = 1
+  const zoomFactor = 0.1
 
   onMount(async () => {
     gsap.registerPlugin(MotionPathPlugin)
@@ -42,6 +44,7 @@
     createCompletePath()
     animatePath()
 
+    animationContainer.addEventListener("wheel", handleWheel)
     addEventListener("animationprogress", (event) => {
       progress = event.detail
     })
@@ -51,6 +54,14 @@
     const response = await fetch("/data/supershedseeding.geojson")
     const geojsonData = await response.json()
     farmData = geojsonData.features
+  }
+
+  function handleWheel(event) {
+    event.preventDefault()
+    const delta = event.deltaY < 0 ? 1 : -1
+    scale += delta * zoomFactor
+    scale = Math.max(0.5, Math.min(scale, 2)) // Limit the scale between 0.5 and 2
+    animationSvg.style.transform = `scale(${scale})`
   }
 
   function calculateDistance(point1, point2) {
@@ -491,6 +502,7 @@
     left: 0;
     width: 100%;
     height: 100%;
+    overflow: hidden; /* Add this line to hide content outside the container */
   }
 
   .controls {
