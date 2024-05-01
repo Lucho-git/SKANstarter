@@ -1,6 +1,17 @@
 <script>
   import { onMount } from "svelte"
 
+  let timeData = []
+  let cropData = []
+  let appliedRateData = []
+  let swathWidthData = []
+  let headingData = []
+  let targetRateData = []
+  let varietyData = []
+  let machineData = []
+  let fuelData = []
+  let vehicleSpeedData = []
+
   let animationContainer
   let animationSvg
   let brushStrokeWidth
@@ -17,7 +28,7 @@
   let colorIndex = 0
   let isPlaying = true // Set initial state to playing
 
-  let buttonText = "Pause" // Set initial button text to "Pause"
+  let buttonState = "Pause" // Set initial button text to "Pause"
   let pathLengths = []
   let totalDuration = 0
   let durationScalingFactor = 0.1
@@ -30,10 +41,22 @@
     gsap.registerPlugin(MotionPathPlugin)
 
     await loadData()
-    const simplifiedData = simplifyPath(farmData, 0.000005) // Adjust the tolerance as needed
+    const simplifiedData = simplifyPath(farmData, 0.000005) // Cut down the number of values we process based on a tolerance value
     console.log(`Original data points: ${farmData.length}`)
     console.log(`Simplified data points: ${simplifiedData.length}`)
     farmData = simplifiedData
+    // Record the additional data for the simplified path
+    timeData = farmData.map((feature) => feature.properties.Time)
+    cropData = farmData.map((feature) => feature.properties.Crop)
+    appliedRateData = farmData.map((feature) => feature.properties.AppliedRate)
+    swathWidthData = farmData.map((feature) => feature.properties.SWATHWIDTH)
+    headingData = farmData.map((feature) => feature.properties.Heading)
+    targetRateData = farmData.map((feature) => feature.properties.TargetRate)
+    varietyData = farmData.map((feature) => feature.properties.Variety)
+    machineData = farmData.map((feature) => feature.properties.Machine)
+    fuelData = farmData.map((feature) => feature.properties.FUEL)
+    vehicleSpeedData = farmData.map((feature) => feature.properties.VEHICLSPEED)
+
     calculateScaleFactors()
     brushStrokeWidth = calculateBrushStrokeWidth()
 
@@ -223,10 +246,10 @@
       timeline.progress(progress)
       if (progress === 1) {
         isPlaying = false
-        buttonText = "Restart"
+        buttonState = "Restart"
       } else {
         isPlaying = true
-        buttonText = "Pause"
+        buttonState = "Pause"
       }
     }
   }
@@ -277,6 +300,37 @@
     return pathData
   }
 
+  function updateDisplayedData(featureIndex) {
+    // Update the displayed data based on the current feature index
+    const timeValue = timeData[featureIndex]
+    const [date, hours] = timeValue.split(" ")
+    document.getElementById("date").textContent = date
+    document.getElementById("hours").textContent = hours
+
+    document.getElementById("crop").textContent = cropData[featureIndex]
+    document.getElementById("appliedRate").textContent =
+      appliedRateData[featureIndex]
+    document.getElementById("swathWidth").textContent =
+      swathWidthData[featureIndex]
+
+    const headingValue = headingData[featureIndex]
+    document.getElementById("heading").textContent = headingValue.toFixed(2)
+
+    document.getElementById("targetRate").textContent =
+      targetRateData[featureIndex]
+    document.getElementById("variety").textContent = varietyData[featureIndex]
+    document.getElementById("machine").textContent = machineData[featureIndex]
+
+    const fuelValue = fuelData[featureIndex]
+    document.getElementById("fuel").textContent = fuelValue.toFixed(4)
+
+    const vehicleSpeedValue = vehicleSpeedData[featureIndex]
+    document.getElementById("vehicleSpeed").textContent =
+      vehicleSpeedValue.toFixed(2)
+  }
+
+  let currentFeatureIndex = 0
+
   function animatePath() {
     timeline = gsap.timeline({
       onUpdate: () => {
@@ -284,6 +338,12 @@
         dispatchEvent(
           new CustomEvent("animationprogress", { detail: progress }),
         )
+        // Update the current feature index based on the animation progress
+        const featureIndex = Math.floor(progress * (pathData.length - 1))
+        if (featureIndex !== currentFeatureIndex) {
+          currentFeatureIndex = featureIndex
+          updateDisplayedData(currentFeatureIndex)
+        }
       },
     })
     progress = 0
@@ -313,7 +373,7 @@
 
     timeline.eventCallback("onComplete", () => {
       isPlaying = false
-      buttonText = "Restart"
+      buttonState = "Restart"
     })
   }
 
@@ -402,19 +462,20 @@
   function togglePlayPause() {
     if (isPlaying) {
       timeline.pause()
-      buttonText = "Play"
+      buttonState = "Play"
     } else {
       if (timeline.progress() === 1) {
         // Clear the existing path and tractor
         animationSvg.innerHTML = ""
         // Redraw the complete path
         createCompletePath()
+        updateDisplayedData(0) // Reset the displayed data to the first feature
         // Restart the combined animation from the beginning
         animatePath()
       } else {
         timeline.play()
       }
-      buttonText = "Pause"
+      buttonState = "Pause"
     }
     isPlaying = !isPlaying
   }
@@ -442,41 +503,268 @@
   }
 </script>
 
-<div class="container">
-  <div class="content-wrapper">
-    <div class="animation-wrapper">
-      <div id="animation-container" bind:this={animationContainer}>
-        <svg
-          id="animation-svg"
-          bind:this={animationSvg}
-          width="100%"
-          height="100%"
-        >
-          ></svg
-        >
+<div class="container mx-auto px-4 py-8">
+  <div class="flex flex-col md:flex-row">
+    <div class="md:w-2/3 flex flex-col">
+      <!-- Animation container -->
+      <div class="animation-wrapper flex-grow">
+        <div id="animation-container" bind:this={animationContainer}>
+          <svg
+            id="animation-svg"
+            bind:this={animationSvg}
+            width="100%"
+            height="100%"
+          ></svg>
+        </div>
+      </div>
+      <!-- Controls section -->
+      <div class="controls mt-4">
+        <button
+          class="play-pause-restart"
+          data-state={buttonState.toLowerCase()}
+          on:click={togglePlayPause}
+        ></button>
+        <button on:click={moveBackward}>Backward</button>
+        <button on:click={moveForward}>Forward</button>
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.001"
+          bind:value={progress}
+          on:input={handleSliderInput}
+          on:mousedown={handleSliderStart}
+          on:touchstart={handleSliderStart}
+          on:mouseup={handleSliderEnd}
+          on:touchend={handleSliderEnd}
+          on:mouseleave={handleSliderEnd}
+        />
       </div>
     </div>
-    <div class="controls">
-      <button
-        class="play-pause-restart"
-        data-state={buttonText.toLowerCase()}
-        on:click={togglePlayPause}
-      ></button>
-      <button on:click={moveBackward}>Backward</button>
-      <button on:click={moveForward}>Forward</button>
-      <input
-        type="range"
-        min="0"
-        max="1"
-        step="0.001"
-        bind:value={progress}
-        on:input={handleSliderInput}
-        on:mousedown={handleSliderStart}
-        on:touchstart={handleSliderStart}
-        on:mouseup={handleSliderEnd}
-        on:touchend={handleSliderEnd}
-        on:mouseleave={handleSliderEnd}
-      />
+    <div
+      class="md:w-1/3 mt-8 md:mt-0 md:ml-0 overflow-y-auto"
+      style="max-height: calc(100vh - 2rem);"
+    >
+      <!-- Data display column -->
+      <div class="card bg-base-100 border-2 border-black rounded-none">
+        <div class="card-body p-4">
+          <div class="mb-2">
+            <div class="flex items-center">
+              <svg
+                class="w-4 h-4 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span class="font-bold text-xs">Time</span>
+            </div>
+            <div id="time" class="text-xs">
+              <div id="date"></div>
+              <div id="hours"></div>
+            </div>
+            <div class="divider my-0"></div>
+          </div>
+          <div class="mb-2">
+            <div class="flex items-center">
+              <svg
+                class="w-4 h-4 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                />
+              </svg>
+              <span class="font-bold text-xs">Crop</span>
+            </div>
+            <div id="crop" class="text-xs"></div>
+            <div class="divider my-0"></div>
+          </div>
+          <div class="mb-2">
+            <div class="flex items-center">
+              <svg
+                class="w-4 h-4 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
+              <span class="font-bold text-xs">Applied Rate</span>
+            </div>
+            <div id="appliedRate" class="text-xs"></div>
+            <div class="divider my-0"></div>
+          </div>
+          <div class="mb-2">
+            <div class="flex items-center">
+              <svg
+                class="w-4 h-4 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+              <span class="font-bold text-xs">Swath Width</span>
+            </div>
+            <div id="swathWidth" class="text-xs"></div>
+            <div class="divider my-0"></div>
+          </div>
+          <div class="mb-2">
+            <div class="flex items-center">
+              <svg
+                class="w-4 h-4 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              <span class="font-bold text-xs">Heading</span>
+            </div>
+            <div id="heading" class="text-xs"></div>
+            <div class="divider my-0"></div>
+          </div>
+          <div class="mb-2">
+            <div class="flex items-center">
+              <svg
+                class="w-4 h-4 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
+              </svg>
+              <span class="font-bold text-xs">Target Rate</span>
+            </div>
+            <div id="targetRate" class="text-xs"></div>
+            <div class="divider my-0"></div>
+          </div>
+          <div class="mb-2">
+            <div class="flex items-center">
+              <svg
+                class="w-4 h-4 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
+                />
+              </svg>
+              <span class="font-bold text-xs">Variety</span>
+            </div>
+            <div id="variety" class="text-xs"></div>
+            <div class="divider my-0"></div>
+          </div>
+          <div class="mb-2">
+            <div class="flex items-center">
+              <svg
+                class="w-4 h-4 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+                />
+              </svg>
+              <span class="font-bold text-xs">Machine</span>
+            </div>
+            <div id="machine" class="text-xs"></div>
+            <div class="divider my-0"></div>
+          </div>
+          <div class="mb-2">
+            <div class="flex items-center">
+              <svg
+                class="w-4 h-4 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"
+                />
+              </svg>
+              <span class="font-bold text-xs">Fuel</span>
+            </div>
+            <div id="fuel" class="text-xs"></div>
+            <div class="divider my-0"></div>
+          </div>
+          <div class="mb-2">
+            <div class="flex items-center">
+              <svg
+                class="w-4 h-4 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
+              </svg>
+              <span class="font-bold text-xs">Vehicle Speed</span>
+            </div>
+            <div id="vehicleSpeed" class="text-xs"></div>
+            <div class="divider my-0"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
