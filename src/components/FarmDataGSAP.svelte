@@ -569,7 +569,7 @@
               <div id="date"></div>
               <div id="hours"></div>
             </div>
-            <div class="divider my-0"></div>
+            <div class=" my-0"></div>
           </div>
           <div class="mb-2">
             <div class="flex items-center">
@@ -589,7 +589,7 @@
               <span class="font-bold text-xs">Crop</span>
             </div>
             <div id="crop" class="text-xs"></div>
-            <div class="divider my-0"></div>
+            <div class=" my-0"></div>
           </div>
           <div class="mb-2">
             <div class="flex items-center">
@@ -609,7 +609,7 @@
               <span class="font-bold text-xs">Applied Rate</span>
             </div>
             <div id="appliedRate" class="text-xs"></div>
-            <div class="divider my-0"></div>
+            <div class=" my-0"></div>
           </div>
           <div class="mb-2">
             <div class="flex items-center">
@@ -629,7 +629,7 @@
               <span class="font-bold text-xs">Swath Width</span>
             </div>
             <div id="swathWidth" class="text-xs"></div>
-            <div class="divider my-0"></div>
+            <div class=" my-0"></div>
           </div>
           <div class="mb-2">
             <div class="flex items-center">
@@ -655,7 +655,7 @@
               <span class="font-bold text-xs">Heading</span>
             </div>
             <div id="heading" class="text-xs"></div>
-            <div class="divider my-0"></div>
+            <div class=" my-0"></div>
           </div>
           <div class="mb-2">
             <div class="flex items-center">
@@ -675,7 +675,7 @@
               <span class="font-bold text-xs">Target Rate</span>
             </div>
             <div id="targetRate" class="text-xs"></div>
-            <div class="divider my-0"></div>
+            <div class=" my-0"></div>
           </div>
           <div class="mb-2">
             <div class="flex items-center">
@@ -695,7 +695,7 @@
               <span class="font-bold text-xs">Variety</span>
             </div>
             <div id="variety" class="text-xs"></div>
-            <div class="divider my-0"></div>
+            <div class=" my-0"></div>
           </div>
           <div class="mb-2">
             <div class="flex items-center">
@@ -715,7 +715,7 @@
               <span class="font-bold text-xs">Machine</span>
             </div>
             <div id="machine" class="text-xs"></div>
-            <div class="divider my-0"></div>
+            <div class=" my-0"></div>
           </div>
           <div class="mb-2">
             <div class="flex items-center">
@@ -741,7 +741,7 @@
               <span class="font-bold text-xs">Fuel</span>
             </div>
             <div id="fuel" class="text-xs"></div>
-            <div class="divider my-0"></div>
+            <div class=" my-0"></div>
           </div>
           <div class="mb-2">
             <div class="flex items-center">
@@ -761,7 +761,7 @@
               <span class="font-bold text-xs">Vehicle Speed</span>
             </div>
             <div id="vehicleSpeed" class="text-xs"></div>
-            <div class="divider my-0"></div>
+            <div class=" my-0"></div>
           </div>
         </div>
       </div>
