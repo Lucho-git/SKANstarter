@@ -543,15 +543,15 @@
     </div>
     <div
       class="md:w-1/3 mt-8 md:mt-0 md:ml-0 overflow-y-auto"
-      style="max-height: calc(100vh - 2rem);"
+      style="max-height: calc(100vh - 4rem); min-height: calc(100vh - 4rem);"
     >
       <!-- Data display column -->
-      <div class="card bg-base-100 border-2 border-black rounded-none">
+      <div class="card bg-base-100 border-2 border-black rounded-none h-full">
         <div class="card-body p-4">
           <div class="mb-2">
             <div class="flex items-center">
               <svg
-                class="w-4 h-4 mr-1"
+                class="w-6 h-6 mr-2"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -563,18 +563,17 @@
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <span class="font-bold text-xs">Time</span>
+              <span class="font-bold text-sm">Time</span>
             </div>
-            <div id="time" class="text-xs">
-              <div id="date"></div>
-              <div id="hours"></div>
+            <div id="time" class="text-sm">
+              <div class="badge badge-outline" id="date"></div>
+              <div class="badge badge-outline" id="hours"></div>
             </div>
-            <div class=" my-0"></div>
           </div>
           <div class="mb-2">
             <div class="flex items-center">
               <svg
-                class="w-4 h-4 mr-1"
+                class="w-6 h-6 mr-2"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -586,15 +585,14 @@
                   d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                 />
               </svg>
-              <span class="font-bold text-xs">Crop</span>
+              <span class="font-bold text-sm">Crop</span>
             </div>
-            <div id="crop" class="text-xs"></div>
-            <div class=" my-0"></div>
+            <div class="badge badge-outline" id="crop"></div>
           </div>
           <div class="mb-2">
             <div class="flex items-center">
               <svg
-                class="w-4 h-4 mr-1"
+                class="w-6 h-6 mr-2"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -606,15 +604,14 @@
                   d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
                 />
               </svg>
-              <span class="font-bold text-xs">Applied Rate</span>
+              <span class="font-bold text-sm">Applied Rate</span>
             </div>
-            <div id="appliedRate" class="text-xs"></div>
-            <div class=" my-0"></div>
+            <div class="badge badge-outline" id="appliedRate"></div>
           </div>
           <div class="mb-2">
             <div class="flex items-center">
               <svg
-                class="w-4 h-4 mr-1"
+                class="w-6 h-6 mr-2"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -626,15 +623,14 @@
                   d="M4 6h16M4 12h16M4 18h16"
                 />
               </svg>
-              <span class="font-bold text-xs">Swath Width</span>
+              <span class="font-bold text-sm">Swath Width</span>
             </div>
-            <div id="swathWidth" class="text-xs"></div>
-            <div class=" my-0"></div>
+            <div class="badge badge-outline" id="swathWidth"></div>
           </div>
           <div class="mb-2">
             <div class="flex items-center">
               <svg
-                class="w-4 h-4 mr-1"
+                class="w-6 h-6 mr-2"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -652,15 +648,14 @@
                   d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                 />
               </svg>
-              <span class="font-bold text-xs">Heading</span>
+              <span class="font-bold text-sm">Heading</span>
             </div>
-            <div id="heading" class="text-xs"></div>
-            <div class=" my-0"></div>
+            <div class="badge badge-outline" id="heading"></div>
           </div>
           <div class="mb-2">
             <div class="flex items-center">
               <svg
-                class="w-4 h-4 mr-1"
+                class="w-6 h-6 mr-2"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -672,15 +667,14 @@
                   d="M13 10V3L4 14h7v7l9-11h-7z"
                 />
               </svg>
-              <span class="font-bold text-xs">Target Rate</span>
+              <span class="font-bold text-sm">Target Rate</span>
             </div>
-            <div id="targetRate" class="text-xs"></div>
-            <div class=" my-0"></div>
+            <div class="badge badge-outline" id="targetRate"></div>
           </div>
           <div class="mb-2">
             <div class="flex items-center">
               <svg
-                class="w-4 h-4 mr-1"
+                class="w-6 h-6 mr-2"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -692,15 +686,14 @@
                   d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
                 />
               </svg>
-              <span class="font-bold text-xs">Variety</span>
+              <span class="font-bold text-sm">Variety</span>
             </div>
-            <div id="variety" class="text-xs"></div>
-            <div class=" my-0"></div>
+            <div class="badge badge-outline" id="variety"></div>
           </div>
           <div class="mb-2">
             <div class="flex items-center">
               <svg
-                class="w-4 h-4 mr-1"
+                class="w-6 h-6 mr-2"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -712,15 +705,14 @@
                   d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
                 />
               </svg>
-              <span class="font-bold text-xs">Machine</span>
+              <span class="font-bold text-sm">Machine</span>
             </div>
-            <div id="machine" class="text-xs"></div>
-            <div class=" my-0"></div>
+            <div class="badge badge-outline" id="machine"></div>
           </div>
           <div class="mb-2">
             <div class="flex items-center">
               <svg
-                class="w-4 h-4 mr-1"
+                class="w-6 h-6 mr-2"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -738,15 +730,14 @@
                   d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"
                 />
               </svg>
-              <span class="font-bold text-xs">Fuel</span>
+              <span class="font-bold text-sm">Fuel</span>
             </div>
-            <div id="fuel" class="text-xs"></div>
-            <div class=" my-0"></div>
+            <div class="badge badge-outline" id="fuel"></div>
           </div>
           <div class="mb-2">
             <div class="flex items-center">
               <svg
-                class="w-4 h-4 mr-1"
+                class="w-6 h-6 mr-2"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -758,10 +749,9 @@
                   d="M13 10V3L4 14h7v7l9-11h-7z"
                 />
               </svg>
-              <span class="font-bold text-xs">Vehicle Speed</span>
+              <span class="font-bold text-sm">Vehicle Speed</span>
             </div>
-            <div id="vehicleSpeed" class="text-xs"></div>
-            <div class=" my-0"></div>
+            <div class="badge badge-outline" id="vehicleSpeed"></div>
           </div>
         </div>
       </div>
