@@ -16,6 +16,7 @@
   let pathData = [] // Initialize pathData as an empty array
   let colorIndex = 0
   let isPlaying = true // Set initial state to playing
+
   let buttonText = "Pause" // Set initial button text to "Pause"
   let pathLengths = []
   let totalDuration = 0
@@ -29,7 +30,7 @@
     gsap.registerPlugin(MotionPathPlugin)
 
     await loadData()
-    const simplifiedData = simplifyPath(farmData, 0.000001) // Adjust the tolerance as needed
+    const simplifiedData = simplifyPath(farmData, 0.000005) // Adjust the tolerance as needed
     console.log(`Original data points: ${farmData.length}`)
     console.log(`Simplified data points: ${simplifiedData.length}`)
     farmData = simplifiedData
@@ -51,7 +52,7 @@
   })
 
   async function loadData() {
-    const response = await fetch("/data/supershedseeding.geojson")
+    const response = await fetch("/data/BartsSeeding2022.geojson")
     const geojsonData = await response.json()
     farmData = geojsonData.features
   }
@@ -456,7 +457,11 @@
       </div>
     </div>
     <div class="controls">
-      <button on:click={togglePlayPause}>{buttonText}</button>
+      <button
+        class="play-pause-restart"
+        data-state={buttonText.toLowerCase()}
+        on:click={togglePlayPause}
+      ></button>
       <button on:click={moveBackward}>Backward</button>
       <button on:click={moveForward}>Forward</button>
       <input
@@ -512,5 +517,17 @@
     width: 100%;
     box-sizing: border-box;
     margin-top: -1px;
+  }
+
+  .play-pause-restart[data-state="play"]::before {
+    content: "▶"; /* Play symbol */
+  }
+
+  .play-pause-restart[data-state="pause"]::before {
+    content: "⏸"; /* Pause symbol */
+  }
+
+  .play-pause-restart[data-state="restart"]::before {
+    content: "↺"; /* Restart symbol */
   }
 </style>
