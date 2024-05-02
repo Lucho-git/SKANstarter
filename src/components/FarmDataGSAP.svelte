@@ -519,14 +519,17 @@
       </div>
       <!-- Controls section -->
       <div class="controls mt-4">
+        <button on:click={moveBackward}>↺</button>
+
         <button
-          class="play-pause-restart"
+          class="play-pause-restart ml-2 mr-2"
           data-state={buttonState.toLowerCase()}
           on:click={togglePlayPause}
         ></button>
-        <button on:click={moveBackward}>Backward</button>
-        <button on:click={moveForward}>Forward</button>
+        <button on:click={moveForward}>↻</button>
+
         <input
+          class="ml-2"
           type="range"
           min="0"
           max="1"
@@ -542,7 +545,7 @@
       </div>
     </div>
     <div
-      class="hidden md:block md:w-1/6 mt-8 md:mt-0 md:ml-4 flex flex-col relative min-w-[160px] max-w-[200px]"
+      class="hidden md:block md:w-1/6 mt-8 md:mt-0 flex flex-col relative min-w-[160px] max-w-[200px]"
     >
       <!-- Data display column -->
       <div
@@ -800,7 +803,7 @@
   }
 
   .play-pause-restart[data-state="restart"]::before {
-    content: "↺"; /* Restart symbol */
+    content: "🔁"; /* Restart symbol */
   }
 
   .relative::after {
