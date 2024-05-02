@@ -541,7 +541,9 @@
         />
       </div>
     </div>
-    <div class="w-1/6 ml-0 flex flex-col relative min-w-[160px] max-w-[200px]">
+    <div
+      class="hidden md:block md:w-1/6 mt-8 md:mt-0 md:ml-4 flex flex-col relative min-w-[160px] max-w-[200px]"
+    >
       <!-- Data display column -->
       <div
         class="card bg-base-100 rounded-none flex-grow overflow-y-auto border-2 border-black h-full"
