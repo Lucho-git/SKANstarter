@@ -765,8 +765,10 @@
 <style>
   .animation-wrapper {
     width: 100%;
-    padding-bottom: 66%;
+    height: 0;
+    padding-bottom: 66.67%; /* Maintain 3:2 aspect ratio */
     position: relative;
+    overflow: hidden;
   }
 
   #animation-container {
@@ -776,7 +778,8 @@
     left: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden; /* Add this line to hide content outside the container */
+    transform-origin: top left;
+    transition: transform 0.3s ease;
   }
 
   .controls {
@@ -811,6 +814,10 @@
   }
 
   .full-width {
+    display: flex;
+    flex-direction: column;
     width: 100%;
+    height: 90vh;
+    /* border: 2px solid red; Add a red border to visualize the parent container */
   }
 </style>
