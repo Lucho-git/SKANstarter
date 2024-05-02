@@ -32,8 +32,7 @@
   let pathLengths = []
   let totalDuration = 0
   let durationScalingFactor = 0.1
-  let diffResizer
-  let isDragging = false
+
   let scale = 1
   const zoomFactor = 0.1
 
@@ -549,7 +548,7 @@
     >
       <!-- Data display column -->
       <div
-        class="card bg-base-100 rounded-none flex-grow overflow-y-auto border-2 border-black h-full"
+        class="card bg-base-100 rounded-none flex-grow overflow-y-auto border-2 border-black h-full -mb-1"
       >
         <div class="card-body p-4">
           <div class="mb-2">
@@ -795,7 +794,7 @@
   }
 
   .play-pause-restart[data-state="play"]::before {
-    content: "▶"; /* Play symbol */
+    content: "▶️"; /* Play symbol */
   }
 
   .play-pause-restart[data-state="pause"]::before {
