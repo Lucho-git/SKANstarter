@@ -504,8 +504,8 @@
 </script>
 
 <div class="full-width mx-auto">
-  <div class="flex flex-col md:flex-row">
-    <div class="md:w-5/6 flex flex-col">
+  <div class="flex flex-row">
+    <div class="w-5/6 flex flex-col">
       <!-- Animation container -->
       <div class="animation-wrapper flex-grow">
         <div id="animation-container" bind:this={animationContainer}>
@@ -541,9 +541,7 @@
         />
       </div>
     </div>
-    <div
-      class="md:w-1/6 mt-8 md:mt-0 md:ml-0 flex flex-col relative min-w-[160px] max-w-[200px]"
-    >
+    <div class="w-1/6 ml-0 flex flex-col relative min-w-[160px] max-w-[200px]">
       <!-- Data display column -->
       <div
         class="card bg-base-100 rounded-none flex-grow overflow-y-auto border-2 border-black h-full"
