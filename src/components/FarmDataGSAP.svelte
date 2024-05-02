@@ -75,7 +75,7 @@
   })
 
   async function loadData() {
-    const response = await fetch("/data/BartsSeeding2022.geojson")
+    const response = await fetch("/data/supershedseeding.geojson")
     const geojsonData = await response.json()
     farmData = geojsonData.features
   }
@@ -503,9 +503,9 @@
   }
 </script>
 
-<div class="container mx-auto px-4 py-8">
+<div class="full-width mx-auto">
   <div class="flex flex-col md:flex-row">
-    <div class="md:w-2/3 flex flex-col">
+    <div class="md:w-5/6 flex flex-col">
       <!-- Animation container -->
       <div class="animation-wrapper flex-grow">
         <div id="animation-container" bind:this={animationContainer}>
@@ -542,11 +542,12 @@
       </div>
     </div>
     <div
-      class="md:w-1/3 mt-8 md:mt-0 md:ml-0 overflow-y-auto"
-      style="max-height: calc(100vh - 4rem); min-height: calc(100vh - 4rem);"
+      class="md:w-1/6 mt-8 md:mt-0 md:ml-0 flex flex-col relative min-w-[160px] max-w-[200px]"
     >
       <!-- Data display column -->
-      <div class="card bg-base-100 border-2 border-black rounded-none h-full">
+      <div
+        class="card bg-base-100 rounded-none flex-grow overflow-y-auto border-2 border-black h-full"
+      >
         <div class="card-body p-4">
           <div class="mb-2">
             <div class="flex items-center">
@@ -567,6 +568,7 @@
             </div>
             <div id="time" class="text-sm">
               <div class="badge badge-outline" id="date"></div>
+              <br />
               <div class="badge badge-outline" id="hours"></div>
             </div>
           </div>
@@ -755,26 +757,15 @@
           </div>
         </div>
       </div>
+      <div class="border-t-2 border-black"></div>
     </div>
   </div>
 </div>
 
 <style>
-  .container {
-    display: flex;
-    justify-content: left;
-    align-items: left;
-    width: 100%;
-    height: 100%;
-  }
-
-  .content-wrapper {
-    width: 75%;
-  }
-
   .animation-wrapper {
     width: 100%;
-    padding-bottom: 75%; /* Maintain 4:3 aspect ratio */
+    padding-bottom: 66%;
     position: relative;
   }
 
@@ -807,5 +798,19 @@
 
   .play-pause-restart[data-state="restart"]::before {
     content: "↺"; /* Restart symbol */
+  }
+
+  .relative::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: black;
+  }
+
+  .full-width {
+    width: 100%;
   }
 </style>
