@@ -190,7 +190,6 @@
   function preprocessSectionColors() {
     const availableColors = [
       "red",
-      "blue",
       "green",
       "orange",
       "purple",
@@ -320,8 +319,8 @@
 
     paddockPath.setAttribute("d", `M${pathData}Z`)
     paddockPath.setAttribute("fill", "none")
-    paddockPath.setAttribute("stroke", "black")
-    paddockPath.setAttribute("stroke-width", 2)
+    paddockPath.setAttribute("stroke", "blue")
+    paddockPath.setAttribute("stroke-width", 5)
 
     animationSvg.appendChild(paddockPath)
   }
