@@ -17,6 +17,7 @@
   let brushStrokeWidth
   let timeline
   let farmData = []
+  let paddockBoundary = []
   let minLon, maxLon, minLat, maxLat, scaleX, scaleY
   let progress = 0
   let path
@@ -27,12 +28,10 @@
   let pathData = [] // Initialize pathData as an empty array
   let colorIndex = 0
   let isPlaying = true // Set initial state to playing
-
   let buttonState = "Pause" // Set initial button text to "Pause"
   let pathLengths = []
   let totalDuration = 0
   let durationScalingFactor = 0.1
-
   let scale = 1
   const zoomFactor = 0.1
 
@@ -40,6 +39,7 @@
     gsap.registerPlugin(MotionPathPlugin)
 
     await loadData()
+    await loadPaddockBoundary()
     const simplifiedData = simplifyPath(farmData, 0.000005) // Cut down the number of values we process based on a tolerance value
     console.log(`Original data points: ${farmData.length}`)
     console.log(`Simplified data points: ${simplifiedData.length}`)
@@ -65,6 +65,10 @@
     preprocessTractorAnimation() // Call the preprocessing function
     preprocessPathLengths() // Add this line to preprocess path lengths
     createCompletePath()
+    console.log("About to draw paddock boundary")
+
+    drawPaddockBoundary()
+    console.log("Drawn paddock boundary")
     animatePath()
 
     animationContainer.addEventListener("wheel", handleWheel)
@@ -77,6 +81,13 @@
     const response = await fetch("/data/supershedseeding.geojson")
     const geojsonData = await response.json()
     farmData = geojsonData.features
+  }
+
+  async function loadPaddockBoundary() {
+    const response = await fetch("/data/supershedboundary.geojson")
+    const geojsonData = await response.json()
+    paddockBoundary = geojsonData.features[0].geometry.coordinates[0][0]
+    console.log(paddockBoundary)
   }
 
   function handleWheel(event) {
@@ -222,18 +233,10 @@
   }
 
   function calculateScaleFactors() {
-    minLon = Math.min(
-      ...farmData.map((feature) => feature.geometry.coordinates[0]),
-    )
-    maxLon = Math.max(
-      ...farmData.map((feature) => feature.geometry.coordinates[0]),
-    )
-    minLat = Math.min(
-      ...farmData.map((feature) => feature.geometry.coordinates[1]),
-    )
-    maxLat = Math.max(
-      ...farmData.map((feature) => feature.geometry.coordinates[1]),
-    )
+    minLon = Math.min(...paddockBoundary.map((coord) => coord[0]))
+    maxLon = Math.max(...paddockBoundary.map((coord) => coord[0]))
+    minLat = Math.min(...paddockBoundary.map((coord) => coord[1]))
+    maxLat = Math.max(...paddockBoundary.map((coord) => coord[1]))
 
     scaleX = animationSvg.clientWidth / (maxLon - minLon)
     scaleY = animationSvg.clientHeight / (maxLat - minLat)
@@ -297,6 +300,30 @@
     }
 
     return pathData
+  }
+
+  function drawPaddockBoundary() {
+    console.log("Drawing paddock boundary")
+    const paddockPath = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "path",
+    )
+
+    const pathData = paddockBoundary
+      .map(
+        (coord) =>
+          `${(coord[0] - minLon) * scaleX},${
+            animationSvg.clientHeight - (coord[1] - minLat) * scaleY
+          }`,
+      )
+      .join("L")
+
+    paddockPath.setAttribute("d", `M${pathData}Z`)
+    paddockPath.setAttribute("fill", "none")
+    paddockPath.setAttribute("stroke", "black")
+    paddockPath.setAttribute("stroke-width", 2)
+
+    animationSvg.appendChild(paddockPath)
   }
 
   function updateDisplayedData(featureIndex) {
@@ -470,6 +497,7 @@
         createCompletePath()
         updateDisplayedData(0) // Reset the displayed data to the first feature
         // Restart the combined animation from the beginning
+
         animatePath()
       } else {
         timeline.play()
