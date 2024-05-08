@@ -231,7 +231,7 @@ export const actions = {
     };
   
     if (companyName) {
-      profileData.companyName = companyName;
+      profileData.company_name = companyName;
     }
   
     if (website) {
