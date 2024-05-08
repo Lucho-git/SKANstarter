@@ -34,7 +34,7 @@ export const actions = {
 
     if (error) {
       return fail(500, {
-        errorMessage: "Unknown error. If this persists please contact us.",
+        errorMessage: "Unknown error 001. If this persists please contact us.",
         email,
       })
     }
@@ -133,7 +133,7 @@ export const actions = {
     })
     if (error) {
       return fail(500, {
-        errorMessage: "Unknown error. If this persists please contact us.",
+        errorMessage: "Unknown error 004. If this persists please contact us.",
         newPassword1,
         newPassword2,
         currentPassword,
@@ -183,7 +183,7 @@ export const actions = {
     )
     if (error) {
       return fail(500, {
-        errorMessage: "Unknown error. If this persists please contact us.",
+        errorMessage: "Unknown error 002. If this persists please contact us.",
         currentPassword,
       })
     }
@@ -250,7 +250,7 @@ export const actions = {
     if (profileError) {
       console.error("Supabase profile error:", profileError);
       return fail(500, {
-        errorMessage: "Unknown error. If this persists please contact us.",
+        errorMessage: "Unknown error 005. If this persists please contact us.",
         fullName,
         companyName,
         website,
@@ -266,7 +266,7 @@ export const actions = {
     if (metadataError) {
       console.error("Supabase metadata error:", metadataError);
       return fail(500, {
-        errorMessage: "Unknown error. If this persists please contact us.",
+        errorMessage: "Unknown error 003. If this persists please contact us.",
         fullName,
         companyName,
         website,

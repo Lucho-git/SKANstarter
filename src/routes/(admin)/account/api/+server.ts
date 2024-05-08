@@ -119,7 +119,7 @@ export const POST: RequestHandler = async ({ request, locals: { getSession } }) 
         }
         
         return new Response(JSON.stringify({
-          message: "Unknown error. If this persists please contact us.",
+          message: "Unknown error 001 Server. If this persists please contact us.",
         }), {
           status: 500,
           headers: { 'Content-Type': 'application/json' },
