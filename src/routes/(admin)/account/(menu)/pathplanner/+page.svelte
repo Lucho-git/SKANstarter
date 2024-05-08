@@ -7,20 +7,12 @@
   import FeatheryForm from "../../../../../components/FeatheryForm.svelte"
   import FarmDataAnimation from "../../../../../components/FarmDataAnimation.svelte"
   import FarmDataGsap from "../../../../../components/FarmDataGSAP.svelte"
+  import MapViewer from "../../../../../components/MapViewer.svelte"
+
   import StubContainer from "../../../../../components/StubContainer.svelte"
 
   let adminSection: Writable<string> = getContext("adminSection")
   adminSection.set("pathplanner")
-
-  let farmData = {
-    name: "My Farm",
-    crops: ["Wheat", "Corn", "Potatoes"],
-    area: 100,
-  }
-
-  function updateFarmData() {
-    farmData.area += 10
-  }
 </script>
 
 <!-- <FarmingSimulation {farmData} {updateFarmData} /> -->
