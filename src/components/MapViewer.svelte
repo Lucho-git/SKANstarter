@@ -12,7 +12,7 @@
     map = new mapboxgl.Map({
       container: mapContainer,
       style: "mapbox://styles/mapbox/streets-v11",
-      center: [0, 0],
+      center: [500, 10],
       zoom: 2,
     })
   })
