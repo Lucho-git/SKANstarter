@@ -1,6 +1,10 @@
 <script lang="ts">
-  import PricingModule from "./pricing_module.svelte"
   import { PUBLIC_SITE_NAME } from "$env/static/public"
+  import PricePlanBox from "./PricePlanBox.svelte"
+  import PricingFAQ from "./PricingFAQ.svelte"
+  import { pricingPlans } from "./pricing_plans"
+
+  let currentPlanId = ""
 </script>
 
 <svelte:head>
@@ -15,6 +19,20 @@
   </h2>
 
   <div class="w-full my-8">
-    <PricingModule callToAction="Get Started" highlightedPlanId="enterprise" />
+    <div
+      class="mt-12 flex flex-col lg:flex-row gap-10 justify-center flex-wrap"
+    >
+      {#each pricingPlans as plan}
+        <PricePlanBox
+          {plan}
+          isCurrentPlan={plan.id === currentPlanId}
+          callToAction={plan.id === "free" ? "Get Started" : "Sold Out"}
+          isDisabled={plan.id === "enterprise" || plan.id === "pro"}
+          isHighlighted={plan.id === "pro"}
+        />
+      {/each}
+    </div>
   </div>
+
+  <PricingFAQ />
 </div>
