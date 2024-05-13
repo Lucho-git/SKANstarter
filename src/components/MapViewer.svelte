@@ -6,6 +6,7 @@
   let mapContainer
   let map
   let isSatelliteStyle = true
+  let userMarker
 
   onMount(() => {
     mapboxgl.accessToken =
@@ -25,14 +26,88 @@
       },
       trackUserLocation: true,
       showUserHeading: true,
+      showAccuracyCircle: true,
+      showUserLocation: true,
     })
     map.addControl(geolocateControl, "bottom-right")
-
     // Trigger the geolocate action when the map loads
     map.on("load", () => {
       geolocateControl.trigger()
     })
+
+    // Create a custom user location marker
+    userMarker = new mapboxgl.Marker({
+      element: createUserMarkerElement(),
+      pitchAlignment: "map",
+      rotationAlignment: "map",
+    })
+
+    // Update the user location marker on geolocate event
+    geolocateControl.on("geolocate", (e) => {
+      const { latitude, longitude, heading } = e.coords
+      userMarker.setLngLat([longitude, latitude]).addTo(map)
+
+      // Update the rotation of the tractor icon based on the heading
+      const tractorIcon = userMarker.getElement().querySelector(".tractor-icon")
+      tractorIcon.style.transform = `rotate(${heading}deg)`
+    })
   })
+
+  function createUserMarkerElement() {
+    const el = document.createElement("div")
+    el.className = "tractor-marker"
+    el.style.position = "relative"
+    el.style.display = "inline-block"
+
+    const tractorIcon = document.createElement("div")
+    tractorIcon.className = "tractor-icon"
+    tractorIcon.style.backgroundImage = "url('/images/HarvestorUp.png')"
+    tractorIcon.style.backgroundSize = "contain"
+    tractorIcon.style.backgroundRepeat = "no-repeat"
+    tractorIcon.style.backgroundPosition = "center"
+    tractorIcon.style.width = "60px"
+    tractorIcon.style.height = "60px"
+    tractorIcon.style.position = "relative"
+    tractorIcon.style.zIndex = "1"
+    tractorIcon.style.transformOrigin = "center"
+
+    const pulseCircle = document.createElement("div")
+    pulseCircle.className = "pulse-circle animate-pulse"
+    pulseCircle.style.width = "40px"
+    pulseCircle.style.height = "40px"
+    pulseCircle.style.borderRadius = "50%"
+    pulseCircle.style.backgroundColor = "rgba(172, 172, 230, 0.8)"
+    pulseCircle.style.boxShadow = "0 0 0 10px rgba(153, 165, 240, 0.8)"
+    pulseCircle.style.position = "absolute"
+    pulseCircle.style.top = "50%"
+    pulseCircle.style.left = "50%"
+    pulseCircle.style.transform = "translate(-50%, -50%)"
+
+    el.appendChild(tractorIcon)
+    el.appendChild(pulseCircle)
+
+    return el
+  }
+
+  //   function createUserMarkerElement() {
+  //     const el = document.createElement("div")
+  //     el.className = "tractor-marker"
+  //     el.style.width = "40px"
+  //     el.style.height = "40px"
+  //     el.innerHTML = `
+  //   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  //   <g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+  //     <path d="M20 60 L35 60 L35 30 L75 30 L75 60 L90 60" />
+  //     <circle cx="35" cy="70" r="10" />
+  //     <circle cx="75" cy="70" r="10" />
+  //     <path d="M35 60 L50 45 L75 60" />
+  //     <path d="M50 30 L50 45" />
+  //     <path d="M35 30 L35 20 L55 20 L55 30" />
+  //   </g>
+  // </svg>
+  //   `
+  //     return el
+  //   }
 
   function toggleMapStyle() {
     if (isSatelliteStyle) {
@@ -87,5 +162,20 @@
     left: 0;
     width: 100%;
     height: 100%;
+  }
+
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+    }
+    70% {
+      transform: scale(1.05);
+      box-shadow: 0 0 0 20px rgba(255, 255, 255, 0);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
   }
 </style>
