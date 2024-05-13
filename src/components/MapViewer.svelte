@@ -28,7 +28,7 @@
       trackUserLocation: true,
       showUserHeading: true,
       showAccuracyCircle: true,
-      showUserLocation: true,
+      showUserLocation: false,
     })
     map.addControl(geolocateControl, "bottom-right")
     // Trigger the geolocate action when the map loads
@@ -67,7 +67,7 @@
       }
 
       animateRotation()
-    }, 3000)
+    }, 1000)
 
     // Update the user location marker on geolocate event
     geolocateControl.on("geolocate", (e) => {
