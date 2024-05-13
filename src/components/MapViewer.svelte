@@ -70,6 +70,7 @@
     tractorIcon.style.position = "relative"
     tractorIcon.style.zIndex = "1"
     tractorIcon.style.transformOrigin = "center"
+    tractorIcon.style.transition = "transform 0.5s ease-out"
 
     const pulseCircle = document.createElement("div")
     pulseCircle.className = "pulse-circle animate-pulse"
