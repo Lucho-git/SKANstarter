@@ -45,7 +45,11 @@
 
     let currentRotation = 0
 
-    const updateTractorIconRotation = debounce((heading) => {
+    const updateMarkerPosition = debounce((coords) => {
+      const { latitude, longitude, heading } = coords
+
+      userMarker.setLngLat([longitude, latitude]).addTo(map)
+
       const targetRotation = heading
       const rotationStep = (targetRotation - currentRotation) * 0.1
 
@@ -63,15 +67,12 @@
       }
 
       animateRotation()
-    }, 5000)
+    }, 3000)
 
     // Update the user location marker on geolocate event
     geolocateControl.on("geolocate", (e) => {
-      const { latitude, longitude, heading } = e.coords
-      userMarker.setLngLat([longitude, latitude]).addTo(map)
-
-      // Update the rotation of the tractor icon based on the heading
-      updateTractorIconRotation(heading)
+      const { coords } = e
+      updateMarkerPosition(coords)
     })
   })
 
