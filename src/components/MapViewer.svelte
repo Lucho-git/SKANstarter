@@ -58,6 +58,14 @@
       const lngDiff = targetLng - currentLng
       const rotationDiff = targetRotation - currentRotation
 
+      const distanceThreshold = 0.00001 // Adjust this value as needed
+      const distance = Math.sqrt(latDiff ** 2 + lngDiff ** 2)
+
+      if (distance < distanceThreshold) {
+        // If the distance is too small, skip the animation
+        return
+      }
+
       const duration = 1000 // Duration in milliseconds
       const steps = duration / 16 // Number of steps based on 60 FPS (16.67ms per frame)
 
