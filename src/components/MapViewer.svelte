@@ -2,6 +2,7 @@
   import { onMount } from "svelte"
   import mapboxgl from "mapbox-gl"
   import "mapbox-gl/dist/mapbox-gl.css"
+  import { debounce } from "lodash-es"
 
   let mapContainer
   let map
@@ -44,18 +45,25 @@
 
     let currentRotation = 0
 
-    function updateTractorIconRotation(heading) {
+    const updateTractorIconRotation = debounce((heading) => {
       const targetRotation = heading
       const rotationStep = (targetRotation - currentRotation) * 0.1
-      currentRotation += rotationStep
 
-      const tractorIcon = userMarker.getElement().querySelector(".tractor-icon")
-      tractorIcon.style.transform = `rotate(${currentRotation}deg)`
+      function animateRotation() {
+        currentRotation += rotationStep
 
-      if (Math.abs(targetRotation - currentRotation) > 0.1) {
-        requestAnimationFrame(() => updateTractorIconRotation(heading))
+        const tractorIcon = userMarker
+          .getElement()
+          .querySelector(".tractor-icon")
+        tractorIcon.style.transform = `rotate(${currentRotation}deg)`
+
+        if (Math.abs(targetRotation - currentRotation) > 0.1) {
+          requestAnimationFrame(animateRotation)
+        }
       }
-    }
+
+      animateRotation()
+    }, 100)
 
     // Update the user location marker on geolocate event
     geolocateControl.on("geolocate", (e) => {
