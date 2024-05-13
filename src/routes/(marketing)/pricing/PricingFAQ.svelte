@@ -1,9 +1,9 @@
-<h1 class="text-2xl font-bold text-center mt-24">Pricing FAQ</h1>
+<h1 class="text-2xl font-bold text-center mt-12">Pricing FAQ</h1>
 <div class="flex place-content-center">
   <div class="join join-vertical max-w-xl py-6 mx-auto">
     <div class="collapse collapse-arrow join-item border border-primary">
       <input type="radio" name="faq-accordion" />
-      <div class="collapse-title text-lg font-medium">
+      <div class="collapse-title text-lg font-medium text-center">
         How do I get started using the free PaddockPath tool?
       </div>
       <div class="collapse-content">
@@ -17,7 +17,7 @@
     </div>
     <div class="collapse collapse-arrow join-item border border-primary">
       <input type="radio" name="faq-accordion" />
-      <div class="collapse-title text-lg font-medium">
+      <div class="collapse-title text-lg font-medium text-center">
         How will the pricing system work?
       </div>
       <div class="collapse-content">
@@ -34,7 +34,7 @@
     </div>
     <div class="collapse collapse-arrow join-item border border-primary">
       <input type="radio" name="faq-accordion" />
-      <div class="collapse-title text-lg font-medium">
+      <div class="collapse-title text-lg font-medium text-center">
         How will the live PaddockPath be displayed?
       </div>
       <div class="collapse-content">
@@ -46,7 +46,7 @@
     </div>
     <div class="collapse collapse-arrow join-item border border-primary">
       <input type="radio" name="faq-accordion" />
-      <div class="collapse-title text-lg font-medium">
+      <div class="collapse-title text-lg font-medium text-center">
         When will the live version be available?
       </div>
       <div class="collapse-content">
