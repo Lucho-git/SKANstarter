@@ -44,29 +44,50 @@
     })
 
     let currentRotation = 0
+    let currentLat = 0
+    let currentLng = 0
 
     const updateMarkerPosition = debounce((coords) => {
       const { latitude, longitude, heading } = coords
 
-      userMarker.setLngLat([longitude, latitude]).addTo(map)
-
+      const targetLat = latitude
+      const targetLng = longitude
       const targetRotation = heading
-      const rotationStep = (targetRotation - currentRotation) * 0.1
 
-      function animateRotation() {
+      const latDiff = targetLat - currentLat
+      const lngDiff = targetLng - currentLng
+      const rotationDiff = targetRotation - currentRotation
+
+      const duration = 1000 // Duration in milliseconds
+      const steps = duration / 16 // Number of steps based on 60 FPS (16.67ms per frame)
+
+      const latStep = latDiff / steps
+      const lngStep = lngDiff / steps
+      const rotationStep = rotationDiff / steps
+
+      let currentStep = 0
+
+      function animateMarker() {
+        currentLat += latStep
+        currentLng += lngStep
         currentRotation += rotationStep
+
+        userMarker.setLngLat([currentLng, currentLat])
 
         const tractorIcon = userMarker
           .getElement()
           .querySelector(".tractor-icon")
         tractorIcon.style.transform = `rotate(${currentRotation}deg)`
 
-        if (Math.abs(targetRotation - currentRotation) > 0.1) {
-          requestAnimationFrame(animateRotation)
+        currentStep++
+
+        if (currentStep < steps) {
+          requestAnimationFrame(animateMarker)
         }
       }
 
-      animateRotation()
+      userMarker.setLngLat([currentLng, currentLat]).addTo(map)
+      animateMarker()
     }, 1000)
 
     // Update the user location marker on geolocate event
