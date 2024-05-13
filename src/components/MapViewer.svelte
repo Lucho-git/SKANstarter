@@ -83,9 +83,7 @@
     el.style.display = "inline-block"
 
     const tractorIcon = document.createElement("div")
-    tractorIcon.className =
-      "tractor-icon transform transition duration-1000 ease-in-out"
-
+    tractorIcon.className = "tractor-icon"
     tractorIcon.style.backgroundImage = "url('/images/HarvestorUp.png')"
     tractorIcon.style.backgroundSize = "contain"
     tractorIcon.style.backgroundRepeat = "no-repeat"
