@@ -42,14 +42,28 @@
       rotationAlignment: "map",
     })
 
+    let currentRotation = 0
+
+    function updateTractorIconRotation(heading) {
+      const targetRotation = heading
+      const rotationStep = (targetRotation - currentRotation) * 0.1
+      currentRotation += rotationStep
+
+      const tractorIcon = userMarker.getElement().querySelector(".tractor-icon")
+      tractorIcon.style.transform = `rotate(${currentRotation}deg)`
+
+      if (Math.abs(targetRotation - currentRotation) > 0.1) {
+        requestAnimationFrame(() => updateTractorIconRotation(heading))
+      }
+    }
+
     // Update the user location marker on geolocate event
     geolocateControl.on("geolocate", (e) => {
       const { latitude, longitude, heading } = e.coords
       userMarker.setLngLat([longitude, latitude]).addTo(map)
 
       // Update the rotation of the tractor icon based on the heading
-      const tractorIcon = userMarker.getElement().querySelector(".tractor-icon")
-      tractorIcon.style.transform = `rotate(${heading}deg)`
+      updateTractorIconRotation(heading)
     })
   })
 
@@ -60,7 +74,9 @@
     el.style.display = "inline-block"
 
     const tractorIcon = document.createElement("div")
-    tractorIcon.className = "tractor-icon"
+    tractorIcon.className =
+      "tractor-icon transform transition duration-1000 ease-in-out"
+
     tractorIcon.style.backgroundImage = "url('/images/HarvestorUp.png')"
     tractorIcon.style.backgroundSize = "contain"
     tractorIcon.style.backgroundRepeat = "no-repeat"
@@ -70,7 +86,7 @@
     tractorIcon.style.position = "relative"
     tractorIcon.style.zIndex = "1"
     tractorIcon.style.transformOrigin = "center"
-    tractorIcon.style.transition = "transform 0.5s ease-out"
+    tractorIcon.style.transition = "transform 1s ease-out"
 
     const pulseCircle = document.createElement("div")
     pulseCircle.className = "pulse-circle animate-pulse"
