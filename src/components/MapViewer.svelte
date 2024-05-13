@@ -58,7 +58,7 @@
       const lngDiff = targetLng - currentLng
       const rotationDiff = targetRotation - currentRotation
 
-      const distanceThreshold = 0.00001 // Adjust this value as needed
+      const distanceThreshold = 0.00004 // Adjust this value as needed
       const distance = Math.sqrt(latDiff ** 2 + lngDiff ** 2)
 
       if (distance < distanceThreshold) {
