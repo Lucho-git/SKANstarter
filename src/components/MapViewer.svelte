@@ -63,7 +63,7 @@
       }
 
       animateRotation()
-    }, 100)
+    }, 5000)
 
     // Update the user location marker on geolocate event
     geolocateControl.on("geolocate", (e) => {
