@@ -33,8 +33,30 @@
 </script>
 
 <div>
+  <!-- Back to Dashboard Button, Top Left -->
   <button
-    class="btn btn-circle btn-sm absolute top-4 right-4 z-10"
+    class="btn btn-circle btn-lg bg-white bg-opacity-50 hover:bg-opacity-100 absolute top-4 left-4 z-10"
+    on:click={handleBackToDashboard}
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="h-6 w-6"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M10 19l-7-7m0 0l7-7m-7 7h18"
+      />
+    </svg>
+  </button>
+
+  <!-- Toggle Map Style Button, Top Right -->
+  <button
+    class="btn btn-circle btn-md absolute top-4 right-4 z-10"
     on:click={toggleMapStyle}
   >
     {#if isSatelliteView}
@@ -65,27 +87,10 @@
       </svg>
     {/if}
   </button>
+
+  <!-- Toggle Vehicle Type Button, Top Right -->
   <button
-    class="btn btn-circle btn-lg bg-white bg-opacity-50 hover:bg-opacity-100 absolute top-4 left-4 z-10"
-    on:click={handleBackToDashboard}
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      class="h-6 w-6"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        d="M10 19l-7-7m0 0l7-7m-7 7h18"
-      />
-    </svg>
-  </button>
-  <button
-    class="btn btn-circle btn-sm absolute top-16 right-4 z-10"
+    class="btn btn-circle btn-md absolute top-20 right-4 z-10"
     on:click={togglevehicleType}
   >
     <svg
