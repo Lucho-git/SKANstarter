@@ -18,6 +18,69 @@
   let map
   let isSatelliteStyle = true
   let userMarker
+  let longPressTimer = null
+  let longPressStartPosition = null
+  const longPressThreshold = 500 // Adjust the threshold as needed (in milliseconds)
+  const longPressMoveThreshold = 5 // Adjust the move threshold as needed (in pixels)
+  let isDragging = false
+  let lastMouseDown = null
+
+  // mapcontrols
+
+  function handleMarkerPlacement(event) {
+    const lngLat = event.lngLat || event.target.getLngLat()
+
+    if (lngLat) {
+      // Place the marker on the map
+      const marker = new mapboxgl.Marker().setLngLat(lngLat).addTo(map)
+
+      // Open the confirmation/customization menu
+      // Implement your menu functionality here
+      console.log("Marker placed at:", lngLat)
+    } else {
+      console.error("Invalid event format. Missing lngLat property.")
+    }
+  }
+
+  function handleMapClick(event) {
+    if (!isDragging) {
+      handleMarkerPlacement(event)
+    }
+  }
+
+  function handleMapDragStart(event) {
+    isDragging = true
+    longPressStartPosition = {
+      x: event.originalEvent.clientX,
+      y: event.originalEvent.clientY,
+    }
+    longPressTimer = setTimeout(() => {
+      if (longPressStartPosition) {
+        handleMarkerPlacement(event)
+        longPressStartPosition = null
+      }
+    }, longPressThreshold)
+  }
+
+  function handleMapDrag(event) {
+    if (longPressStartPosition) {
+      const dx = event.originalEvent.clientX - longPressStartPosition.x
+      const dy = event.originalEvent.clientY - longPressStartPosition.y
+      const distance = Math.sqrt(dx * dx + dy * dy)
+      if (distance > longPressMoveThreshold) {
+        clearTimeout(longPressTimer)
+        longPressStartPosition = null
+      }
+    }
+  }
+
+  function handleMapDragEnd(event) {
+    isDragging = false
+    clearTimeout(longPressTimer)
+    longPressStartPosition = null
+  }
+
+  // end map controls
 
   const mapOptions = {
     container: null,
@@ -31,6 +94,14 @@
 
     mapOptions.container = mapContainer
     map = new mapboxgl.Map(mapOptions)
+
+    // Add event listeners for click and long-press
+    map.on("click", handleMapClick)
+    // map.on("dragstart", handleMapDragStart)
+    map.on("drag", handleMapDrag)
+    map.on("dragend", handleMapDragEnd)
+    //mousedown returns the downclick pointer event which contains the longitude and latitude, better than using dragstart
+    map.on("mousedown", handleMapDragStart)
 
     // Add the GeolocateControl to the map
     const geolocateControl = new mapboxgl.GeolocateControl({
