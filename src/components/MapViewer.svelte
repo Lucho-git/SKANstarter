@@ -18,13 +18,12 @@
   let map
   let isSatelliteStyle = true
   let userMarker
-  let longPressTimer = null
-  let longPressStartPosition = null
-  const longPressThreshold = 500 // Adjust the threshold as needed (in milliseconds)
+  const longPressThreshold = 1000 // Adjust the threshold as needed (in milliseconds)
   const longPressMoveThreshold = 5 // Adjust the move threshold as needed (in pixels)
+  let longPressStartPosition = null
   let isDragging = false
-  let lastMouseDown = null
-
+  let longPressTimer = null
+  let longPressOccurred = false
   // mapcontrols
 
   function handleMarkerPlacement(event) {
@@ -43,32 +42,41 @@
   }
 
   function handleMapClick(event) {
-    if (!isDragging) {
+    if (!isDragging && !longPressOccurred) {
+      clearTimeout(longPressTimer)
+      longPressTimer = null
       handleMarkerPlacement(event)
     }
+    longPressOccurred = false
   }
 
   function handleMapDragStart(event) {
-    isDragging = true
+    isDragging = false
+    longPressOccurred = false
+    clearTimeout(longPressTimer)
     longPressStartPosition = {
-      x: event.originalEvent.clientX,
-      y: event.originalEvent.clientY,
+      x: event.originalEvent.clientX || event.originalEvent.touches[0].clientX,
+      y: event.originalEvent.clientY || event.originalEvent.touches[0].clientY,
     }
     longPressTimer = setTimeout(() => {
-      if (longPressStartPosition) {
-        handleMarkerPlacement(event)
-        longPressStartPosition = null
-      }
+      handleMarkerPlacement(event)
+      longPressOccurred = true
+      longPressTimer = null
     }, longPressThreshold)
   }
 
   function handleMapDrag(event) {
     if (longPressStartPosition) {
-      const dx = event.originalEvent.clientX - longPressStartPosition.x
-      const dy = event.originalEvent.clientY - longPressStartPosition.y
+      const touchEvent = event.originalEvent.touches
+        ? event.originalEvent.touches[0]
+        : event.originalEvent
+      const dx = touchEvent.clientX - longPressStartPosition.x
+      const dy = touchEvent.clientY - longPressStartPosition.y
       const distance = Math.sqrt(dx * dx + dy * dy)
       if (distance > longPressMoveThreshold) {
+        isDragging = true
         clearTimeout(longPressTimer)
+        longPressTimer = null
         longPressStartPosition = null
       }
     }
@@ -77,6 +85,7 @@
   function handleMapDragEnd(event) {
     isDragging = false
     clearTimeout(longPressTimer)
+    longPressTimer = null
     longPressStartPosition = null
   }
 
@@ -102,6 +111,7 @@
     map.on("dragend", handleMapDragEnd)
     //mousedown returns the downclick pointer event which contains the longitude and latitude, better than using dragstart
     map.on("mousedown", handleMapDragStart)
+    map.on("touchstart", handleMapDragStart)
 
     // Add the GeolocateControl to the map
     const geolocateControl = new mapboxgl.GeolocateControl({
