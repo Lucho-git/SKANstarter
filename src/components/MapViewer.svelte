@@ -7,6 +7,11 @@
   import UserMarker from "./UserMarker.svelte"
   import ButtonSection from "./ButtonSection.svelte"
   import MapControls from "./MapControls.svelte"
+  import IconSVG from "./IconSVG.svelte"
+
+
+
+  //Constants and variable initializations
 
   const MAPBOX_ACCESS_TOKEN =
     "pk.eyJ1IjoibHVjaG9kb3JlIiwiYSI6ImNsdndpd2NvNjA5OWUybG14anc1aWJpbXMifQ.7DSbOP9x-3sTZdJ5ee4UKw"
@@ -20,6 +25,21 @@
   let userMarker
 
   // mapcontrols
+  let showMarkerMenu = false
+  const markerIcons = [
+    'fertilizer',
+    'fileUpload',
+    'fuel',
+    'gear',
+    'gear2',
+    'tractor',
+    'fertilizer',
+    'fileUpload',
+    'fuel',
+    'gear',
+    'gear2',
+    'tractor',
+]
 
   // end map controls
 
@@ -159,12 +179,21 @@
     isSatelliteStyle = !isSatelliteStyle
   }
 
+  let recentMarker = null
+  let confirmedMarkers = []
+
+
   function handleMarkerPlacement(event) {
     const { lngLat } = event.detail
 
     if (lngLat) {
-      // Place the marker on the map
-      const marker = new mapboxgl.Marker().setLngLat(lngLat).addTo(map)
+      // Remove the previous recent marker if it exists
+      if (recentMarker) {
+        recentMarker.remove()
+      }
+
+      // Place the new marker on the map
+      recentMarker = new mapboxgl.Marker().setLngLat(lngLat).addTo(map)
 
       // Center the screen on the placed marker
       map.flyTo({
@@ -172,6 +201,7 @@
         zoom: 14, // Adjust the zoom level as needed
         duration: 1000, // Adjust the duration of the animation as needed
       })
+      showMarkerMenu = true
 
       // Open the confirmation/customization menu
       // Implement your menu functionality here
@@ -180,10 +210,44 @@
       console.error("Invalid event format. Missing lngLat property.")
     }
   }
+
+
+  function confirmMarker() {
+    // Add the recent marker to the confirmedMarkers array
+    if (recentMarker) {
+      confirmedMarkers.push(recentMarker)
+      recentMarker = null
+    }
+
+    // Hide the marker menu
+    showMarkerMenu = false
+  }
+
+  function removeMarker() {
+    // Remove the recent marker from the map and the confirmedMarkers array
+    if (recentMarker) {
+      const index = confirmedMarkers.indexOf(recentMarker)
+      if (index !== -1) {
+        confirmedMarkers.splice(index, 1)
+      }
+      recentMarker.remove()
+      recentMarker = null
+    }
+
+    // Hide the marker menu
+    showMarkerMenu = false
+  }
+
 </script>
 
 <div class="map-container" bind:this={mapContainer}>
-  <ButtonSection on:toggleMapStyleDispatcher={toggleMapStyle} />
+    <ButtonSection
+    on:toggleMapStyleDispatcher={toggleMapStyle}
+    {showMarkerMenu}
+    {markerIcons}
+    on:confirmMarker={confirmMarker}
+    on:removeMarker={removeMarker}
+  />
 </div>
 
 <style>
