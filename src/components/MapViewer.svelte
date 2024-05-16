@@ -4,9 +4,9 @@
   import "mapbox-gl/dist/mapbox-gl.css"
   import { debounce } from "lodash-es"
   import { mapStore, userVehicleStore } from "../stores/mapStore"
-
   import UserMarker from "./UserMarker.svelte"
   import ButtonSection from "./ButtonSection.svelte"
+  import MapControls from "./MapControls.svelte"
 
   const MAPBOX_ACCESS_TOKEN =
     "pk.eyJ1IjoibHVjaG9kb3JlIiwiYSI6ImNsdndpd2NvNjA5OWUybG14anc1aWJpbXMifQ.7DSbOP9x-3sTZdJ5ee4UKw"
@@ -18,76 +18,8 @@
   let map
   let isSatelliteStyle = true
   let userMarker
-  const longPressThreshold = 1000 // Adjust the threshold as needed (in milliseconds)
-  const longPressMoveThreshold = 5 // Adjust the move threshold as needed (in pixels)
-  let longPressStartPosition = null
-  let isDragging = false
-  let longPressTimer = null
-  let longPressOccurred = false
+
   // mapcontrols
-
-  function handleMarkerPlacement(event) {
-    const lngLat = event.lngLat || event.target.getLngLat()
-
-    if (lngLat) {
-      // Place the marker on the map
-      const marker = new mapboxgl.Marker().setLngLat(lngLat).addTo(map)
-
-      // Open the confirmation/customization menu
-      // Implement your menu functionality here
-      console.log("Marker placed at:", lngLat)
-    } else {
-      console.error("Invalid event format. Missing lngLat property.")
-    }
-  }
-
-  function handleMapClick(event) {
-    if (!isDragging && !longPressOccurred) {
-      clearTimeout(longPressTimer)
-      longPressTimer = null
-      handleMarkerPlacement(event)
-    }
-    longPressOccurred = false
-  }
-
-  function handleMapDragStart(event) {
-    isDragging = false
-    longPressOccurred = false
-    clearTimeout(longPressTimer)
-    longPressStartPosition = {
-      x: event.originalEvent.clientX || event.originalEvent.touches[0].clientX,
-      y: event.originalEvent.clientY || event.originalEvent.touches[0].clientY,
-    }
-    longPressTimer = setTimeout(() => {
-      handleMarkerPlacement(event)
-      longPressOccurred = true
-      longPressTimer = null
-    }, longPressThreshold)
-  }
-
-  function handleMapDrag(event) {
-    if (longPressStartPosition) {
-      const touchEvent = event.originalEvent.touches
-        ? event.originalEvent.touches[0]
-        : event.originalEvent
-      const dx = touchEvent.clientX - longPressStartPosition.x
-      const dy = touchEvent.clientY - longPressStartPosition.y
-      const distance = Math.sqrt(dx * dx + dy * dy)
-      if (distance > longPressMoveThreshold) {
-        isDragging = true
-        clearTimeout(longPressTimer)
-        longPressTimer = null
-        longPressStartPosition = null
-      }
-    }
-  }
-
-  function handleMapDragEnd(event) {
-    isDragging = false
-    clearTimeout(longPressTimer)
-    longPressTimer = null
-    longPressStartPosition = null
-  }
 
   // end map controls
 
@@ -104,14 +36,15 @@
     mapOptions.container = mapContainer
     map = new mapboxgl.Map(mapOptions)
 
-    // Add event listeners for click and long-press
-    map.on("click", handleMapClick)
-    // map.on("dragstart", handleMapDragStart)
-    map.on("drag", handleMapDrag)
-    map.on("dragend", handleMapDragEnd)
-    //mousedown returns the downclick pointer event which contains the longitude and latitude, better than using dragstart
-    map.on("mousedown", handleMapDragStart)
-    map.on("touchstart", handleMapDragStart)
+    const mapControls = new MapControls({
+      target: mapContainer,
+      props: {
+        map: map,
+      },
+    })
+
+    // Listen for the 'markerPlacement' event from MapControls
+    mapControls.$on("markerPlacement", handleMarkerPlacement)
 
     // Add the GeolocateControl to the map
     const geolocateControl = new mapboxgl.GeolocateControl({
@@ -224,6 +157,28 @@
       map.setStyle(DEFAULT_SATELLITE_STYLE)
     }
     isSatelliteStyle = !isSatelliteStyle
+  }
+
+  function handleMarkerPlacement(event) {
+    const { lngLat } = event.detail
+
+    if (lngLat) {
+      // Place the marker on the map
+      const marker = new mapboxgl.Marker().setLngLat(lngLat).addTo(map)
+
+      // Center the screen on the placed marker
+      map.flyTo({
+        center: lngLat,
+        zoom: 14, // Adjust the zoom level as needed
+        duration: 1000, // Adjust the duration of the animation as needed
+      })
+
+      // Open the confirmation/customization menu
+      // Implement your menu functionality here
+      console.log("Marker placed at:", lngLat)
+    } else {
+      console.error("Invalid event format. Missing lngLat property.")
+    }
   }
 </script>
 
