@@ -183,6 +183,39 @@
   let confirmedMarkers = []
 
 
+  function handleIconSelection(icon) {
+    if (recentMarker) {
+      const lngLat = recentMarker.getLngLat()
+      recentMarker.remove()
+
+      // Create a custom marker element based on the selected icon
+      const markerElement = document.createElement("div")
+      markerElement.style.display = "flex"
+      markerElement.style.justifyContent = "center"
+      markerElement.style.alignItems = "center"
+      markerElement.style.width = "40px"
+      markerElement.style.height = "40px"
+      markerElement.style.borderRadius = "50%"
+      markerElement.style.backgroundColor = "white"
+      markerElement.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.2)"
+
+      // Create an instance of the IconSVG component with the selected icon
+      new IconSVG({
+        target: markerElement,
+        props: {
+          type: icon,
+          size: "40",
+          color: "#000000",
+        },
+      })
+
+      // Add the new custom marker at the same location
+      recentMarker = new mapboxgl.Marker({ element: markerElement })
+        .setLngLat(lngLat)
+        .addTo(map)
+    }
+  }
+
   function handleMarkerPlacement(event) {
     const { lngLat } = event.detail
 
@@ -247,6 +280,7 @@
     {markerIcons}
     on:confirmMarker={confirmMarker}
     on:removeMarker={removeMarker}
+    on:iconSelected={handleIconSelection}
   />
 </div>
 
@@ -259,4 +293,6 @@
     width: 100%;
     height: 100%;
   }
+
+
 </style>

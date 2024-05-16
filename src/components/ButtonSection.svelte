@@ -45,7 +45,7 @@
   }
 
   function handleIconClick(icon) {
-    // Handle icon click event
+    dispatch("iconSelected", icon)
     console.log("Clicked icon:", icon)
   }
 </script>
