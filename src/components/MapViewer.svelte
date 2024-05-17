@@ -7,7 +7,6 @@
   import UserMarker from "./UserMarker.svelte"
   import ButtonSection from "./ButtonSection.svelte"
   import MapControls from "./MapControls.svelte"
-  import IconSVG from "./IconSVG.svelte"
 
   const markerIcons = [
     { id: "arrow-up-circle", class: "at-arrow-up-circle" },
@@ -257,18 +256,20 @@
         markerElement.style.display = "flex"
         markerElement.style.justifyContent = "center"
         markerElement.style.alignItems = "center"
-        markerElement.style.width = "60px"
-        markerElement.style.height = "60px"
+        markerElement.style.width = "35px"
+        markerElement.style.height = "35px"
         markerElement.style.borderRadius = "100%"
-        markerElement.style.backgroundColor = "white"
+        markerElement.style.backgroundColor = "LightGray"
         markerElement.style.opacity = 0.9
         markerElement.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.2)"
 
         // Create an <i> element with the selected icon class
         const iconElement = document.createElement("i")
         iconElement.className = selectedIcon.class
-        iconElement.style.fontSize = "40px"
-        iconElement.style.color = "#000000"
+        iconElement.style.fontSize = "20px"
+        iconElement.style.color = "black"
+        iconElement.style.fill = "#ff6347" // Set the fill color using inline styles
+        iconElement.style.fontWeight = "bold"
 
         markerElement.appendChild(iconElement)
 
