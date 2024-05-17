@@ -170,7 +170,7 @@
             </svg>
           </button>
         </div>
-        <div class="p-4 overflow-auto max-h-72">
+        <div class="p-4 overflow-auto max-h-64">
           <div class="grid grid-auto-flow grid-auto-columns gap-2">
             {#each markerIcons as icon}
               <button
