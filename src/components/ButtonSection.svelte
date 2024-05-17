@@ -7,80 +7,7 @@
   export let isSatelliteView = true
   export let showMarkerMenu = false
   //   export let markerIcons = []
-  const markerIcons = [
-    { id: "arrow-up-circle", class: "at-arrow-up-circle" },
-    { id: "arrow-down-circle", class: "at-arrow-down-circle" },
-    { id: "arrow-left-circle", class: "at-arrow-left-circle" },
-    { id: "arrow-right-circle", class: "at-arrow-right-circle" },
-    { id: "user", class: "at-user" },
-    { id: "users", class: "at-users" },
-    { id: "gear", class: "at-gear" },
-    { id: "home", class: "at-home" },
-    { id: "check-shield", class: "at-check-shield" },
-    { id: "trash", class: "at-trash" },
-    { id: "exit", class: "at-exit" },
-    { id: "xmark-circle", class: "at-xmark-circle" },
-    { id: "info-circle", class: "at-info-circle" },
-    { id: "pin-destination", class: "at-pin-destination" },
-    { id: "lock-keyhole", class: "at-lock-keyhole" },
-    { id: "unlock-keyhole", class: "at-unlock-keyhole" },
-    { id: "shopping-cart", class: "at-shopping-cart" },
-    { id: "crosshairs", class: "at-crosshairs" },
-    { id: "dollar-sign", class: "at-dollar-sign" },
-    { id: "berries", class: "at-berries" },
-    { id: "call", class: "at-call" },
-    { id: "call-xmark", class: "at-call-xmark" },
-    { id: "signal", class: "at-signal" },
-    { id: "wifi", class: "at-wifi" },
-    { id: "triangle-exclamation", class: "at-triangle-exclamation" },
-    { id: "street-cone", class: "at-street-cone" },
-    { id: "construction-truck", class: "at-construction-truck" },
-    { id: "electric-battery-charge", class: "at-electric-battery-charge" },
-    { id: "electric-car", class: "at-electric-car" },
-    { id: "flower", class: "at-flower" },
-    { id: "gasoline", class: "at-gasoline" },
-    { id: "green-gas", class: "at-green-gas" },
-    { id: "green-container", class: "at-green-container" },
-    { id: "green-can", class: "at-green-can" },
-    { id: "plant-house", class: "at-plant-house" },
-    { id: "arrows-recycle", class: "at-arrows-recycle" },
-    { id: "water-container", class: "at-water-container" },
-    { id: "gewindmillar", class: "at-windmill" },
-    { id: "kg-weight", class: "at-kg-weight" },
-    { id: "carrot", class: "at-carrot" },
-    { id: "hamburger", class: "at-hamburger" },
-    { id: "middle-finger", class: "at-middle-finger" },
-    { id: "toilet-bathroom", class: "at-toilet-bathroom" },
-    { id: "taxi-service", class: "at-taxi-service" },
-    { id: "block", class: "at-block" },
-    { id: "wheelchair", class: "at-wheelchair" },
-    { id: "car-garage", class: "at-car-garage" },
-    { id: "electricity-home", class: "at-electricity-home" },
-    { id: "house-home", class: "at-house-home" },
-    { id: "houses", class: "at-houses" },
-    { id: "carrot-turnip-vegetable", class: "at-carrot-turnip-vegetable" },
-    { id: "cart", class: "at-cart" },
-    { id: "wheat-harvest", class: "at-wheat-harvest" },
-    { id: "helicopter-travel", class: "at-helicopter-travel" },
-    { id: "airplane", class: "at-airplane" },
-    { id: "farming-tractor", class: "at-farming-tractor" },
-
-    { id: "camper-vehicle", class: "at-camper-vehicle" },
-    { id: "car-vehicle", class: "at-car-vehicle" },
-    { id: "cargo-transport", class: "at-cargo-transport" },
-    { id: "bulldozer", class: "at-bulldozer" },
-    { id: "construction-transport", class: "at-construction-transport" },
-    { id: "crane-truck", class: "at-crane-truck" },
-    { id: "delivery-truck", class: "at-delivery-truck" },
-    { id: "liquid-transportation", class: "at-liquid-transportation" },
-    { id: "transport-truck", class: "at-transport-truck" },
-    { id: "ladder-truck", class: "at-ladder-truck" },
-    { id: "celcius", class: "at-celcius" },
-    { id: "clouds", class: "at-clouds" },
-    { id: "crosswinds", class: "at-crosswinds" },
-    { id: "rain-storm", class: "at-rain-storm" },
-    { id: "rain-drops", class: "at-rain-drops" },
-  ]
+  export let markerIcons = []
   const dispatch = createEventDispatcher()
 
   const DEFAULT_SATELLITE_STYLE = "mapbox://styles/mapbox/satellite-streets-v12"
@@ -116,8 +43,9 @@
   }
 
   function handleIconClick(icon) {
-    dispatch("iconSelected", icon)
     console.log("Clicked icon:", icon)
+    console.log("iconid:", icon.id)
+    dispatch("iconSelected", icon.id)
   }
 </script>
 
@@ -175,7 +103,7 @@
             {#each markerIcons as icon}
               <button
                 class="marker-icon focus:outline-none"
-                on:click={() => handleIconClick(icon.id)}
+                on:click={() => handleIconClick(icon)}
               >
                 <div
                   class="bg-gray-200 hover:bg-gray-300 rounded-lg p-3 transition duration-200 transform hover:scale-125"
