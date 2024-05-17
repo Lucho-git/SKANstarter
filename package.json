@@ -45,6 +45,7 @@
 		"@supabase/auth-helpers-sveltekit": "^0.10.2",
 		"@supabase/auth-ui-svelte": "^0.2.2",
 		"@supabase/supabase-js": "^2.33.0",
+		"@vectopus/atlas-icons": "^0.0.7",
 		"chart.js": "^4.4.2",
 		"gsap": "^3.12.5",
 		"lodash-es": "^4.17.21",
