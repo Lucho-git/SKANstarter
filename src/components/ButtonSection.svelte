@@ -3,7 +3,6 @@
   import { createEventDispatcher } from "svelte"
   import { mapStore, userVehicleStore } from "../stores/mapStore"
   import IconSVG from "./IconSVG.svelte"
-  import IconFarmingBundle from "./IconFarmingBundle.svelte"
 
   export let isSatelliteView = true
   export let showMarkerMenu = false
