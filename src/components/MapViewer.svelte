@@ -1,9 +1,14 @@
 <script>
-  import { onMount } from "svelte"
+  import { onMount, onDestroy } from "svelte"
   import mapboxgl from "mapbox-gl"
   import "mapbox-gl/dist/mapbox-gl.css"
   import { debounce } from "lodash-es"
-  import { mapStore, userVehicleStore } from "../stores/mapStore"
+  import {
+    mapStore,
+    userVehicleStore,
+    vehicleColorSizeStore,
+  } from "../stores/mapStore"
+
   import UserMarker from "./UserMarker.svelte"
   import ButtonSection from "./ButtonSection.svelte"
   import MapControls from "./MapControls.svelte"
@@ -167,8 +172,9 @@
       props: {
         pulseColor: "rgba(172, 172, 230, 0.8)",
         pulseSize: "40px",
-        vehicleSize: "60px",
+        vehicleSize: $vehicleColorSizeStore.size,
         userVehicle: $userVehicleStore,
+        vehicleColor: $vehicleColorSizeStore.color,
       },
     })
 

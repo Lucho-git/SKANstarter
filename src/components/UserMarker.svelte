@@ -1,39 +1,66 @@
 <!-- src/components/UserMarker.svelte -->
 <script>
-  import { userVehicleStore } from "../stores/mapStore"
+  import { userVehicleStore, vehicleColorSizeStore } from "../stores/mapStore"
 
   export let pulseColor = "rgba(172, 172, 230, 0.8)"
   export let pulseSize = "40px"
   export let vehicleSize = "60px"
   export let userVehicle = "harvester"
+  export let vehicleColor = "red"
 
   userVehicleStore.subscribe((value) => {
     userVehicle = value
   })
 
-  const vehicleImages = {
-    harvester: "/images/HarvestorUp.png",
-    chaserbin: "/images/ChaserBinUp.png",
+  vehicleColorSizeStore.subscribe((value) => {
+    vehicleColor = value.color
+    vehicleSize = value.size
+  })
+
+  const vehicles = {
+    harvester: {
+      path: "/images/HarvestorUp.png",
+      type: "image",
+    },
+    chaserbin: {
+      path: "/images/ChaserBinUp.png",
+      type: "image",
+    },
+    tractor: {
+      path: () => import("../components/SVG/SimpleTractor.svelte"),
+      type: "svg",
+    },
+    // Add more vehicles as needed
   }
 
-  $: vehicleImage = vehicleImages[userVehicle] || "/images/HarvestorUp.png"
+  $: vehicle = vehicles[userVehicle] || vehicles.harvester
 </script>
 
 <div class="user-marker" style="position: relative; display: inline-block;">
-  <div
-    class="vehicle-icon"
-    style="
-        background-image: url('{vehicleImage}');
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: center;
-        width: {vehicleSize};
-        height: {vehicleSize};
-        position: relative;
-        z-index: 1;
-        transform-origin: center;
-      "
-  ></div>
+  {#if vehicle.type === "svg"}
+    {#await vehicle.path() then VehicleSVGComponent}
+      <svelte:component
+        this={VehicleSVGComponent.default}
+        color={vehicleColor}
+        size={vehicleSize}
+      />
+    {/await}
+  {:else}
+    <div
+      class="vehicle-icon"
+      style="
+          background-image: url('{vehicle.path}');
+          background-size: contain;
+          background-repeat: no-repeat;
+          background-position: center;
+          width: {vehicleSize};
+          height: {vehicleSize};
+          position: relative;
+          z-index: 1;
+          transform-origin: center;
+        "
+    ></div>
+  {/if}
   <div
     class="pulse-circle animate-pulse"
     style="
@@ -43,9 +70,12 @@
         background-color: {pulseColor};
         box-shadow: 0 0 0 10px {pulseColor};
         position: absolute;
+        
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
+        z-index: 0;
+
       "
   ></div>
 </div>

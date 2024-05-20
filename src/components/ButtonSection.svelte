@@ -1,13 +1,16 @@
 <!-- src/components/ButtonSection.svelte -->
 <script>
   import { createEventDispatcher } from "svelte"
-  import { mapStore, userVehicleStore } from "../stores/mapStore"
-  import IconSVG from "./IconSVG.svelte"
+  import {
+    mapStore,
+    userVehicleStore,
+    vehicleColorSizeStore,
+  } from "../stores/mapStore"
 
   export let isSatelliteView = true
   export let showMarkerMenu = false
-  //   export let markerIcons = []
   export let markerIcons = []
+
   const dispatch = createEventDispatcher()
 
   const DEFAULT_SATELLITE_STYLE = "mapbox://styles/mapbox/satellite-streets-v12"
@@ -36,10 +39,26 @@
     dispatch("backToDashboard")
   }
 
-  function togglevehicleType() {
-    userVehicleStore.update((currentType) =>
-      currentType === "harvester" ? "chaserbin" : "harvester",
-    )
+  const vehicleTypes = ["harvester", "chaserbin", "tractor"]
+  let currentVehicleIndex = 0
+
+  const colorSizeOptions = [
+    { color: "red", size: "60px" },
+    { color: "blue", size: "80px" },
+    { color: "green", size: "100px" },
+    { color: "yellow", size: "120px" },
+  ]
+  let currentColorSizeIndex = 0
+
+  function cycleVehicleType() {
+    currentVehicleIndex = (currentVehicleIndex + 1) % vehicleTypes.length
+    userVehicleStore.set(vehicleTypes[currentVehicleIndex])
+  }
+
+  function cycleColorSize() {
+    currentColorSizeIndex =
+      (currentColorSizeIndex + 1) % colorSizeOptions.length
+    vehicleColorSizeStore.set(colorSizeOptions[currentColorSizeIndex])
   }
 
   function handleIconClick(icon) {
@@ -176,9 +195,11 @@
   <!-- Toggle Vehicle Type Button, Top Right -->
   <button
     class="btn btn-circle btn-md absolute top-20 right-4 z-10"
-    on:click={togglevehicleType}
+    on:click={cycleVehicleType}
   >
-    <svg
+    {vehicleTypes[currentVehicleIndex]}
+
+    <!-- <svg
       xmlns="http://www.w3.org/2000/svg"
       class="h-5 w-5"
       viewBox="0 0 20 20"
@@ -189,7 +210,15 @@
         d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2a1 1 0 000 2h6a1 1 0 100-2H7zm6 7a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1zm-3 3a1 1 0 100 2h.01a1 1 0 100-2H10zm-4 1a1 1 0 011-1h.01a1 1 0 110 2H7a1 1 0 01-1-1zm1-4a1 1 0 100 2h.01a1 1 0 100-2H7zm2 1a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1zm4-4a1 1 0 100 2h.01a1 1 0 100-2H13zM9 9a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1zM7 8a1 1 0 000 2h.01a1 1 0 000-2H7z"
         clip-rule="evenodd"
       />
-    </svg>
+    </svg> -->
+  </button>
+
+  <button
+    class="btn btn-circle btn-md absolute top-20 right-20 z-10"
+    on:click={cycleColorSize}
+  >
+    {colorSizeOptions[currentColorSizeIndex].color}
+    {colorSizeOptions[currentColorSizeIndex].size}
   </button>
 </div>
 
