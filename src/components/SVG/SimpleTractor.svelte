@@ -1,4 +1,4 @@
-<!-- TractorIcon.svelte -->
+<!-- SimpleTractor.svelte -->
 <script>
   export let color = "red"
   export let size = "60px"

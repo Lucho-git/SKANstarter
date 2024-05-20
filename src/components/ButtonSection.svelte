@@ -39,7 +39,15 @@
     dispatch("backToDashboard")
   }
 
-  const vehicleTypes = ["harvester", "chaserbin", "tractor"]
+  const vehicleTypes = [
+    "harvester",
+    "chaserbin",
+    "tractor",
+    "combine",
+    "loader",
+    "phone",
+    "pointer",
+  ]
   let currentVehicleIndex = 0
 
   const colorSizeOptions = [

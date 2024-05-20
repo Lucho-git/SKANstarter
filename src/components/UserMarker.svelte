@@ -30,7 +30,26 @@
       path: () => import("../components/SVG/SimpleTractor.svelte"),
       type: "svg",
     },
-    // Add more vehicles as needed
+
+    combine: {
+      path: () => import("../components/SVG/CombineHeader.svelte"),
+      type: "svg",
+    },
+
+    loader: {
+      path: () => import("../components/SVG/TractorLoader.svelte"),
+      type: "svg",
+    },
+
+    phone: {
+      path: () => import("../components/SVG/PhoneBlock.svelte"),
+      type: "svg",
+    },
+
+    pointer: {
+      path: () => import("../components/SVG/Pointer.svelte"),
+      type: "svg",
+    },
   }
 
   $: vehicle = vehicles[userVehicle] || vehicles.harvester
