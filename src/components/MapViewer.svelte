@@ -221,7 +221,9 @@
       userMarker.setLngLat([currentLng, currentLat])
 
       const vehicleIcon = userMarker.getElement().querySelector(".vehicle-icon")
-      vehicleIcon.style.transform = `rotate(${currentRotation}deg)`
+      if (vehicleIcon) {
+        vehicleIcon.style.transform = `rotate(${currentRotation}deg)`
+      }
 
       currentStep++
 
