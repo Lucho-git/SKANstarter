@@ -1,28 +1,14 @@
 <!-- src/components/ButtonSection.svelte -->
 <script>
   import { createEventDispatcher } from "svelte"
-  import {
-    mapStore,
-    userVehicleStore,
-    vehicleColorSizeStore,
-  } from "../stores/mapStore"
+  import { mapStore, userVehicleStore } from "../stores/mapStore"
 
   export let isSatelliteView = true
-  export let showMarkerMenu = false
-  export let markerIcons = []
 
   const dispatch = createEventDispatcher()
 
   const DEFAULT_SATELLITE_STYLE = "mapbox://styles/mapbox/satellite-streets-v12"
   const DEFAULT_OUTDOORS_STYLE = "mapbox://styles/mapbox/outdoors-v12"
-
-  function handleConfirmMarker() {
-    dispatch("confirmMarker")
-  }
-
-  function handleRemoveMarker() {
-    dispatch("removeMarker")
-  }
 
   function toggleMapStyle() {
     isSatelliteView = !isSatelliteView
@@ -60,90 +46,25 @@
 
   function cycleVehicleType() {
     currentVehicleIndex = (currentVehicleIndex + 1) % vehicleTypes.length
-    userVehicleStore.set(vehicleTypes[currentVehicleIndex])
+    userVehicleStore.update((vehicle) => ({
+      ...vehicle,
+      type: vehicleTypes[currentVehicleIndex],
+    }))
   }
 
   function cycleColorSize() {
     currentColorSizeIndex =
       (currentColorSizeIndex + 1) % colorSizeOptions.length
-    vehicleColorSizeStore.set(colorSizeOptions[currentColorSizeIndex])
-  }
-
-  function handleIconClick(icon) {
-    console.log("Clicked icon:", icon)
-    console.log("iconid:", icon.id)
-    dispatch("iconSelected", icon.id)
+    userVehicleStore.update((vehicle) => ({
+      ...vehicle,
+      color: colorSizeOptions[currentColorSizeIndex].color,
+      size: colorSizeOptions[currentColorSizeIndex].size,
+    }))
   }
 </script>
 
 <div>
   <!-- Map Controls -->
-
-  <!-- Marker Menu Pulls up from bottom-->
-  {#if showMarkerMenu}
-    <div class="fixed bottom-0 left-0 right-0 flex justify-center mb-8 z-10">
-      <div
-        class="bg-white bg-opacity-90 rounded-lg shadow-lg w-11/12 sm:w-1/2 overflow-hidden border-2 border-gray-300"
-      >
-        <div class="grid grid-cols-2 bg-gray-200">
-          <button
-            class="p-4 hover:bg-green-300 transition duration-200 flex justify-center items-center border-r border-gray-300"
-            on:click={handleConfirmMarker}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-10 w-10 text-green-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          </button>
-          <button
-            class="p-4 hover:bg-red-300 transition duration-200 flex justify-center items-center"
-            on:click={handleRemoveMarker}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-10 w-10"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M20 12H4"
-              />
-            </svg>
-          </button>
-        </div>
-        <div class="p-4 overflow-auto max-h-64">
-          <div class="grid grid-auto-flow grid-auto-columns gap-2">
-            {#each markerIcons as icon}
-              <button
-                class="marker-icon focus:outline-none"
-                on:click={() => handleIconClick(icon)}
-              >
-                <div
-                  class="bg-gray-200 hover:bg-gray-300 rounded-lg p-3 transition duration-200 transform hover:scale-125"
-                >
-                  <i class={`${icon.class} text-4xl text-gray-700`}></i>
-                </div>
-              </button>
-            {/each}
-          </div>
-        </div>
-      </div>
-    </div>
-  {/if}
 
   <!-- Back to Dashboard Button, Top Left -->
   <button
@@ -231,13 +152,4 @@
 </div>
 
 <style>
-  .marker-icon {
-    margin: 0 5px;
-    cursor: pointer;
-  }
-
-  .grid-auto-flow {
-    grid-auto-flow: row;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-  }
 </style>
