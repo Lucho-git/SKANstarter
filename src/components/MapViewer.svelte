@@ -192,6 +192,7 @@
   <ButtonSection on:toggleMapStyleDispatcher={toggleMapStyle} />
   {#if mapInitialized}
     <MarkerManager />
+    <MapStateSaver />
   {/if}
 </div>
 

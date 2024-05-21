@@ -11,6 +11,7 @@
   viewBox="0 0 24 24"
   fill={color}
   style="position: relative; z-index: 1;"
+  transform="rotate(90)"
   stroke="white"
   stroke-width=".2"
 >
