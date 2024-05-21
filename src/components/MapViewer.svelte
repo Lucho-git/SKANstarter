@@ -9,6 +9,7 @@
   import UserMarker from "./UserMarker.svelte"
   import ButtonSection from "./ButtonSection.svelte"
   import MapControls from "./MapControls.svelte"
+  import MapStateSaver from "./MapStateSaver.svelte"
 
   //Constants and variable initializations
 

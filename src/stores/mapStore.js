@@ -3,8 +3,8 @@ import { writable } from 'svelte/store';
 
 export const mapStore = writable(null);
 export const userVehicleStore = writable({
-    type: 'harvester',
-    color: 'red',
+    type: 'tractor',
+    color: 'orange',
     size: '60px',
   });
 
