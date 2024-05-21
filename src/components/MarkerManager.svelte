@@ -1,6 +1,9 @@
 <!-- src/components/MarkerManager.svelte -->
 <script>
-  import { recentMarkerStore, confirmedMarkersStore } from "../stores/mapStore"
+  import {
+    selectedMarkerStore,
+    confirmedMarkersStore,
+  } from "../stores/mapStore"
   import { controlStore } from "../stores/controlStore"
   import { getContext, onMount, onDestroy } from "svelte"
   import mapboxgl from "mapbox-gl"
@@ -86,9 +89,9 @@
   async function handleIconSelection(icon) {
     const map = await getMap()
     let iconId = icon.id
-    if ($recentMarkerStore) {
-      const lngLat = $recentMarkerStore.getLngLat()
-      $recentMarkerStore.remove()
+    if ($selectedMarkerStore) {
+      const lngLat = $selectedMarkerStore.getLngLat()
+      $selectedMarkerStore.remove()
       // Find the selected icon object based on the iconId
       const selectedIcon = markerIcons.find((icon) => icon.id === iconId)
 
@@ -119,7 +122,7 @@
         const newMarker = new mapboxgl.Marker({ element: markerElement })
           .setLngLat(lngLat)
           .addTo(map)
-        recentMarkerStore.set(newMarker)
+        selectedMarkerStore.set(newMarker)
       } else {
         console.log("recentMarker is null or undefined")
       }
@@ -133,13 +136,13 @@
 
     if (lngLat) {
       // Remove the previous recent marker if it exists
-      if ($recentMarkerStore) {
-        $recentMarkerStore.remove()
+      if ($selectedMarkerStore) {
+        $selectedMarkerStore.remove()
       }
 
       // Place the new marker on the map
       const newMarker = new mapboxgl.Marker().setLngLat(lngLat).addTo(map)
-      recentMarkerStore.set(newMarker)
+      selectedMarkerStore.set(newMarker)
 
       // Center the screen on the placed marker
       map.flyTo({
@@ -162,13 +165,13 @@
   function confirmMarker() {
     // Add the recent marker to the confirmedMarkers array
 
-    if ($recentMarkerStore) {
+    if ($selectedMarkerStore) {
       confirmedMarkersStore.update((markers) => [
         ...markers,
-        $recentMarkerStore,
+        $selectedMarkerStore,
       ])
 
-      recentMarkerStore.set(null)
+      selectedMarkerStore.set(null)
     }
 
     // Hide the marker menu
@@ -180,9 +183,9 @@
 
   function removeMarker() {
     // Remove the recent marker from the map
-    if ($recentMarkerStore) {
-      $recentMarkerStore.remove()
-      recentMarkerStore.set(null)
+    if ($selectedMarkerStore) {
+      $selectedMarkerStore.remove()
+      selectedMarkerStore.set(null)
     }
 
     // Hide the marker menu
@@ -194,11 +197,11 @@
 
   async function handleMarkerSelection(event) {
     const map = await getMap()
-    recentMarkerStore.set(event.detail)
-    console.log("Marker selected:", $recentMarkerStore)
+    selectedMarkerStore.set(event.detail)
+    console.log("Marker selected:", $selectedMarkerStore)
 
-    if ($recentMarkerStore) {
-      const lngLat = $recentMarkerStore.getLngLat()
+    if ($selectedMarkerStore) {
+      const lngLat = $selectedMarkerStore.getLngLat()
 
       map.flyTo({
         center: lngLat,

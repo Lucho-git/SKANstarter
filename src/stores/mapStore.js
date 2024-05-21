@@ -8,5 +8,5 @@ export const userVehicleStore = writable({
     size: '60px',
   });
 
-  export const recentMarkerStore = writable(null);
+  export const selectedMarkerStore = writable(null);
   export const confirmedMarkersStore = writable([]);
