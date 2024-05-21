@@ -82,6 +82,7 @@
     { id: "rain-drops", class: "at-rain-drops" },
   ]
   // MapViewer.svelte
+
   async function handleIconSelection(icon) {
     const map = await getMap()
     let iconId = icon.id
@@ -139,6 +140,8 @@
       // Place the new marker on the map
       const newMarker = new mapboxgl.Marker().setLngLat(lngLat).addTo(map)
       recentMarkerStore.set(newMarker)
+      console.log("Marker Placed:", $recentMarkerStore)
+
       // Center the screen on the placed marker
       map.flyTo({
         center: lngLat,
@@ -159,11 +162,16 @@
 
   function confirmMarker() {
     // Add the recent marker to the confirmedMarkers array
+
+    console.log("Updating confirmedMarkersStore")
+
     if ($recentMarkerStore) {
       confirmedMarkersStore.update((markers) => [
         ...markers,
         $recentMarkerStore,
       ])
+
+      console.log("Marker confirmed, confirmedMakers:", $confirmedMarkersStore)
       recentMarkerStore.set(null)
     }
 
@@ -188,14 +196,39 @@
     }))
   }
 
+  async function handleMarkerSelection(event) {
+    const map = await getMap()
+    recentMarkerStore.set(event.detail)
+    console.log("Marker clicked:", $recentMarkerStore)
+
+    if ($recentMarkerStore) {
+      const lngLat = $recentMarkerStore.getLngLat()
+
+      map.flyTo({
+        center: lngLat,
+        zoom: 15, // Adjust the zoom level as needed
+        duration: 1000, // Adjust the duration of the animation as needed
+      })
+      controlStore.update((controls) => ({
+        ...controls,
+        showMarkerMenu: true,
+      }))
+      // Open the confirmation/customization menu
+      // Implement your menu functionality here
+      console.log("Marker selected", lngLat)
+    }
+  }
+
   onMount(async () => {
     const map = await getMap()
 
     const mapContainer = document.querySelector(".map-container")
     mapContainer.addEventListener("markerPlacement", handleMarkerPlacement)
+    mapContainer.addEventListener("markerSelection", handleMarkerSelection)
 
     return () => {
       mapContainer.removeEventListener("markerPlacement", handleMarkerPlacement)
+      mapContainer.removeEventListener("markerSelection", handleMarkerSelection)
     }
   })
 

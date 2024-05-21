@@ -62,6 +62,14 @@
       mapContainer.dispatchEvent(customEvent)
     })
 
+    mapControls.$on("markerClick", (event) => {
+      const customEvent = new CustomEvent("markerSelection", {
+        detail: event.detail,
+      })
+      console.log("Sending custom event with value:", event.detail)
+      mapContainer.dispatchEvent(customEvent)
+    })
+
     // Add the GeolocateControl to the map
     const geolocateControl = new mapboxgl.GeolocateControl({
       positionOptions: {
@@ -178,9 +186,6 @@
     }
     isSatelliteStyle = !isSatelliteStyle
   }
-
-  //   let recentMarker = null
-  //   let confirmedMarkers = []
 </script>
 
 <div class="map-container" bind:this={mapContainer}>

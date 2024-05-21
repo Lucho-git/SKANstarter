@@ -1,6 +1,7 @@
 <!-- MapControls.svelte -->
 <script>
   import { createEventDispatcher } from "svelte"
+  import { confirmedMarkersStore } from "../stores/mapStore"
 
   export let map
 
@@ -12,6 +13,52 @@
   let longPressStartPosition = null
   const longPressThreshold = 500
   const longPressMoveThreshold = 5
+  let confirmedMarkers = []
+
+  confirmedMarkersStore.subscribe((markers) => {
+    // Add event listeners to new markers
+    markers.forEach((marker) => {
+      const markerElement = marker.getElement()
+
+      // Check if the marker already has event listeners
+      if (!markerElement.hasAttribute("data-listeners-added")) {
+        markerElement.addEventListener("mouseenter", handleMarkerMouseEnter)
+        markerElement.addEventListener("mouseleave", handleMarkerMouseLeave)
+        markerElement.addEventListener("click", handleMarkerClick)
+        markerElement.setAttribute("data-listeners-added", "true")
+      }
+    })
+
+    confirmedMarkers = markers
+  })
+
+  function handleMarkerMouseEnter(event) {
+    const markerElement = event.target
+    markerElement.style.cursor = "pointer"
+  }
+
+  function handleMarkerMouseLeave(event) {
+    const markerElement = event.target
+    markerElement.style.cursor = ""
+  }
+
+  function handleMarkerClick(event) {
+    console.log("handleMarkerClick", event)
+    event.stopPropagation() // Stop the event from bubbling up to the map click event handler
+    const markerElement = event.target.closest(".mapboxgl-marker")
+    console.log("markerElement", markerElement)
+
+    if (markerElement) {
+      const marker = confirmedMarkers.find(
+        (m) => m.getElement() === markerElement,
+      )
+      console.log("marker", marker)
+
+      if (marker) {
+        dispatch("markerClick", marker)
+      }
+    }
+  }
 
   function handleMarkerPlacement(event) {
     const lngLat = event.lngLat || event.target.getLngLat()
@@ -23,16 +70,17 @@
     }
   }
 
-  function handleMapClick(event) {
-    if (!isDragging && !longPressOccurred) {
-      clearTimeout(longPressTimer)
-      longPressTimer = null
-      handleMarkerPlacement(event)
-    }
-    longPressOccurred = false
-  }
+  //   function handleMapClick(event) {
+  //     if (!isDragging && !longPressOccurred && !event.defaultPrevented) {
+  //       clearTimeout(longPressTimer)
+  //       longPressTimer = null
+  //       handleMarkerPlacement(event)
+  //     }
+  //     longPressOccurred = false
+  //   }
 
-  function handleMapDragStart(event) {
+  function handleMouseDown(event) {
+    //Mapclick logic for longpress
     isDragging = false
     longPressOccurred = false
     clearTimeout(longPressTimer)
@@ -64,7 +112,7 @@
     }
   }
 
-  function handleMapDragEnd(event) {
+  function handleMouseUp(event) {
     isDragging = false
     clearTimeout(longPressTimer)
     longPressTimer = null
@@ -72,9 +120,9 @@
   }
 
   // Add event listeners when the component mounts
-  map.on("click", handleMapClick)
-  map.on("mousedown", handleMapDragStart)
-  map.on("touchstart", handleMapDragStart)
+  //   map.on("click", handleMapClick)
+  map.on("mousedown", handleMouseDown)
+  map.on("touchstart", handleMouseDown)
   map.on("drag", handleMapDrag)
-  map.on("dragend", handleMapDragEnd)
+  map.on("mouseup", handleMouseUp)
 </script>
