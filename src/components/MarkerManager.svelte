@@ -140,7 +140,6 @@
       // Place the new marker on the map
       const newMarker = new mapboxgl.Marker().setLngLat(lngLat).addTo(map)
       recentMarkerStore.set(newMarker)
-      console.log("Marker Placed:", $recentMarkerStore)
 
       // Center the screen on the placed marker
       map.flyTo({
@@ -163,15 +162,12 @@
   function confirmMarker() {
     // Add the recent marker to the confirmedMarkers array
 
-    console.log("Updating confirmedMarkersStore")
-
     if ($recentMarkerStore) {
       confirmedMarkersStore.update((markers) => [
         ...markers,
         $recentMarkerStore,
       ])
 
-      console.log("Marker confirmed, confirmedMakers:", $confirmedMarkersStore)
       recentMarkerStore.set(null)
     }
 
@@ -199,7 +195,7 @@
   async function handleMarkerSelection(event) {
     const map = await getMap()
     recentMarkerStore.set(event.detail)
-    console.log("Marker clicked:", $recentMarkerStore)
+    console.log("Marker selected:", $recentMarkerStore)
 
     if ($recentMarkerStore) {
       const lngLat = $recentMarkerStore.getLngLat()
@@ -215,7 +211,6 @@
       }))
       // Open the confirmation/customization menu
       // Implement your menu functionality here
-      console.log("Marker selected", lngLat)
     }
   }
 

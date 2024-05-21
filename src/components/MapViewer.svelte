@@ -66,7 +66,6 @@
       const customEvent = new CustomEvent("markerSelection", {
         detail: event.detail,
       })
-      console.log("Sending custom event with value:", event.detail)
       mapContainer.dispatchEvent(customEvent)
     })
 

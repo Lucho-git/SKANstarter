@@ -43,16 +43,13 @@
   }
 
   function handleMarkerClick(event) {
-    console.log("handleMarkerClick", event)
     event.stopPropagation() // Stop the event from bubbling up to the map click event handler
     const markerElement = event.target.closest(".mapboxgl-marker")
-    console.log("markerElement", markerElement)
 
     if (markerElement) {
       const marker = confirmedMarkers.find(
         (m) => m.getElement() === markerElement,
       )
-      console.log("marker", marker)
 
       if (marker) {
         dispatch("markerClick", marker)
