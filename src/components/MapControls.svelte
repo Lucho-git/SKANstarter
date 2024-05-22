@@ -17,7 +17,7 @@
 
   confirmedMarkersStore.subscribe((markers) => {
     // Add event listeners to new markers
-    markers.forEach((marker) => {
+    markers.forEach(({ marker }) => {
       const markerElement = marker.getElement()
 
       // Check if the marker already has event listeners
@@ -47,12 +47,12 @@
     const markerElement = event.target.closest(".mapboxgl-marker")
 
     if (markerElement) {
-      const marker = confirmedMarkers.find(
-        (m) => m.getElement() === markerElement,
+      const { marker, id } = confirmedMarkers.find(
+        (m) => m.marker.getElement() === markerElement,
       )
 
       if (marker) {
-        dispatch("markerClick", marker)
+        dispatch("markerClick", { marker, id })
       }
     }
   }

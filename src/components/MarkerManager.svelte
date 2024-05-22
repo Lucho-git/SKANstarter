@@ -7,6 +7,7 @@
   import { controlStore } from "../stores/controlStore"
   import { getContext, onMount, onDestroy } from "svelte"
   import mapboxgl from "mapbox-gl"
+  import { v4 as uuidv4 } from "uuid"
 
   const { getMap } = getContext("map")
 
@@ -90,8 +91,9 @@
     const map = await getMap()
     let iconId = icon.id
     if ($selectedMarkerStore) {
-      const lngLat = $selectedMarkerStore.getLngLat()
-      $selectedMarkerStore.remove()
+      const { marker, id } = $selectedMarkerStore
+      const lngLat = marker.getLngLat()
+      marker.remove()
       // Find the selected icon object based on the iconId
       const selectedIcon = markerIcons.find((icon) => icon.id === iconId)
 
@@ -122,7 +124,7 @@
         const newMarker = new mapboxgl.Marker({ element: markerElement })
           .setLngLat(lngLat)
           .addTo(map)
-        selectedMarkerStore.set(newMarker)
+        selectedMarkerStore.set({ marker: newMarker, id })
       } else {
         console.log("recentMarker is null or undefined")
       }
@@ -131,18 +133,19 @@
 
   async function handleMarkerPlacement(event) {
     const map = await getMap()
-
     const { lngLat } = event.detail
 
     if (lngLat) {
       // Remove the previous recent marker if it exists
       if ($selectedMarkerStore) {
-        $selectedMarkerStore.remove()
+        const { marker } = $selectedMarkerStore
+        marker.remove()
       }
 
       // Place the new marker on the map
       const newMarker = new mapboxgl.Marker().setLngLat(lngLat).addTo(map)
-      selectedMarkerStore.set(newMarker)
+      const markerId = uuidv4() // Generate a unique UUID for the marker
+      selectedMarkerStore.set({ marker: newMarker, id: markerId })
 
       // Center the screen on the placed marker
       map.flyTo({
@@ -164,13 +167,20 @@
 
   function confirmMarker() {
     // Add the recent marker to the confirmedMarkers array
-
     if ($selectedMarkerStore) {
-      confirmedMarkersStore.update((markers) => [
-        ...markers,
-        $selectedMarkerStore,
-      ])
-
+      const { marker, id } = $selectedMarkerStore
+      confirmedMarkersStore.update((markers) => {
+        const existingMarkerIndex = markers.findIndex((m) => m.id === id)
+        if (existingMarkerIndex !== -1) {
+          // If a marker with the same ID already exists, update it
+          return markers.map((m, index) =>
+            index === existingMarkerIndex ? { marker, id } : m,
+          )
+        } else {
+          // If no marker with the same ID exists, add a new entry
+          return [...markers, { marker, id }]
+        }
+      })
       selectedMarkerStore.set(null)
     }
 
@@ -184,8 +194,13 @@
   function removeMarker() {
     // Remove the recent marker from the map
     if ($selectedMarkerStore) {
-      $selectedMarkerStore.remove()
+      const { marker, id } = $selectedMarkerStore
+      marker.remove()
       selectedMarkerStore.set(null)
+
+      confirmedMarkersStore.update((markers) =>
+        markers.filter((m) => m.id !== id),
+      )
     }
 
     // Hide the marker menu
@@ -197,11 +212,12 @@
 
   async function handleMarkerSelection(event) {
     const map = await getMap()
-    selectedMarkerStore.set(event.detail)
+    const { marker, id } = event.detail
+    selectedMarkerStore.set({ marker, id })
     console.log("Marker selected:", $selectedMarkerStore)
 
     if ($selectedMarkerStore) {
-      const lngLat = $selectedMarkerStore.getLngLat()
+      const lngLat = marker.getLngLat()
 
       map.flyTo({
         center: lngLat,

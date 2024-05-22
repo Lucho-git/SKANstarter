@@ -2,30 +2,52 @@
 <script>
   import { confirmedMarkersStore } from "../stores/mapStore"
   import { supabase } from "../lib/supabaseClient"
+  import { page } from "$app/stores"
 
   async function saveMapStateToDatabase() {
-    const geoJSON = prepareMapStateForSaving()
-    console.log("Geometry to save:", geoJSON)
+    const session = $page.data.session
+    if (!session) {
+      console.error("User not authenticated")
+      return
+    }
+
+    const markerInserts = await prepareMapStateForSaving(session)
+    console.log("Markers to save:", markerInserts)
+
     const { data, error } = await supabase
-      .from("map_state")
-      .insert({ geojson: geoJSON })
+      .from("map_markers")
+      .upsert(markerInserts, { onConflict: "id" })
 
     if (error) {
-      console.error("Error saving map state to database:", error)
+      console.error("Error saving map markers to database:", error)
     } else {
-      console.log("Map state saved to database successfully:", data)
+      console.log("Map markers saved to database successfully:", data)
     }
   }
 
-  function prepareMapStateForSaving() {
+  async function prepareMapStateForSaving(session) {
     console.log("Preparing map state for saving...")
-    const geoJSON = {
-      type: "FeatureCollection",
-      features: [],
+
+    const userId = session.user.id
+
+    // Retrieve the user's profile to get the master_map_id
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("master_map_id")
+      .eq("id", userId)
+      .single()
+
+    if (profileError) {
+      console.error("Error retrieving user profile:", profileError)
+      throw new Error("Failed to retrieve user profile")
     }
 
+    const masterMapId = profile.master_map_id
+
+    const markerInserts = []
+
     confirmedMarkersStore.subscribe((markers) => {
-      markers.forEach((marker) => {
+      markers.forEach(({ marker, id }) => {
         const feature = {
           type: "Feature",
           geometry: {
@@ -36,16 +58,24 @@
             icon:
               marker.getElement().querySelector("i")?.className || "default",
             // Add any additional metadata properties here
+            id: id,
           },
         }
-        geoJSON.features.push(feature)
+
+        const markerData = {
+          master_map_id: masterMapId,
+          id: id,
+          marker_data: feature,
+        }
+
+        markerInserts.push(markerData)
       })
     })
 
-    // Add vehicle locations to the geoJSON features array
-    // Implement the logic to retrieve vehicle locations and add them as features
+    // Add vehicle locations to the markerInserts array
+    // Implement the logic to retrieve vehicle locations and add them as separate markers
 
-    return geoJSON
+    return markerInserts
   }
 </script>
 

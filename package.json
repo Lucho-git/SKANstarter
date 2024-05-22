@@ -53,6 +53,7 @@
 		"mapbox-gl": "^1.13.3",
 		"plotly.js-basic-dist": "^2.31.1",
 		"plotly.js-dist-min": "^2.31.1",
-		"stripe": "^13.3.0"
+		"stripe": "^13.3.0",
+		"uuid": "^9.0.1"
 	}
 }
