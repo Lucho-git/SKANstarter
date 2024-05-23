@@ -4,6 +4,103 @@
   import { supabase } from "../lib/supabaseClient"
   import { page } from "$app/stores"
 
+  async function synchronizeMarkers() {
+    const session = $page.data.session
+    if (!session) {
+      console.error("User not authenticated")
+      return
+    }
+
+    try {
+      const latestMarkers = await retrieveLatestMarkersFromServer(session)
+      console.log("Latest markers from server:", latestMarkers)
+
+      const localMarkers = $confirmedMarkersStore
+
+      let {
+        localMarkersToBeAdded,
+        localMarkersToBeUpdated,
+        localMarkersToBeDeleted,
+        serverMarkersToBeAdded,
+        serverMarkersToBeUpdated,
+        serverMarkersToBeDeleted,
+      } = compareMarkers(localMarkers, latestMarkers)
+
+      console.log("Local markers to be added:", localMarkersToBeAdded)
+      console.log("Local markers to be updated:", localMarkersToBeUpdated)
+      console.log("Local markers to be deleted:", localMarkersToBeDeleted)
+      console.log("Server markers to be added:", serverMarkersToBeAdded)
+      console.log("Server markers to be updated:", serverMarkersToBeUpdated)
+      console.log("Server markers to be deleted:", serverMarkersToBeDeleted)
+
+      // Perform the necessary actions based on the comparison results
+      // ...
+    } catch (error) {
+      console.error("Error synchronizing markers:", error)
+    }
+  }
+
+  function compareMarkers(localMarkers, serverMarkers) {
+    let localMarkersToBeAdded = []
+    let localMarkersToBeUpdated = []
+    let localMarkersToBeDeleted = []
+    let serverMarkersToBeAdded = []
+    let serverMarkersToBeUpdated = []
+    let serverMarkersToBeDeleted = []
+
+    // Compare local markers with server markers
+    for (const localMarker of localMarkers) {
+      const serverMarker = serverMarkers.find(
+        (marker) => marker.id === localMarker.id,
+      )
+
+      if (serverMarker) {
+        if (
+          new Date(serverMarker.last_confirmed) >
+          new Date(localMarker.timestamp)
+        ) {
+          localMarkersToBeUpdated.push(serverMarker)
+        } else if (
+          new Date(localMarker.timestamp) >
+          new Date(serverMarker.last_confirmed)
+        ) {
+          serverMarkersToBeUpdated.push(localMarker)
+        }
+      } else {
+        serverMarkersToBeAdded.push(localMarker)
+        // Remove the marker from the list of markers to be deleted locally
+        localMarkersToBeDeleted = localMarkersToBeDeleted.filter(
+          (marker) => marker.id !== localMarker.id,
+        )
+      }
+    }
+
+    // Compare server markers with local markers
+    for (const serverMarker of serverMarkers) {
+      const localMarker = localMarkers.find(
+        (marker) => marker.id === serverMarker.id,
+      )
+
+      if (!localMarker) {
+        localMarkersToBeAdded.push(serverMarker)
+      } else {
+        // Remove the marker from the list of markers to be deleted on the server
+        serverMarkersToBeDeleted = serverMarkersToBeDeleted.filter(
+          (marker) => marker.id !== serverMarker.id,
+        )
+      }
+    }
+
+    return {
+      localMarkersToBeAdded,
+      localMarkersToBeUpdated,
+      localMarkersToBeDeleted,
+      serverMarkersToBeAdded,
+      serverMarkersToBeUpdated,
+      serverMarkersToBeDeleted,
+    }
+  }
+
   async function saveMapStateToDatabase() {
     const session = $page.data.session
     if (!session) {
@@ -23,6 +120,42 @@
     } else {
       console.log("Map markers saved to database successfully:", data)
     }
+  }
+
+  async function retrieveLatestMarkersFromServer(session) {
+    console.log("Retrieving latest markers from server...")
+
+    const userId = session.user.id
+
+    // Retrieve the user's profile to get the master_map_id
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("master_map_id")
+      .eq("id", userId)
+      .single()
+
+    if (profileError) {
+      console.error("Error retrieving user profile:", profileError)
+      throw new Error("Failed to retrieve user profile")
+    }
+
+    const masterMapId = profile.master_map_id
+
+    // Retrieve the latest markers from the server
+    const { data: latestMarkers, error: markersError } = await supabase
+      .from("map_markers")
+      .select("id, marker_data, last_confirmed")
+      .eq("master_map_id", masterMapId)
+
+    if (markersError) {
+      console.error(
+        "Error retrieving latest markers from server:",
+        markersError,
+      )
+      throw new Error("Failed to retrieve latest markers from server")
+    }
+
+    return latestMarkers
   }
 
   async function prepareMapStateForSaving(session) {
@@ -47,7 +180,7 @@
     const markerInserts = []
 
     confirmedMarkersStore.subscribe((markers) => {
-      markers.forEach(({ marker, id }) => {
+      markers.forEach(({ marker, id, timestamp }) => {
         const feature = {
           type: "Feature",
           geometry: {
@@ -66,6 +199,7 @@
           master_map_id: masterMapId,
           id: id,
           marker_data: feature,
+          last_confirmed: timestamp, // Include the timestamp as the last_confirmed field
         }
 
         markerInserts.push(markerData)
@@ -81,5 +215,5 @@
 
 <button
   class="btn btn-circle btn-md absolute top-40 right-20 z-10"
-  on:click={saveMapStateToDatabase}>Save Map State</button
+  on:click={synchronizeMarkers}>Save Map State</button
 >

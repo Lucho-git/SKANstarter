@@ -10,3 +10,8 @@ export const userVehicleStore = writable({
 
   export const selectedMarkerStore = writable(null);
   export const confirmedMarkersStore = writable([]);
+  export const removeMarkerStore = writable([]);
+
+
+
+

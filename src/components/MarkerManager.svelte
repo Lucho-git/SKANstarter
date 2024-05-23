@@ -3,6 +3,7 @@
   import {
     selectedMarkerStore,
     confirmedMarkersStore,
+    removeMarkerStore,
   } from "../stores/mapStore"
   import { controlStore } from "../stores/controlStore"
   import { getContext, onMount, onDestroy } from "svelte"
@@ -169,16 +170,18 @@
     // Add the recent marker to the confirmedMarkers array
     if ($selectedMarkerStore) {
       const { marker, id } = $selectedMarkerStore
+      const timestamp = new Date().toISOString() // Get the current timestamp
+
       confirmedMarkersStore.update((markers) => {
         const existingMarkerIndex = markers.findIndex((m) => m.id === id)
         if (existingMarkerIndex !== -1) {
           // If a marker with the same ID already exists, update it
           return markers.map((m, index) =>
-            index === existingMarkerIndex ? { marker, id } : m,
+            index === existingMarkerIndex ? { marker, id, timestamp } : m,
           )
         } else {
           // If no marker with the same ID exists, add a new entry
-          return [...markers, { marker, id }]
+          return [...markers, { marker, id, timestamp }]
         }
       })
       selectedMarkerStore.set(null)
@@ -198,9 +201,20 @@
       marker.remove()
       selectedMarkerStore.set(null)
 
-      confirmedMarkersStore.update((markers) =>
-        markers.filter((m) => m.id !== id),
-      )
+      confirmedMarkersStore.update((markers) => {
+        const updatedMarkers = markers.filter((m) => m.id !== id)
+        if (updatedMarkers.length !== markers.length) {
+          // If a marker was removed, add its ID to the removeMarkerStore
+          const removedMarker = markers.find((m) => m.id === id)
+          removeMarkerStore.update((removedMarkers) => [
+            ...removedMarkers,
+            { id, timestamp: removedMarker.timestamp },
+          ])
+        }
+        return updatedMarkers
+      })
+      console.log("Marker removed:", id)
+      console.log("RemoveMarkerStore", $removeMarkerStore)
     }
 
     // Hide the marker menu
