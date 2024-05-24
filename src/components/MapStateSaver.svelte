@@ -7,11 +7,23 @@
   } from "../stores/mapStore"
   import { supabase } from "../lib/supabaseClient"
   import { page } from "$app/stores"
+  import { toast } from "@zerodevx/svelte-toast"
+
+  let spinning = false
 
   async function synchronizeMarkers() {
+    spinning = true
+
     const session = $page.data.session
     if (!session) {
       console.error("User not authenticated")
+      toast.push("User not authenticated", {
+        theme: {
+          "--toastBackground": "hsl(var(--er))",
+          "--toastColor": "hsl(var(--erc))",
+          "--toastBarBackground": "hsl(var(--er))",
+        },
+      })
       return
     }
 
@@ -62,9 +74,19 @@
         serverMarkersToBeUpdated,
         serverMarkersToBeDeleted,
       })
+      toast.push("Server Synced!")
     } catch (error) {
       console.error("Error synchronizing markers:", error)
+      toast.push("Error synchronizing markers", {
+        theme: {
+          "--toastBackground": "hsl(var(--er))",
+          "--toastColor": "hsl(var(--erc))",
+          "--toastBarBackground": "hsl(var(--er))",
+        },
+      })
     }
+
+    spinning = false
   }
 
   function compareMarkers(localMarkers, serverMarkers) {
@@ -289,27 +311,6 @@
     console.log("Local changes sent to server successfully")
   }
 
-  async function saveMapStateToDatabase() {
-    const session = $page.data.session
-    if (!session) {
-      console.error("User not authenticated")
-      return
-    }
-
-    const markerInserts = await prepareMapStateForSaving(session)
-    console.log("Markers to save:", markerInserts)
-
-    const { data, error } = await supabase
-      .from("map_markers")
-      .upsert(markerInserts, { onConflict: "id" })
-
-    if (error) {
-      console.error("Error saving map markers to database:", error)
-    } else {
-      console.log("Map markers saved to database successfully:", data)
-    }
-  }
-
   async function retrieveLatestMarkersFromServer(session) {
     console.log("Retrieving latest markers from server...")
 
@@ -347,62 +348,98 @@
     return latestMarkers
   }
 
-  async function prepareMapStateForSaving(session) {
-    console.log("Preparing map state for saving...")
+  //   async function saveMapStateToDatabase() {
+  //     const session = $page.data.session
+  //     if (!session) {
+  //       console.error("User not authenticated")
+  //       return
+  //     }
 
-    const userId = session.user.id
+  //     const markerInserts = await prepareMapStateForSaving(session)
+  //     console.log("Markers to save:", markerInserts)
 
-    // Retrieve the user's profile to get the master_map_id
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("master_map_id")
-      .eq("id", userId)
-      .single()
+  //     const { data, error } = await supabase
+  //       .from("map_markers")
+  //       .upsert(markerInserts, { onConflict: "id" })
 
-    if (profileError) {
-      console.error("Error retrieving user profile:", profileError)
-      throw new Error("Failed to retrieve user profile")
-    }
+  //     if (error) {
+  //       console.error("Error saving map markers to database:", error)
+  //     } else {
+  //       console.log("Map markers saved to database successfully:", data)
+  //     }
+  //   }
 
-    const masterMapId = profile.master_map_id
+  //   async function prepareMapStateForSaving(session) {
+  //     console.log("Preparing map state for saving...")
 
-    const markerInserts = []
+  //     const userId = session.user.id
 
-    confirmedMarkersStore.subscribe((markers) => {
-      markers.forEach(({ marker, id, last_confirmed }) => {
-        const feature = {
-          type: "Feature",
-          geometry: {
-            type: "Point",
-            coordinates: marker.getLngLat().toArray(),
-          },
-          properties: {
-            icon:
-              marker.getElement().querySelector("i")?.className || "default",
-            // Add any additional metadata properties here
-            id: id,
-          },
-        }
+  //     // Retrieve the user's profile to get the master_map_id
+  //     const { data: profile, error: profileError } = await supabase
+  //       .from("profiles")
+  //       .select("master_map_id")
+  //       .eq("id", userId)
+  //       .single()
 
-        const markerData = {
-          master_map_id: masterMapId,
-          id: id,
-          marker_data: feature,
-          last_confirmed: last_confirmed, // Include the timestamp as the last_confirmed field
-        }
+  //     if (profileError) {
+  //       console.error("Error retrieving user profile:", profileError)
+  //       throw new Error("Failed to retrieve user profile")
+  //     }
 
-        markerInserts.push(markerData)
-      })
-    })
+  //     const masterMapId = profile.master_map_id
 
-    // Add vehicle locations to the markerInserts array
-    // Implement the logic to retrieve vehicle locations and add them as separate markers
+  //     const markerInserts = []
 
-    return markerInserts
-  }
+  //     confirmedMarkersStore.subscribe((markers) => {
+  //       markers.forEach(({ marker, id, last_confirmed }) => {
+  //         const feature = {
+  //           type: "Feature",
+  //           geometry: {
+  //             type: "Point",
+  //             coordinates: marker.getLngLat().toArray(),
+  //           },
+  //           properties: {
+  //             icon:
+  //               marker.getElement().querySelector("i")?.className || "default",
+  //             // Add any additional metadata properties here
+  //             id: id,
+  //           },
+  //         }
+
+  //         const markerData = {
+  //           master_map_id: masterMapId,
+  //           id: id,
+  //           marker_data: feature,
+  //           last_confirmed: last_confirmed, // Include the timestamp as the last_confirmed field
+  //         }
+
+  //         markerInserts.push(markerData)
+  //       })
+  //     })
+
+  //     // Add vehicle locations to the markerInserts array
+  //     // Implement the logic to retrieve vehicle locations and add them as separate markers
+
+  //     return markerInserts
+  //   }
 </script>
 
 <button
   class="btn btn-circle btn-md absolute top-40 right-20 z-10"
-  on:click={synchronizeMarkers}>Save Map State</button
+  on:click={synchronizeMarkers}
 >
+  <svg
+    class="w-6 h-6 {spinning ? 'animate-spin' : ''}"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+    />
+  </svg>
+</button>

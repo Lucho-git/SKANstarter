@@ -30,3 +30,12 @@ button[disabled].authBtn::before {
   content: "Loading...";
   color: hsl(var(--pc));
 }
+
+:root {
+    --toastContainerTop: auto;
+    --toastContainerRight: auto;
+    --toastContainerBottom: 1.5rem;
+    --toastContainerLeft: 45%;
+    --toastContainerTransform: translateX(-50%);
+  }
+  

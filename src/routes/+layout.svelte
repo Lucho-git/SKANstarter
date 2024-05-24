@@ -7,9 +7,27 @@
   import "@fontsource/archivo/700.css"
   import "@fontsource/archivo/800.css"
   import "@fontsource/archivo/900.css"
+  import { SvelteToast } from "@zerodevx/svelte-toast"
+  import ToastContainer from "../components/ToastContainer.svelte"
+
   import { onMount } from "svelte"
   import { getAuthState } from "../stores/user"
 
+  const options = {
+    rounded: true,
+    theme: {
+      "--toastBackground": "hsl(var(--in))",
+      "--toastColor": "hsl(var(--inc))",
+      "--toastBarBackground": "hsl(var(--in))",
+      "--toastBorderRadius": "1rem",
+      //   "--toastContainerTop": "auto",
+      //   "--toastContainerRight": "auto",
+      //   "--toastContainerBottom": "1.5rem",
+      //   "--toastContainerLeft": "50%",
+      //   "--toastContainerTransform": "translateX(-50%)",
+    },
+    classes: ["text-center"],
+  }
   onMount(async () => {
     await getAuthState()
   })
@@ -29,3 +47,4 @@
   ></div>
 {/if}
 <slot />
+<SvelteToast {options} />
