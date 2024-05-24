@@ -12,6 +12,7 @@
 
   let spinning = false
   let subscription
+  let storeSubscription
 
   onMount(() => {
     // Subscribe to changes in the 'map_markers' table
@@ -22,13 +23,20 @@
         { event: "*", schema: "public", table: "map_markers" },
         (payload) => {
           console.log("Received update from Supabase Realtime:", payload)
-          synchronizeMarkers()
+          synchronizeMarkers("Received update from Supabase Realtime:")
         },
       )
       .subscribe()
 
     subscription = channel
-    synchronizeMarkers()
+
+    synchronizeMarkers("Loaded from server")
+
+    // Subscribe to changes in the confirmedMarkerStore
+    storeSubscription = confirmedMarkersStore.subscribe((markers) => {
+      console.log("confirmedMarkerStore updated:", markers)
+      synchronizeMarkers("MarkerStore updated")
+    })
   })
 
   onDestroy(() => {
@@ -38,7 +46,7 @@
     }
   })
 
-  async function synchronizeMarkers() {
+  async function synchronizeMarkers(toasttext) {
     spinning = true
 
     const session = $page.data.session
@@ -101,7 +109,7 @@
         serverMarkersToBeUpdated,
         serverMarkersToBeDeleted,
       })
-      toast.push("Server Synced!")
+      toast.push(toasttext)
     } catch (error) {
       console.error("Error synchronizing markers:", error)
       toast.push("Error synchronizing markers", {
@@ -453,7 +461,7 @@
 
 <button
   class="btn btn-circle btn-md absolute top-40 right-20 z-10"
-  on:click={synchronizeMarkers}
+  on:click={() => synchronizeMarkers("Sync Button")}
 >
   <svg
     class="w-6 h-6 {spinning ? 'animate-spin' : ''}"
