@@ -1,5 +1,6 @@
 <!-- MapStateSaver.svelte -->
 <script>
+  import { onMount, onDestroy } from "svelte"
   import {
     confirmedMarkersStore,
     removeMarkerStore,
@@ -10,6 +11,32 @@
   import { toast } from "@zerodevx/svelte-toast"
 
   let spinning = false
+  let subscription
+
+  onMount(() => {
+    // Subscribe to changes in the 'map_markers' table
+    const channel = supabase
+      .channel("map_markers_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "map_markers" },
+        (payload) => {
+          console.log("Received update from Supabase Realtime:", payload)
+          synchronizeMarkers()
+        },
+      )
+      .subscribe()
+
+    subscription = channel
+    synchronizeMarkers()
+  })
+
+  onDestroy(() => {
+    // Unsubscribe from the Realtime subscription when the component is destroyed
+    if (subscription) {
+      supabase.removeChannel(subscription)
+    }
+  })
 
   async function synchronizeMarkers() {
     spinning = true
