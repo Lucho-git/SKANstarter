@@ -35,7 +35,15 @@ button[disabled].authBtn::before {
     --toastContainerTop: auto;
     --toastContainerRight: auto;
     --toastContainerBottom: 1.5rem;
-    --toastContainerLeft: 30%;
+    --toastContainerLeft: 50%;
     --toastContainerTransform: translateX(-50%);
+  }
+  
+  @media screen and (max-width: 768px) {
+    :root {
+      --toastContainerWidth: 90%;
+      --toastContainerLeft: 50%;
+      --toastContainerTransform: translateX(-50%);
+    }
   }
   
