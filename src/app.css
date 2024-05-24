@@ -35,7 +35,7 @@ button[disabled].authBtn::before {
     --toastContainerTop: auto;
     --toastContainerRight: auto;
     --toastContainerBottom: 1.5rem;
-    --toastContainerLeft: 45%;
+    --toastContainerLeft: 30%;
     --toastContainerTransform: translateX(-50%);
   }
   
