@@ -53,10 +53,15 @@
         })),
       ]
 
+      // Apply server changes to the local map
       markerActionsStore.set(markerActions)
 
-      // Perform the necessary actions based on the comparison results
-      // ...
+      // Send local changes to the server
+      await sendLocalChangesToServer(session, {
+        serverMarkersToBeAdded,
+        serverMarkersToBeUpdated,
+        serverMarkersToBeDeleted,
+      })
     } catch (error) {
       console.error("Error synchronizing markers:", error)
     }
@@ -150,6 +155,138 @@
       serverMarkersToBeUpdated,
       serverMarkersToBeDeleted,
     }
+  }
+
+  async function sendLocalChangesToServer(
+    session,
+    {
+      serverMarkersToBeAdded,
+      serverMarkersToBeUpdated,
+      serverMarkersToBeDeleted,
+    },
+  ) {
+    console.log("Sending local changes to server...")
+
+    const userId = session.user.id
+
+    // Retrieve the user's profile to get the master_map_id
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("master_map_id")
+      .eq("id", userId)
+      .single()
+
+    if (profileError) {
+      console.error("Error retrieving user profile:", profileError)
+      throw new Error("Failed to retrieve user profile")
+    }
+
+    const masterMapId = profile.master_map_id
+
+    // Process markers to be added
+    if (serverMarkersToBeAdded.length > 0) {
+      const addMarkerData = serverMarkersToBeAdded.map((marker) => {
+        const { marker: mapboxMarker, id, last_confirmed } = marker
+        const coordinates = mapboxMarker.getLngLat().toArray()
+        const iconClass =
+          mapboxMarker.getElement().querySelector("i")?.className || "default"
+
+        const feature = {
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: coordinates,
+          },
+          properties: {
+            icon: iconClass,
+            id: id,
+          },
+        }
+
+        return {
+          master_map_id: masterMapId,
+          id: id,
+          marker_data: feature,
+          last_confirmed: last_confirmed,
+        }
+      })
+
+      const { error: addError } = await supabase
+        .from("map_markers")
+        .insert(addMarkerData)
+
+      if (addError) {
+        console.error("Error adding markers to server:", addError)
+        throw new Error("Failed to add markers to server")
+      }
+    }
+
+    // Process markers to be updated
+    if (serverMarkersToBeUpdated.length > 0) {
+      const updateMarkerData = serverMarkersToBeUpdated.map((marker) => {
+        const { marker: mapboxMarker, id, last_confirmed } = marker
+        const coordinates = mapboxMarker.getLngLat().toArray()
+        const iconClass =
+          mapboxMarker.getElement().querySelector("i")?.className || "default"
+
+        const feature = {
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: coordinates,
+          },
+          properties: {
+            icon: iconClass,
+            id: id,
+          },
+        }
+
+        return {
+          id: id,
+          marker_data: feature,
+          last_confirmed: last_confirmed,
+        }
+      })
+
+      const { error: updateError } = await supabase
+        .from("map_markers")
+        .upsert(updateMarkerData, { onConflict: "id" })
+
+      if (updateError) {
+        console.error("Error updating markers on server:", updateError)
+        throw new Error("Failed to update markers on server")
+      }
+    }
+
+    // Process markers to be deleted
+    if (serverMarkersToBeDeleted.length > 0) {
+      const deleteMarkerData = serverMarkersToBeDeleted.map((marker) => ({
+        id: marker.id,
+        deleted: true,
+        deleted_at: new Date().toISOString(),
+      }))
+
+      const { error: deleteError } = await supabase
+        .from("map_markers")
+        .upsert(deleteMarkerData, { onConflict: "id" })
+
+      if (deleteError) {
+        console.error("Error deleting markers on server:", deleteError)
+        throw new Error("Failed to delete markers on server")
+      }
+
+      // Remove the deleted markers from the removeMarkerStore
+      removeMarkerStore.update((markers) =>
+        markers.filter(
+          (marker) =>
+            !serverMarkersToBeDeleted.some(
+              (deletedMarker) => deletedMarker.id === marker.id,
+            ),
+        ),
+      )
+    }
+
+    console.log("Local changes sent to server successfully")
   }
 
   async function saveMapStateToDatabase() {
