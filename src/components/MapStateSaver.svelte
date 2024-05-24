@@ -329,11 +329,12 @@
 
     const masterMapId = profile.master_map_id
 
-    // Retrieve the latest markers from the server
+    // Retrieve the latest markers from the server, excluding deleted markers
     const { data: latestMarkers, error: markersError } = await supabase
       .from("map_markers")
-      .select("id, marker_data, last_confirmed")
+      .select("id, marker_data, last_confirmed, deleted")
       .eq("master_map_id", masterMapId)
+      .is("deleted", null)
 
     if (markersError) {
       console.error(
