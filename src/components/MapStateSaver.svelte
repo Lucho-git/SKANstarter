@@ -1,6 +1,10 @@
 <!-- MapStateSaver.svelte -->
 <script>
-  import { confirmedMarkersStore } from "../stores/mapStore"
+  import {
+    confirmedMarkersStore,
+    removeMarkerStore,
+    markerActionsStore,
+  } from "../stores/mapStore"
   import { supabase } from "../lib/supabaseClient"
   import { page } from "$app/stores"
 
@@ -33,6 +37,24 @@
       console.log("Server markers to be updated:", serverMarkersToBeUpdated)
       console.log("Server markers to be deleted:", serverMarkersToBeDeleted)
 
+      //Add the local results into an action queue
+      const markerActions = [
+        ...localMarkersToBeAdded.map((marker) => ({
+          action: "add",
+          markerData: marker,
+        })),
+        ...localMarkersToBeUpdated.map((marker) => ({
+          action: "update",
+          markerData: marker,
+        })),
+        ...localMarkersToBeDeleted.map((marker) => ({
+          action: "delete",
+          markerData: marker,
+        })),
+      ]
+
+      markerActionsStore.set(markerActions)
+
       // Perform the necessary actions based on the comparison results
       // ...
     } catch (error) {
@@ -55,23 +77,36 @@
       )
 
       if (serverMarker) {
-        if (
+        if (serverMarker.deleted) {
+          if (
+            new Date(localMarker.last_confirmed) >
+            new Date(serverMarker.deleted_at)
+          ) {
+            // If the local modification is newer than the deletion, update the server marker
+            serverMarkersToBeUpdated.push(localMarker)
+          } else {
+            // If the deletion is newer, delete the local marker
+            localMarkersToBeDeleted.push(localMarker)
+          }
+        } else if (
           new Date(serverMarker.last_confirmed) >
-          new Date(localMarker.timestamp)
+          new Date(localMarker.last_confirmed)
         ) {
           localMarkersToBeUpdated.push(serverMarker)
         } else if (
-          new Date(localMarker.timestamp) >
+          new Date(localMarker.last_confirmed) >
           new Date(serverMarker.last_confirmed)
         ) {
           serverMarkersToBeUpdated.push(localMarker)
         }
       } else {
-        serverMarkersToBeAdded.push(localMarker)
-        // Remove the marker from the list of markers to be deleted locally
-        localMarkersToBeDeleted = localMarkersToBeDeleted.filter(
-          (marker) => marker.id !== localMarker.id,
+        const removedMarker = $removeMarkerStore.find(
+          (marker) => marker.id === localMarker.id,
         )
+
+        if (!removedMarker) {
+          serverMarkersToBeAdded.push(localMarker)
+        }
       }
     }
 
@@ -80,14 +115,30 @@
       const localMarker = localMarkers.find(
         (marker) => marker.id === serverMarker.id,
       )
+      const removedMarker = $removeMarkerStore.find(
+        (marker) => marker.id === serverMarker.id,
+      )
 
-      if (!localMarker) {
+      if (!localMarker && !serverMarker.deleted && !removedMarker) {
         localMarkersToBeAdded.push(serverMarker)
-      } else {
-        // Remove the marker from the list of markers to be deleted on the server
-        serverMarkersToBeDeleted = serverMarkersToBeDeleted.filter(
-          (marker) => marker.id !== serverMarker.id,
-        )
+      }
+    }
+
+    // Process the removeMarkerStore
+    for (const removedMarker of $removeMarkerStore) {
+      const serverMarker = serverMarkers.find(
+        (marker) => marker.id === removedMarker.id,
+      )
+
+      if (serverMarker) {
+        if (
+          new Date(removedMarker.last_confirmed) >=
+          new Date(serverMarker.last_confirmed)
+        ) {
+          // If the removal last_confirmed is newer or equal to the server marker's last_confirmed,
+          // add the marker to serverMarkersToBeDeleted
+          serverMarkersToBeDeleted.push(serverMarker)
+        }
       }
     }
 
@@ -180,7 +231,7 @@
     const markerInserts = []
 
     confirmedMarkersStore.subscribe((markers) => {
-      markers.forEach(({ marker, id, timestamp }) => {
+      markers.forEach(({ marker, id, last_confirmed }) => {
         const feature = {
           type: "Feature",
           geometry: {
@@ -199,7 +250,7 @@
           master_map_id: masterMapId,
           id: id,
           marker_data: feature,
-          last_confirmed: timestamp, // Include the timestamp as the last_confirmed field
+          last_confirmed: last_confirmed, // Include the timestamp as the last_confirmed field
         }
 
         markerInserts.push(markerData)

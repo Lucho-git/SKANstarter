@@ -12,6 +12,10 @@ export const userVehicleStore = writable({
   export const confirmedMarkersStore = writable([]);
   export const removeMarkerStore = writable([]);
 
+  export const markerActionsStore = writable([]);
+
+
+
 
 
 

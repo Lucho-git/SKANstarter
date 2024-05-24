@@ -4,6 +4,7 @@
     selectedMarkerStore,
     confirmedMarkersStore,
     removeMarkerStore,
+    markerActionsStore,
   } from "../stores/mapStore"
   import { controlStore } from "../stores/controlStore"
   import { getContext, onMount, onDestroy } from "svelte"
@@ -170,18 +171,18 @@
     // Add the recent marker to the confirmedMarkers array
     if ($selectedMarkerStore) {
       const { marker, id } = $selectedMarkerStore
-      const timestamp = new Date().toISOString() // Get the current timestamp
+      const last_confirmed = new Date().toISOString() // Get the current last_confirmed
 
       confirmedMarkersStore.update((markers) => {
         const existingMarkerIndex = markers.findIndex((m) => m.id === id)
         if (existingMarkerIndex !== -1) {
           // If a marker with the same ID already exists, update it
           return markers.map((m, index) =>
-            index === existingMarkerIndex ? { marker, id, timestamp } : m,
+            index === existingMarkerIndex ? { marker, id, last_confirmed } : m,
           )
         } else {
           // If no marker with the same ID exists, add a new entry
-          return [...markers, { marker, id, timestamp }]
+          return [...markers, { marker, id, last_confirmed }]
         }
       })
       selectedMarkerStore.set(null)
@@ -208,7 +209,7 @@
           const removedMarker = markers.find((m) => m.id === id)
           removeMarkerStore.update((removedMarkers) => [
             ...removedMarkers,
-            { id, timestamp: removedMarker.timestamp },
+            { id, last_confirmed: removedMarker.last_confirmed },
           ])
         }
         return updatedMarkers
@@ -246,6 +247,148 @@
       // Implement your menu functionality here
     }
   }
+
+  // Handle server synchronization for markers:
+
+  async function applyMarkerActions(actions) {
+    const map = await getMap()
+    const completedActions = []
+
+    actions.forEach((action, index) => {
+      const { markerData } = action
+      const { id, marker_data, last_confirmed } = markerData
+
+      if (action.action === "add") {
+        const { geometry, properties } = marker_data
+        const { coordinates } = geometry
+        const { icon } = properties
+
+        const lngLat = new mapboxgl.LngLat(coordinates[0], coordinates[1])
+
+        // Create a custom marker element based on the icon
+        const markerElement = document.createElement("div")
+        markerElement.style.display = "flex"
+        markerElement.style.justifyContent = "center"
+        markerElement.style.alignItems = "center"
+        markerElement.style.width = "35px"
+        markerElement.style.height = "35px"
+        markerElement.style.borderRadius = "100%"
+        markerElement.style.backgroundColor = "LightGray"
+        markerElement.style.opacity = 0.9
+        markerElement.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.2)"
+
+        const iconElement = document.createElement("i")
+        iconElement.className = icon
+        iconElement.style.fontSize = "20px"
+        iconElement.style.color = "black"
+        iconElement.style.fill = "#ff6347"
+        iconElement.style.fontWeight = "bold"
+
+        markerElement.appendChild(iconElement)
+
+        const newMarker = new mapboxgl.Marker({ element: markerElement })
+          .setLngLat(lngLat)
+          .addTo(map)
+
+        // Add the marker to the confirmedMarkersStore
+        confirmedMarkersStore.update((markers) => [
+          ...markers,
+          { marker: newMarker, id, last_confirmed },
+        ])
+
+        console.log("Marker added:", markerData)
+        completedActions.push(index)
+      } else if (action.action === "update") {
+        // Find the corresponding marker in the confirmedMarkersStore
+        const existingMarker = $confirmedMarkersStore.find(
+          (marker) => marker.id === id,
+        )
+
+        if (existingMarker) {
+          const { marker: oldMarker } = existingMarker
+          const { geometry, properties } = marker_data
+          const { coordinates } = geometry
+          const { icon } = properties
+
+          const lngLat = new mapboxgl.LngLat(coordinates[0], coordinates[1])
+
+          // Remove the old marker from the map
+          oldMarker.remove()
+
+          // Create a new marker element based on the updated data
+          const markerElement = document.createElement("div")
+          markerElement.style.display = "flex"
+          markerElement.style.justifyContent = "center"
+          markerElement.style.alignItems = "center"
+          markerElement.style.width = "35px"
+          markerElement.style.height = "35px"
+          markerElement.style.borderRadius = "100%"
+          markerElement.style.backgroundColor = "LightGray"
+          markerElement.style.opacity = 0.9
+          markerElement.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.2)"
+
+          const iconElement = document.createElement("i")
+          iconElement.className = icon
+          iconElement.style.fontSize = "20px"
+          iconElement.style.color = "black"
+          iconElement.style.fill = "#ff6347"
+          iconElement.style.fontWeight = "bold"
+
+          markerElement.appendChild(iconElement)
+
+          const newMarker = new mapboxgl.Marker({ element: markerElement })
+            .setLngLat(lngLat)
+            .addTo(map)
+
+          // Update the confirmedMarkersStore with the new marker and last_confirmed value
+          confirmedMarkersStore.update((markers) =>
+            markers.map((marker) =>
+              marker.id === id
+                ? { marker: newMarker, id, last_confirmed }
+                : marker,
+            ),
+          )
+
+          console.log("Marker updated:", markerData)
+        }
+
+        completedActions.push(index)
+      } else if (action.action === "delete") {
+        // Find the corresponding marker in the confirmedMarkersStore
+        const existingMarker = $confirmedMarkersStore.find(
+          (marker) => marker.id === id,
+        )
+
+        if (existingMarker) {
+          const { marker } = existingMarker
+
+          // Remove the marker from the map
+          marker.remove()
+
+          // Update the confirmedMarkersStore by removing the marker
+          confirmedMarkersStore.update((markers) =>
+            markers.filter((marker) => marker.id !== id),
+          )
+
+          console.log("Marker removed:", markerData)
+        }
+
+        completedActions.push(index)
+      }
+    })
+
+    console.log("Completed actions:", completedActions)
+    console.log("MarkerActionsStore", $markerActionsStore)
+    // Remove completed actions from the markerActionsStore
+    if (completedActions.length > 0) {
+      markerActionsStore.update((currentActions) =>
+        currentActions.filter((_, index) => !completedActions.includes(index)),
+      )
+    }
+    console.log("MarkerActionsStore", $markerActionsStore)
+  }
+
+  markerActionsStore.subscribe(applyMarkerActions)
 
   onMount(async () => {
     const map = await getMap()
