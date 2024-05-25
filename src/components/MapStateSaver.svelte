@@ -15,9 +15,12 @@
   let subscription
   let storeSubscription
 
-  const debouncedSynchronizeMarkers = debounce(synchronizeMarkers, 1000)
-
+  let debouncedSynchronizeMarkers
+  let synchronizationInProgress = false
   onMount(() => {
+    // Create a single debounced instance of the synchronizeMarkers function
+    debouncedSynchronizeMarkers = debounce(synchronizeMarkers, 1000)
+
     // Subscribe to changes in the 'map_markers' table
     const channel = supabase
       .channel("map_markers_changes")
@@ -26,7 +29,9 @@
         { event: "*", schema: "public", table: "map_markers" },
         (payload) => {
           console.log("Received update from Supabase Realtime:", payload)
-          debouncedSynchronizeMarkers("Received update from Supabase Realtime:")
+          if (!synchronizationInProgress) {
+            debouncedSynchronizeMarkers("Server Sync")
+          }
         },
       )
       .subscribe()
@@ -38,7 +43,9 @@
     // Subscribe to changes in the confirmedMarkerStore
     storeSubscription = confirmedMarkersStore.subscribe((markers) => {
       console.log("confirmedMarkerStore updated:", markers)
-      debouncedSynchronizeMarkers("MarkerStore updated")
+      if (!synchronizationInProgress) {
+        debouncedSynchronizeMarkers("Local Sync")
+      }
     })
   })
 
@@ -53,6 +60,12 @@
   })
 
   async function synchronizeMarkers(toasttext) {
+    if (synchronizationInProgress) {
+      console.log("Synchronization already in progress. Skipping.")
+      return
+    }
+
+    synchronizationInProgress = true
     spinning = true
 
     const session = $page.data.session
@@ -126,7 +139,7 @@
         },
       })
     }
-
+    synchronizationInProgress = false
     spinning = false
   }
 
