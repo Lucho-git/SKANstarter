@@ -114,6 +114,7 @@
     if ($selectedMarkerStore) {
       const { marker, id } = $selectedMarkerStore
       const lngLat = marker.getLngLat()
+
       marker.remove()
       // Find the selected icon object based on the iconId
       const selectedIcon = markerIcons.find((icon) => icon.id === iconId)
@@ -145,7 +146,14 @@
         const newMarker = new mapboxgl.Marker({ element: markerElement })
           .setLngLat(lngLat)
           .addTo(map)
+
         selectedMarkerStore.set({ marker: newMarker, id })
+
+        // Dispatch a custom event to notify about the icon change
+        const iconChangeEvent = new CustomEvent("iconChange", {
+          detail: { marker: newMarker, id },
+        })
+        document.dispatchEvent(iconChangeEvent)
       } else {
         console.log("recentMarker is null or undefined")
       }
@@ -190,18 +198,45 @@
     // Add the recent marker to the confirmedMarkers array
     if ($selectedMarkerStore) {
       const { marker, id } = $selectedMarkerStore
-      const last_confirmed = new Date().toISOString() // Get the current last_confirmed
+      const currentTimestamp = new Date().toISOString() // Get the current timestamp
+
+      const existingMarker = $confirmedMarkersStore.find((m) => m.id === id)
+      if (existingMarker) {
+        const existingLngLat = existingMarker.marker.getLngLat()
+        const newLngLat = marker.getLngLat()
+        const existingIcon = existingMarker.marker
+          .getElement()
+          .querySelector("i")?.className
+        const newIcon = marker.getElement().querySelector("i")?.className
+
+        if (
+          existingLngLat.lng === newLngLat.lng &&
+          existingLngLat.lat === newLngLat.lat &&
+          existingIcon === newIcon
+        ) {
+          // If the marker's position and icon are the same as the existing marker,
+          // it means no changes were made, so we don't need to update the store
+          selectedMarkerStore.set(null)
+          controlStore.update((controls) => ({
+            ...controls,
+            showMarkerMenu: false,
+          }))
+          return
+        }
+      }
 
       confirmedMarkersStore.update((markers) => {
         const existingMarkerIndex = markers.findIndex((m) => m.id === id)
         if (existingMarkerIndex !== -1) {
           // If a marker with the same ID already exists, update it
           return markers.map((m, index) =>
-            index === existingMarkerIndex ? { marker, id, last_confirmed } : m,
+            index === existingMarkerIndex
+              ? { marker, id, last_confirmed: currentTimestamp }
+              : m,
           )
         } else {
           // If no marker with the same ID exists, add a new entry
-          return [...markers, { marker, id, last_confirmed }]
+          return [...markers, { marker, id, last_confirmed: currentTimestamp }]
         }
       })
       selectedMarkerStore.set(null)

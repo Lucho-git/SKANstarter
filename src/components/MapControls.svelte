@@ -32,6 +32,31 @@
     confirmedMarkers = markers
   })
 
+  document.addEventListener("iconChange", handleIconChange)
+
+  function handleIconChange(event) {
+    const { marker, id } = event.detail
+    const markerElement = marker.getElement()
+
+    // Remove event listeners from the old marker element
+    markerElement.removeEventListener("mouseenter", handleMarkerMouseEnter)
+    markerElement.removeEventListener("mouseleave", handleMarkerMouseLeave)
+    markerElement.removeEventListener("click", handleMarkerClick)
+    markerElement.removeAttribute("data-listeners-added")
+
+    // Add event listeners to the new marker element
+    markerElement.addEventListener("mouseenter", handleMarkerMouseEnter)
+    markerElement.addEventListener("mouseleave", handleMarkerMouseLeave)
+    markerElement.addEventListener("click", handleMarkerClick)
+    markerElement.setAttribute("data-listeners-added", "true")
+
+    // Update the confirmedMarkers array with the new marker data
+    const existingMarkerIndex = confirmedMarkers.findIndex((m) => m.id === id)
+    if (existingMarkerIndex !== -1) {
+      confirmedMarkers[existingMarkerIndex] = { marker, id }
+    }
+  }
+
   function handleMarkerMouseEnter(event) {
     const markerElement = event.target
     markerElement.style.cursor = "pointer"
