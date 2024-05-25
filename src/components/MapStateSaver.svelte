@@ -9,10 +9,13 @@
   import { supabase } from "../lib/supabaseClient"
   import { page } from "$app/stores"
   import { toast } from "@zerodevx/svelte-toast"
+  import { debounce } from "lodash-es"
 
   let spinning = false
   let subscription
   let storeSubscription
+
+  const debouncedSynchronizeMarkers = debounce(synchronizeMarkers, 1000)
 
   onMount(() => {
     // Subscribe to changes in the 'map_markers' table
@@ -23,7 +26,7 @@
         { event: "*", schema: "public", table: "map_markers" },
         (payload) => {
           console.log("Received update from Supabase Realtime:", payload)
-          synchronizeMarkers("Received update from Supabase Realtime:")
+          debouncedSynchronizeMarkers("Received update from Supabase Realtime:")
         },
       )
       .subscribe()
@@ -35,11 +38,14 @@
     // Subscribe to changes in the confirmedMarkerStore
     storeSubscription = confirmedMarkersStore.subscribe((markers) => {
       console.log("confirmedMarkerStore updated:", markers)
-      synchronizeMarkers("MarkerStore updated")
+      debouncedSynchronizeMarkers("MarkerStore updated")
     })
   })
 
   onDestroy(() => {
+    // Cancel any pending debounced calls
+    debouncedSynchronizeMarkers.cancel()
+
     // Unsubscribe from the Realtime subscription when the component is destroyed
     if (subscription) {
       supabase.removeChannel(subscription)
@@ -461,7 +467,7 @@
 
 <button
   class="btn btn-circle btn-md absolute top-40 right-20 z-10"
-  on:click={() => synchronizeMarkers("Sync Button")}
+  on:click={() => debouncedSynchronizeMarkers("Sync Button")}
 >
   <svg
     class="w-6 h-6 {spinning ? 'animate-spin' : ''}"
