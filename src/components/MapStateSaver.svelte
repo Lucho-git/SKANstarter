@@ -20,7 +20,7 @@
   onMount(() => {
     console.log("MouNTINGING")
     // Create a single debounced instance of the synchronizeMarkers function
-    debouncedSynchronizeMarkers = debounce(synchronizeMarkers, 1000)
+    debouncedSynchronizeMarkers = debounce(synchronizeMarkers, 500)
 
     // Subscribe to changes in the 'map_markers' table
     const channel = supabase
