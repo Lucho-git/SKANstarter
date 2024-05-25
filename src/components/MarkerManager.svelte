@@ -89,6 +89,25 @@
   ]
   // MapViewer.svelte
 
+  markerActionsStore.subscribe(applyMarkerActions)
+
+  onMount(async () => {
+    const map = await getMap()
+
+    const mapContainer = document.querySelector(".map-container")
+    mapContainer.addEventListener("markerPlacement", handleMarkerPlacement)
+    mapContainer.addEventListener("markerSelection", handleMarkerSelection)
+
+    return () => {
+      mapContainer.removeEventListener("markerPlacement", handleMarkerPlacement)
+      mapContainer.removeEventListener("markerSelection", handleMarkerSelection)
+    }
+  })
+
+  onDestroy(() => {
+    console.log("Destroying MarkerManager")
+  })
+
   async function handleIconSelection(icon) {
     const map = await getMap()
     let iconId = icon.id
@@ -296,7 +315,6 @@
           { marker: newMarker, id, last_confirmed },
         ])
 
-        console.log("Marker added:", markerData)
         completedActions.push(index)
       } else if (action.action === "update") {
         // Find the corresponding marker in the confirmedMarkersStore
@@ -377,33 +395,13 @@
       }
     })
 
-    console.log("Completed actions:", completedActions)
-    console.log("MarkerActionsStore", $markerActionsStore)
     // Remove completed actions from the markerActionsStore
     if (completedActions.length > 0) {
       markerActionsStore.update((currentActions) =>
         currentActions.filter((_, index) => !completedActions.includes(index)),
       )
     }
-    console.log("MarkerActionsStore", $markerActionsStore)
   }
-
-  markerActionsStore.subscribe(applyMarkerActions)
-
-  onMount(async () => {
-    const map = await getMap()
-
-    const mapContainer = document.querySelector(".map-container")
-    mapContainer.addEventListener("markerPlacement", handleMarkerPlacement)
-    mapContainer.addEventListener("markerSelection", handleMarkerSelection)
-
-    return () => {
-      mapContainer.removeEventListener("markerPlacement", handleMarkerPlacement)
-      mapContainer.removeEventListener("markerSelection", handleMarkerSelection)
-    }
-  })
-
-  onDestroy(() => {})
 </script>
 
 <!-- Marker Menu -->

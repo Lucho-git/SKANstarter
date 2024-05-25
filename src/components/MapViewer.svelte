@@ -1,5 +1,5 @@
 <script>
-  import { onMount, setContext } from "svelte"
+  import { onMount, onDestroy, setContext } from "svelte"
   import mapboxgl from "mapbox-gl"
   import "mapbox-gl/dist/mapbox-gl.css"
   import { debounce } from "lodash-es"
@@ -102,6 +102,22 @@
 
     mapStore.set(map)
     mapInitialized = true
+  })
+
+  onDestroy(() => {
+    console.log("DestroyingMap")
+    // if (map) {
+    //   //   // Remove all markers from the map
+    //   //   //   map.getMarkers().forEach((marker) => {
+    //   //   //     marker.remove()
+    //   //   //   })
+    //   //   // Remove all event listeners and controls from the map
+    //   //   map.off()
+    //   //   map.remove()
+    //   // Set the map reference to null
+    //   map = null
+    //   mapStore.set(null)
+    // }
   })
 
   //Finished Setup

@@ -18,6 +18,7 @@
   let debouncedSynchronizeMarkers
   let synchronizationInProgress = false
   onMount(() => {
+    console.log("MouNTINGING")
     // Create a single debounced instance of the synchronizeMarkers function
     debouncedSynchronizeMarkers = debounce(synchronizeMarkers, 1000)
 
@@ -30,6 +31,10 @@
         (payload) => {
           console.log("Received update from Supabase Realtime:", payload)
           if (!synchronizationInProgress) {
+            console.log(
+              "Server Synchronization not in progress,",
+              synchronizationInProgress,
+            )
             debouncedSynchronizeMarkers("Server Sync")
           }
         },
@@ -42,14 +47,19 @@
 
     // Subscribe to changes in the confirmedMarkerStore
     storeSubscription = confirmedMarkersStore.subscribe((markers) => {
-      console.log("confirmedMarkerStore updated:", markers)
       if (!synchronizationInProgress) {
+        console.log(
+          "Local Synchronization not in progress,",
+          synchronizationInProgress,
+        )
+
         debouncedSynchronizeMarkers("Local Sync")
       }
     })
   })
 
   onDestroy(() => {
+    console.log("Destroying MapStateSaver")
     // Cancel any pending debounced calls
     debouncedSynchronizeMarkers.cancel()
 
@@ -57,6 +67,29 @@
     if (subscription) {
       supabase.removeChannel(subscription)
     }
+
+    // Unsubscribe from the confirmedMarkerStore subscription
+    if (storeSubscription) {
+      storeSubscription()
+    }
+
+    console.log("Removing all markers from the map")
+    // Remove all markers from the map
+    confirmedMarkersStore.update((markers) => {
+      markers.forEach(({ marker }) => {
+        marker.remove()
+      })
+      return []
+    })
+
+    // Clear the confirmedMarkersStore
+    confirmedMarkersStore.set([])
+
+    // Clear the removeMarkerStore
+    removeMarkerStore.set([])
+
+    // Clear the markerActionsStore
+    markerActionsStore.set([])
   })
 
   async function synchronizeMarkers(toasttext) {
@@ -96,12 +129,12 @@
         serverMarkersToBeDeleted,
       } = compareMarkers(localMarkers, latestMarkers)
 
-      console.log("Local markers to be added:", localMarkersToBeAdded)
-      console.log("Local markers to be updated:", localMarkersToBeUpdated)
-      console.log("Local markers to be deleted:", localMarkersToBeDeleted)
-      console.log("Server markers to be added:", serverMarkersToBeAdded)
-      console.log("Server markers to be updated:", serverMarkersToBeUpdated)
-      console.log("Server markers to be deleted:", serverMarkersToBeDeleted)
+      //   console.log("Local markers to be added:", localMarkersToBeAdded)
+      //   console.log("Local markers to be updated:", localMarkersToBeUpdated)
+      //   console.log("Local markers to be deleted:", localMarkersToBeDeleted)
+      //   console.log("Server markers to be added:", serverMarkersToBeAdded)
+      //   console.log("Server markers to be updated:", serverMarkersToBeUpdated)
+      //   console.log("Server markers to be deleted:", serverMarkersToBeDeleted)
 
       //Add the local results into an action queue
       const markerActions = [
