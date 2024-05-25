@@ -221,20 +221,20 @@
       marker.remove()
       selectedMarkerStore.set(null)
 
-      confirmedMarkersStore.update((markers) => {
-        const updatedMarkers = markers.filter((m) => m.id !== id)
-        if (updatedMarkers.length !== markers.length) {
-          // If a marker was removed, add its ID to the removeMarkerStore
-          const removedMarker = markers.find((m) => m.id === id)
+      const existingMarker = $confirmedMarkersStore.find((m) => m.id === id)
+      if (existingMarker) {
+        // If the marker exists in the confirmedMarkersStore, remove it and add its ID to the removeMarkerStore
+        confirmedMarkersStore.update((markers) => {
+          const updatedMarkers = markers.filter((m) => m.id !== id)
           removeMarkerStore.update((removedMarkers) => [
             ...removedMarkers,
-            { id, last_confirmed: removedMarker.last_confirmed },
+            { id, last_confirmed: existingMarker.last_confirmed },
           ])
-        }
-        return updatedMarkers
-      })
-      console.log("Marker removed:", id)
-      console.log("RemoveMarkerStore", $removeMarkerStore)
+          return updatedMarkers
+        })
+        console.log("Marker removed:", id)
+        console.log("RemoveMarkerStore", $removeMarkerStore)
+      }
     }
 
     // Hide the marker menu
