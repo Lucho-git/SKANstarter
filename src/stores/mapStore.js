@@ -1,21 +1,82 @@
-// src/stores/mapStore.js
+// @src\stores\mapStore.js
 import { writable } from 'svelte/store';
 
 export const mapStore = writable(null);
 export const userVehicleStore = writable({
-    type: 'tractor',
-    color: 'orange',
-    size: '60px',
+  type: 'tractor',
+  color: 'orange',
+  size: '60px',
+});
+
+export const selectedMarkerStore = writable(null);
+
+function createConfirmedMarkersStore() {
+    const { subscribe, set, update } = writable([]);
+  
+    let subscriberCount = 0;
+  
+    function customSubscribe(run, invalidate) {
+      subscriberCount++;
+      console.log(`Got a subscriber to confirmedMarkersStore. Total subscribers: ${subscriberCount}`);
+  
+      const unsubscribe = subscribe(run, invalidate);
+  
+      return () => {
+        subscriberCount--;
+        console.log(`Subscriber to confirmedMarkersStore unsubscribed. Total subscribers: ${subscriberCount}`);
+        unsubscribe();
+      };
+    }
+  
+    return {
+      subscribe: customSubscribe,
+      set,
+      update,
+    };
+  }
+  
+  export const confirmedMarkersStore = createConfirmedMarkersStore();
+
+function createRemoveMarkerStore() {
+  let subscriberCount = 0;
+
+  const { subscribe, set, update } = writable([], () => {
+    subscriberCount++;
+    console.log(`Got a subscriber to removeMarkerStore. Total subscribers: ${subscriberCount}`);
+    
+    return () => {
+      subscriberCount--;
+      console.log(`Subscriber to removeMarkerStore unsubscribed. Total subscribers: ${subscriberCount}`);
+    };
   });
 
-  export const selectedMarkerStore = writable(null);
-  export const confirmedMarkersStore = writable([]);
-  export const removeMarkerStore = writable([]);
+  return {
+    subscribe,
+    set,
+    update,
+  };
+}
 
-  export const markerActionsStore = writable([]);
+export const removeMarkerStore = createRemoveMarkerStore();
 
+function createMarkerActionsStore() {
+  let subscriberCount = 0;
 
+  const { subscribe, set, update } = writable([], () => {
+    subscriberCount++;
+    console.log(`Got a subscriber to markerActionsStore. Total subscribers: ${subscriberCount}`);
+    
+    return () => {
+      subscriberCount--;
+      console.log(`Subscriber to markerActionsStore unsubscribed. Total subscribers: ${subscriberCount}`);
+    };
+  });
 
+  return {
+    subscribe,
+    set,
+    update,
+  };
+}
 
-
-
+export const markerActionsStore = createMarkerActionsStore();

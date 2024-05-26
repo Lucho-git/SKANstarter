@@ -25,8 +25,7 @@
 
   let isSatelliteStyle = true
   let userMarker
-
-  // mapcontrols
+  let mapControls
 
   setContext("map", {
     getMap: () => Promise.resolve(map),
@@ -42,33 +41,11 @@
   }
 
   onMount(() => {
+    mapInitialized = false
     mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN
 
     mapOptions.container = mapContainer
     map = new mapboxgl.Map(mapOptions)
-
-    const mapControls = new MapControls({
-      target: mapContainer,
-      props: {
-        map: map,
-      },
-    })
-
-    // Listen for the 'markerPlacement' event from MapControls
-    // Forward the 'markerPlacement' event from MapControls to MarkerManager
-    mapControls.$on("markerPlacement", (event) => {
-      const customEvent = new CustomEvent("markerPlacement", {
-        detail: event.detail,
-      })
-      mapContainer.dispatchEvent(customEvent)
-    })
-
-    mapControls.$on("markerClick", (event) => {
-      const customEvent = new CustomEvent("markerSelection", {
-        detail: event.detail,
-      })
-      mapContainer.dispatchEvent(customEvent)
-    })
 
     // Add the GeolocateControl to the map
     const geolocateControl = new mapboxgl.GeolocateControl({
@@ -106,21 +83,32 @@
 
   onDestroy(() => {
     console.log("DestroyingMap")
-    // if (map) {
-    //   //   // Remove all markers from the map
-    //   //   //   map.getMarkers().forEach((marker) => {
-    //   //   //     marker.remove()
-    //   //   //   })
-    //   //   // Remove all event listeners and controls from the map
-    //   //   map.off()
-    //   //   map.remove()
-    //   // Set the map reference to null
-    //   map = null
-    //   mapStore.set(null)
-    // }
+    if (map) {
+      // Remove all event listeners and controls from the map
+      map.off()
+      map.remove()
+      // Set the map reference to null
+      map = null
+      mapStore.set(null)
+    }
+    if (mapControls) {
+      mapControls.$destroy()
+    }
   })
 
   //Finished Setup
+  let markerPlacementEvent = null
+  let markerClickEvent = null
+
+  function handleMarkerPlacement(event) {
+    console.log("MapViewer: Marker placement event received")
+    markerPlacementEvent = event.detail
+  }
+
+  function handleMarkerClick(event) {
+    console.log("MapViewer: Marker click event received")
+    markerClickEvent = event.detail
+  }
 
   function createUserMarkerElement() {
     const el = document.createElement("div")
@@ -207,8 +195,14 @@
 <div class="map-container" bind:this={mapContainer}>
   <ButtonSection on:toggleMapStyleDispatcher={toggleMapStyle} />
   {#if mapInitialized}
-    <MarkerManager />
+    <MarkerManager {markerPlacementEvent} {markerClickEvent} />
     <MapStateSaver />
+    <MapControls
+      bind:this={mapControls}
+      {map}
+      on:markerPlacement={handleMarkerPlacement}
+      on:markerClick={handleMarkerClick}
+    />
   {/if}
 </div>
 

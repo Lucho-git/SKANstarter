@@ -13,7 +13,7 @@
 
   let spinning = false
   let subscription
-  let storeSubscription
+  let confirmedMarkersUnsubscribe
 
   let debouncedSynchronizeMarkers
   let synchronizationInProgress = false
@@ -46,7 +46,8 @@
     synchronizeMarkers("Loaded from server")
 
     // Subscribe to changes in the confirmedMarkerStore
-    storeSubscription = confirmedMarkersStore.subscribe((markers) => {
+    console.log("MapStateSaver, Subscribing to confirmedMarkersStore")
+    confirmedMarkersUnsubscribe = confirmedMarkersStore.subscribe((markers) => {
       if (!synchronizationInProgress) {
         console.log(
           "Local Synchronization not in progress,",
@@ -56,6 +57,10 @@
         debouncedSynchronizeMarkers("Local Sync")
       }
     })
+    console.log(
+      "Number of markers in confirmedMarkersStore:",
+      $confirmedMarkersStore.length,
+    )
   })
 
   onDestroy(() => {
@@ -63,14 +68,18 @@
     // Cancel any pending debounced calls
     debouncedSynchronizeMarkers.cancel()
 
+    console.log("checking confirmedMarkersStore")
+
+    if (confirmedMarkersUnsubscribe) {
+      console.log("Unsubscribing from confirmedMarkersStore, mapstatesaver")
+      console.log(confirmedMarkersUnsubscribe)
+      confirmedMarkersUnsubscribe()
+      console.log("Unsubscribed from confirmedMarkersStore")
+    }
+
     // Unsubscribe from the Realtime subscription when the component is destroyed
     if (subscription) {
       supabase.removeChannel(subscription)
-    }
-
-    // Unsubscribe from the confirmedMarkerStore subscription
-    if (storeSubscription) {
-      storeSubscription()
     }
 
     console.log("Removing all markers from the map")
@@ -93,6 +102,7 @@
   })
 
   async function synchronizeMarkers(toasttext) {
+    console.log("Synchronizing markers...")
     if (synchronizationInProgress) {
       console.log("Synchronization already in progress. Skipping.")
       return
@@ -174,6 +184,7 @@
     }
     synchronizationInProgress = false
     spinning = false
+    console.log("Synchronization complete")
   }
 
   function compareMarkers(localMarkers, serverMarkers) {
@@ -297,6 +308,10 @@
       const addMarkerData = serverMarkersToBeAdded.map((marker) => {
         const { marker: mapboxMarker, id, last_confirmed } = marker
         const coordinates = mapboxMarker.getLngLat().toArray()
+        console.log(
+          "Adding icon to server",
+          mapboxMarker.getElement().querySelector("i")?.className,
+        )
         const iconClass =
           mapboxMarker.getElement().querySelector("i")?.className || "default"
 

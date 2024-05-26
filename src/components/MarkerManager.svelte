@@ -12,6 +12,7 @@
   import { v4 as uuidv4 } from "uuid"
 
   const { getMap } = getContext("map")
+  let markerActionsUnsubscribe
 
   const markerIcons = [
     { id: "arrow-up-circle", class: "at-arrow-up-circle" },
@@ -87,25 +88,47 @@
     { id: "rain-storm", class: "at-rain-storm" },
     { id: "rain-drops", class: "at-rain-drops" },
   ]
-  // MapViewer.svelte
 
-  markerActionsStore.subscribe(applyMarkerActions)
+  export let markerPlacementEvent = null
+  export let markerClickEvent = null
+
+  $: if (markerPlacementEvent) {
+    console.log("MarkerManager: MarkerPlacementEvent", markerPlacementEvent)
+    handleMarkerPlacement(markerPlacementEvent)
+  }
+
+  $: if (markerClickEvent) {
+    console.log("MarkerManager: MarkerClickEvent", markerClickEvent)
+    handleMarkerSelection(markerClickEvent)
+  }
+
+  // MapViewer.svelte
 
   onMount(async () => {
     const map = await getMap()
 
     const mapContainer = document.querySelector(".map-container")
-    mapContainer.addEventListener("markerPlacement", handleMarkerPlacement)
-    mapContainer.addEventListener("markerSelection", handleMarkerSelection)
 
-    return () => {
-      mapContainer.removeEventListener("markerPlacement", handleMarkerPlacement)
-      mapContainer.removeEventListener("markerSelection", handleMarkerSelection)
-    }
+    markerActionsUnsubscribe = markerActionsStore.subscribe(applyMarkerActions)
   })
 
   onDestroy(() => {
     console.log("Destroying MarkerManager")
+
+    // Unsubscribe from the markerActionsStore subscription
+    if (markerActionsUnsubscribe) {
+      console.log("Unsubscribing from markerActionsStore")
+      markerActionsUnsubscribe()
+    }
+
+    // Clear the confirmedMarkersStore
+    confirmedMarkersStore.set([])
+
+    // Clear the removeMarkerStore
+    removeMarkerStore.set([])
+
+    // Clear the markerActionsStore
+    markerActionsStore.set([])
   })
 
   function createCustomMarker(lngLat, icon) {
@@ -169,7 +192,7 @@
 
   async function handleMarkerPlacement(event) {
     const map = await getMap()
-    const { lngLat } = event.detail
+    const { lngLat } = event
 
     if (lngLat) {
       // Remove the previous recent marker if it exists
@@ -196,6 +219,8 @@
       // Open the confirmation/customization menu
       // Implement your menu functionality here
       console.log("Marker placed at:", lngLat)
+      console.log("Marker ID:", markerId)
+      console.log("selectedMarkerStore:", $selectedMarkerStore)
     } else {
       console.error("Invalid event format. Missing lngLat property.")
     }
@@ -254,28 +279,32 @@
         if (existingMarkerIndex !== -1) {
           console.log("Updating existing marker")
           // If a marker with the same ID already exists, update it
+          const updatedMarker = {
+            marker: existingMarker.marker,
+            id,
+            last_confirmed: currentTimestamp,
+          }
+          console.log("Updated marker data:", updatedMarker)
           return markers.map((m, index) =>
-            index === existingMarkerIndex
-              ? {
-                  marker: existingMarker.marker,
-                  id,
-                  last_confirmed: currentTimestamp,
-                }
-              : m,
+            index === existingMarkerIndex ? updatedMarker : m,
           )
         } else {
           console.log("Adding new marker")
           // If no marker with the same ID exists, add a new entry
-          return [
-            ...markers,
-            {
-              marker: existingMarker.marker,
-              id,
-              last_confirmed: currentTimestamp,
-            },
-          ]
+          const iconClass =
+            originalMarker.getElement().querySelector("i")?.className ||
+            "default"
+          const newMarker = {
+            marker: originalMarker,
+            id,
+            last_confirmed: currentTimestamp,
+            icon: iconClass,
+          }
+          console.log("New marker data:", newMarker)
+          return [...markers, newMarker]
         }
       })
+
       selectedMarkerStore.set(null)
     }
 
@@ -319,9 +348,9 @@
 
   async function handleMarkerSelection(event) {
     const map = await getMap()
-    const { marker, id } = event.detail
+    const { marker, id } = event
     selectedMarkerStore.set({ marker, id })
-    console.log("Marker selected:", $selectedMarkerStore)
+    console.log(`Marker selected with ID: ${id}`, $selectedMarkerStore)
 
     if ($selectedMarkerStore) {
       const lngLat = marker.getLngLat()
@@ -344,6 +373,8 @@
 
   async function applyMarkerActions(actions) {
     const map = await getMap()
+
+    console.log("map:", map)
     const completedActions = []
 
     actions.forEach((action, index) => {

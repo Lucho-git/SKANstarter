@@ -1,6 +1,6 @@
 <!-- MapControls.svelte -->
 <script>
-  import { createEventDispatcher } from "svelte"
+  import { createEventDispatcher, onMount, onDestroy } from "svelte"
   import { confirmedMarkersStore } from "../stores/mapStore"
 
   export let map
@@ -15,24 +15,69 @@
   const longPressMoveThreshold = 5
   let confirmedMarkers = []
 
-  confirmedMarkersStore.subscribe((markers) => {
-    // Add event listeners to new markers
-    markers.forEach(({ marker }) => {
-      const markerElement = marker.getElement()
+  let confirmedMarkersUnsubscribe
 
-      // Check if the marker already has event listeners
-      if (!markerElement.hasAttribute("data-listeners-added")) {
+  onMount(() => {
+    // console.log("Mapcontrols, mounting")
+    // console.log("Mapcontrols, subscribing to confirmedMarkersStore")
+
+    confirmedMarkersUnsubscribe = confirmedMarkersStore.subscribe((markers) => {
+      // Remove event listeners from existing markers
+      //   console.log("Number of markers:", markers.length)
+      confirmedMarkers.forEach(({ marker }) => {
+        const markerElement = marker.getElement()
+        markerElement.removeEventListener("mouseenter", handleMarkerMouseEnter)
+        markerElement.removeEventListener("mouseleave", handleMarkerMouseLeave)
+        markerElement.removeEventListener("click", handleMarkerClick)
+        markerElement.removeAttribute("data-listeners-added")
+      })
+
+      // Add event listeners to new markers
+      markers.forEach(({ marker, id }) => {
+        const markerElement = marker.getElement()
+        // console.log(`Adding event listeners to marker with ID: ${id}`)
         markerElement.addEventListener("mouseenter", handleMarkerMouseEnter)
         markerElement.addEventListener("mouseleave", handleMarkerMouseLeave)
         markerElement.addEventListener("click", handleMarkerClick)
         markerElement.setAttribute("data-listeners-added", "true")
-      }
+      })
+
+      confirmedMarkers = markers
     })
 
-    confirmedMarkers = markers
+    document.addEventListener("iconChange", handleIconChange)
+
+    // Add event listeners when the component mounts
+    map.on("mousedown", handleMouseDown)
+    map.on("touchstart", handleMouseDown)
+    map.on("drag", handleMapDrag)
+    map.on("mouseup", handleMouseUp)
   })
 
-  document.addEventListener("iconChange", handleIconChange)
+  onDestroy(() => {
+    console.log("Destroying MapControls")
+
+    // Unsubscribe from the confirmedMarkersStore
+    console.log(
+      "MapControls, unsubscribing from confirmedMarkersStore",
+      confirmedMarkersUnsubscribe,
+    )
+    if (confirmedMarkersUnsubscribe) {
+      console.log("Unsubscribing from confirmedMarkersStore, mapcontrols 1")
+      confirmedMarkersUnsubscribe()
+      console.log("Unsubscribed from confirmedMarkersStore, mapcontrols 2")
+    }
+    console.log("Out")
+
+    // Remove the "iconChange" event listener
+    document.removeEventListener("iconChange", handleIconChange)
+
+    // Remove event listeners from the map
+    map.off("mousedown", handleMouseDown)
+    map.off("touchstart", handleMouseDown)
+    map.off("drag", handleMapDrag)
+    map.off("mouseup", handleMouseUp)
+  })
 
   function handleIconChange(event) {
     const { marker, id } = event.detail
@@ -68,7 +113,7 @@
   }
 
   function handleMarkerClick(event) {
-    event.stopPropagation() // Stop the event from bubbling up to the map click event handler
+    event.stopPropagation()
     const markerElement = event.target.closest(".mapboxgl-marker")
 
     if (markerElement) {
@@ -77,6 +122,9 @@
       )
 
       if (marker) {
+        console.log("MapControls: Marker click event dispatched")
+
+        console.log(`Marker clicked with ID: ${id}`)
         dispatch("markerClick", { marker, id })
       }
     }
@@ -86,6 +134,8 @@
     const lngLat = event.lngLat || event.target.getLngLat()
 
     if (lngLat) {
+      console.log("MapControls: Marker placement event dispatched")
+
       dispatch("markerPlacement", { lngLat })
     } else {
       console.error("Invalid event format. Missing lngLat property.")
@@ -140,11 +190,4 @@
     longPressTimer = null
     longPressStartPosition = null
   }
-
-  // Add event listeners when the component mounts
-  //   map.on("click", handleMapClick)
-  map.on("mousedown", handleMouseDown)
-  map.on("touchstart", handleMouseDown)
-  map.on("drag", handleMapDrag)
-  map.on("mouseup", handleMouseUp)
 </script>
