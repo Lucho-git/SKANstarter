@@ -101,12 +101,10 @@
   let markerClickEvent = null
 
   function handleMarkerPlacement(event) {
-    console.log("MapViewer: Marker placement event received")
     markerPlacementEvent = event.detail
   }
 
   function handleMarkerClick(event) {
-    console.log("MapViewer: Marker click event received")
     markerClickEvent = event.detail
   }
 

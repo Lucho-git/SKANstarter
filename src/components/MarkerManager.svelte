@@ -93,12 +93,10 @@
   export let markerClickEvent = null
 
   $: if (markerPlacementEvent) {
-    console.log("MarkerManager: MarkerPlacementEvent", markerPlacementEvent)
     handleMarkerPlacement(markerPlacementEvent)
   }
 
   $: if (markerClickEvent) {
-    console.log("MarkerManager: MarkerClickEvent", markerClickEvent)
     handleMarkerSelection(markerClickEvent)
   }
 
@@ -117,7 +115,6 @@
 
     // Unsubscribe from the markerActionsStore subscription
     if (markerActionsUnsubscribe) {
-      console.log("Unsubscribing from markerActionsStore")
       markerActionsUnsubscribe()
     }
 
@@ -131,62 +128,58 @@
     markerActionsStore.set([])
   })
 
-  function createCustomMarker(lngLat, icon) {
-    const markerElement = document.createElement("div")
-    markerElement.style.display = "flex"
-    markerElement.style.justifyContent = "center"
-    markerElement.style.alignItems = "center"
-    markerElement.style.width = "35px"
-    markerElement.style.height = "35px"
-    markerElement.style.borderRadius = "100%"
-    markerElement.style.backgroundColor = "LightGray"
-    markerElement.style.opacity = 0.9
-    markerElement.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.2)"
+  function createCustomMarker(lngLat, icon, id) {
+    if (icon === "default") {
+      // Create a default Mapbox marker
+      const marker = new mapboxgl.Marker().setLngLat(lngLat)
+      marker.getElement().setAttribute("data-marker-id", id)
 
-    const iconElement = document.createElement("i")
-    iconElement.className = icon
-    iconElement.style.fontSize = "20px"
-    iconElement.style.color = "black"
-    iconElement.style.fill = "#ff6347"
-    iconElement.style.fontWeight = "bold"
+      const handleUpdateMarkerListeners = new CustomEvent(
+        "handleUpdateMarkerListeners",
+        {
+          detail: { marker: marker, id },
+        },
+      )
+      document.dispatchEvent(handleUpdateMarkerListeners)
 
-    markerElement.appendChild(iconElement)
+      return marker
+    } else {
+      // Create a custom marker element
+      const markerElement = document.createElement("div")
+      markerElement.style.display = "flex"
+      markerElement.style.justifyContent = "center"
+      markerElement.style.alignItems = "center"
+      markerElement.style.width = "35px"
+      markerElement.style.height = "35px"
+      markerElement.style.borderRadius = "100%"
+      markerElement.style.backgroundColor = "LightGray"
+      markerElement.style.opacity = 0.9
+      markerElement.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.2)"
+      console.log("Id: " + id)
+      markerElement.setAttribute("data-marker-id", id)
 
-    const marker = new mapboxgl.Marker({ element: markerElement }).setLngLat(
-      lngLat,
-    )
+      const iconElement = document.createElement("i")
+      iconElement.className = icon
+      iconElement.style.fontSize = "20px"
+      iconElement.style.color = "black"
+      iconElement.style.fill = "#ff6347"
+      iconElement.style.fontWeight = "bold"
 
-    return marker
-  }
+      markerElement.appendChild(iconElement)
 
-  async function handleIconSelection(icon) {
-    const map = await getMap()
-    let iconId = icon.id
-    if ($selectedMarkerStore) {
-      const { marker, id } = $selectedMarkerStore
-      const lngLat = marker.getLngLat()
+      const marker = new mapboxgl.Marker({ element: markerElement }).setLngLat(
+        lngLat,
+      )
 
-      marker.remove()
-      // Find the selected icon object based on the iconId
-      const selectedIcon = markerIcons.find((icon) => icon.id === iconId)
+      const handleUpdateMarkerListeners = new CustomEvent(
+        "handleUpdateMarkerListeners",
+        {
+          detail: { marker: marker, id },
+        },
+      )
+      document.dispatchEvent(handleUpdateMarkerListeners)
 
-      if (selectedIcon) {
-        // Create a custom marker element based on the selected icon
-        const newMarker = createCustomMarker(lngLat, selectedIcon.class)
-
-        newMarker.addTo(map)
-
-        // Store the updated marker data in a separate variable
-        const updatedMarker = { marker: newMarker, id }
-
-        // Dispatch a custom event to notify about the icon change
-        const iconChangeEvent = new CustomEvent("iconChange", {
-          detail: updatedMarker,
-        })
-        document.dispatchEvent(iconChangeEvent)
-      } else {
-        console.log("recentMarker is null or undefined")
-      }
+      return marker
     }
   }
 
@@ -202,9 +195,12 @@
       }
 
       // Place the new marker on the map
-      const newMarker = new mapboxgl.Marker().setLngLat(lngLat).addTo(map)
-      const markerId = uuidv4() // Generate a unique UUID for the marker
-      selectedMarkerStore.set({ marker: newMarker, id: markerId })
+      const id = uuidv4() // Generate a unique UUID for the marker
+      const newMarker = createCustomMarker(lngLat, "default", id)
+
+      newMarker.setLngLat(lngLat).addTo(map)
+
+      selectedMarkerStore.set({ marker: newMarker, id: id })
 
       // Center the screen on the placed marker
       map.flyTo({
@@ -218,17 +214,13 @@
       }))
       // Open the confirmation/customization menu
       // Implement your menu functionality here
-      console.log("Marker placed at:", lngLat)
-      console.log("Marker ID:", markerId)
-      console.log("selectedMarkerStore:", $selectedMarkerStore)
+      console.log("Marker ID Placed:", id, $selectedMarkerStore)
     } else {
       console.error("Invalid event format. Missing lngLat property.")
     }
   }
 
   function confirmMarker() {
-    console.log("confirmMarker called")
-
     // Add the recent marker to the confirmedMarkers array
     if ($selectedMarkerStore) {
       const { marker: originalMarker, id } = $selectedMarkerStore
@@ -249,8 +241,6 @@
           .getElement()
           .querySelector("i")?.className
 
-        console.log("Existing lngLat:", existingLngLat)
-        console.log("Original lngLat:", originalLngLat)
         console.log("Existing icon:", existingIcon)
         console.log("Original icon:", originalIcon)
 
@@ -271,13 +261,11 @@
         }
       }
 
-      console.log("Updating confirmedMarkersStore")
+      console.log("Updating confirmedMarkersStore", originalMarker)
       confirmedMarkersStore.update((markers) => {
         const existingMarkerIndex = markers.findIndex((m) => m.id === id)
-        console.log("Existing marker index:", existingMarkerIndex)
 
         if (existingMarkerIndex !== -1) {
-          console.log("Updating existing marker")
           // If a marker with the same ID already exists, update it
           const updatedMarker = {
             marker: existingMarker.marker,
@@ -285,30 +273,26 @@
             last_confirmed: currentTimestamp,
           }
           console.log("Updated marker data:", updatedMarker)
+
           return markers.map((m, index) =>
             index === existingMarkerIndex ? updatedMarker : m,
           )
         } else {
-          console.log("Adding new marker")
-          // If no marker with the same ID exists, add a new entry
-          const iconClass =
-            originalMarker.getElement().querySelector("i")?.className ||
-            "default"
-          const newMarker = {
+          console.log("No marker with the same ID exists, adding a new entry")
+
+          const newMarkerData = {
             marker: originalMarker,
             id,
             last_confirmed: currentTimestamp,
-            icon: iconClass,
           }
-          console.log("New marker data:", newMarker)
-          return [...markers, newMarker]
+
+          return [...markers, newMarkerData]
         }
       })
 
       selectedMarkerStore.set(null)
     }
 
-    console.log("Hiding marker menu")
     // Hide the marker menu
     controlStore.update((controls) => ({
       ...controls,
@@ -335,7 +319,6 @@
           return updatedMarkers
         })
         console.log("Marker removed:", id)
-        console.log("RemoveMarkerStore", $removeMarkerStore)
       }
     }
 
@@ -371,10 +354,37 @@
 
   // Handle server synchronization for markers:
 
+  async function handleIconSelection(icon) {
+    const map = await getMap()
+    let iconId = icon.id
+    if ($selectedMarkerStore) {
+      const { marker, id } = $selectedMarkerStore
+      const lngLat = marker.getLngLat()
+
+      marker.remove()
+      // Find the selected icon object based on the iconId
+      const selectedIcon = markerIcons.find((icon) => icon.id === iconId)
+
+      if (selectedIcon) {
+        // Create a custom marker element based on the selected icon
+        const newMarker = createCustomMarker(lngLat, selectedIcon.class, id)
+
+        newMarker.addTo(map)
+
+        // Store the updated marker data in a separate variable
+        const updatedMarker = { marker: newMarker, id }
+
+        // Set the $selectedMarkerStore to the updatedMarker value
+        selectedMarkerStore.set(updatedMarker)
+      } else {
+        console.log("recentMarker is null or undefined")
+      }
+    }
+  }
+
   async function applyMarkerActions(actions) {
     const map = await getMap()
 
-    console.log("map:", map)
     const completedActions = []
 
     actions.forEach((action, index) => {
@@ -389,29 +399,9 @@
         const lngLat = new mapboxgl.LngLat(coordinates[0], coordinates[1])
 
         // Create a custom marker element based on the icon
-        const markerElement = document.createElement("div")
-        markerElement.style.display = "flex"
-        markerElement.style.justifyContent = "center"
-        markerElement.style.alignItems = "center"
-        markerElement.style.width = "35px"
-        markerElement.style.height = "35px"
-        markerElement.style.borderRadius = "100%"
-        markerElement.style.backgroundColor = "LightGray"
-        markerElement.style.opacity = 0.9
-        markerElement.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.2)"
+        const newMarker = createCustomMarker(lngLat, icon, id)
 
-        const iconElement = document.createElement("i")
-        iconElement.className = icon
-        iconElement.style.fontSize = "20px"
-        iconElement.style.color = "black"
-        iconElement.style.fill = "#ff6347"
-        iconElement.style.fontWeight = "bold"
-
-        markerElement.appendChild(iconElement)
-
-        const newMarker = new mapboxgl.Marker({ element: markerElement })
-          .setLngLat(lngLat)
-          .addTo(map)
+        newMarker.setLngLat(lngLat).addTo(map)
 
         // Add the marker to the confirmedMarkersStore
         confirmedMarkersStore.update((markers) => [
@@ -438,29 +428,9 @@
           oldMarker.remove()
 
           // Create a new marker element based on the updated data
-          const markerElement = document.createElement("div")
-          markerElement.style.display = "flex"
-          markerElement.style.justifyContent = "center"
-          markerElement.style.alignItems = "center"
-          markerElement.style.width = "35px"
-          markerElement.style.height = "35px"
-          markerElement.style.borderRadius = "100%"
-          markerElement.style.backgroundColor = "LightGray"
-          markerElement.style.opacity = 0.9
-          markerElement.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.2)"
+          const newMarker = createCustomMarker(lngLat, icon, id)
 
-          const iconElement = document.createElement("i")
-          iconElement.className = icon
-          iconElement.style.fontSize = "20px"
-          iconElement.style.color = "black"
-          iconElement.style.fill = "#ff6347"
-          iconElement.style.fontWeight = "bold"
-
-          markerElement.appendChild(iconElement)
-
-          const newMarker = new mapboxgl.Marker({ element: markerElement })
-            .setLngLat(lngLat)
-            .addTo(map)
+          newMarker.setLngLat(lngLat).addTo(map)
 
           // Update the confirmedMarkersStore with the new marker and last_confirmed value
           confirmedMarkersStore.update((markers) =>

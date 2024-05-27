@@ -1,4 +1,6 @@
 // @src\stores\mapStore.js
+
+//@ts-nocheckts-nocheck
 import { writable } from 'svelte/store';
 
 export const mapStore = writable(null);
@@ -17,13 +19,13 @@ function createConfirmedMarkersStore() {
   
     function customSubscribe(run, invalidate) {
       subscriberCount++;
-      console.log(`Got a subscriber to confirmedMarkersStore. Total subscribers: ${subscriberCount}`);
+    //   console.log(`Got a subscriber to confirmedMarkersStore. Total subscribers: ${subscriberCount}`);
   
       const unsubscribe = subscribe(run, invalidate);
   
       return () => {
         subscriberCount--;
-        console.log(`Subscriber to confirmedMarkersStore unsubscribed. Total subscribers: ${subscriberCount}`);
+        // console.log(`Subscriber to confirmedMarkersStore unsubscribed. Total subscribers: ${subscriberCount}`);
         unsubscribe();
       };
     }
@@ -42,11 +44,11 @@ function createRemoveMarkerStore() {
 
   const { subscribe, set, update } = writable([], () => {
     subscriberCount++;
-    console.log(`Got a subscriber to removeMarkerStore. Total subscribers: ${subscriberCount}`);
+    // console.log(`Got a subscriber to removeMarkerStore. Total subscribers: ${subscriberCount}`);
     
     return () => {
       subscriberCount--;
-      console.log(`Subscriber to removeMarkerStore unsubscribed. Total subscribers: ${subscriberCount}`);
+    //   console.log(`Subscriber to removeMarkerStore unsubscribed. Total subscribers: ${subscriberCount}`);
     };
   });
 
@@ -64,11 +66,11 @@ function createMarkerActionsStore() {
 
   const { subscribe, set, update } = writable([], () => {
     subscriberCount++;
-    console.log(`Got a subscriber to markerActionsStore. Total subscribers: ${subscriberCount}`);
+    // console.log(`Got a subscriber to markerActionsStore. Total subscribers: ${subscriberCount}`);
     
     return () => {
       subscriberCount--;
-      console.log(`Subscriber to markerActionsStore unsubscribed. Total subscribers: ${subscriberCount}`);
+    //   console.log(`Subscriber to markerActionsStore unsubscribed. Total subscribers: ${subscriberCount}`);
     };
   });
 

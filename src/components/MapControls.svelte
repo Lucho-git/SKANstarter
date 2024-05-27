@@ -18,34 +18,10 @@
   let confirmedMarkersUnsubscribe
 
   onMount(() => {
-    // console.log("Mapcontrols, mounting")
-    // console.log("Mapcontrols, subscribing to confirmedMarkersStore")
-
-    confirmedMarkersUnsubscribe = confirmedMarkersStore.subscribe((markers) => {
-      // Remove event listeners from existing markers
-      //   console.log("Number of markers:", markers.length)
-      confirmedMarkers.forEach(({ marker }) => {
-        const markerElement = marker.getElement()
-        markerElement.removeEventListener("mouseenter", handleMarkerMouseEnter)
-        markerElement.removeEventListener("mouseleave", handleMarkerMouseLeave)
-        markerElement.removeEventListener("click", handleMarkerClick)
-        markerElement.removeAttribute("data-listeners-added")
-      })
-
-      // Add event listeners to new markers
-      markers.forEach(({ marker, id }) => {
-        const markerElement = marker.getElement()
-        // console.log(`Adding event listeners to marker with ID: ${id}`)
-        markerElement.addEventListener("mouseenter", handleMarkerMouseEnter)
-        markerElement.addEventListener("mouseleave", handleMarkerMouseLeave)
-        markerElement.addEventListener("click", handleMarkerClick)
-        markerElement.setAttribute("data-listeners-added", "true")
-      })
-
-      confirmedMarkers = markers
-    })
-
-    document.addEventListener("iconChange", handleIconChange)
+    document.addEventListener(
+      "handleUpdateMarkerListeners",
+      handleUpdateMarkerListeners,
+    )
 
     // Add event listeners when the component mounts
     map.on("mousedown", handleMouseDown)
@@ -70,7 +46,10 @@
     console.log("Out")
 
     // Remove the "iconChange" event listener
-    document.removeEventListener("iconChange", handleIconChange)
+    document.removeEventListener(
+      "handleUpdateMarkerListeners",
+      handleUpdateMarkerListeners,
+    )
 
     // Remove event listeners from the map
     map.off("mousedown", handleMouseDown)
@@ -79,27 +58,41 @@
     map.off("mouseup", handleMouseUp)
   })
 
-  function handleIconChange(event) {
-    const { marker, id } = event.detail
+  function updateMarkerListeners(marker, id) {
     const markerElement = marker.getElement()
 
-    // Remove event listeners from the old marker element
+    // Remove event listeners from the marker element
     markerElement.removeEventListener("mouseenter", handleMarkerMouseEnter)
     markerElement.removeEventListener("mouseleave", handleMarkerMouseLeave)
     markerElement.removeEventListener("click", handleMarkerClick)
     markerElement.removeAttribute("data-listeners-added")
 
-    // Add event listeners to the new marker element
+    // Add event listeners to the marker element
+    console.log(`Adding event listeners to marker with ID: ${id}`)
     markerElement.addEventListener("mouseenter", handleMarkerMouseEnter)
     markerElement.addEventListener("mouseleave", handleMarkerMouseLeave)
     markerElement.addEventListener("click", handleMarkerClick)
     markerElement.setAttribute("data-listeners-added", "true")
 
+    console.log("Actually adding event listeners to marker with ID: " + id)
+
     // Update the confirmedMarkers array with the new marker data
     const existingMarkerIndex = confirmedMarkers.findIndex((m) => m.id === id)
     if (existingMarkerIndex !== -1) {
-      confirmedMarkers[existingMarkerIndex] = { marker, id }
+      // If a marker with the same ID already exists, update it
+      confirmedMarkers = confirmedMarkers.map((m, index) =>
+        index === existingMarkerIndex ? { marker, id } : m,
+      )
+    } else {
+      // If no marker with the same ID exists, add a new entry
+      confirmedMarkers = [...confirmedMarkers, { marker, id }]
     }
+  }
+
+  function handleUpdateMarkerListeners(event) {
+    console.log("HandleUpdateMarkerListeners called")
+    const { marker, id } = event.detail
+    updateMarkerListeners(marker, id)
   }
 
   function handleMarkerMouseEnter(event) {
@@ -116,17 +109,36 @@
     event.stopPropagation()
     const markerElement = event.target.closest(".mapboxgl-marker")
 
+    console.log("Clicked marker element:", markerElement)
+    console.log("Confirmed markers:", confirmedMarkers)
+
+    // Log the marker elements stored in the confirmedMarkers array
+    console.log(
+      "Confirmed marker elements:",
+      confirmedMarkers.map((m) => m.marker.getElement()),
+    )
+
+    // Log the marker IDs stored in the confirmedMarkers array
+    console.log(
+      "Confirmed marker IDs:",
+      confirmedMarkers.map((m) => m.id),
+    )
+
     if (markerElement) {
-      const { marker, id } = confirmedMarkers.find(
+      const foundMarker = confirmedMarkers.find(
         (m) => m.marker.getElement() === markerElement,
       )
 
-      if (marker) {
-        console.log("MapControls: Marker click event dispatched")
+      console.log("Found marker:", foundMarker)
 
-        console.log(`Marker clicked with ID: ${id}`)
+      if (foundMarker) {
+        const { marker, id } = foundMarker
         dispatch("markerClick", { marker, id })
+      } else {
+        console.log("No matching marker found in confirmedMarkers array")
       }
+    } else {
+      console.log("No marker element found")
     }
   }
 
@@ -134,8 +146,6 @@
     const lngLat = event.lngLat || event.target.getLngLat()
 
     if (lngLat) {
-      console.log("MapControls: Marker placement event dispatched")
-
       dispatch("markerPlacement", { lngLat })
     } else {
       console.error("Invalid event format. Missing lngLat property.")

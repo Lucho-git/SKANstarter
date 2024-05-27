@@ -18,7 +18,6 @@
   let debouncedSynchronizeMarkers
   let synchronizationInProgress = false
   onMount(() => {
-    console.log("MouNTINGING")
     // Create a single debounced instance of the synchronizeMarkers function
     debouncedSynchronizeMarkers = debounce(synchronizeMarkers, 500)
 
@@ -29,12 +28,9 @@
         "postgres_changes",
         { event: "*", schema: "public", table: "map_markers" },
         (payload) => {
-          console.log("Received update from Supabase Realtime:", payload)
+          //   console.log("Received update from Supabase Realtime:", payload)
           if (!synchronizationInProgress) {
-            console.log(
-              "Server Synchronization not in progress,",
-              synchronizationInProgress,
-            )
+            // console.log(synchronizationInProgress)
             debouncedSynchronizeMarkers("Server Sync")
           }
         },
@@ -46,21 +42,16 @@
     synchronizeMarkers("Loaded from server")
 
     // Subscribe to changes in the confirmedMarkerStore
-    console.log("MapStateSaver, Subscribing to confirmedMarkersStore")
     confirmedMarkersUnsubscribe = confirmedMarkersStore.subscribe((markers) => {
       if (!synchronizationInProgress) {
-        console.log(
-          "Local Synchronization not in progress,",
-          synchronizationInProgress,
-        )
+        // console.log(
+        //   "Local Synchronization not in progress,",
+        //   synchronizationInProgress,
+        // )
 
         debouncedSynchronizeMarkers("Local Sync")
       }
     })
-    console.log(
-      "Number of markers in confirmedMarkersStore:",
-      $confirmedMarkersStore.length,
-    )
   })
 
   onDestroy(() => {
@@ -126,7 +117,7 @@
 
     try {
       const latestMarkers = await retrieveLatestMarkersFromServer(session)
-      console.log("Latest markers from server:", latestMarkers)
+      //   console.log("Latest markers from server:", latestMarkers)
 
       const localMarkers = $confirmedMarkersStore
 
@@ -142,7 +133,7 @@
       //   console.log("Local markers to be added:", localMarkersToBeAdded)
       //   console.log("Local markers to be updated:", localMarkersToBeUpdated)
       //   console.log("Local markers to be deleted:", localMarkersToBeDeleted)
-      //   console.log("Server markers to be added:", serverMarkersToBeAdded)
+      console.log("Server markers to be added:", serverMarkersToBeAdded)
       //   console.log("Server markers to be updated:", serverMarkersToBeUpdated)
       //   console.log("Server markers to be deleted:", serverMarkersToBeDeleted)
 
@@ -184,7 +175,7 @@
     }
     synchronizationInProgress = false
     spinning = false
-    console.log("Synchronization complete")
+    // console.log("Synchronization complete")
   }
 
   function compareMarkers(localMarkers, serverMarkers) {
@@ -285,8 +276,6 @@
       serverMarkersToBeDeleted,
     },
   ) {
-    console.log("Sending local changes to server...")
-
     const userId = session.user.id
 
     // Retrieve the user's profile to get the master_map_id
@@ -308,10 +297,7 @@
       const addMarkerData = serverMarkersToBeAdded.map((marker) => {
         const { marker: mapboxMarker, id, last_confirmed } = marker
         const coordinates = mapboxMarker.getLngLat().toArray()
-        console.log(
-          "Adding icon to server",
-          mapboxMarker.getElement().querySelector("i")?.className,
-        )
+
         const iconClass =
           mapboxMarker.getElement().querySelector("i")?.className || "default"
 
@@ -326,6 +312,8 @@
             id: id,
           },
         }
+
+        console.log("Adding new marker to server", feature)
 
         return {
           master_map_id: masterMapId,
@@ -350,6 +338,13 @@
       const updateMarkerData = serverMarkersToBeUpdated.map((marker) => {
         const { marker: mapboxMarker, id, last_confirmed } = marker
         const coordinates = mapboxMarker.getLngLat().toArray()
+
+        console.log(
+          "Updating icon to server",
+          mapboxMarker.getElement().querySelector("i")?.className,
+        )
+        console.log("element", mapboxMarker.getElement())
+
         const iconClass =
           mapboxMarker.getElement().querySelector("i")?.className || "default"
 
@@ -409,13 +404,9 @@
         ),
       )
     }
-
-    console.log("Local changes sent to server successfully")
   }
 
   async function retrieveLatestMarkersFromServer(session) {
-    console.log("Retrieving latest markers from server...")
-
     const userId = session.user.id
 
     // Retrieve the user's profile to get the master_map_id
