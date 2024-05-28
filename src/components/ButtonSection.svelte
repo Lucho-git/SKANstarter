@@ -29,10 +29,10 @@
   let currentVehicleIndex = 0
 
   const colorSizeOptions = [
-    { color: "red", size: "60px" },
-    { color: "blue", size: "80px" },
-    { color: "green", size: "100px" },
-    { color: "yellow", size: "120px" },
+    { color: "red", size: "25px" },
+    { color: "blue", size: "35px" },
+    { color: "green", size: "45px" },
+    { color: "yellow", size: "60px" },
   ]
   let currentColorSizeIndex = 0
 
