@@ -167,6 +167,7 @@
       const vehicleIcon = userMarker.getElement().querySelector(".vehicle-icon")
       if (vehicleIcon) {
         vehicleIcon.style.transform = `rotate(${currentRotation}deg)`
+        console.log("Rotated vehicle icon to", currentRotation)
       }
 
       currentStep++

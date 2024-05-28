@@ -7,12 +7,13 @@
 <!-- 378, 411 -->
 
 <svg
+  class="vehicle-icon"
   xmlns="http://www.w3.org/2000/svg"
   width={size}
   height={size}
   viewBox="0 0 378 411"
   fill={color}
-  style="position: relative; z-index: 1;"
+  style="position: relative; z-index: 1; transform-origin: center; transition: transform 0.2s ease-in-out;"
   transform="matrix(-1.8369701987210297e-16,-1,1,-1.8369701987210297e-16,0,0)"
 >
   <path

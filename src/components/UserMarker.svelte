@@ -73,6 +73,7 @@
           position: relative;
           z-index: 1;
           transform-origin: center;
+          transition: transform 0.2s ease-in-out;
         "
     ></div>
   {/if}
