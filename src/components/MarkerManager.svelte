@@ -155,7 +155,6 @@
       markerElement.style.backgroundColor = "LightGray"
       markerElement.style.opacity = 0.9
       markerElement.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.2)"
-      console.log("Id: " + id)
       markerElement.setAttribute("data-marker-id", id)
 
       const iconElement = document.createElement("i")
@@ -242,8 +241,6 @@
           last_confirmed: currentTimestamp,
         }
 
-        console.log("No marker with the same ID exists, adding a new entry")
-        console.log("New marker data:", newMarkerData)
         console.log("New marker icon:", iconClass)
 
         // Add the new marker data to confirmedMarkersStore
@@ -256,11 +253,6 @@
         const existingIcon = existingMarker.marker
           .getElement()
           .querySelector("i")?.className
-
-        console.log("Selected marker:", selectedMarker, "ID:", id)
-        console.log("Existing marker:", existingMarker, "ID:", id)
-        console.log("Selected icon:", selectedIcon)
-        console.log("Existing icon:", existingIcon)
 
         if (selectedIcon === existingIcon) {
           console.log("No changes made to the marker icon")

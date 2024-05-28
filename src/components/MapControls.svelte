@@ -74,8 +74,6 @@
     markerElement.addEventListener("click", handleMarkerClick)
     markerElement.setAttribute("data-listeners-added", "true")
 
-    console.log("Actually adding event listeners to marker with ID: " + id)
-
     // Update the confirmedMarkers array with the new marker data
     const existingMarkerIndex = confirmedMarkers.findIndex((m) => m.id === id)
     if (existingMarkerIndex !== -1) {
@@ -90,7 +88,6 @@
   }
 
   function handleUpdateMarkerListeners(event) {
-    console.log("HandleUpdateMarkerListeners called")
     const { marker, id } = event.detail
     updateMarkerListeners(marker, id)
   }
@@ -109,27 +106,10 @@
     event.stopPropagation()
     const markerElement = event.target.closest(".mapboxgl-marker")
 
-    console.log("Clicked marker element:", markerElement)
-    console.log("Confirmed markers:", confirmedMarkers)
-
-    // Log the marker elements stored in the confirmedMarkers array
-    console.log(
-      "Confirmed marker elements:",
-      confirmedMarkers.map((m) => m.marker.getElement()),
-    )
-
-    // Log the marker IDs stored in the confirmedMarkers array
-    console.log(
-      "Confirmed marker IDs:",
-      confirmedMarkers.map((m) => m.id),
-    )
-
     if (markerElement) {
       const foundMarker = confirmedMarkers.find(
         (m) => m.marker.getElement() === markerElement,
       )
-
-      console.log("Found marker:", foundMarker)
 
       if (foundMarker) {
         const { marker, id } = foundMarker

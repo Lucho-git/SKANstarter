@@ -30,7 +30,6 @@
         (payload) => {
           //   console.log("Received update from Supabase Realtime:", payload)
           if (!synchronizationInProgress) {
-            // console.log(synchronizationInProgress)
             debouncedSynchronizeMarkers("Server Sync")
           }
         },
@@ -59,13 +58,8 @@
     // Cancel any pending debounced calls
     debouncedSynchronizeMarkers.cancel()
 
-    console.log("checking confirmedMarkersStore")
-
     if (confirmedMarkersUnsubscribe) {
-      console.log("Unsubscribing from confirmedMarkersStore, mapstatesaver")
-      console.log(confirmedMarkersUnsubscribe)
       confirmedMarkersUnsubscribe()
-      console.log("Unsubscribed from confirmedMarkersStore")
     }
 
     // Unsubscribe from the Realtime subscription when the component is destroyed
@@ -130,12 +124,12 @@
         serverMarkersToBeDeleted,
       } = compareMarkers(localMarkers, latestMarkers)
 
-      console.log("Local markers to be added:", localMarkersToBeAdded)
-      console.log("Local markers to be updated:", localMarkersToBeUpdated)
-      console.log("Local markers to be deleted:", localMarkersToBeDeleted)
-      console.log("Server markers to be added:", serverMarkersToBeAdded)
-      console.log("Server markers to be updated:", serverMarkersToBeUpdated)
-      console.log("Server markers to be deleted:", serverMarkersToBeDeleted)
+      //   console.log("Local markers to be added:", localMarkersToBeAdded)
+      //   console.log("Local markers to be updated:", localMarkersToBeUpdated)
+      //   console.log("Local markers to be deleted:", localMarkersToBeDeleted)
+      //   console.log("Server markers to be added:", serverMarkersToBeAdded)
+      //   console.log("Server markers to be updated:", serverMarkersToBeUpdated)
+      //   console.log("Server markers to be deleted:", serverMarkersToBeDeleted)
 
       //Add the local results into an action queue
       const markerActions = [
@@ -213,15 +207,6 @@
           new Date(localMarker.last_confirmed) >
           new Date(serverMarker.last_confirmed)
         ) {
-          // Log the icon values of the local and server markers being updated
-          console.log(
-            "Local marker icon:",
-            localMarker.marker.getElement().querySelector("i")?.className,
-          )
-          console.log(
-            "Server marker icon:",
-            serverMarker.marker_data.properties.icon,
-          )
           serverMarkersToBeUpdated.push(localMarker)
         }
       } else {
@@ -322,8 +307,6 @@
           },
         }
 
-        console.log("Adding new marker to server", feature)
-
         return {
           master_map_id: masterMapId,
           id: id,
@@ -347,12 +330,6 @@
       const updateMarkerData = serverMarkersToBeUpdated.map((marker) => {
         const { marker: mapboxMarker, id, last_confirmed } = marker
         const coordinates = mapboxMarker.getLngLat().toArray()
-
-        console.log(
-          "Updating icon to server",
-          mapboxMarker.getElement().querySelector("i")?.className,
-        )
-        console.log("element", mapboxMarker.getElement())
 
         const iconClass =
           mapboxMarker.getElement().querySelector("i")?.className || "default"
