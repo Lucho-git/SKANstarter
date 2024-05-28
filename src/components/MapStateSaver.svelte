@@ -130,12 +130,12 @@
         serverMarkersToBeDeleted,
       } = compareMarkers(localMarkers, latestMarkers)
 
-      //   console.log("Local markers to be added:", localMarkersToBeAdded)
-      //   console.log("Local markers to be updated:", localMarkersToBeUpdated)
-      //   console.log("Local markers to be deleted:", localMarkersToBeDeleted)
+      console.log("Local markers to be added:", localMarkersToBeAdded)
+      console.log("Local markers to be updated:", localMarkersToBeUpdated)
+      console.log("Local markers to be deleted:", localMarkersToBeDeleted)
       console.log("Server markers to be added:", serverMarkersToBeAdded)
-      //   console.log("Server markers to be updated:", serverMarkersToBeUpdated)
-      //   console.log("Server markers to be deleted:", serverMarkersToBeDeleted)
+      console.log("Server markers to be updated:", serverMarkersToBeUpdated)
+      console.log("Server markers to be deleted:", serverMarkersToBeDeleted)
 
       //Add the local results into an action queue
       const markerActions = [
@@ -213,6 +213,15 @@
           new Date(localMarker.last_confirmed) >
           new Date(serverMarker.last_confirmed)
         ) {
+          // Log the icon values of the local and server markers being updated
+          console.log(
+            "Local marker icon:",
+            localMarker.marker.getElement().querySelector("i")?.className,
+          )
+          console.log(
+            "Server marker icon:",
+            serverMarker.marker_data.properties.icon,
+          )
           serverMarkersToBeUpdated.push(localMarker)
         }
       } else {

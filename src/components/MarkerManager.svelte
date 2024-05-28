@@ -221,37 +221,50 @@
   }
 
   function confirmMarker() {
-    // Add the recent marker to the confirmedMarkers array
+    // Check if a selected marker is available
     if ($selectedMarkerStore) {
-      const { marker: originalMarker, id } = $selectedMarkerStore
-      console.log("Selected marker:", originalMarker, "ID:", id)
+      const { marker: selectedMarker, id } = $selectedMarkerStore
 
-      const currentTimestamp = new Date().toISOString() // Get the current timestamp
+      // Create a timestamp
+      const currentTimestamp = new Date().toISOString()
 
+      // Check if the marker ID already exists in confirmedMarkersStore
       const existingMarker = $confirmedMarkersStore.find((m) => m.id === id)
-      console.log("Existing marker:", existingMarker)
 
-      if (existingMarker) {
-        const existingLngLat = existingMarker.marker.getLngLat()
-        const originalLngLat = originalMarker.getLngLat()
+      if (!existingMarker) {
+        // If the marker ID doesn't exist, create a new marker data
+        const iconClass =
+          selectedMarker.getElement().querySelector("i")?.className || "default"
+
+        const newMarkerData = {
+          marker: selectedMarker,
+          id,
+          last_confirmed: currentTimestamp,
+        }
+
+        console.log("No marker with the same ID exists, adding a new entry")
+        console.log("New marker data:", newMarkerData)
+        console.log("New marker icon:", iconClass)
+
+        // Add the new marker data to confirmedMarkersStore
+        confirmedMarkersStore.update((markers) => [...markers, newMarkerData])
+      } else {
+        // If the marker ID exists, compare the icon values
+        const selectedIcon = selectedMarker
+          .getElement()
+          .querySelector("i")?.className
         const existingIcon = existingMarker.marker
           .getElement()
           .querySelector("i")?.className
-        const originalIcon = originalMarker
-          .getElement()
-          .querySelector("i")?.className
 
+        console.log("Selected marker:", selectedMarker, "ID:", id)
+        console.log("Existing marker:", existingMarker, "ID:", id)
+        console.log("Selected icon:", selectedIcon)
         console.log("Existing icon:", existingIcon)
-        console.log("Original icon:", originalIcon)
 
-        if (
-          existingLngLat.lng === originalLngLat.lng &&
-          existingLngLat.lat === originalLngLat.lat &&
-          existingIcon === originalIcon
-        ) {
-          console.log("No changes made to the marker")
-          // If the marker's position and icon are the same as the original marker,
-          // it means no changes were made, so we don't need to update the store
+        if (selectedIcon === existingIcon) {
+          console.log("No changes made to the marker icon")
+          // If the icons are the same, do nothing and exit the function
           selectedMarkerStore.set(null)
           controlStore.update((controls) => ({
             ...controls,
@@ -259,37 +272,25 @@
           }))
           return
         }
+
+        console.log("Updating marker icon")
+
+        // If the icons are different, update the confirmedMarkersStore
+        confirmedMarkersStore.update((markers) => {
+          const updatedMarker = {
+            marker: selectedMarker,
+            id,
+            last_confirmed: currentTimestamp,
+          }
+
+          console.log("Updated marker data:", updatedMarker)
+          console.log("Updated marker icon:", selectedIcon)
+
+          return markers.map((m) => (m.id === id ? updatedMarker : m))
+        })
       }
 
-      console.log("Updating confirmedMarkersStore", originalMarker)
-      confirmedMarkersStore.update((markers) => {
-        const existingMarkerIndex = markers.findIndex((m) => m.id === id)
-
-        if (existingMarkerIndex !== -1) {
-          // If a marker with the same ID already exists, update it
-          const updatedMarker = {
-            marker: existingMarker.marker,
-            id,
-            last_confirmed: currentTimestamp,
-          }
-          console.log("Updated marker data:", updatedMarker)
-
-          return markers.map((m, index) =>
-            index === existingMarkerIndex ? updatedMarker : m,
-          )
-        } else {
-          console.log("No marker with the same ID exists, adding a new entry")
-
-          const newMarkerData = {
-            marker: originalMarker,
-            id,
-            last_confirmed: currentTimestamp,
-          }
-
-          return [...markers, newMarkerData]
-        }
-      })
-
+      // Reset the selectedMarkerStore
       selectedMarkerStore.set(null)
     }
 
