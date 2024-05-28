@@ -36,7 +36,7 @@
   const mapOptions = {
     container: null,
     style: DEFAULT_SATELLITE_STYLE,
-    center: [0, 0],
+    center: [90, -40],
     zoom: 2,
   }
 
