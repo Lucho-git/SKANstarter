@@ -12,42 +12,44 @@
   import { debounce } from "lodash-es"
 
   let spinning = false
-  let subscription
   let confirmedMarkersUnsubscribe
 
   let debouncedSynchronizeMarkers
   let synchronizationInProgress = false
+  let channel // Declare the channel variable
+
   onMount(() => {
     // Create a single debounced instance of the synchronizeMarkers function
     debouncedSynchronizeMarkers = debounce(synchronizeMarkers, 500)
 
+    const session = $page.data.session // Get the session variable
+
     // Subscribe to changes in the 'map_markers' table
-    const channel = supabase
+    channel = supabase
       .channel("map_markers_changes")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "map_markers" },
         (payload) => {
-          //   console.log("Received update from Supabase Realtime:", payload)
-          if (!synchronizationInProgress) {
-            debouncedSynchronizeMarkers("Server Sync")
+          if (payload.new.update_user_id !== session.user.id) {
+            // Update was made by another user
+            if (!synchronizationInProgress) {
+              debouncedSynchronizeMarkers("Server Sync")
+            }
+          } else {
+            // Update was made by the current user
+            // Skip synchronization
+            console.log("Skipping synchronization, update made by current user")
           }
         },
       )
       .subscribe()
-
-    subscription = channel
 
     synchronizeMarkers("Loaded from server")
 
     // Subscribe to changes in the confirmedMarkerStore
     confirmedMarkersUnsubscribe = confirmedMarkersStore.subscribe((markers) => {
       if (!synchronizationInProgress) {
-        // console.log(
-        //   "Local Synchronization not in progress,",
-        //   synchronizationInProgress,
-        // )
-
         debouncedSynchronizeMarkers("Local Sync")
       }
     })
@@ -63,8 +65,8 @@
     }
 
     // Unsubscribe from the Realtime subscription when the component is destroyed
-    if (subscription) {
-      supabase.removeChannel(subscription)
+    if (channel) {
+      supabase.removeChannel(channel)
     }
 
     console.log("Removing all markers from the map")
@@ -312,6 +314,7 @@
           id: id,
           marker_data: feature,
           last_confirmed: last_confirmed,
+          update_user_id: userId, // Add the user ID who made the update
         }
       })
 
@@ -350,6 +353,7 @@
           id: id,
           marker_data: feature,
           last_confirmed: last_confirmed,
+          update_user_id: userId, // Add the user ID who made the update
         }
       })
 
