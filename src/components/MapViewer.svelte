@@ -17,7 +17,7 @@
     "pk.eyJ1IjoibHVjaG9kb3JlIiwiYSI6ImNsdndpd2NvNjA5OWUybG14anc1aWJpbXMifQ.7DSbOP9x-3sTZdJ5ee4UKw"
   const DEFAULT_SATELLITE_STYLE = "mapbox://styles/mapbox/satellite-streets-v12"
   const DEFAULT_OUTDOORS_STYLE = "mapbox://styles/mapbox/outdoors-v12"
-  const ANIMATION_DURATION = 1000
+  const ANIMATION_DURATION = 333
 
   let mapContainer
   let map
@@ -140,7 +140,7 @@
     const lngDiff = targetLng - currentLng
     const rotationDiff = targetRotation - currentRotation
 
-    const distanceThreshold = 0.00004 // Adjust this value as needed
+    const distanceThreshold = 0.00002 // Adjust this value as needed
     const distance = Math.sqrt(latDiff ** 2 + lngDiff ** 2)
 
     if (distance < distanceThreshold) {
