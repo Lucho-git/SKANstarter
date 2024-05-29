@@ -16,14 +16,12 @@
     "pk.eyJ1IjoibHVjaG9kb3JlIiwiYSI6ImNsdndpd2NvNjA5OWUybG14anc1aWJpbXMifQ.7DSbOP9x-3sTZdJ5ee4UKw"
   const DEFAULT_SATELLITE_STYLE = "mapbox://styles/mapbox/satellite-streets-v12"
   const DEFAULT_OUTDOORS_STYLE = "mapbox://styles/mapbox/outdoors-v12"
-  const ANIMATION_DURATION = 500
 
   let mapContainer
   let map
   let mapInitialized = false
 
   let isSatelliteStyle = true
-  let userMarker
   let mapControls
 
   setContext("map", {

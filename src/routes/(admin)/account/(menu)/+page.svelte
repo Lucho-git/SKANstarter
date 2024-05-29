@@ -4,6 +4,9 @@
   import UploadPopoverTrigger from "../../../../components/UploadPopoverTrigger.svelte"
   import UserFiles from "../../../../components/UserFiles.svelte"
   import { userFilesStore } from "../../../../stores/userFilesStore"
+
+  import MasterMapManager from "../(menu)/MasterMapManager.svelte"
+
   import { onMount } from "svelte"
 
   let adminSection: Writable<string> = getContext("adminSection")
@@ -132,6 +135,8 @@
     <div class="my-2"></div>
   </div>
 </div>
+
+<MasterMapManager />
 
 <!-- <div class="my-6">
   <h1 class="text-xl font-bold mb-1">Farm</h1>

@@ -10,9 +10,14 @@
 
   let geolocateControl
   let userMarker
+  let locationTrackingInterval
+  let lastRecordedTime = 0
 
   const ANIMATION_DURATION = 500 // Adjust this value as needed
   const DISTANCE_THRESHOLD = 0.00001
+  const LOCATION_TRACKING_INTERVAL_TRIGGER = 11114000 // Adjust this value as needed
+  const LOCATION_TRACKING_INTERVAL_MIN = 1000
+  let isTrailingOn = false // Flag to control the trailing feature
 
   onMount(() => {
     // Create the geolocateControl and add it to the map
@@ -41,7 +46,10 @@
     geolocateControl.on("geolocate", (e) => {
       const { coords } = e
       updateMarkerPosition(coords)
+      streamMarkerPosition(coords)
     })
+
+    startLocationTracking()
   })
 
   onDestroy(() => {
@@ -49,7 +57,63 @@
     if (userMarker) {
       userMarker.remove()
     }
+    stopLocationTracking()
   })
+
+  function startLocationTracking() {
+    locationTrackingInterval = setInterval(() => {
+      geolocateControl.trigger()
+    }, LOCATION_TRACKING_INTERVAL_TRIGGER)
+  }
+
+  function stopLocationTracking() {
+    clearInterval(locationTrackingInterval)
+  }
+
+  function streamMarkerPosition(coords) {
+    const currentTime = Date.now()
+    if (currentTime - lastRecordedTime >= LOCATION_TRACKING_INTERVAL_MIN) {
+      //Set the minimum length of time between location updates
+      recordLocationData(coords)
+      lastRecordedTime = currentTime
+    }
+  }
+
+  function recordLocationData(locationData) {
+    const { latitude, longitude, heading } = locationData
+
+    const vehicleData = {
+      timestamp: new Date().toISOString(),
+      latitude,
+      longitude,
+      heading,
+      isTrailingOn,
+    }
+
+    console.log(vehicleData)
+    // // Store the location data locally
+    // storeLocationDataLocally(vehicleData)
+
+    // // Send the location data to the server
+    // sendLocationDataToServer(vehicleData)
+  }
+
+  function storeLocationDataLocally(locationData) {
+    // Implement the logic to store the location data in local storage
+    // You can use IndexedDB or localStorage for this purpose
+    // Ensure that the data is stored in an ordered manner
+
+    // Example using localStorage
+    const storedData = localStorage.getItem("vehicleLocationData")
+    const locationDataArray = storedData ? JSON.parse(storedData) : []
+
+    locationDataArray.push(locationData)
+
+    localStorage.setItem(
+      "vehicleLocationData",
+      JSON.stringify(locationDataArray),
+    )
+  }
 
   function createUserMarkerElement() {
     const el = document.createElement("div")

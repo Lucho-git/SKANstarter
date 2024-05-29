@@ -98,6 +98,7 @@
     synchronizationInProgress = true
     spinning = true
 
+    console.log("Getting sessions")
     const session = $page.data.session
     if (!session) {
       console.error("User not authenticated")
@@ -161,7 +162,26 @@
       toast.push(toasttext)
     } catch (error) {
       console.error("Error synchronizing markers:", error)
-      toast.push("Error synchronizing markers", {
+
+      let errorMessage = "Error synchronizing markers"
+
+      if (error.message === "Failed to retrieve user profile") {
+        errorMessage =
+          "Please create a map or connect to a map for online synchronization."
+      } else if (
+        error.message ===
+        "No master map assigned. Please create or connect to a map."
+      ) {
+        errorMessage =
+          "No master map assigned. Please create or connect to a map."
+      } else if (
+        error.message === "Failed to retrieve latest markers from server"
+      ) {
+        errorMessage =
+          "Failed to retrieve latest markers from the server. Please try again later."
+      }
+
+      toast.push(errorMessage, {
         theme: {
           "--toastBackground": "hsl(var(--er))",
           "--toastColor": "hsl(var(--erc))",
@@ -412,6 +432,12 @@
     }
 
     const masterMapId = profile.master_map_id
+
+    if (!masterMapId) {
+      throw new Error(
+        "No master map assigned. Please create or connect to a map.",
+      )
+    }
 
     // Retrieve the latest markers from the server, excluding deleted markers
     const { data: latestMarkers, error: markersError } = await supabase
