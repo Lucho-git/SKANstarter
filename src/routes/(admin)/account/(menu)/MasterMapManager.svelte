@@ -17,6 +17,7 @@
 
   let isMasterUser = false
   let showDeleteConfirmation = false
+  let copied = false
 
   async function fetchMasterMapDetails() {
     const session = $page.data.session
@@ -253,26 +254,47 @@
       <div class="my-2">
         <div class="flex flex-nowrap items-center">
           <strong>Map ID:</strong>
-          <span class="ml-2">{masterMapId}</span>
-          <div class="tooltip ml-2" data-tip="Click to copy">
+          <div class="tooltip" data-tip={copied ? "Copied!" : "Click to copy"}>
             <button
-              class="btn btn-sm btn-circle btn-ghost"
-              on:click={() => navigator.clipboard.writeText(masterMapId)}
+              class="btn btn-sm btn-outline btn-accent ml-1"
+              on:click={() => {
+                navigator.clipboard.writeText(masterMapId)
+                copied = true
+                setTimeout(() => (copied = false), 2000)
+              }}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                />
-              </svg>
+              {masterMapId}
+              {#if copied}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4 ml-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              {:else}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4 ml-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                  />
+                </svg>
+              {/if}
             </button>
           </div>
         </div>
