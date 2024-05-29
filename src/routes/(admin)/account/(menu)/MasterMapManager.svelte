@@ -365,12 +365,13 @@
     <div class="modal-box">
       <h3 class="font-bold text-lg">Connect to Master Map</h3>
       <div class="form-control">
-        <label class="label">
+        <label class="label" for="enteredMapId">
           <span class="label-text">Enter Master Map ID:</span>
         </label>
         <div class="relative">
           <input
             type="text"
+            id="enteredMapId"
             placeholder="Master Map ID"
             class="input input-bordered w-full pr-16"
             bind:value={enteredMapId}
@@ -390,15 +391,13 @@
         <ul class="menu bg-base-100 w-56 p-2 rounded-box mt-4">
           {#each userMaps as map}
             <li>
-              <a>
+              <button
+                class="btn btn-ghost w-full text-left"
+                on:click={() => connectToMap(map.id)}
+              >
                 {map.map_name}
-                <button
-                  class="btn btn-sm btn-primary"
-                  on:click={() => connectToMap(map.id)}
-                >
-                  Connect
-                </button>
-              </a>
+                <span class="btn btn-sm btn-primary ml-auto">Connect</span>
+              </button>
             </li>
           {/each}
         </ul>
