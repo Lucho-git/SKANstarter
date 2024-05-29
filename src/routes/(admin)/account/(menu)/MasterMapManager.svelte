@@ -15,6 +15,9 @@
   let enteredMapId = ""
   let isValidMapId = false
 
+  let isMasterUser = false
+  let showDeleteConfirmation = false
+
   async function fetchMasterMapDetails() {
     const session = $page.data.session
 
@@ -62,10 +65,12 @@
       }
 
       masterMapOwner = `${owner.full_name} (${owner.company_name})`
+
+      isMasterUser = masterMap.master_user_id === session.user.id
     }
   }
 
-  async function deleteMasterMap() {
+  async function disconnectFromMap() {
     const session = $page.data.session
 
     if (!session) {
@@ -79,13 +84,56 @@
       .eq("id", session.user.id)
 
     if (error) {
-      console.error("Error deleting master map:", error)
+      console.error("Error disconnecting from master map:", error)
       return
     }
 
     masterMapId = ""
     masterMapName = ""
     masterMapOwner = ""
+    isMasterUser = false
+  }
+
+  function openDeleteConfirmation() {
+    showDeleteConfirmation = true
+  }
+
+  async function confirmDeleteMap() {
+    const session = $page.data.session
+
+    if (!session) {
+      console.error("User not authenticated")
+      return
+    }
+
+    // Update profiles to set master_map_id to null for the map being deleted
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({ master_map_id: null })
+      .eq("master_map_id", masterMapId)
+
+    if (updateError) {
+      console.error("Error updating profiles:", updateError)
+      return
+    }
+
+    // Delete the master map
+    const { error: deleteError } = await supabase
+      .from("master_maps")
+      .delete()
+      .eq("id", masterMapId)
+
+    if (deleteError) {
+      console.error("Error deleting master map:", deleteError)
+      return
+    }
+
+    await disconnectFromMap()
+    showDeleteConfirmation = false
+  }
+
+  function cancelDeleteMap() {
+    showDeleteConfirmation = false
   }
 
   function openGenerateModal() {
@@ -200,25 +248,55 @@
 
 <div class="alert alert-info max-w-lg mt-2">
   <div>
-    <div class="font-bold">Master Map</div>
+    <div class="font-bold text-center">Master Map</div>
     {#if masterMapId}
       <div class="my-2">
-        <p>Map ID: {masterMapId}</p>
-        <p>Map Name: {masterMapName}</p>
-        <p>Owner: {masterMapOwner}</p>
+        <div class="flex flex-nowrap items-center">
+          <strong>Map ID:</strong>
+          <span class="ml-2">{masterMapId}</span>
+          <div class="tooltip ml-2" data-tip="Click to copy">
+            <button
+              class="btn btn-sm btn-circle btn-ghost"
+              on:click={() => navigator.clipboard.writeText(masterMapId)}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <p><strong>Map Name:</strong> {masterMapName}</p>
+        <p><strong>Owner:</strong> {masterMapOwner}</p>
       </div>
-      <button class="btn btn-error" on:click={deleteMasterMap}>
+
+      <button class="btn btn-warning" on:click={disconnectFromMap}>
         Disconnect from Map
       </button>
+      {#if isMasterUser}
+        <button class="btn btn-error ml-2" on:click={openDeleteConfirmation}>
+          Delete Map
+        </button>
+      {/if}
     {:else}
       <div class="my-2">
-        <p>No master map assigned.</p>
+        <p>No map assigned.</p>
       </div>
       <button class="btn btn-primary" on:click={openGenerateModal}>
-        Generate Master Map
+        Generate New Map
       </button>
       <button class="btn btn-secondary ml-2" on:click={openConnectModal}>
-        Connect to Master Map
+        Connect to Existing Map
       </button>
     {/if}
   </div>
@@ -227,7 +305,7 @@
 {#if showGenerateModal}
   <div class="modal modal-open">
     <div class="modal-box">
-      <h3 class="font-bold text-lg">Generate Master Map</h3>
+      <h3 class="font-bold text-lg">Generate New Map</h3>
       <p class="py-4">Generated Map ID: {generatedMapId}</p>
       <input
         type="text"
@@ -240,6 +318,21 @@
           Confirm
         </button>
         <button class="btn" on:click={cancelGenerateMap}>Cancel</button>
+      </div>
+    </div>
+  </div>
+{/if}
+
+{#if showDeleteConfirmation}
+  <div class="modal modal-open">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg">Confirm Map Deletion</h3>
+      <p class="py-4">Are you sure you want to permanently delete this map?</p>
+      <div class="modal-action">
+        <button class="btn btn-error" on:click={confirmDeleteMap}>
+          Delete
+        </button>
+        <button class="btn" on:click={cancelDeleteMap}>Cancel</button>
       </div>
     </div>
   </div>
