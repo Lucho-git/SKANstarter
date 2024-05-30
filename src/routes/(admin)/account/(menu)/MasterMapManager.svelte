@@ -3,6 +3,7 @@
   import { supabase } from "../../../../lib/supabaseClient"
   import { page } from "$app/stores"
   import { v4 as uuidv4 } from "uuid"
+  import { LottiePlayer } from "@lottiefiles/svelte-lottie-player"
 
   let masterMapId = ""
   let masterMapName = ""
@@ -252,7 +253,9 @@
     <div class="font-bold text-center mb-4">Selected Map</div>
     {#if masterMapId}
       <div class="my-2 text-left">
-        <div class="flex flex-col sm:flex-row sm:items-center">
+        <p class="mt-2"><strong>Map Name:</strong> {masterMapName}</p>
+        <p class="mt-2"><strong>Owner:</strong> {masterMapOwner}</p>
+        <div class="flex flex-col sm:flex-row sm:items-center mt-2">
           <strong class="mr-2">Share Map:</strong>
           <div
             class="tooltip text-sm"
@@ -304,11 +307,26 @@
             </button>
           </div>
         </div>
-        <p class="mt-2"><strong>Map Name:</strong> {masterMapName}</p>
-        <p><strong>Owner:</strong> {masterMapOwner}</p>
       </div>
 
-      <div class="flex flex-col sm:flex-row sm:justify-center mt-4">
+      <div class="flex flex-col sm:flex-row sm:justify-center mt-8">
+        <button
+          class="btn btn-primary mb-2 sm:mb-0 sm:mr-2"
+          on:click={() => {
+            window.location.href = "/account/mapviewer"
+          }}
+        >
+          <LottiePlayer
+            src="/animations/CoolLineMap.json"
+            autoplay={true}
+            loop={true}
+            controls={false}
+            renderer="svg"
+            background="transparent"
+            height={40}
+            width={40}
+          />
+        </button>
         <button
           class="btn btn-warning mb-2 sm:mb-0 sm:mr-2"
           on:click={disconnectFromMap}

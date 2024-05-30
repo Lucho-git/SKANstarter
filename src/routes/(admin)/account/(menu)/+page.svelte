@@ -108,6 +108,9 @@
 </svelte:head>
 
 <h1 class="text-2xl font-bold mb-1">Dashboard</h1>
+
+<MasterMapManager />
+
 <div class="alert alert-success max-w-lg mt-2">
   <img src="/images/file-upload-icon.svg" alt="Gear" class="w-14 h-14" />
 
@@ -135,8 +138,6 @@
     <div class="my-2"></div>
   </div>
 </div>
-
-<MasterMapManager />
 
 <!-- <div class="my-6">
   <h1 class="text-xl font-bold mb-1">Farm</h1>
