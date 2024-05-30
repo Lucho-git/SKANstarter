@@ -107,83 +107,38 @@
   <title>Account</title>
 </svelte:head>
 
-<h1 class="text-2xl font-bold mb-1">Dashboard</h1>
-
-<MasterMapManager />
-
-<div class="alert alert-success max-w-lg mt-2">
-  <img src="/images/file-upload-icon.svg" alt="Gear" class="w-14 h-14" />
-
-  <div>
-    <div class="font-bold">Upload Paddock Boundaries</div>
-    <div class="my-2">
-      <UploadPopoverTrigger
-        on:validFile={handleValidFile}
-        on:invalidFile={handleInvalidFile}
-      />
-    </div>
-    <div class="my-2"></div>
+<div class="flex flex-col lg:flex-row lg:space-x-4">
+  <div class="lg:w-1/2">
+    <MasterMapManager />
   </div>
-</div>
 
-<div class="alert alert-success max-w-lg mt-2">
-  <div>
-    <div class="font-bold">User Files</div>
-    <div class="my-2">
-      <UserFiles
-        on:fetchUploadedFiles={fetchUploadedFiles}
-        on:deleteFile={deleteFile}
-      />
-    </div>
-    <div class="my-2"></div>
-  </div>
-</div>
+  <div class="lg:w-1/2">
+    <div class="alert alert-success w-full mt-2">
+      <img src="/images/file-upload-icon.svg" alt="Gear" class="w-14 h-14" />
 
-<!-- <div class="my-6">
-  <h1 class="text-xl font-bold mb-1">Farm</h1>
-  <div class="stats shadow stats-vertical sm:stats-horizontal sm:w-[420px]">
-    <div class="stat place-items-center">
-      <div class="stat-title">Paddocks</div>
-      <div class="stat-value">3</div>
-      <div class="stat-desc">↗︎ 546 (2%)</div>
+      <div>
+        <div class="font-bold">Upload Paddock Boundaries</div>
+        <div class="my-2">
+          <UploadPopoverTrigger
+            on:validFile={handleValidFile}
+            on:invalidFile={handleInvalidFile}
+          />
+        </div>
+        <div class="my-2"></div>
+      </div>
     </div>
 
-    <div class="stat place-items-center">
-      <div class="stat-title">Hectares</div>
-      <div class="stat-value text-secondary">4,200</div>
-      <div class="stat-desc">↗︎ 40 (2%)</div>
+    <div class="alert alert-success w-full mt-2">
+      <div>
+        <div class="font-bold">User Files</div>
+        <div class="my-2">
+          <UserFiles
+            on:fetchUploadedFiles={fetchUploadedFiles}
+            on:deleteFile={deleteFile}
+          />
+        </div>
+        <div class="my-2"></div>
+      </div>
     </div>
   </div>
 </div>
-<div class="my-6">
-  <h1 class="text-xl font-bold mb-1">Accounts</h1>
-  <div class="stats shadow stats-vertical sm:stats-horizontal sm:w-[420px]">
-    <div class="stat place-items-center">
-      <div class="stat-title">New Registers</div>
-      <div class="stat-value">1,200</div>
-      <div class="stat-desc">↘︎ 90 (14%)</div>
-    </div>
-
-    <div class="stat place-items-center">
-      <div class="stat-title">Churned Accounts</div>
-      <div class="stat-value">42</div>
-      <div class="stat-desc">↘︎ 6 (12%)</div>
-    </div>
-  </div>
-</div>
-<div class="my-6">
-  <h1 class="text-xl font-bold mb-1">Revenue</h1>
-  <div class="stats shadow stats-vertical sm:stats-horizontal sm:w-[420px]">
-    <div class="stat place-items-center">
-      <div class="stat-title text-success">Revenue</div>
-      <div class="stat-value text-success">$4200</div>
-      <div class="stat-desc">↗︎ $180 (4%)</div>
-    </div>
-
-    <div class="stat place-items-center">
-      <div class="stat-title">New Subscribers</div>
-      <div class="stat-value">16</div>
-      <div class="stat-desc">↘︎ 1 (%7)</div>
-    </div>
-  </div>
-</div> -->

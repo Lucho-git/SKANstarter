@@ -7,6 +7,8 @@
 
   let masterMapId = ""
   let masterMapName = ""
+  let confirmationInput = ""
+
   let masterMapOwner = ""
   let showGenerateModal = false
   let showConnectModal = false
@@ -248,7 +250,7 @@
   onMount(fetchMasterMapDetails)
 </script>
 
-<div class="alert alert-info max-w-lg mt-2">
+<div class="alert alert-info w-full mt-2">
   <div class="px-4 py-2">
     <div class="font-bold text-center mb-4">Selected Map</div>
     {#if masterMapId}
@@ -395,14 +397,30 @@
     <div class="modal-box px-4 py-2 w-11/12 max-w-md mx-auto">
       <h3 class="font-bold text-lg text-center mb-4">Confirm Map Deletion</h3>
       <p class="mb-4">Are you sure you want to permanently delete this map?</p>
+      <p class="mb-4">
+        Please type the first 8 letters of the master map ID to confirm:
+      </p>
+      <p class="mb-4">
+        <span class="font-bold text-error">{masterMapId.slice(0, 8)}</span><span
+          >{masterMapId.slice(8)}</span
+        >
+      </p>
+      <input
+        type="text"
+        class="input input-bordered w-full mb-4"
+        bind:value={confirmationInput}
+        placeholder="Type the first 8 letters of the map ID"
+      />
       <div
         class="modal-action flex flex-col sm:flex-row sm:justify-center mb-6"
       >
         <button
           class="btn btn-error mb-2 sm:mb-0 sm:mr-2"
+          disabled={confirmationInput.toLowerCase() !==
+            masterMapId.slice(0, 8).toLowerCase()}
           on:click={confirmDeleteMap}
         >
-          Delete
+          Confirm Deletion
         </button>
         <button class="btn mb-2 sm:mb-0" on:click={cancelDeleteMap}>
           Cancel
