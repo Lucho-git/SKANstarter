@@ -248,98 +248,122 @@
 </script>
 
 <div class="alert alert-info max-w-lg mt-2">
-  <div>
-    <div class="font-bold text-center">Master Map</div>
+  <div class="px-4 py-2">
+    <div class="font-bold text-center mb-4">Master Map</div>
     {#if masterMapId}
-      <div class="my-2">
-        <div class="flex flex-nowrap items-center">
-          <strong>Map ID:</strong>
+      <div class="my-2 text-left">
+        <div class="flex flex-col sm:flex-row sm:items-center">
+          <strong class="mr-2">Share Map:</strong>
           <div class="tooltip" data-tip={copied ? "Copied!" : "Click to copy"}>
             <button
-              class="btn btn-sm btn-outline btn-accent ml-1"
+              class="btn btn-sm btn-outline btn-accent mt-2 sm:mt-0"
               on:click={() => {
                 navigator.clipboard.writeText(masterMapId)
                 copied = true
                 setTimeout(() => (copied = false), 2000)
               }}
             >
-              {masterMapId}
-              {#if copied}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4 ml-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              {:else}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4 ml-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                  />
-                </svg>
-              {/if}
+              <div class="flex items-center w-full">
+                <span class="break-all flex-grow">{masterMapId}</span>
+                <div class="border-l border-accent mx-2 h-4"></div>
+                {#if copied}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                {:else}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                    />
+                  </svg>
+                {/if}
+              </div>
             </button>
           </div>
         </div>
-        <p><strong>Map Name:</strong> {masterMapName}</p>
+        <p class="mt-2"><strong>Map Name:</strong> {masterMapName}</p>
         <p><strong>Owner:</strong> {masterMapOwner}</p>
       </div>
 
-      <button class="btn btn-warning" on:click={disconnectFromMap}>
-        Disconnect from Map
-      </button>
-      {#if isMasterUser}
-        <button class="btn btn-error ml-2" on:click={openDeleteConfirmation}>
-          Delete Map
+      <div class="flex flex-col sm:flex-row sm:justify-center mt-4">
+        <button
+          class="btn btn-warning mb-2 sm:mb-0 sm:mr-2"
+          on:click={disconnectFromMap}
+        >
+          Disconnect from Map
         </button>
-      {/if}
+        {#if isMasterUser}
+          <button class="btn btn-error" on:click={openDeleteConfirmation}>
+            Delete Map
+          </button>
+        {/if}
+      </div>
     {:else}
-      <div class="my-2">
+      <div class="my-2 text-center">
         <p>No map assigned.</p>
       </div>
-      <button class="btn btn-primary" on:click={openGenerateModal}>
-        Generate New Map
-      </button>
-      <button class="btn btn-secondary ml-2" on:click={openConnectModal}>
-        Connect to Existing Map
-      </button>
+      <div class="flex flex-col sm:flex-row sm:justify-center mt-4">
+        <button
+          class="btn btn-primary mb-2 sm:mb-0 sm:mr-2"
+          on:click={openGenerateModal}
+        >
+          Generate New Map
+        </button>
+        <button class="btn btn-secondary" on:click={openConnectModal}>
+          Connect to Existing Map
+        </button>
+      </div>
     {/if}
   </div>
 </div>
 
 {#if showGenerateModal}
   <div class="modal modal-open">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg">Generate New Map</h3>
-      <p class="py-4">Generated Map ID: {generatedMapId}</p>
+    <div class="modal-box px-4 py-2 w-11/12 max-w-md mx-auto">
+      <h3 class="font-bold text-lg text-center mb-4">Generate New Map</h3>
+      <div class="flex justify-center mb-4">
+        <h3 class="font-bold text-xs badge badge-lg badge-info">
+          {generatedMapId}
+        </h3>
+      </div>
       <input
         type="text"
         placeholder="Enter map name"
-        class="input input-bordered w-full max-w-xs"
+        class="input input-bordered w-full mb-4"
         bind:value={newMapName}
       />
-      <div class="modal-action">
-        <button class="btn btn-primary" on:click={confirmGenerateMap}>
+      <div
+        class="modal-action flex flex-col sm:flex-row sm:justify-center mb-6"
+      >
+        <button
+          class="btn btn-primary mb-2 sm:mb-0 sm:mr-2"
+          on:click={confirmGenerateMap}
+        >
           Confirm
         </button>
-        <button class="btn" on:click={cancelGenerateMap}>Cancel</button>
+        <button class="btn mb-2 sm:mb-0" on:click={cancelGenerateMap}>
+          Cancel
+        </button>
       </div>
     </div>
   </div>
@@ -347,14 +371,21 @@
 
 {#if showDeleteConfirmation}
   <div class="modal modal-open">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg">Confirm Map Deletion</h3>
-      <p class="py-4">Are you sure you want to permanently delete this map?</p>
-      <div class="modal-action">
-        <button class="btn btn-error" on:click={confirmDeleteMap}>
+    <div class="modal-box px-4 py-2 w-11/12 max-w-md mx-auto">
+      <h3 class="font-bold text-lg text-center mb-4">Confirm Map Deletion</h3>
+      <p class="mb-4">Are you sure you want to permanently delete this map?</p>
+      <div
+        class="modal-action flex flex-col sm:flex-row sm:justify-center mb-6"
+      >
+        <button
+          class="btn btn-error mb-2 sm:mb-0 sm:mr-2"
+          on:click={confirmDeleteMap}
+        >
           Delete
         </button>
-        <button class="btn" on:click={cancelDeleteMap}>Cancel</button>
+        <button class="btn mb-2 sm:mb-0" on:click={cancelDeleteMap}>
+          Cancel
+        </button>
       </div>
     </div>
   </div>
@@ -362,9 +393,9 @@
 
 {#if showConnectModal}
   <div class="modal modal-open">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg">Connect to Master Map</h3>
-      <div class="form-control">
+    <div class="modal-box px-4 py-2 w-11/12 max-w-md mx-auto">
+      <h3 class="font-bold text-lg text-center mb-4">Connect to Master Map</h3>
+      <div class="form-control mb-4">
         <label class="label" for="enteredMapId">
           <span class="label-text">Enter Master Map ID:</span>
         </label>
@@ -388,24 +419,36 @@
         </div>
       </div>
       {#if userMaps.length > 0}
-        <ul class="menu bg-base-100 w-56 p-2 rounded-box mt-4">
+        <ul class="menu bg-base-100 w-full p-2 rounded-box mb-4">
           {#each userMaps as map}
             <li>
-              <button
-                class="btn btn-ghost w-full text-left"
-                on:click={() => connectToMap(map.id)}
-              >
-                {map.map_name}
-                <span class="btn btn-sm btn-primary ml-auto">Connect</span>
-              </button>
+              <label class="flex items-center justify-between cursor-pointer">
+                <input
+                  type="radio"
+                  name="map-selection"
+                  class="hidden"
+                  on:change={() => connectToMap(map.id)}
+                />
+                <span class="text-center flex-grow">{map.map_name}</span>
+                <button
+                  class="btn btn-sm btn-primary ml-4"
+                  on:click={() => connectToMap(map.id)}
+                >
+                  Connect
+                </button>
+              </label>
             </li>
           {/each}
         </ul>
       {:else}
-        <p class="py-4">No master maps found.</p>
+        <p class="mb-4">No master maps found.</p>
       {/if}
-      <div class="modal-action">
-        <button class="btn" on:click={cancelConnectMap}>Cancel</button>
+      <div
+        class="modal-action flex flex-col sm:flex-row sm:justify-center mb-6"
+      >
+        <button class="btn mb-2 sm:mb-0" on:click={cancelConnectMap}>
+          Cancel
+        </button>
       </div>
     </div>
   </div>
