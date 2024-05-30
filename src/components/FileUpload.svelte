@@ -148,11 +148,11 @@
 </script>
 
 {#if isPopoverOpen}
-  <div
-    class="fixed inset-0 flex items-center justify-center z-50 p-4 overflow-auto"
-  >
+  <div class="fixed inset-0 z-50">
     <div class="overlay absolute inset-0 bg-black opacity-50"></div>
-    <div class="card w-full max-w-3xl bg-base-100 shadow-xl z-10 mx-auto">
+    <div
+      class="card w-full max-w-3xl bg-base-100 shadow-xl z-10 mx-auto fullscreen-modal"
+    >
       <div class="card-body relative">
         <button
           class="btn btn-sm btn-circle absolute top-2 right-2"
@@ -366,3 +366,18 @@
     </div>
   </div>
 {/if}
+
+<style>
+  @media (max-width: 640px) {
+    .fullscreen-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: calc(100% - 32px);
+      max-height: calc(100% - 16px);
+      overflow-y: auto;
+      border-radius: 8px;
+    }
+  }
+</style>
