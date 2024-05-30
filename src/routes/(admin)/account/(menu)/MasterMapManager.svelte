@@ -249,14 +249,17 @@
 
 <div class="alert alert-info max-w-lg mt-2">
   <div class="px-4 py-2">
-    <div class="font-bold text-center mb-4">Master Map</div>
+    <div class="font-bold text-center mb-4">Selected Map</div>
     {#if masterMapId}
       <div class="my-2 text-left">
         <div class="flex flex-col sm:flex-row sm:items-center">
           <strong class="mr-2">Share Map:</strong>
-          <div class="tooltip" data-tip={copied ? "Copied!" : "Click to copy"}>
+          <div
+            class="tooltip text-sm"
+            data-tip={copied ? "Copied!" : "Click to copy"}
+          >
             <button
-              class="btn btn-sm btn-outline btn-accent mt-2 sm:mt-0"
+              class="btn btn-sm btn-outline btn-accent text-xs mt-2 sm:mt-0"
               on:click={() => {
                 navigator.clipboard.writeText(masterMapId)
                 copied = true
