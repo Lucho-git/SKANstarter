@@ -141,15 +141,18 @@
     fileInfo = ""
     isFileValid = false
     file = null
-
+    isPopoverOpen = false
+    document.body.classList.remove("modal-open")
     dispatch("close")
   }
 </script>
 
 {#if isPopoverOpen}
-  <div class="fixed inset-0 flex items-center justify-center z-50">
+  <div
+    class="fixed inset-0 flex items-center justify-center z-50 p-4 overflow-auto"
+  >
     <div class="overlay absolute inset-0 bg-black opacity-50"></div>
-    <div class="card w-full max-w-3xl bg-base-100 shadow-xl z-10">
+    <div class="card w-full max-w-3xl bg-base-100 shadow-xl z-10 mx-auto">
       <div class="card-body relative">
         <button
           class="btn btn-sm btn-circle absolute top-2 right-2"
@@ -284,49 +287,19 @@
           <ul class="list-none pl-6 mb-4">
             <li class="mb-2">
               <span class="inline-block w-4 h-4 mr-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
+                <i class="at-check-circle-bold"></i>
               </span>
               Zipped Shapefiles, .KML files and ISOXML files are all accepted
             </li>
             <li class="mb-2">
               <span class="inline-block w-4 h-4 mr-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
+                <i class="at-check-circle-bold"></i>
               </span>
               Shapefile ZIP must contain .dbf, .shx and .shp files.
             </li>
             <li class="mb-2">
               <span class="inline-block w-4 h-4 mr-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
+                <i class="at-check-circle-bold"></i>
               </span>
               Multiple ZIP files or an ISOXML can be contained in a single ZIP file.
             </li>
@@ -371,33 +344,13 @@
           <ul class="list-none pl-6">
             <li class="mb-2">
               <span class="inline-block w-4 h-4 mr-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
+                <i class="at-check-circle-bold"></i>
               </span>
               Polygon
             </li>
             <li>
               <span class="inline-block w-4 h-4 mr-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
+                <i class="at-check-circle-bold"></i>
               </span>
               Multipolygon
             </li>

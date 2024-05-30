@@ -337,7 +337,7 @@
         </button>
         {#if isMasterUser}
           <button class="btn btn-error" on:click={openDeleteConfirmation}>
-            Delete Map
+            <i class="at-trash"></i>
           </button>
         {/if}
       </div>

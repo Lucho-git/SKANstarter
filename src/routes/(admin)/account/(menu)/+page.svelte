@@ -9,6 +9,8 @@
 
   import { onMount } from "svelte"
 
+  export const ssr = false
+
   let adminSection: Writable<string> = getContext("adminSection")
   adminSection.set("home")
 
