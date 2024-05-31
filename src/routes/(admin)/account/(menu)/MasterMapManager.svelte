@@ -22,6 +22,15 @@
   let showDeleteConfirmation = false
   let copied = false
 
+  let showSettingsModal = false
+  function openSettingsModal() {
+    showSettingsModal = true
+  }
+
+  function cancelSettingsModal() {
+    showSettingsModal = false
+  }
+
   async function fetchMasterMapDetails() {
     const session = $page.data.session
 
@@ -237,6 +246,10 @@
     showConnectModal = false
   }
 
+  function openRenameModal() {
+    console.log("allg")
+  }
+
   async function checkMapIdValidity() {
     const { data: map, error } = await supabase
       .from("master_maps")
@@ -327,13 +340,15 @@
             background="transparent"
             height={40}
             width={40}
+            controlsLayout={false}
           />
         </button>
+        <!-- Replace the "Disconnect from Map" button with a settings button -->
         <button
-          class="btn btn-warning mb-2 sm:mb-0 sm:mr-2"
-          on:click={disconnectFromMap}
+          class="btn btn-secondary mb-2 sm:mb-0 sm:mr-2"
+          on:click={openSettingsModal}
         >
-          Disconnect from Map
+          Settings
         </button>
         {#if isMasterUser}
           <button class="btn btn-error" on:click={openDeleteConfirmation}>
@@ -361,7 +376,7 @@
 </div>
 
 {#if showGenerateModal}
-  <div class="modal modal-open">
+  <div class="modal modal-open z-50">
     <div class="modal-box px-4 py-2 w-11/12 max-w-md mx-auto">
       <h3 class="font-bold text-lg text-center mb-4">Generate New Map</h3>
       <div class="flex justify-center mb-4">
@@ -393,7 +408,7 @@
 {/if}
 
 {#if showDeleteConfirmation}
-  <div class="modal modal-open">
+  <div class="modal modal-open z-100">
     <div class="modal-box px-4 py-2 w-11/12 max-w-md mx-auto">
       <h3 class="font-bold text-lg text-center mb-4">Confirm Map Deletion</h3>
       <p class="mb-4">Are you sure you want to permanently delete this map?</p>
@@ -487,6 +502,158 @@
       >
         <button class="btn mb-2 sm:mb-0" on:click={cancelConnectMap}>
           Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}
+
+{#if showSettingsModal}
+  <div class="modal modal-open z-10">
+    <div class="modal-box px-4 py-2 w-11/12 max-w-md mx-auto">
+      <h3 class="font-bold text-lg text-center mb-4">Map Settings</h3>
+      {#if masterMapId}
+        <div class="bg-info border border-blue-500 rounded-lg p-4 mb-4">
+          <div>
+            <span class="font-bold">Selected Map:</span>
+            {masterMapName}
+          </div>
+          <div class="my-2 text-left">
+            <p class="mt-2"><strong>Owner:</strong> {masterMapOwner}</p>
+            <div class="flex flex-col sm:flex-row sm:items-center mt-2">
+              <strong class="mr-2">Map ID:</strong>
+              <div
+                class="tooltip text-sm"
+                data-tip={copied ? "Copied!" : "Click to copy"}
+              >
+                <button
+                  class="btn btn-sm btn-outline btn-accent text-xs mt-2 sm:mt-0"
+                  on:click={() => {
+                    navigator.clipboard.writeText(masterMapId)
+                    copied = true
+                    setTimeout(() => (copied = false), 2000)
+                  }}
+                >
+                  <div class="flex items-center w-full">
+                    <span class="break-all flex-grow">{masterMapId}</span>
+                    <div class="border-l border-accent mx-2 h-4"></div>
+                    {#if copied}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    {:else}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                        />
+                      </svg>
+                    {/if}
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col space-y-4">
+          <button class="btn btn-warning" on:click={disconnectFromMap}>
+            <svg
+              fill="#000000"
+              width="20px"
+              height="20px"
+              viewBox="0 0 1024 1024"
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon"
+            >
+              <path
+                d="M832.6 191.4c-84.6-84.6-221.5-84.6-306 0l-96.9 96.9 51 51 96.9-96.9c53.8-53.8 144.6-59.5 204 0 59.5 59.5 53.8 150.2 0 204l-96.9 96.9 51.1 51.1 96.9-96.9c84.4-84.6 84.4-221.5-.1-306.1zM446.5 781.6c-53.8 53.8-144.6 59.5-204 0-59.5-59.5-53.8-150.2 0-204l96.9-96.9-51.1-51.1-96.9 96.9c-84.6 84.6-84.6 221.5 0 306s221.5 84.6 306 0l96.9-96.9-51-51-96.8 97zM260.3 209.4a8.03 8.03 0 0 0-11.3 0L209.4 249a8.03 8.03 0 0 0 0 11.3l554.4 554.4c3.1 3.1 8.2 3.1 11.3 0l39.6-39.6c3.1-3.1 3.1-8.2 0-11.3L260.3 209.4z"
+              />
+            </svg>
+            Disconnect
+          </button>
+          <button class="btn btn-info" on:click={openRenameModal}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5 mr-2"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
+              />
+            </svg>
+            Rename
+          </button>
+          <button
+            class="btn btn-error"
+            class:btn-disabled={!isMasterUser}
+            on:click={openDeleteConfirmation}
+            disabled={!isMasterUser}
+          >
+            <i class="at-trash mr-2"></i>
+            Delete
+          </button>
+        </div>
+      {:else}
+        <div
+          class="flex flex-col sm:flex-row sm:justify-center space-y-4 sm:space-y-0 sm:space-x-4"
+        >
+          <button class="btn btn-primary" on:click={openGenerateModal}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5 mr-2"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            New Map
+          </button>
+          <button class="btn btn-secondary" on:click={openConnectModal}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5 mr-2"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M12 1.586l-4 4v12.828l4-4V1.586zM3.707 3.293A1 1 0 002 4v10a1 1 0 00.293.707L6 18.414V5.586L3.707 3.293zM17.707 5.293L14 1.586v12.828l2.293 2.293A1 1 0 0018 16V6a1 1 0 00-.293-.707z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            Connect
+          </button>
+        </div>
+      {/if}
+      <div
+        class="modal-action flex flex-col sm:flex-row sm:justify-center mt-6"
+      >
+        <button class="btn mb-2 sm:mb-0" on:click={cancelSettingsModal}>
+          Close
         </button>
       </div>
     </div>
