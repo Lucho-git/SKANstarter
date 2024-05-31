@@ -23,6 +23,36 @@
   let copied = false
 
   let showSettingsModal = false
+
+  const icons = {
+    copy: `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>`,
+    check: `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`,
+    disconnect: `<svg fill="#000000" width="20px" height="20px" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" class="icon"><path d="M832.6 191.4c-84.6-84.6-221.5-84.6-306 0l-96.9 96.9 51 51 96.9-96.9c53.8-53.8 144.6-59.5 204 0 59.5 59.5 53.8 150.2 0 204l-96.9 96.9 51.1 51.1 96.9-96.9c84.4-84.6 84.4-221.5-.1-306.1zM446.5 781.6c-53.8 53.8-144.6 59.5-204 0-59.5-59.5-53.8-150.2 0-204l96.9-96.9-51.1-51.1-96.9 96.9c-84.6 84.6-84.6 221.5 0 306s221.5 84.6 306 0l96.9-96.9-51-51-96.8 97zM260.3 209.4a8.03 8.03 0 0 0-11.3 0L209.4 249a8.03 8.03 0 0 0 0 11.3l554.4 554.4c3.1 3.1 8.2 3.1 11.3 0l39.6-39.6c3.1-3.1 3.1-8.2 0-11.3L260.3 209.4z"/></svg>`,
+    edit: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>`,
+    trash: `<i class="at-trash mr-2"></i>`,
+  }
+
+  const buttons = [
+    {
+      label: "Rename",
+      icon: icons.edit,
+      onClick: openRenameModal,
+      disabled: false,
+    },
+    {
+      label: "Disconnect",
+      icon: icons.disconnect,
+      onClick: disconnectFromMap,
+      disabled: false,
+    },
+    {
+      label: "Delete",
+      icon: icons.trash,
+      onClick: openDeleteConfirmation,
+      disabled: !isMasterUser,
+    },
+  ]
+
   function openSettingsModal() {
     showSettingsModal = true
   }
@@ -630,30 +660,35 @@
               Rename
             </button>
           {/if}
-          <button class="btn btn-warning" on:click={disconnectFromMap}>
-            <svg
-              fill="#000000"
-              width="20px"
-              height="20px"
-              viewBox="0 0 1024 1024"
-              xmlns="http://www.w3.org/2000/svg"
-              class="icon"
+          <div class="flex space-x-2">
+            <button
+              class="btn btn-warning w-1/2 text-xs"
+              on:click={disconnectFromMap}
             >
-              <path
-                d="M832.6 191.4c-84.6-84.6-221.5-84.6-306 0l-96.9 96.9 51 51 96.9-96.9c53.8-53.8 144.6-59.5 204 0 59.5 59.5 53.8 150.2 0 204l-96.9 96.9 51.1 51.1 96.9-96.9c84.4-84.6 84.4-221.5-.1-306.1zM446.5 781.6c-53.8 53.8-144.6 59.5-204 0-59.5-59.5-53.8-150.2 0-204l96.9-96.9-51.1-51.1-96.9 96.9c-84.6 84.6-84.6 221.5 0 306s221.5 84.6 306 0l96.9-96.9-51-51-96.8 97zM260.3 209.4a8.03 8.03 0 0 0-11.3 0L209.4 249a8.03 8.03 0 0 0 0 11.3l554.4 554.4c3.1 3.1 8.2 3.1 11.3 0l39.6-39.6c3.1-3.1 3.1-8.2 0-11.3L260.3 209.4z"
-              />
-            </svg>
-            Disconnect
-          </button>
-          <button
-            class="btn btn-error"
-            class:btn-disabled={!isMasterUser}
-            on:click={openDeleteConfirmation}
-            disabled={!isMasterUser}
-          >
-            <i class="at-trash mr-2"></i>
-            Delete
-          </button>
+              <svg
+                fill="#000000"
+                width="15px"
+                height="15px"
+                viewBox="0 0 1024 1024"
+                xmlns="http://www.w3.org/2000/svg"
+                class="icon"
+              >
+                <path
+                  d="M832.6 191.4c-84.6-84.6-221.5-84.6-306 0l-96.9 96.9 51 51 96.9-96.9c53.8-53.8 144.6-59.5 204 0 59.5 59.5 53.8 150.2 0 204l-96.9 96.9 51.1 51.1 96.9-96.9c84.4-84.6 84.4-221.5-.1-306.1zM446.5 781.6c-53.8 53.8-144.6 59.5-204 0-59.5-59.5-53.8-150.2 0-204l96.9-96.9-51.1-51.1-96.9 96.9c-84.6 84.6-84.6 221.5 0 306s221.5 84.6 306 0l96.9-96.9-51-51-96.8 97zM260.3 209.4a8.03 8.03 0 0 0-11.3 0L209.4 249a8.03 8.03 0 0 0 0 11.3l554.4 554.4c3.1 3.1 8.2 3.1 11.3 0l39.6-39.6c3.1-3.1 3.1-8.2 0-11.3L260.3 209.4z"
+                />
+              </svg>
+              Disconnect
+            </button>
+            <button
+              class="btn btn-error w-1/2 text-xs"
+              class:btn-disabled={!isMasterUser}
+              on:click={openDeleteConfirmation}
+              disabled={!isMasterUser}
+            >
+              <i class="at-trash mr-2"></i>
+              Delete
+            </button>
+          </div>
         </div>
       {:else}
         <div
@@ -691,9 +726,7 @@
           </button>
         </div>
       {/if}
-      <div
-        class="modal-action flex flex-col sm:flex-row sm:justify-center mt-6"
-      >
+      <div class="modal-action flex flex-col flex-row justify-center mt-6">
         <button class="btn mb-2 sm:mb-0" on:click={cancelSettingsModal}>
           Close
         </button>
