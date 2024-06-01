@@ -8,6 +8,7 @@
   import MasterMapManager from "../(menu)/MasterMapManager.svelte"
 
   import { onMount } from "svelte"
+  import { page } from "$app/stores"
 
   export const ssr = false
 
@@ -101,6 +102,7 @@
   }
 
   onMount(() => {
+    console.log("Parent component mounted with session:", $page.data.session)
     fetchUploadedFiles()
   })
 </script>

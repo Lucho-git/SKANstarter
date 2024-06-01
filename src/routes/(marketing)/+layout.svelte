@@ -3,20 +3,20 @@
   import ThemeSwitcher from "../../components/ThemeSwitcher.svelte"
   import Error from "../+error.svelte"
   import LogoCard from "../../components/LogoCard.svelte"
-  import { session } from "../../stores/user.ts"
   import FloatingContact from "../../components/FloatingContact.svelte"
   import Footer from "./Footer.svelte"
   import Footer2 from "./Footer2.svelte"
   import { deviceStore } from "../../stores/deviceStore"
   import { onMount } from "svelte"
+  export let data
+  let { session } = data
 
   let innerWidth = 0
 
   $: deviceStore.updateInnerWidth(innerWidth)
 
   onMount(async () => {
-    // Trigger the authentication state fetch
-    $session
+    console.log("Mounted with session:", session)
   })
 </script>
 
@@ -31,7 +31,7 @@
       <li class="md:mx-2"><a href="/team">Team</a></li>
       <li class="md:mx-2"><a href="/pricing">Pricing</a></li>
       <li class="md:mx-4">
-        {#if $session}
+        {#if session}
           <a href="/account" class="border border-primary">Dashboard</a>
         {:else}
           <a href="/login/sign_up" class="border border-primary">★ Enter</a>
@@ -67,10 +67,10 @@
         <li><a href="/team">Team</a></li>
         <li><a href="/pricing">Pricing</a></li>
         <li>
-          {#if $session}
+          {#if session}
             <a href="/account" class="border border-primary">★ Dashboard</a>
             <div class="text-sm font-bold mt-1">
-              Welcome, {$session.user.user_metadata.name}!
+              Welcome, {session.user.user_metadata.name}!
             </div>
           {:else}
             <a href="/login/sign_up" class="border border-primary">★ Enter</a>
