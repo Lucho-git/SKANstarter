@@ -14,7 +14,7 @@ export const handle: Handle = async ({ event, resolve }) => {
       supabaseKey: PUBLIC_SUPABASE_ANON_KEY,
       event,
       cookieOptions: {
-        domain: ".supabase.co", // Set the cookie domain to ".supabase.co"
+        domain: "skanfarming.com.au", // Set the cookie domain to ".supabase.co"
         secure: true, // Set the secure flag to true since Supabase uses HTTPS
         sameSite: "lax", // Adjust the sameSite option based on your requirements
         path: "/", // Set the cookie path to "/"
