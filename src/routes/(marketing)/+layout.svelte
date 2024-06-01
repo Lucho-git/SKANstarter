@@ -16,7 +16,7 @@
   $: deviceStore.updateInnerWidth(innerWidth)
 
   onMount(async () => {
-    console.log("Mounted with session:", session)
+    console.log("Mounted with session: update", session)
   })
 </script>
 
