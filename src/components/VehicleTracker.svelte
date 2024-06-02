@@ -2,7 +2,7 @@
 <script>
   import { onMount, onDestroy } from "svelte"
   import mapboxgl from "mapbox-gl"
-  import { userVehicleStore } from "../stores/vehicleStore"
+  import { userVehicleStore, otherVehiclesStore } from "../stores/vehicleStore"
   import UserMarker from "./UserMarker.svelte"
   import { debounce } from "lodash-es"
 
@@ -12,12 +12,14 @@
   let userMarker
   let locationTrackingInterval
   let lastRecordedTime = 0
+  let otherVehicleMarkers = []
 
   const ANIMATION_DURATION = 500 // Adjust this value as needed
   const DISTANCE_THRESHOLD = 0.00001
   const LOCATION_TRACKING_INTERVAL_TRIGGER = 11114000 // Adjust this value as needed
   const LOCATION_TRACKING_INTERVAL_MIN = 1000
   let isTrailingOn = false // Flag to control the trailing feature
+  let otherVehiclesUnsubscribe
 
   onMount(() => {
     // Create the geolocateControl and add it to the map
@@ -50,6 +52,13 @@
     })
 
     startLocationTracking()
+
+    // Subscribe to otherVehiclesStore updates
+    otherVehiclesUnsubscribe = otherVehiclesStore.subscribe((vehicles) => {
+      console.log("Updated vehicles:", vehicles)
+
+      updateOtherVehicleMarkers(vehicles)
+    })
   })
 
   onDestroy(() => {
@@ -58,7 +67,56 @@
       userMarker.remove()
     }
     stopLocationTracking()
+
+    // Unsubscribe from otherVehiclesStore updates
+    if (otherVehiclesUnsubscribe) {
+      otherVehiclesUnsubscribe()
+    }
   })
+
+  function updateOtherVehicleMarkers(vehicles) {
+    // Remove existing markers
+    otherVehicleMarkers.forEach((marker) => marker.remove())
+    otherVehicleMarkers = []
+
+    // Create new markers for each vehicle
+    vehicles.forEach((vehicle) => {
+      const { coordinates, heading, vehicle_marker } = vehicle
+
+      // Parse the coordinates string into an array of numbers
+      const [longitude, latitude] = coordinates
+        .slice(1, -1) // Remove the parentheses
+        .split(",") // Split by comma
+        .map(parseFloat) // Convert each value to a number
+
+      const marker = new mapboxgl.Marker({
+        element: createVehicleMarkerElement(vehicle_marker),
+        pitchAlignment: "map",
+        rotationAlignment: "map",
+      })
+
+      console.log(
+        "Placing vehicle on map:",
+        vehicle_marker,
+        longitude,
+        latitude,
+        heading,
+      )
+      marker.setLngLat([longitude, latitude]).setRotation(heading).addTo(map)
+
+      otherVehicleMarkers.push(marker)
+    })
+  }
+
+  function createVehicleMarkerElement(vehicleMarker) {
+    const el = document.createElement("div")
+    el.className = "vehicle-marker"
+    el.style.backgroundImage = `url(${vehicleMarker.icon})`
+    el.style.width = vehicleMarker.size
+    el.style.height = vehicleMarker.size
+    el.style.backgroundSize = "100%"
+    return el
+  }
 
   function startLocationTracking() {
     locationTrackingInterval = setInterval(() => {
@@ -97,13 +155,6 @@
         ...vehicleData,
       }
     })
-  }
-
-  let vehicleStateSynchronizer
-
-  function handleVehicleStateUpdated(event) {
-    const vehicleData = event.detail
-    console.log("Vehicle state updated:", vehicleData)
   }
 
   function storeLocationDataLocally(locationData) {

@@ -13,6 +13,8 @@
     const session = $page.data.session
     if (session) {
       const userId = session.user.id
+      console.log("Session:", session)
+      console.log("User ID:", userId)
 
       // Retrieve the user's profile to get the master_map_id
       const { data: profile, error: profileError } = await supabase
@@ -27,7 +29,8 @@
       }
 
       const masterMapId = profile.master_map_id
-
+      console.log("User Profile:", profile)
+      console.log("Master Map ID:", profile.master_map_id)
       // Subscribe to changes in the 'vehicle_state' table
       channel = supabase
         .channel("vehicle_state_changes")
@@ -49,11 +52,14 @@
               // Update the otherVehiclesStore with the received vehicle state
               otherVehiclesStore.update((vehicles) => {
                 const existingVehicleIndex = vehicles.findIndex(
-                  (vehicle) => vehicle.id === payload.new.vehicle_id,
+                  (vehicle) => vehicle.vehicle_id === payload.new.vehicle_id,
                 )
                 if (existingVehicleIndex !== -1) {
+                  // Vehicle already exists, update its data
                   vehicles[existingVehicleIndex] = payload.new
                 } else {
+                  // Vehicle doesn't exist, add it to the store
+                  console.log("pushing new vehicle", payload.new)
                   vehicles.push(payload.new)
                 }
                 return vehicles
@@ -129,7 +135,7 @@
     if (error) {
       console.error("Error sending vehicle state to the database:", error)
     } else {
-      console.log("Vehicle state sent to the database:", data)
+      //   console.log("Vehicle state sent to the database:", data)
     }
   }
 </script>
