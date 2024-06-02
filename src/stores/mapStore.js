@@ -4,11 +4,7 @@
 import { writable } from 'svelte/store';
 
 export const mapStore = writable(null);
-export const userVehicleStore = writable({
-  type: 'tractor',
-  color: 'orange',
-  size: '25px',
-});
+
 
 export const selectedMarkerStore = writable(null);
 

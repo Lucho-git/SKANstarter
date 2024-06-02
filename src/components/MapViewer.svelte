@@ -2,7 +2,7 @@
   import { onMount, onDestroy, setContext } from "svelte"
   import mapboxgl from "mapbox-gl"
   import "mapbox-gl/dist/mapbox-gl.css"
-  import { mapStore, userVehicleStore } from "../stores/mapStore"
+  import { mapStore } from "../stores/mapStore"
   import MarkerManager from "./MarkerManager.svelte"
 
   import ButtonSection from "./ButtonSection.svelte"

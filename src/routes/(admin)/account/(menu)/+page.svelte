@@ -10,8 +10,6 @@
   import { onMount } from "svelte"
   import { page } from "$app/stores"
 
-  export const ssr = false
-
   let adminSection: Writable<string> = getContext("adminSection")
   adminSection.set("home")
 
