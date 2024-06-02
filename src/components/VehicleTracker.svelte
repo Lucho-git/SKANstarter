@@ -5,7 +5,6 @@
   import { userVehicleStore } from "../stores/vehicleStore"
   import UserMarker from "./UserMarker.svelte"
   import { debounce } from "lodash-es"
-  import VehicleStateSynchronizer from "./VehicleStateSynchronizer.svelte"
 
   export let map
 
@@ -196,8 +195,3 @@
     animateMarker()
   }, ANIMATION_DURATION)
 </script>
-
-<VehicleStateSynchronizer
-  bind:this={vehicleStateSynchronizer}
-  on:vehicleStateUpdated={handleVehicleStateUpdated}
-/>

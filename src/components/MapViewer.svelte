@@ -9,6 +9,7 @@
   import MapControls from "./MapControls.svelte"
   import MapStateSaver from "./MapStateSaver.svelte"
   import VehicleTracker from "./VehicleTracker.svelte" // Add this import
+  import VehicleStateSynchronizer from "./VehicleStateSynchronizer.svelte"
 
   //Constants and variable initializations
 
@@ -97,6 +98,7 @@
       on:markerClick={handleMarkerClick}
     />
     <VehicleTracker {map} />
+    <VehicleStateSynchronizer />
   {/if}
 </div>
 

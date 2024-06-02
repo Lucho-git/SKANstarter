@@ -6,8 +6,10 @@
   import { page } from "$app/stores"
 
   let channel = null
+  let unsubscribe
 
   onMount(async () => {
+    console.log("Initializing VehicleStateSynchronizer")
     const session = $page.data.session
     if (session) {
       const userId = session.user.id
@@ -56,10 +58,17 @@
                 }
                 return vehicles
               })
+            } else {
+              console.log("Updated vehicle state from self:", payload.new)
             }
           },
         )
         .subscribe()
+
+      // Subscribe to changes in the userVehicleStore
+      unsubscribe = userVehicleStore.subscribe(async (vehicleData) => {
+        await sendVehicleStateToDatabase(vehicleData)
+      })
     }
   })
 
@@ -67,6 +76,11 @@
     // Unsubscribe from real-time updates when the component is destroyed
     if (channel) {
       supabase.removeChannel(channel)
+    }
+
+    // Unsubscribe from the userVehicleStore
+    if (unsubscribe) {
+      unsubscribe()
     }
   })
 
@@ -97,6 +111,8 @@
       vehicleData
 
     // Send the latest vehicle state to the database
+    console.log("Sending latest vehicle state to the database:", vehicleData)
+
     const { data, error } = await supabase
       .from("vehicle_state")
       .upsert({
@@ -116,11 +132,4 @@
       console.log("Vehicle state sent to the database:", data)
     }
   }
-
-  function handleVehicleStateUpdated(vehicleData) {
-    sendVehicleStateToDatabase(vehicleData)
-    dispatch("vehicleStateUpdated", vehicleData)
-  }
 </script>
-
-<div on:vehicleStateUpdated={handleVehicleStateUpdated}></div>
