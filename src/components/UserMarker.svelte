@@ -6,6 +6,7 @@
   export let vehicleSize = "60px"
   export let userVehicle = "harvester"
   export let vehicleColor = "red"
+  export let showPulse = true
 
   const vehicles = {
     harvester: {
@@ -71,9 +72,10 @@
         "
     ></div>
   {/if}
-  <div
-    class="pulse-circle animate-pulse"
-    style="
+  {#if showPulse}
+    <div
+      class="pulse-circle animate-pulse"
+      style="
         width: {pulseSize};
         height: {pulseSize};
         border-radius: 50%;
@@ -87,5 +89,6 @@
         z-index: 0;
 
       "
-  ></div>
+    ></div>
+  {/if}
 </div>

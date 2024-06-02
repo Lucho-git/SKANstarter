@@ -116,8 +116,11 @@
     const { coordinates, last_update, heading, is_trailing, vehicle_marker } =
       vehicleData
 
-    // Send the latest vehicle state to the database
-    console.log("Sending latest vehicle state to the database:", vehicleData)
+    // Check if coordinates exist before proceeding
+    if (!coordinates) {
+      console.warn("Coordinates not available. Skipping vehicle state update.")
+      return
+    }
 
     const { data, error } = await supabase
       .from("vehicle_state")
