@@ -7,11 +7,11 @@
   export let userVehicle = "harvester"
   export let vehicleColor = "red"
 
-  userVehicleStore.subscribe((value) => {
-    userVehicle = value.vehicle_marker.type
-    vehicleColor = value.vehicle_marker.color
-    vehicleSize = value.vehicle_marker.size
-  })
+  //   userVehicleStore.subscribe((value) => {
+  //     userVehicle = value.vehicle_marker.type
+  //     vehicleColor = value.vehicle_marker.color
+  //     vehicleSize = value.vehicle_marker.size
+  //   })
 
   const vehicles = {
     harvester: {

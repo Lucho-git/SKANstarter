@@ -20,6 +20,7 @@
   const LOCATION_TRACKING_INTERVAL_MIN = 1000
   let isTrailingOn = false // Flag to control the trailing feature
   let otherVehiclesUnsubscribe
+  let userVehicleUnsubscribe
 
   onMount(() => {
     // Create the geolocateControl and add it to the map
@@ -39,7 +40,7 @@
     })
     // Create the userMarker
     userMarker = new mapboxgl.Marker({
-      element: createUserMarkerElement(),
+      element: createUserMarkerElement($userVehicleStore.vehicle_marker),
       pitchAlignment: "map",
       rotationAlignment: "map",
     })
@@ -59,6 +60,11 @@
 
       updateOtherVehicleMarkers(vehicles)
     })
+
+    // Subscribe to userVehicleStore updates
+    userVehicleUnsubscribe = userVehicleStore.subscribe((value) => {
+      updateUserMarker(value.vehicle_marker)
+    })
   })
 
   onDestroy(() => {
@@ -71,6 +77,10 @@
     // Unsubscribe from otherVehiclesStore updates
     if (otherVehiclesUnsubscribe) {
       otherVehiclesUnsubscribe()
+    }
+
+    if (userVehicleUnsubscribe) {
+      userVehicleUnsubscribe()
     }
   })
 
@@ -108,13 +118,35 @@
     })
   }
 
+  function updateUserMarker(vehicleMarker) {
+    if (userMarker) {
+      userMarker.remove()
+    }
+
+    userMarker = new mapboxgl.Marker({
+      element: createUserMarkerElement(vehicleMarker),
+      pitchAlignment: "map",
+      rotationAlignment: "map",
+    })
+
+    const { latitude, longitude } = $userVehicleStore.coordinates
+    userMarker.setLngLat([longitude, latitude]).addTo(map)
+  }
+
   function createVehicleMarkerElement(vehicleMarker) {
     const el = document.createElement("div")
-    el.className = "vehicle-marker"
-    el.style.backgroundImage = `url(${vehicleMarker.icon})`
-    el.style.width = vehicleMarker.size
-    el.style.height = vehicleMarker.size
-    el.style.backgroundSize = "100%"
+
+    new UserMarker({
+      target: el,
+      props: {
+        pulseColor: "rgba(172, 172, 230, 0.8)",
+        pulseSize: "40px",
+        vehicleSize: vehicleMarker.size,
+        userVehicle: vehicleMarker.type,
+        vehicleColor: vehicleMarker.color,
+      },
+    })
+
     return el
   }
 
@@ -174,7 +206,7 @@
     )
   }
 
-  function createUserMarkerElement() {
+  function createUserMarkerElement(vehicleMarker) {
     const el = document.createElement("div")
 
     new UserMarker({
@@ -182,9 +214,9 @@
       props: {
         pulseColor: "rgba(172, 172, 230, 0.8)",
         pulseSize: "40px",
-        vehicleSize: $userVehicleStore.size,
-        userVehicle: $userVehicleStore.type,
-        vehicleColor: $userVehicleStore.color,
+        vehicleSize: vehicleMarker.size,
+        userVehicle: vehicleMarker.type,
+        vehicleColor: vehicleMarker.color,
       },
     })
 

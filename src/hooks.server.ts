@@ -9,7 +9,6 @@ import {
   import type { Handle } from "@sveltejs/kit"
   
   export const handle: Handle = async ({ event, resolve }) => {
-    console.log("Handle function called")
   
     event.locals.supabase = createSupabaseServerClient({
       supabaseUrl: PUBLIC_SUPABASE_URL,
@@ -42,7 +41,6 @@ import {
       return session
     }
   
-    console.log("Before resolve")
   
     const resolveResult = await resolve(event, {
       filterSerializedResponseHeaders(name) {
@@ -53,7 +51,6 @@ import {
       },
     })
   
-    console.log("After resolve")
   
     return resolveResult
   }
