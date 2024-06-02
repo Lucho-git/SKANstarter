@@ -40,7 +40,7 @@
     })
     // Create the userMarker
     userMarker = new mapboxgl.Marker({
-      element: createUserMarkerElement($userVehicleStore.vehicle_marker),
+      element: createMarkerElement($userVehicleStore.vehicle_marker),
       pitchAlignment: "map",
       rotationAlignment: "map",
     })
@@ -100,7 +100,7 @@
         .map(parseFloat) // Convert each value to a number
 
       const marker = new mapboxgl.Marker({
-        element: createVehicleMarkerElement(vehicle_marker),
+        element: createMarkerElement(vehicle_marker),
         pitchAlignment: "map",
         rotationAlignment: "map",
       })
@@ -124,7 +124,7 @@
     }
 
     userMarker = new mapboxgl.Marker({
-      element: createUserMarkerElement(vehicleMarker),
+      element: createMarkerElement(vehicleMarker),
       pitchAlignment: "map",
       rotationAlignment: "map",
     })
@@ -133,7 +133,7 @@
     userMarker.setLngLat([longitude, latitude]).addTo(map)
   }
 
-  function createVehicleMarkerElement(vehicleMarker) {
+  function createMarkerElement(vehicleMarker) {
     const el = document.createElement("div")
 
     new UserMarker({
@@ -204,23 +204,6 @@
       "vehicleLocationData",
       JSON.stringify(locationDataArray),
     )
-  }
-
-  function createUserMarkerElement(vehicleMarker) {
-    const el = document.createElement("div")
-
-    new UserMarker({
-      target: el,
-      props: {
-        pulseColor: "rgba(172, 172, 230, 0.8)",
-        pulseSize: "40px",
-        vehicleSize: vehicleMarker.size,
-        userVehicle: vehicleMarker.type,
-        vehicleColor: vehicleMarker.color,
-      },
-    })
-
-    return el
   }
 
   let currentRotation = 0
