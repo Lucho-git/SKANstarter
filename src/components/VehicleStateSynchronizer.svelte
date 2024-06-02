@@ -2,7 +2,7 @@
 <script>
   import { onMount, onDestroy } from "svelte"
   import { supabase } from "../lib/supabaseClient"
-  import { userVehicleStore } from "../stores/mapStore"
+  import { userVehicleStore, otherVehiclesStore } from "../stores/vehicleStore"
   import { page } from "$app/stores"
 
   let channel = null
@@ -35,17 +35,26 @@
             event: "*",
             schema: "public",
             table: "vehicle_state",
-            filter: `vehicle_id=eq.${userId}`,
+            filter: `master_map_id=eq.${masterMapId}`,
           },
           (payload) => {
-            if (payload.new.master_map_id === masterMapId) {
-              console.log("Updated vehicle state:", payload.new)
-              // Update the userVehicleStore with the latest vehicle state
-              userVehicleStore.update((vehicle) => {
-                return {
-                  ...vehicle,
-                  ...payload.new,
+            if (payload.new.vehicle_id !== userId) {
+              // Update was made by another vehicle
+              console.log(
+                "Updated vehicle state from another vehicle:",
+                payload.new,
+              )
+              // Update the otherVehiclesStore with the received vehicle state
+              otherVehiclesStore.update((vehicles) => {
+                const existingVehicleIndex = vehicles.findIndex(
+                  (vehicle) => vehicle.id === payload.new.vehicle_id,
+                )
+                if (existingVehicleIndex !== -1) {
+                  vehicles[existingVehicleIndex] = payload.new
+                } else {
+                  vehicles.push(payload.new)
                 }
+                return vehicles
               })
             }
           },
@@ -107,4 +116,11 @@
       console.log("Vehicle state sent to the database:", data)
     }
   }
+
+  function handleVehicleStateUpdated(vehicleData) {
+    sendVehicleStateToDatabase(vehicleData)
+    dispatch("vehicleStateUpdated", vehicleData)
+  }
 </script>
+
+<div on:vehicleStateUpdated={handleVehicleStateUpdated}></div>

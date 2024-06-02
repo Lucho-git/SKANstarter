@@ -2,9 +2,10 @@
 <script>
   import { onMount, onDestroy } from "svelte"
   import mapboxgl from "mapbox-gl"
-  import { userVehicleStore } from "../stores/mapStore"
+  import { userVehicleStore } from "../stores/vehicleStore"
   import UserMarker from "./UserMarker.svelte"
   import { debounce } from "lodash-es"
+  import VehicleStateSynchronizer from "./VehicleStateSynchronizer.svelte"
 
   export let map
 
@@ -83,19 +84,27 @@
     const { latitude, longitude, heading } = locationData
 
     const vehicleData = {
-      timestamp: new Date().toISOString(),
-      latitude,
-      longitude,
+      coordinates: { latitude, longitude },
+      last_update: new Date().toISOString(),
       heading,
-      isTrailingOn,
+      is_trailing: isTrailingOn,
+      vehicle_marker: $userVehicleStore.vehicle_marker,
     }
+    console.log("Recording location data:", vehicleData)
+    // Update the userVehicleStore with the latest vehicle state
+    userVehicleStore.update((vehicle) => {
+      return {
+        ...vehicle,
+        ...vehicleData,
+      }
+    })
+  }
 
-    console.log(vehicleData)
-    // // Store the location data locally
-    // storeLocationDataLocally(vehicleData)
+  let vehicleStateSynchronizer
 
-    // // Send the location data to the server
-    // sendLocationDataToServer(vehicleData)
+  function handleVehicleStateUpdated(event) {
+    const vehicleData = event.detail
+    console.log("Vehicle state updated:", vehicleData)
   }
 
   function storeLocationDataLocally(locationData) {
@@ -187,3 +196,8 @@
     animateMarker()
   }, ANIMATION_DURATION)
 </script>
+
+<VehicleStateSynchronizer
+  bind:this={vehicleStateSynchronizer}
+  on:vehicleStateUpdated={handleVehicleStateUpdated}
+/>

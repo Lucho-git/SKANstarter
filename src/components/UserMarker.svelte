@@ -1,6 +1,6 @@
 <!-- src/components/UserMarker.svelte -->
 <script>
-  import { userVehicleStore } from "../stores/mapStore"
+  import { userVehicleStore } from "../stores/vehicleStore"
   export let pulseColor = "rgba(172, 172, 230, 0.8)"
   export let pulseSize = "40px"
   export let vehicleSize = "60px"
@@ -8,9 +8,9 @@
   export let vehicleColor = "red"
 
   userVehicleStore.subscribe((value) => {
-    userVehicle = value.type
-    vehicleColor = value.color
-    vehicleSize = value.size
+    userVehicle = value.vehicle_marker.type
+    vehicleColor = value.vehicle_marker.color
+    vehicleSize = value.vehicle_marker.size
   })
 
   const vehicles = {

@@ -1,7 +1,8 @@
 <!-- src/components/ButtonSection.svelte -->
 <script>
   import { createEventDispatcher } from "svelte"
-  import { mapStore, userVehicleStore } from "../stores/mapStore"
+  import { mapStore } from "../stores/mapStore"
+  import { userVehicleStore } from "../stores/vehicleStore"
 
   export let isSatelliteView = true
 
@@ -40,7 +41,10 @@
     currentVehicleIndex = (currentVehicleIndex + 1) % vehicleTypes.length
     userVehicleStore.update((vehicle) => ({
       ...vehicle,
-      type: vehicleTypes[currentVehicleIndex],
+      vehicle_marker: {
+        ...vehicle.vehicle_marker,
+        type: vehicleTypes[currentVehicleIndex],
+      },
     }))
   }
 
@@ -49,8 +53,11 @@
       (currentColorSizeIndex + 1) % colorSizeOptions.length
     userVehicleStore.update((vehicle) => ({
       ...vehicle,
-      color: colorSizeOptions[currentColorSizeIndex].color,
-      size: colorSizeOptions[currentColorSizeIndex].size,
+      vehicle_marker: {
+        ...vehicle.vehicle_marker,
+        color: colorSizeOptions[currentColorSizeIndex].color,
+        size: colorSizeOptions[currentColorSizeIndex].size,
+      },
     }))
   }
 </script>
