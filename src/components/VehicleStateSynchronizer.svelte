@@ -33,6 +33,32 @@
       console.log("Master Map ID:", profile.master_map_id)
       // Subscribe to changes in the 'vehicle_state' table
 
+      // Fetch the user's vehicle data from the server
+      const { data: userVehicle, error: userVehicleError } = await supabase
+        .from("vehicle_state")
+        .select("*")
+        .eq("vehicle_id", userId)
+        .single()
+
+      if (userVehicleError) {
+        console.error("Error retrieving user vehicle data:", userVehicleError)
+      } else {
+        // Parse the coordinates string into latitude and longitude values
+        const [longitude, latitude] = userVehicle.coordinates
+          .slice(1, -1)
+          .split(",")
+          .map(parseFloat)
+
+        // Update the userVehicleStore with the fetched data and parsed coordinates
+        userVehicleStore.update((vehicle) => {
+          return {
+            ...vehicle,
+            ...userVehicle,
+            coordinates: { latitude, longitude },
+          }
+        })
+      }
+
       // Fetch initial vehicle data
       const { data: vehicles, error: vehiclesError } = await supabase
         .from("vehicle_state")

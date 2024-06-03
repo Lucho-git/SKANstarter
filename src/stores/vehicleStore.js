@@ -1,7 +1,7 @@
 // vehicleStore.js
 import { writable } from 'svelte/store';
 
-export const userVehicleStore = writable({
+const defaultUserVehicle = {
   id: null,
   coordinates: null,
   last_update: null,
@@ -12,6 +12,8 @@ export const userVehicleStore = writable({
     color: 'white',
     size: '25px',
   },
-});
+};
+
+export const userVehicleStore = writable(defaultUserVehicle);
 
 export const otherVehiclesStore = writable([]);
