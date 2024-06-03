@@ -25,6 +25,7 @@
   let isTrailingOn = false // Flag to control the trailing feature
   let otherVehiclesUnsubscribe
   let userVehicleUnsubscribe
+  let unsubscribeOtherVehiclesDataChanges
   let userCoordinates = null
 
   onMount(() => {
@@ -60,7 +61,7 @@
     })
 
     // Subscribe to the otherVehiclesDataChanges store
-    const unsubscribeChanges =
+    unsubscribeOtherVehiclesDataChanges =
       otherVehiclesDataChanges.subscribe(processChanges)
   })
 
@@ -81,8 +82,8 @@
     }
 
     // Unsubscribe from the otherVehiclesDataChanges store
-    if (unsubscribeChanges) {
-      unsubscribeChanges()
+    if (unsubscribeOtherVehiclesDataChanges) {
+      unsubscribeOtherVehiclesDataChanges()
     }
   })
 
