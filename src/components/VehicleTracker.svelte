@@ -126,13 +126,24 @@
   }
 
   function updateOtherVehicleMarkers(vehicles) {
-    // Remove existing markers
-    otherVehicleMarkers.forEach((marker) => marker.remove())
-    otherVehicleMarkers = []
+    // Create a new Set to store the vehicle IDs
+    const updatedVehicleIds = new Set(
+      vehicles.map((vehicle) => vehicle.vehicle_id),
+    )
 
-    // Create new markers for each vehicle
+    // Remove markers for vehicles that are no longer present
+    otherVehicleMarkers = otherVehicleMarkers.filter((marker) => {
+      const vehicleId = marker.getElement().getAttribute("data-vehicle-id")
+      if (!updatedVehicleIds.has(vehicleId)) {
+        marker.remove()
+        return false
+      }
+      return true
+    })
+
+    // Update or create markers for each vehicle
     vehicles.forEach((vehicle) => {
-      const { coordinates, heading, vehicle_marker } = vehicle
+      const { coordinates, heading, vehicle_marker, vehicle_id } = vehicle
 
       // Parse the coordinates string into an array of numbers
       const [longitude, latitude] = coordinates
@@ -140,23 +151,62 @@
         .split(",") // Split by comma
         .map(parseFloat) // Convert each value to a number
 
-      const marker = new mapboxgl.Marker({
-        element: createMarkerElement(vehicle_marker, false),
-        pitchAlignment: "map",
-        rotationAlignment: "map",
+      // Find the existing marker for the vehicle
+      const existingMarker = otherVehicleMarkers.find((marker) => {
+        const vehicleId = marker.getElement().getAttribute("data-vehicle-id")
+        return vehicleId === vehicle_id
       })
 
-      console.log(
-        "Placing vehicle on map:",
-        vehicle_marker,
-        longitude,
-        latitude,
-        heading,
-      )
-      marker.setLngLat([longitude, latitude]).setRotation(heading).addTo(map)
+      if (existingMarker) {
+        // Update the existing marker's position and rotation
+        animateMarker(existingMarker, longitude, latitude, heading)
+      } else {
+        // Create a new marker for the vehicle
+        const marker = new mapboxgl.Marker({
+          element: createMarkerElement(vehicle_marker, false, vehicle_id),
+          pitchAlignment: "map",
+          rotationAlignment: "map",
+        })
 
-      otherVehicleMarkers.push(marker)
+        marker.setLngLat([longitude, latitude]).setRotation(heading).addTo(map)
+        otherVehicleMarkers.push(marker)
+      }
     })
+  }
+
+  //Animate other markers
+  function animateMarker(marker, targetLng, targetLat, targetRotation) {
+    const currentLngLat = marker.getLngLat()
+    const currentRotation = marker.getRotation()
+
+    const lngDiff = targetLng - currentLngLat.lng
+    const latDiff = targetLat - currentLngLat.lat
+    const rotationDiff = targetRotation - currentRotation
+
+    const duration = ANIMATION_DURATION
+    const steps = duration / 16
+
+    const lngStep = lngDiff / steps
+    const latStep = latDiff / steps
+    const rotationStep = rotationDiff / steps
+
+    let currentStep = 0
+
+    function animate() {
+      const newLng = currentLngLat.lng + lngStep
+      const newLat = currentLngLat.lat + latStep
+      const newRotation = currentRotation + rotationStep
+
+      marker.setLngLat([newLng, newLat]).setRotation(newRotation)
+
+      currentStep++
+
+      if (currentStep < steps) {
+        requestAnimationFrame(animate)
+      }
+    }
+
+    animate()
   }
 
   function updateUserMarker(vehicleMarker) {
@@ -176,8 +226,13 @@
     }
   }
 
-  function createMarkerElement(vehicleMarker, isUserVehicle = false) {
+  function createMarkerElement(
+    vehicleMarker,
+    isUserVehicle = false,
+    vehicleId = null,
+  ) {
     const el = document.createElement("div")
+    el.setAttribute("data-vehicle-id", vehicleId)
 
     new UserMarker({
       target: el,
@@ -274,7 +329,7 @@
     }
 
     const duration = ANIMATION_DURATION // Duration in milliseconds
-    const steps = duration / 16 // Number of steps based on 60 FPS (16.67ms per frame)
+    const steps = duration / 30 // Number of steps based on 60 FPS (16.67ms per frame)
 
     const latStep = latDiff / steps
     const lngStep = lngDiff / steps
