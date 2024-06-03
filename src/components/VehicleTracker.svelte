@@ -13,9 +13,10 @@
   let locationTrackingInterval
   let lastRecordedTime = 0
   let otherVehicleMarkers = []
+  let previousOtherVehiclesData = []
 
   const ANIMATION_DURATION = 500 // Adjust this value as needed
-  const DISTANCE_THRESHOLD = 0.00001
+  const DISTANCE_THRESHOLD = 0.0
   const LOCATION_TRACKING_INTERVAL_TRIGGER = 11114000 // Adjust this value as needed
   const LOCATION_TRACKING_INTERVAL_MIN = 1000
   let isTrailingOn = false // Flag to control the trailing feature
@@ -126,6 +127,17 @@
   }
 
   function updateOtherVehicleMarkers(vehicles) {
+    // Check if there are any changes in the otherVehiclesStore data
+    if (
+      JSON.stringify(vehicles) === JSON.stringify(previousOtherVehiclesData)
+    ) {
+      // No changes, skip the update
+      return
+    }
+
+    // Update the previous data reference
+    previousOtherVehiclesData = vehicles
+
     // Create a new Set to store the vehicle IDs
     const updatedVehicleIds = new Set(
       vehicles.map((vehicle) => vehicle.vehicle_id),
@@ -183,6 +195,14 @@
     const latDiff = targetLat - currentLngLat.lat
     const rotationDiff = targetRotation - currentRotation
 
+    const distanceThreshold = DISTANCE_THRESHOLD
+    const distance = Math.sqrt(lngDiff ** 2 + latDiff ** 2)
+
+    if (distance < distanceThreshold) {
+      // If the distance is too small, skip the animation
+      return
+    }
+
     const duration = ANIMATION_DURATION
     const steps = duration / 16
 
@@ -199,12 +219,43 @@
 
       marker.setLngLat([newLng, newLat]).setRotation(newRotation)
 
+      const vehicleIcon = marker.getElement().querySelector(".vehicle-icon")
+      if (vehicleIcon) {
+        vehicleIcon.style.transform = `rotate(${newRotation}deg)`
+      }
+
       currentStep++
 
       if (currentStep < steps) {
         requestAnimationFrame(animate)
+      } else {
+        // Animation completed, log the rotation information
+        const markerElement = marker.getElement()
+        const vehicleId = markerElement.getAttribute("data-vehicle-id")
+        const rotationDegrees = Math.round((rotationDiff * 180) / Math.PI)
+        console.log(
+          `Marker ${vehicleId} rotated ${rotationDegrees}° from ${Math.round(
+            (currentRotation * 180) / Math.PI,
+          )}° to ${Math.round((newRotation * 180) / Math.PI)}°`,
+        )
       }
+
+      // Log the current rotation at each step of the animation
+      console.log(
+        `Marker ${vehicleId} - Step ${currentStep}: Current rotation: ${Math.round(
+          (newRotation * 180) / Math.PI,
+        )}°`,
+      )
     }
+
+    // Log the initial rotation before starting the animation
+    const markerElement = marker.getElement()
+    const vehicleId = markerElement.getAttribute("data-vehicle-id")
+    console.log(
+      `Marker ${vehicleId} - Initial rotation: ${Math.round(
+        (currentRotation * 180) / Math.PI,
+      )}°`,
+    )
 
     animate()
   }
@@ -305,58 +356,11 @@
     )
   }
 
-  let currentRotation = 0
-  let currentLat = 0
-  let currentLng = 0
-
   const updateMarkerPosition = debounce((coords) => {
     const { latitude, longitude, heading } = coords
 
-    const targetLat = latitude
-    const targetLng = longitude
-    const targetRotation = heading
-
-    const latDiff = targetLat - currentLat
-    const lngDiff = targetLng - currentLng
-    const rotationDiff = targetRotation - currentRotation
-
-    const distanceThreshold = DISTANCE_THRESHOLD // Adjust this value as needed
-    const distance = Math.sqrt(latDiff ** 2 + lngDiff ** 2)
-
-    if (distance < distanceThreshold) {
-      // If the distance is too small, skip the animation
-      return
+    if (userMarker) {
+      animateMarker(userMarker, longitude, latitude, heading)
     }
-
-    const duration = ANIMATION_DURATION // Duration in milliseconds
-    const steps = duration / 30 // Number of steps based on 60 FPS (16.67ms per frame)
-
-    const latStep = latDiff / steps
-    const lngStep = lngDiff / steps
-    const rotationStep = rotationDiff / steps
-
-    let currentStep = 0
-
-    function animateMarker() {
-      currentLat += latStep
-      currentLng += lngStep
-      currentRotation += rotationStep
-
-      userMarker.setLngLat([currentLng, currentLat])
-
-      const vehicleIcon = userMarker.getElement().querySelector(".vehicle-icon")
-      if (vehicleIcon) {
-        vehicleIcon.style.transform = `rotate(${currentRotation}deg)`
-      }
-
-      currentStep++
-
-      if (currentStep < steps) {
-        requestAnimationFrame(animateMarker)
-      }
-    }
-
-    userMarker.setLngLat([currentLng, currentLat]).addTo(map)
-    animateMarker()
   }, ANIMATION_DURATION)
 </script>
