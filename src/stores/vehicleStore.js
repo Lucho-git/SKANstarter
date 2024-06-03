@@ -17,3 +17,5 @@ const defaultUserVehicle = {
 export const userVehicleStore = writable(defaultUserVehicle);
 
 export const otherVehiclesStore = writable([]);
+export const serverOtherVehiclesData = writable([]);
+export const otherVehiclesDataChanges = writable([]);

@@ -2,7 +2,12 @@
 <script>
   import { onMount, onDestroy } from "svelte"
   import { supabase } from "../lib/supabaseClient"
-  import { userVehicleStore, otherVehiclesStore } from "../stores/vehicleStore"
+  import {
+    userVehicleStore,
+    otherVehiclesStore,
+    serverOtherVehiclesData,
+    otherVehiclesDataChanges,
+  } from "../stores/vehicleStore"
   import { page } from "$app/stores"
 
   let channel = null
@@ -31,18 +36,10 @@
       const masterMapId = profile.master_map_id
       console.log("User Profile:", profile)
       console.log("Master Map ID:", profile.master_map_id)
-      // Subscribe to changes in the 'vehicle_state' table
 
       // Fetch the user's vehicle data from the server
-      const { data: userVehicle, error: userVehicleError } = await supabase
-        .from("vehicle_state")
-        .select("*")
-        .eq("vehicle_id", userId)
-        .single()
-
-      if (userVehicleError) {
-        console.error("Error retrieving user vehicle data:", userVehicleError)
-      } else {
+      const userVehicle = await fetchUserVehicleData(userId)
+      if (userVehicle) {
         // Parse the coordinates string into latitude and longitude values
         const [longitude, latitude] = userVehicle.coordinates
           .slice(1, -1)
@@ -59,21 +56,16 @@
         })
       }
 
-      // Fetch initial vehicle data
-      const { data: vehicles, error: vehiclesError } = await supabase
-        .from("vehicle_state")
-        .select("*")
-        .eq("master_map_id", masterMapId)
+      // Fetch initial vehicle data from the server
+      const initialVehicles = await fetchInitialVehicleData(masterMapId, userId)
+      console.log("Initial vehicle data:", initialVehicles)
+      serverOtherVehiclesData.set(initialVehicles)
 
-      if (vehiclesError) {
-        console.error("Error retrieving initial vehicle data:", vehiclesError)
-      } else {
-        // Update the otherVehiclesStore with the initial vehicle data
-        otherVehiclesStore.set(
-          vehicles.filter((vehicle) => vehicle.vehicle_id !== userId),
-        )
-      }
+      // Compare the serverOtherVehiclesData with the otherVehiclesStore and store the changes
+      const changes = compareData($serverOtherVehiclesData, $otherVehiclesStore)
+      otherVehiclesDataChanges.set(changes)
 
+      //Subscribe to realtime updates from other vehicles
       channel = supabase
         .channel("vehicle_state_changes")
         .on(
@@ -91,8 +83,8 @@
                 "Updated vehicle state from another vehicle:",
                 payload.new,
               )
-              // Update the otherVehiclesStore with the received vehicle state
-              otherVehiclesStore.update((vehicles) => {
+              // Update the serverOtherVehiclesData store with the received vehicle state
+              serverOtherVehiclesData.update((vehicles) => {
                 const existingVehicleIndex = vehicles.findIndex(
                   (vehicle) => vehicle.vehicle_id === payload.new.vehicle_id,
                 )
@@ -106,6 +98,13 @@
                 }
                 return vehicles
               })
+
+              // Compare the serverOtherVehiclesData with the otherVehiclesStore and store the changes
+              const changes = compareData(
+                $serverOtherVehiclesData,
+                $otherVehiclesStore,
+              )
+              otherVehiclesDataChanges.set(changes)
             } else {
               console.log("Updated vehicle state from self:", payload.new)
             }
@@ -113,7 +112,7 @@
         )
         .subscribe()
 
-      // Subscribe to changes in the userVehicleStore
+      // Subscribe to changes in the userVehicleStore which are sent to the database
       unsubscribe = userVehicleStore.subscribe(async (vehicleData) => {
         await sendVehicleStateToDatabase(vehicleData)
       })
@@ -131,6 +130,72 @@
       unsubscribe()
     }
   })
+
+  async function fetchUserVehicleData(userId) {
+    const { data: userVehicle, error: userVehicleError } = await supabase
+      .from("vehicle_state")
+      .select("*")
+      .eq("vehicle_id", userId)
+      .single()
+
+    if (userVehicleError) {
+      console.error("Error retrieving user vehicle data:", userVehicleError)
+      return null
+    }
+
+    return userVehicle
+  }
+
+  async function fetchInitialVehicleData(masterMapId, userId) {
+    const { data: vehicles, error: vehiclesError } = await supabase
+      .from("vehicle_state")
+      .select("*")
+      .eq("master_map_id", masterMapId)
+
+    if (vehiclesError) {
+      console.error("Error retrieving initial vehicle data:", vehiclesError)
+      return []
+    }
+
+    return vehicles.filter((vehicle) => vehicle.vehicle_id !== userId)
+  }
+
+  function compareData(serverData, clientData) {
+    const changes = serverData.filter((serverItem) => {
+      const clientItem = clientData.find(
+        (item) => item.vehicle_id === serverItem.vehicle_id,
+      )
+
+      if (!clientItem) {
+        console.log(`New vehicle found on server: ${serverItem.vehicle_id}`)
+        return true
+      }
+
+      const serverItemString = JSON.stringify(serverItem)
+      const clientItemString = JSON.stringify(clientItem)
+
+      if (serverItemString !== clientItemString) {
+        console.log(`Vehicle ${serverItem.vehicle_id} has changes:`)
+        console.log(`Server data:`, serverItem)
+        console.log(`Client data:`, clientItem)
+
+        // Log specific differences
+        Object.keys(serverItem).forEach((key) => {
+          if (serverItem[key] !== clientItem[key]) {
+            console.log(`Difference in ${key}:`)
+            console.log(`Server value:`, serverItem[key])
+            console.log(`Client value:`, clientItem[key])
+          }
+        })
+
+        return true
+      }
+
+      return false
+    })
+
+    return changes
+  }
 
   async function sendVehicleStateToDatabase(vehicleData) {
     const session = $page.data.session
