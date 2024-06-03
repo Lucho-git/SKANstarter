@@ -68,7 +68,7 @@
     markerElement.removeAttribute("data-listeners-added")
 
     // Add event listeners to the marker element
-    console.log(`Adding event listeners to marker with ID: ${id}`)
+    // console.log(`Adding event listeners to marker with ID: ${id}`)
     markerElement.addEventListener("mouseenter", handleMarkerMouseEnter)
     markerElement.addEventListener("mouseleave", handleMarkerMouseLeave)
     markerElement.addEventListener("click", handleMarkerClick)

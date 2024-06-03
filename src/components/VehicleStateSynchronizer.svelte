@@ -32,6 +32,22 @@
       console.log("User Profile:", profile)
       console.log("Master Map ID:", profile.master_map_id)
       // Subscribe to changes in the 'vehicle_state' table
+
+      // Fetch initial vehicle data
+      const { data: vehicles, error: vehiclesError } = await supabase
+        .from("vehicle_state")
+        .select("*")
+        .eq("master_map_id", masterMapId)
+
+      if (vehiclesError) {
+        console.error("Error retrieving initial vehicle data:", vehiclesError)
+      } else {
+        // Update the otherVehiclesStore with the initial vehicle data
+        otherVehiclesStore.set(
+          vehicles.filter((vehicle) => vehicle.vehicle_id !== userId),
+        )
+      }
+
       channel = supabase
         .channel("vehicle_state_changes")
         .on(

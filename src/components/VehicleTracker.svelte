@@ -21,6 +21,8 @@
   let isTrailingOn = false // Flag to control the trailing feature
   let otherVehiclesUnsubscribe
   let userVehicleUnsubscribe
+  let userCoordinates = null
+  let vehiclesInitialized = false
 
   onMount(() => {
     // Create the geolocateControl and add it to the map
@@ -37,12 +39,6 @@
     map.addControl(geolocateControl, "bottom-right")
     map.on("load", () => {
       geolocateControl.trigger()
-    })
-    // Create the userMarker
-    userMarker = new mapboxgl.Marker({
-      element: createMarkerElement($userVehicleStore.vehicle_marker, true),
-      pitchAlignment: "map",
-      rotationAlignment: "map",
     })
 
     // Update the user location marker on geolocate event
@@ -63,7 +59,15 @@
 
     // Subscribe to userVehicleStore updates
     userVehicleUnsubscribe = userVehicleStore.subscribe((value) => {
+      userCoordinates = value.coordinates
       updateUserMarker(value.vehicle_marker)
+
+      // Call initializeVehicles only if vehicles are not initialized and user coordinates are available
+      if (!vehiclesInitialized && userCoordinates) {
+        console.log("Initializing vehicles")
+        initializeVehicles()
+        vehiclesInitialized = true
+      }
     })
   })
 
@@ -83,6 +87,43 @@
       userVehicleUnsubscribe()
     }
   })
+
+  //Initialize the vehicles on the map
+  async function initializeVehicles() {
+    const vehicles = $otherVehiclesStore
+
+    // Place other vehicles on the map
+    vehicles.forEach((vehicle) => {
+      const { coordinates, heading, vehicle_marker } = vehicle
+
+      const [longitude, latitude] = coordinates
+        .slice(1, -1)
+        .split(",")
+        .map(parseFloat)
+
+      const marker = new mapboxgl.Marker({
+        element: createMarkerElement(vehicle_marker, false),
+        pitchAlignment: "map",
+        rotationAlignment: "map",
+      })
+
+      marker.setLngLat([longitude, latitude]).setRotation(heading).addTo(map)
+      otherVehicleMarkers.push(marker)
+    })
+
+    // Place user vehicle on the map if coordinates are available
+    if (userCoordinates) {
+      const { latitude, longitude } = userCoordinates
+      if (!userMarker) {
+        userMarker = new mapboxgl.Marker({
+          element: createMarkerElement($userVehicleStore.vehicle_marker, true),
+          pitchAlignment: "map",
+          rotationAlignment: "map",
+        })
+      }
+      userMarker.setLngLat([longitude, latitude]).addTo(map)
+    }
+  }
 
   function updateOtherVehicleMarkers(vehicles) {
     // Remove existing markers
