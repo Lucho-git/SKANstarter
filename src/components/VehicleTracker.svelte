@@ -194,7 +194,7 @@
     }
 
     const duration = ANIMATION_DURATION
-    const steps = duration / 16
+    const steps = duration / 45
 
     const lngStep = lngDiff / steps
     const latStep = latDiff / steps
@@ -353,48 +353,53 @@
         }
       })
 
-      lastRecordedTime = currentTime
-    }
+      //Client Side
+      // Check if the coordinates or heading have changed
+      if (
+        !lastClientCoordinates ||
+        lastClientCoordinates.latitude !== latitude ||
+        lastClientCoordinates.longitude !== longitude ||
+        lastClientHeading !== heading
+      ) {
+        let changeLog = ""
 
-    // Check if the coordinates or heading have changed
-    if (
-      !lastClientCoordinates ||
-      lastClientCoordinates.latitude !== latitude ||
-      lastClientCoordinates.longitude !== longitude ||
-      lastClientHeading !== heading
-    ) {
-      let changeLog = ""
-
-      if (!lastClientCoordinates) {
-        changeLog += "Initial coordinates. "
-      } else {
-        if (lastClientCoordinates.latitude !== latitude) {
-          const latitudeDiff = latitude - lastClientCoordinates.latitude
-          changeLog += `Latitude changed by ${latitudeDiff.toFixed(6)}. `
+        if (!lastClientCoordinates) {
+          changeLog += "Initial coordinates. "
+        } else {
+          if (lastClientCoordinates.latitude !== latitude) {
+            const latitudeDiff = latitude - lastClientCoordinates.latitude
+            changeLog += `Latitude changed by ${latitudeDiff.toFixed(6)}. `
+          }
+          if (lastClientCoordinates.longitude !== longitude) {
+            const longitudeDiff = longitude - lastClientCoordinates.longitude
+            changeLog += `Longitude changed by ${longitudeDiff.toFixed(6)}. `
+          }
         }
-        if (lastClientCoordinates.longitude !== longitude) {
-          const longitudeDiff = longitude - lastClientCoordinates.longitude
-          changeLog += `Longitude changed by ${longitudeDiff.toFixed(6)}. `
+
+        if (lastClientHeading !== heading) {
+          const headingDiff = heading - lastClientHeading
+          changeLog += `Heading changed by ${headingDiff.toFixed(2)}°.`
         }
-      }
 
-      if (lastClientHeading !== heading) {
-        const headingDiff = heading - lastClientHeading
-        changeLog += `Heading changed by ${headingDiff.toFixed(2)}°.`
-      }
-
-      console.log("Changes detected:", changeLog)
-
-      // Debounce the animation update
-      const debouncedAnimateMarker = debounce(() => {
-        console.log("Client-side heading before animation:", heading)
+        console.log("Changes detected:", changeLog)
 
         if (userMarker) {
           animateMarker(userMarker, longitude, latitude, heading)
         }
-      }, ANIMATION_DURATION)
 
-      debouncedAnimateMarker()
+        lastRecordedTime = currentTime
+      }
+
+      // Debounce the animation update
+      // const debouncedAnimateMarker = debounce(() => {
+      //   console.log("Client-side heading before animation:", heading);
+      //
+      //   if (userMarker) {
+      //     animateMarker(userMarker, longitude, latitude, heading);
+      //   }
+      // }, ANIMATION_DURATION);
+      //
+      // debouncedAnimateMarker();
 
       // Update the last coordinates and heading
       lastClientCoordinates = { latitude, longitude }
