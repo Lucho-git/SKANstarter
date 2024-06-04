@@ -131,10 +131,10 @@
             .setRotation(heading)
             .addTo(map)
           otherVehicleMarkers[existingMarkerIndex] = newMarker
-        } else {
-          // Update the existing marker's position and rotation
-          animateMarker(existingMarker, longitude, latitude, heading)
         }
+
+        // Always animate the marker, regardless of whether the vehicle marker has changed
+        animateMarker(existingMarker, longitude, latitude, heading)
       } else {
         // Create a new marker for the vehicle
         const marker = new mapboxgl.Marker({
@@ -162,14 +162,26 @@
     })
   }
 
-  //Animate other markers
-  function animateMarker(marker, targetLng, targetLat, targetRotation) {
+  function animateMarker(
+    marker,
+    targetLng,
+    targetLat,
+    targetRotation,
+    isUserVehicle = false,
+  ) {
     const currentLngLat = marker.getLngLat()
-    const currentRotation = marker.getRotation()
+    const currentRotation = marker.getRotation() // Rotation is already in degrees
 
     const lngDiff = targetLng - currentLngLat.lng
     const latDiff = targetLat - currentLngLat.lat
-    const rotationDiff = targetRotation - currentRotation
+    let rotationDiff = targetRotation - currentRotation
+
+    // Ensure the rotation difference is within -180 to 180 degrees
+    if (rotationDiff > 180) {
+      rotationDiff -= 360
+    } else if (rotationDiff < -180) {
+      rotationDiff += 360
+    }
 
     const distanceThreshold = DISTANCE_THRESHOLD
     const distance = Math.sqrt(lngDiff ** 2 + latDiff ** 2)
@@ -193,7 +205,7 @@
       const newLat = currentLngLat.lat + latStep
       const newRotation = currentRotation + rotationStep
 
-      marker.setLngLat([newLng, newLat]).setRotation(newRotation)
+      marker.setLngLat([newLng, newLat]).setRotation(newRotation) // Rotation is in degrees
 
       const vehicleIcon = marker.getElement().querySelector(".vehicle-icon")
       if (vehicleIcon) {
@@ -206,32 +218,54 @@
         requestAnimationFrame(animate)
       } else {
         // Animation completed, log the rotation information
-        const markerElement = marker.getElement()
-        const vehicleId = markerElement.getAttribute("data-vehicle-id")
-        const rotationDegrees = Math.round((rotationDiff * 180) / Math.PI)
-        console.log(
-          `Marker ${vehicleId} rotated ${rotationDegrees}° from ${Math.round(
-            (currentRotation * 180) / Math.PI,
-          )}° to ${Math.round((newRotation * 180) / Math.PI)}°`,
-        )
+        const rotationDegrees = Math.round(rotationDiff)
+        if (isUserVehicle) {
+          console.log(
+            `User vehicle rotated ${rotationDegrees}° from ${Math.round(
+              currentRotation,
+            )}° to ${Math.round(newRotation)}°`,
+          )
+        } else {
+          const markerElement = marker.getElement()
+          const vehicleId = markerElement.getAttribute("data-vehicle-id")
+          console.log(
+            `Marker ${vehicleId} rotated ${rotationDegrees}° from ${Math.round(
+              currentRotation,
+            )}° to ${Math.round(newRotation)}°`,
+          )
+        }
       }
 
-      //   Log the current rotation at each step of the animation
-      console.log(
-        `Marker ${vehicleId} - Step ${currentStep}: Current rotation: ${Math.round(
-          (newRotation * 180) / Math.PI,
-        )}°`,
-      )
+      // Log the current rotation at each step of the animation
+      if (isUserVehicle) {
+        console.log(
+          `User vehicle - Step ${currentStep}: Current rotation: ${Math.round(
+            newRotation,
+          )}°`,
+        )
+      } else {
+        const markerElement = marker.getElement()
+        const vehicleId = markerElement.getAttribute("data-vehicle-id")
+        console.log(
+          `Marker ${vehicleId} - Step ${currentStep}: Current rotation: ${Math.round(
+            newRotation,
+          )}°`,
+        )
+      }
     }
 
     // Log the initial rotation before starting the animation
-    const markerElement = marker.getElement()
-    const vehicleId = markerElement.getAttribute("data-vehicle-id")
-    console.log(
-      `Marker ${vehicleId} - Initial rotation: ${Math.round(
-        (currentRotation * 180) / Math.PI,
-      )}°`,
-    )
+    if (isUserVehicle) {
+      console.log(
+        `User vehicle - Initial rotation: ${Math.round(currentRotation)}°`,
+      )
+    } else {
+      const markerElement = marker.getElement()
+      const vehicleId = markerElement.getAttribute("data-vehicle-id")
+      console.log(
+        `Marker ${vehicleId} - Initial rotation: ${Math.round(currentRotation)}°`,
+      )
+    }
 
     animate()
   }
@@ -305,7 +339,8 @@
       is_trailing: isTrailingOn,
       vehicle_marker: $userVehicleStore.vehicle_marker,
     }
-
+    const updatedHeading = heading !== null ? Math.round(heading) : heading
+    console.log("Server-side heading before adding to store:", updatedHeading)
     // Update the userVehicleStore with the latest vehicle state
     userVehicleStore.update((vehicle) => {
       return {
@@ -314,7 +349,7 @@
         last_update: vehicleData.last_update,
         is_trailing: vehicleData.is_trailing,
         vehicle_marker: vehicleData.vehicle_marker,
-        heading: heading !== null ? Math.round(heading) : vehicle.heading,
+        heading: updatedHeading,
       }
     })
   }
@@ -335,9 +370,10 @@
       JSON.stringify(locationDataArray),
     )
   }
-
+  // Client-side: Before entering the animation
   const updateMarkerPosition = debounce((coords) => {
     const { latitude, longitude, heading } = coords
+    console.log("Client-side heading before animation:", heading)
 
     if (userMarker) {
       animateMarker(userMarker, longitude, latitude, heading)
