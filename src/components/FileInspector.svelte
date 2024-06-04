@@ -7,7 +7,7 @@
 
   function isValidFile(file: File): boolean {
     // Check if the file has a valid extension
-    const validExtensions = [".zip", ".kml", ".isoxml", "xml"]
+    const validExtensions = [".zip", ".kml", ".isoxml", ".xml"]
     const fileExtension = file.name
       .toLowerCase()
       .slice(file.name.lastIndexOf("."))
