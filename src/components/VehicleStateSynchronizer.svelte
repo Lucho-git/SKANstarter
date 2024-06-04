@@ -163,50 +163,79 @@
   }
 
   function compareData(serverData, clientData) {
-    const changes = serverData.filter((serverItem) => {
+    const changes = serverData.map((serverItem) => {
       const clientItem = clientData.find(
         (item) => item.vehicle_id === serverItem.vehicle_id,
       )
 
+      const change = {
+        vehicle_id: serverItem.vehicle_id,
+        coordinates: serverItem.coordinates,
+        heading: serverItem.heading,
+        vehicle_marker: serverItem.vehicle_marker,
+        update_types: [],
+      }
+
       if (!clientItem) {
         console.log(`New vehicle found on server: ${serverItem.vehicle_id}`)
-        return true
-      }
+        change.update_types.push("new_vehicle")
+      } else {
+        const vehicleMarkerChanged =
+          JSON.stringify(serverItem.vehicle_marker) !==
+          JSON.stringify(clientItem.vehicle_marker)
+        const coordinatesChanged =
+          serverItem.coordinates !== clientItem.coordinates
+        const headingChanged = serverItem.heading !== clientItem.heading
 
-      const serverItemString = JSON.stringify(serverItem)
-      const clientItemString = JSON.stringify(clientItem)
-
-      if (serverItemString !== clientItemString) {
-        console.log(`Vehicle ${serverItem.vehicle_id} has changes:`)
-        console.log(`Server data:`, serverItem)
-        console.log(`Client data:`, clientItem)
+        if (vehicleMarkerChanged) {
+          console.log(
+            `Vehicle marker changed for vehicle: ${serverItem.vehicle_id}`,
+          )
+          change.update_types.push("vehicle_marker_changed")
+        }
+        if (coordinatesChanged) {
+          console.log(`Position changed for vehicle: ${serverItem.vehicle_id}`)
+          change.update_types.push("position_changed")
+        }
+        if (headingChanged) {
+          console.log(`Heading changed for vehicle: ${serverItem.vehicle_id}`)
+          change.update_types.push("heading_changed")
+        }
 
         // Log specific differences
-        Object.keys(serverItem).forEach((key) => {
-          if (key === "vehicle_marker") {
-            // Perform deep comparison for vehicle_marker
-            if (
-              JSON.stringify(serverItem[key]) !==
-              JSON.stringify(clientItem[key])
-            ) {
-              console.log(`Difference in ${key}:`)
-              console.log(`Server value:`, serverItem[key])
-              console.log(`Client value:`, clientItem[key])
-            }
-          } else if (serverItem[key] !== clientItem[key]) {
-            console.log(`Difference in ${key}:`)
-            console.log(`Server value:`, serverItem[key])
-            console.log(`Client value:`, clientItem[key])
-          }
-        })
-
-        return true
+        if (vehicleMarkerChanged) {
+          console.log(
+            `Difference in vehicle_marker for vehicle: ${serverItem.vehicle_id}`,
+          )
+          console.log(`Server value:`, serverItem.vehicle_marker)
+          console.log(`Client value:`, clientItem.vehicle_marker)
+        }
+        if (coordinatesChanged) {
+          console.log(
+            `Difference in coordinates for vehicle: ${serverItem.vehicle_id}`,
+          )
+          console.log(`Server value:`, serverItem.coordinates)
+          console.log(`Client value:`, clientItem.coordinates)
+        }
+        if (headingChanged) {
+          console.log(
+            `Difference in heading for vehicle: ${serverItem.vehicle_id}`,
+          )
+          console.log(`Server value:`, serverItem.heading)
+          console.log(`Client value:`, clientItem.heading)
+        }
       }
 
-      return false
+      return change
     })
 
-    return changes
+    const filteredChanges = changes.filter(
+      (change) => change.update_types.length > 0,
+    )
+
+    console.log("Filtered changes:", filteredChanges)
+
+    return filteredChanges
   }
 
   async function sendVehicleStateToDatabase(vehicleData) {

@@ -27,6 +27,8 @@
   let userVehicleUnsubscribe
   let unsubscribeOtherVehiclesDataChanges
   let userCoordinates = null
+  let lastClientCoordinates = null
+  let lastClientHeading = null
 
   onMount(() => {
     // Create the geolocateControl and add it to the map
@@ -89,7 +91,8 @@
 
   function processChanges(changes) {
     changes.forEach((change) => {
-      const { coordinates, heading, vehicle_marker, vehicle_id } = change
+      const { coordinates, heading, vehicle_marker, vehicle_id, update_types } =
+        change
 
       // Parse the coordinates string into an array of numbers
       const [longitude, latitude] = coordinates
@@ -106,14 +109,7 @@
       if (existingMarkerIndex !== -1) {
         const existingMarker = otherVehicleMarkers[existingMarkerIndex]
 
-        // Check if the vehicle marker has changed
-        const existingMarkerElement = existingMarker.getElement()
-        const existingVehicleMarker = JSON.stringify(
-          existingMarkerElement.getAttribute("data-vehicle-marker"),
-        )
-        const newVehicleMarker = JSON.stringify(vehicle_marker)
-
-        if (existingVehicleMarker !== newVehicleMarker) {
+        if (update_types.includes("vehicle_marker_changed")) {
           // Remove the existing marker
           existingMarker.remove()
 
@@ -131,9 +127,14 @@
           otherVehicleMarkers[existingMarkerIndex] = newMarker
         }
 
-        // Always animate the marker, regardless of whether the vehicle marker has changed
-        animateMarker(existingMarker, longitude, latitude, heading)
-      } else {
+        if (
+          update_types.includes("position_changed") ||
+          update_types.includes("heading_changed")
+        ) {
+          // Animate the marker to the new position and heading
+          animateMarker(existingMarker, longitude, latitude, heading)
+        }
+      } else if (update_types.includes("new_vehicle")) {
         // Create a new marker for the vehicle
         const marker = new mapboxgl.Marker({
           element: createMarkerElement(vehicle_marker, false, vehicle_id),
@@ -158,6 +159,8 @@
         return vehicles
       })
     })
+
+    // Clear the otherVehicleDataChanges store after processing the changes
   }
 
   function animateMarker(
@@ -353,16 +356,52 @@
       lastRecordedTime = currentTime
     }
 
-    // Debounce the animation update
-    const debouncedAnimateMarker = debounce(() => {
-      console.log("Client-side heading before animation:", heading)
+    // Check if the coordinates or heading have changed
+    if (
+      !lastClientCoordinates ||
+      lastClientCoordinates.latitude !== latitude ||
+      lastClientCoordinates.longitude !== longitude ||
+      lastClientHeading !== heading
+    ) {
+      let changeLog = ""
 
-      if (userMarker) {
-        animateMarker(userMarker, longitude, latitude, heading)
+      if (!lastClientCoordinates) {
+        changeLog += "Initial coordinates. "
+      } else {
+        if (lastClientCoordinates.latitude !== latitude) {
+          const latitudeDiff = latitude - lastClientCoordinates.latitude
+          changeLog += `Latitude changed by ${latitudeDiff.toFixed(6)}. `
+        }
+        if (lastClientCoordinates.longitude !== longitude) {
+          const longitudeDiff = longitude - lastClientCoordinates.longitude
+          changeLog += `Longitude changed by ${longitudeDiff.toFixed(6)}. `
+        }
       }
-    }, ANIMATION_DURATION)
 
-    debouncedAnimateMarker()
+      if (lastClientHeading !== heading) {
+        const headingDiff = heading - lastClientHeading
+        changeLog += `Heading changed by ${headingDiff.toFixed(2)}°.`
+      }
+
+      console.log("Changes detected:", changeLog)
+
+      // Debounce the animation update
+      const debouncedAnimateMarker = debounce(() => {
+        console.log("Client-side heading before animation:", heading)
+
+        if (userMarker) {
+          animateMarker(userMarker, longitude, latitude, heading)
+        }
+      }, ANIMATION_DURATION)
+
+      debouncedAnimateMarker()
+
+      // Update the last coordinates and heading
+      lastClientCoordinates = { latitude, longitude }
+      lastClientHeading = heading
+    } else {
+      console.log("No changes detected.")
+    }
   }
 
   function storeLocationDataLocally(locationData) {
