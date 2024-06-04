@@ -318,7 +318,7 @@
                 </svg>
               </span>
               <a
-                href="docs\skan_sample_shapefile.zip"
+                href="docs/skan_sample_shapefile.zip"
                 class="text-blue-500 hover:text-blue-700 underline"
               >
                 Download Example Paddock
