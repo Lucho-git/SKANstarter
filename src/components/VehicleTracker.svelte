@@ -48,6 +48,8 @@
     // Update the user location marker on geolocate event
     geolocateControl.on("geolocate", (e) => {
       const { coords } = e
+      console.log("Received heading from geolocate event:", coords.heading)
+
       updateMarkerPosition(coords)
       streamMarkerPosition(coords)
     })
@@ -268,14 +270,19 @@
 
   function recordLocationData(locationData) {
     const { latitude, longitude, heading } = locationData
+    console.log("Recording location data - Heading:", heading)
 
     const vehicleData = {
       coordinates: { latitude, longitude },
       last_update: new Date().toISOString(),
-      heading,
       is_trailing: isTrailingOn,
       vehicle_marker: $userVehicleStore.vehicle_marker,
     }
+
+    if (heading !== null) {
+      vehicleData.heading = heading
+    }
+
     console.log("Recording location data:", vehicleData)
     // Update the userVehicleStore with the latest vehicle state
     userVehicleStore.update((vehicle) => {

@@ -79,10 +79,12 @@
           (payload) => {
             if (payload.new.vehicle_id !== userId) {
               // Update was made by another vehicle
-              console.log(
-                "Updated vehicle state from another vehicle:",
-                payload.new,
-              )
+              console.log("Received heading from server:", payload.new.heading)
+
+              //   console.log(
+              //     "Updated vehicle state from another vehicle:",
+              //     payload.new,
+              //   )
               // Update the serverOtherVehiclesData store with the received vehicle state
               serverOtherVehiclesData.update((vehicles) => {
                 const existingVehicleIndex = vehicles.findIndex(
@@ -228,18 +230,24 @@
       console.warn("Coordinates not available. Skipping vehicle state update.")
       return
     }
+    console.log("Sending heading to server:", heading)
+
+    const vehicleStateData = {
+      vehicle_id: userId,
+      master_map_id: masterMapId,
+      coordinates: `(${coordinates.longitude},${coordinates.latitude})`,
+      last_update,
+      is_trailing,
+      vehicle_marker,
+    }
+
+    if (heading !== null) {
+      vehicleStateData.heading = heading
+    }
 
     const { data, error } = await supabase
       .from("vehicle_state")
-      .upsert({
-        vehicle_id: userId,
-        master_map_id: masterMapId,
-        coordinates: `(${coordinates.longitude},${coordinates.latitude})`,
-        last_update,
-        heading,
-        is_trailing,
-        vehicle_marker,
-      })
+      .upsert({ vehicleStateData })
       .single()
 
     if (error) {
