@@ -247,13 +247,13 @@
 
     const { data, error } = await supabase
       .from("vehicle_state")
-      .upsert({ vehicleStateData })
+      .upsert(vehicleStateData)
       .single()
 
     if (error) {
       console.error("Error sending vehicle state to the database:", error)
     } else {
-      //   console.log("Vehicle state sent to the database:", data)
+      console.log("Vehicle state sent to the database:", data)
     }
   }
 </script>
