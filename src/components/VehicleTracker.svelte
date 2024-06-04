@@ -100,14 +100,41 @@
         .map(parseFloat) // Convert each value to a number
 
       // Find the existing marker for the vehicle
-      const existingMarker = otherVehicleMarkers.find((marker) => {
+      const existingMarkerIndex = otherVehicleMarkers.findIndex((marker) => {
         const vehicleId = marker.getElement().getAttribute("data-vehicle-id")
         return vehicleId === vehicle_id
       })
 
-      if (existingMarker) {
-        // Update the existing marker's position and rotation
-        animateMarker(existingMarker, longitude, latitude, heading)
+      if (existingMarkerIndex !== -1) {
+        const existingMarker = otherVehicleMarkers[existingMarkerIndex]
+
+        // Check if the vehicle marker has changed
+        const existingMarkerElement = existingMarker.getElement()
+        const existingVehicleMarker = JSON.stringify(
+          existingMarkerElement.getAttribute("data-vehicle-marker"),
+        )
+        const newVehicleMarker = JSON.stringify(vehicle_marker)
+
+        if (existingVehicleMarker !== newVehicleMarker) {
+          // Remove the existing marker
+          existingMarker.remove()
+
+          // Create a new marker with the updated vehicle marker
+          const newMarker = new mapboxgl.Marker({
+            element: createMarkerElement(vehicle_marker, false, vehicle_id),
+            pitchAlignment: "map",
+            rotationAlignment: "map",
+          })
+
+          newMarker
+            .setLngLat([longitude, latitude])
+            .setRotation(heading)
+            .addTo(map)
+          otherVehicleMarkers[existingMarkerIndex] = newMarker
+        } else {
+          // Update the existing marker's position and rotation
+          animateMarker(existingMarker, longitude, latitude, heading)
+        }
       } else {
         // Create a new marker for the vehicle
         const marker = new mapboxgl.Marker({
@@ -190,11 +217,11 @@
       }
 
       // Log the current rotation at each step of the animation
-      console.log(
-        `Marker ${vehicleId} - Step ${currentStep}: Current rotation: ${Math.round(
-          (newRotation * 180) / Math.PI,
-        )}°`,
-      )
+      //   console.log(
+      //     `Marker ${vehicleId} - Step ${currentStep}: Current rotation: ${Math.round(
+      //       (newRotation * 180) / Math.PI,
+      //     )}°`,
+      //   )
     }
 
     // Log the initial rotation before starting the animation
@@ -275,17 +302,19 @@
     const vehicleData = {
       coordinates: { latitude, longitude },
       last_update: new Date().toISOString(),
-      heading,
       is_trailing: isTrailingOn,
       vehicle_marker: $userVehicleStore.vehicle_marker,
     }
 
-    console.log("Recording location data:", vehicleData)
     // Update the userVehicleStore with the latest vehicle state
     userVehicleStore.update((vehicle) => {
       return {
         ...vehicle,
-        ...vehicleData,
+        coordinates: vehicleData.coordinates,
+        last_update: vehicleData.last_update,
+        is_trailing: vehicleData.is_trailing,
+        vehicle_marker: vehicleData.vehicle_marker,
+        heading: heading !== null ? Math.round(heading) : vehicle.heading,
       }
     })
   }
