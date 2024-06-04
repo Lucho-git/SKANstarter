@@ -186,6 +186,7 @@
 
     if (distance < distanceThreshold) {
       // If the distance is too small, skip the animation
+      console.log("Skipping animation")
       return
     }
 
