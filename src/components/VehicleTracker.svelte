@@ -49,8 +49,6 @@
     geolocateControl.on("geolocate", (e) => {
       const { coords } = e
       console.log("Received heading from geolocate event:", coords.heading)
-
-      updateMarkerPosition(coords)
       streamMarkerPosition(coords)
     })
 
@@ -321,37 +319,49 @@
   }
 
   function streamMarkerPosition(coords) {
+    const { latitude, longitude, heading } = coords
+    console.log("Client-side heading before processing:", heading)
+
     const currentTime = Date.now()
-    if (currentTime - lastRecordedTime >= LOCATION_TRACKING_INTERVAL_MIN) {
-      //Set the minimum length of time between location updates
-      recordLocationData(coords)
-      lastRecordedTime = currentTime
-    }
-  }
 
-  function recordLocationData(locationData) {
-    const { latitude, longitude, heading } = locationData
-    console.log("Recording location data - Heading:", heading)
-
+    // Record all the necessary data
     const vehicleData = {
       coordinates: { latitude, longitude },
       last_update: new Date().toISOString(),
       is_trailing: isTrailingOn,
       vehicle_marker: $userVehicleStore.vehicle_marker,
     }
+
     const updatedHeading = heading !== null ? Math.round(heading) : heading
     console.log("Server-side heading before adding to store:", updatedHeading)
-    // Update the userVehicleStore with the latest vehicle state
-    userVehicleStore.update((vehicle) => {
-      return {
-        ...vehicle,
-        coordinates: vehicleData.coordinates,
-        last_update: vehicleData.last_update,
-        is_trailing: vehicleData.is_trailing,
-        vehicle_marker: vehicleData.vehicle_marker,
-        heading: updatedHeading,
+
+    // Check if the time interval condition is met
+    if (currentTime - lastRecordedTime >= LOCATION_TRACKING_INTERVAL_MIN) {
+      // Update the userVehicleStore with the latest vehicle state
+      userVehicleStore.update((vehicle) => {
+        return {
+          ...vehicle,
+          coordinates: vehicleData.coordinates,
+          last_update: vehicleData.last_update,
+          is_trailing: vehicleData.is_trailing,
+          vehicle_marker: vehicleData.vehicle_marker,
+          heading: updatedHeading,
+        }
+      })
+
+      lastRecordedTime = currentTime
+    }
+
+    // Debounce the animation update
+    const debouncedAnimateMarker = debounce(() => {
+      console.log("Client-side heading before animation:", heading)
+
+      if (userMarker) {
+        animateMarker(userMarker, longitude, latitude, heading)
       }
-    })
+    }, ANIMATION_DURATION)
+
+    debouncedAnimateMarker()
   }
 
   function storeLocationDataLocally(locationData) {
@@ -370,13 +380,4 @@
       JSON.stringify(locationDataArray),
     )
   }
-  // Client-side: Before entering the animation
-  const updateMarkerPosition = debounce((coords) => {
-    const { latitude, longitude, heading } = coords
-    console.log("Client-side heading before animation:", heading)
-
-    if (userMarker) {
-      animateMarker(userMarker, longitude, latitude, heading)
-    }
-  }, ANIMATION_DURATION)
 </script>
