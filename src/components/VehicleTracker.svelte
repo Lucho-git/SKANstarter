@@ -275,12 +275,9 @@
     const vehicleData = {
       coordinates: { latitude, longitude },
       last_update: new Date().toISOString(),
+      heading,
       is_trailing: isTrailingOn,
       vehicle_marker: $userVehicleStore.vehicle_marker,
-    }
-
-    if (heading !== null) {
-      vehicleData.heading = heading
     }
 
     console.log("Recording location data:", vehicleData)

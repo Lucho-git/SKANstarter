@@ -232,28 +232,23 @@
     }
     console.log("Sending heading to server:", heading)
 
-    const vehicleStateData = {
-      vehicle_id: userId,
-      master_map_id: masterMapId,
-      coordinates: `(${coordinates.longitude},${coordinates.latitude})`,
-      last_update,
-      is_trailing,
-      vehicle_marker,
-    }
-
-    if (heading !== null) {
-      vehicleStateData.heading = heading
-    }
-
     const { data, error } = await supabase
       .from("vehicle_state")
-      .upsert(vehicleStateData)
+      .upsert({
+        vehicle_id: userId,
+        master_map_id: masterMapId,
+        coordinates: `(${coordinates.longitude},${coordinates.latitude})`,
+        last_update,
+        heading,
+        is_trailing,
+        vehicle_marker,
+      })
       .single()
 
     if (error) {
       console.error("Error sending vehicle state to the database:", error)
     } else {
-      console.log("Vehicle state sent to the database:", data)
+      //   console.log("Vehicle state sent to the database:", data)
     }
   }
 </script>
