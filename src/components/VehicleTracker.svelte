@@ -16,6 +16,7 @@
   let userMarker
   let locationTrackingInterval
   let lastRecordedTime = 0
+  let lastClientTime = 0
   let otherVehicleMarkers = []
 
   const ANIMATION_DURATION = 500 // Adjust this value as needed
@@ -353,41 +354,47 @@
         }
       })
 
-      //Client Side
-      // Check if the coordinates or heading have changed
-      if (
-        !lastClientCoordinates ||
-        lastClientCoordinates.latitude !== latitude ||
-        lastClientCoordinates.longitude !== longitude ||
-        lastClientHeading !== heading
-      ) {
-        let changeLog = ""
+      lastRecordedTime = currentTime
+    }
 
-        if (!lastClientCoordinates) {
-          changeLog += "Initial coordinates. "
-        } else {
-          if (lastClientCoordinates.latitude !== latitude) {
-            const latitudeDiff = latitude - lastClientCoordinates.latitude
-            changeLog += `Latitude changed by ${latitudeDiff.toFixed(6)}. `
-          }
-          if (lastClientCoordinates.longitude !== longitude) {
-            const longitudeDiff = longitude - lastClientCoordinates.longitude
-            changeLog += `Longitude changed by ${longitudeDiff.toFixed(6)}. `
-          }
+    // Check if the coordinates or heading have changed
+    if (
+      !lastClientCoordinates ||
+      lastClientCoordinates.latitude !== latitude ||
+      lastClientCoordinates.longitude !== longitude ||
+      lastClientHeading !== heading
+    ) {
+      let changeLog = ""
+
+      if (!lastClientCoordinates) {
+        changeLog += "Initial coordinates. "
+      } else {
+        if (lastClientCoordinates.latitude !== latitude) {
+          const latitudeDiff = latitude - lastClientCoordinates.latitude
+          changeLog += `Latitude changed by ${latitudeDiff.toFixed(6)}. `
         }
-
-        if (lastClientHeading !== heading) {
-          const headingDiff = heading - lastClientHeading
-          changeLog += `Heading changed by ${headingDiff.toFixed(2)}°.`
+        if (lastClientCoordinates.longitude !== longitude) {
+          const longitudeDiff = longitude - lastClientCoordinates.longitude
+          changeLog += `Longitude changed by ${longitudeDiff.toFixed(6)}. `
         }
+      }
 
-        console.log("Changes detected:", changeLog)
+      if (lastClientHeading !== heading) {
+        const headingDiff = heading - lastClientHeading
+        changeLog += `Heading changed by ${headingDiff.toFixed(2)}°.`
+      }
+
+      console.log("Changes detected:", changeLog)
+
+      // Check if the time interval condition is met for animation
+      if (currentTime - lastClientTime >= LOCATION_TRACKING_INTERVAL_MIN) {
+        console.log("Client-side heading before animation:", heading)
 
         if (userMarker) {
+          lastRecordedTime = currentTime
+
           animateMarker(userMarker, longitude, latitude, heading)
         }
-
-        lastRecordedTime = currentTime
       }
 
       // Debounce the animation update
