@@ -12,7 +12,6 @@
   viewBox="0 0 24 24"
   fill={color}
   style="position: relative; z-index: 1; transform-origin: center; transition: transform 0.2s ease-in-out;"
-  transform="matrix(-1.8369701987210297e-16,-1,1,-1.8369701987210297e-16,0,0)"
   stroke="white"
   stroke-width=".2"
 >

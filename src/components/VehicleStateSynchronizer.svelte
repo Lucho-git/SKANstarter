@@ -183,7 +183,17 @@
 
         // Log specific differences
         Object.keys(serverItem).forEach((key) => {
-          if (serverItem[key] !== clientItem[key]) {
+          if (key === "vehicle_marker") {
+            // Perform deep comparison for vehicle_marker
+            if (
+              JSON.stringify(serverItem[key]) !==
+              JSON.stringify(clientItem[key])
+            ) {
+              console.log(`Difference in ${key}:`)
+              console.log(`Server value:`, serverItem[key])
+              console.log(`Client value:`, clientItem[key])
+            }
+          } else if (serverItem[key] !== clientItem[key]) {
             console.log(`Difference in ${key}:`)
             console.log(`Server value:`, serverItem[key])
             console.log(`Client value:`, clientItem[key])

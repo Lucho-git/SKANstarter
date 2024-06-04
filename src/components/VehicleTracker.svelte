@@ -216,12 +216,12 @@
         )
       }
 
-      // Log the current rotation at each step of the animation
-      //   console.log(
-      //     `Marker ${vehicleId} - Step ${currentStep}: Current rotation: ${Math.round(
-      //       (newRotation * 180) / Math.PI,
-      //     )}°`,
-      //   )
+      //   Log the current rotation at each step of the animation
+      console.log(
+        `Marker ${vehicleId} - Step ${currentStep}: Current rotation: ${Math.round(
+          (newRotation * 180) / Math.PI,
+        )}°`,
+      )
     }
 
     // Log the initial rotation before starting the animation
