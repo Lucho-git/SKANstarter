@@ -22,7 +22,7 @@ import {
       },
     })
   
-    console.log("Supabase client created")
+    // console.log("Supabase client created")
   
     event.locals.supabaseServiceRole = createClient(
       PUBLIC_SUPABASE_URL,
@@ -30,14 +30,14 @@ import {
       { auth: { persistSession: false } },
     )
   
-    console.log("Supabase service role client created")
+    // console.log("Supabase service role client created")
   
     event.locals.getSession = async () => {
-      console.log("getSession function called")
+    //   console.log("getSession function called")
       const {
         data: { session },
       } = await event.locals.supabase.auth.getSession()
-      console.log("Session retrieved:", session)
+    //   console.log("Session retrieved:", session)
       return session
     }
   

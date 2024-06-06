@@ -33,7 +33,7 @@
 
   onMount(() => {
     // Create the geolocateControl and add it to the map
-    console.log("Adding geolocateControl to the map")
+    // console.log("Adding geolocateControl to the map")
     geolocateControl = new mapboxgl.GeolocateControl({
       positionOptions: {
         enableHighAccuracy: true,
@@ -51,7 +51,7 @@
     // Update the user location marker on geolocate event
     geolocateControl.on("geolocate", (e) => {
       const { coords } = e
-      console.log("Received heading from geolocate event:", coords.heading)
+      //   console.log("Received heading from geolocate event:", coords.heading)
       streamMarkerPosition(coords)
     })
 
@@ -132,6 +132,7 @@
           update_types.includes("position_changed") ||
           update_types.includes("heading_changed")
         ) {
+          console.log("Animating user marker")
           // Animate the marker to the new position and heading
           animateMarker(existingMarker, longitude, latitude, heading)
         }
@@ -325,7 +326,7 @@
 
   function streamMarkerPosition(coords) {
     const { latitude, longitude, heading } = coords
-    console.log("Client-side heading before processing:", heading)
+    // console.log("Client-side heading before processing:", heading)
 
     const currentTime = Date.now()
 
@@ -338,7 +339,7 @@
     }
 
     const updatedHeading = heading !== null ? Math.round(heading) : heading
-    console.log("Server-side heading before adding to store:", updatedHeading)
+    // console.log("Server-side heading before adding to store:", updatedHeading)
 
     // Check if the time interval condition is met
     if (currentTime - lastRecordedTime >= LOCATION_TRACKING_INTERVAL_MIN) {
@@ -412,7 +413,7 @@
       lastClientCoordinates = { latitude, longitude }
       lastClientHeading = heading
     } else {
-      console.log("No changes detected.")
+      //   console.log("No changes detected.")
     }
   }
 

@@ -1,8 +1,10 @@
 <!-- src/components/ButtonSection.svelte -->
 <script>
-  import { createEventDispatcher } from "svelte"
+  import { createEventDispatcher, beforeUpdate, afterUpdate } from "svelte"
   import { mapStore } from "../stores/mapStore"
   import { userVehicleStore } from "../stores/vehicleStore"
+  import { isTrailingStore } from "../stores/trailingStore"
+  import { LottiePlayer } from "@lottiefiles/svelte-lottie-player"
 
   export let isSatelliteView = true
 
@@ -10,6 +12,14 @@
 
   const DEFAULT_SATELLITE_STYLE = "mapbox://styles/mapbox/satellite-streets-v12"
   const DEFAULT_OUTDOORS_STYLE = "mapbox://styles/mapbox/outdoors-v12"
+
+  function toggleTrailing() {
+    isTrailingStore.update((value) => {
+      const newValue = !value
+      console.log("Toggling isTrailing:", newValue)
+      return newValue
+    })
+  }
 
   function toggleMapStyle() {
     isSatelliteView = !isSatelliteView
@@ -145,8 +155,51 @@
     class="btn btn-circle btn-md absolute top-20 right-20 z-10"
     on:click={cycleColorSize}
   >
+    <!-- src/components/ButtonSection.svelte -->
+    <!-- src/components/ButtonSection.svelte -->
+    <!-- src/components/ButtonSection.svelte -->
+    <!-- src/components/ButtonSection.svelte -->
+    <!-- src/components/ButtonSection.svelte -->
+
     {colorSizeOptions[currentColorSizeIndex].color}
     {colorSizeOptions[currentColorSizeIndex].size}
+  </button>
+
+  <!-- Toggle Trailing Button -->
+  <!-- Toggle Trailing Button -->
+  <button
+    class="btn btn-circle btn-md absolute top-36 right-4 z-10"
+    on:click={toggleTrailing}
+  >
+    {#if $isTrailingStore}
+      <div class="flex flex-col">
+        <LottiePlayer
+          src="/animations/lineloopbrown.json"
+          autoplay={true}
+          loop={true}
+          controls={false}
+          controlsLayout={null}
+          renderer="svg"
+          background="transparent"
+          height={60}
+          width={60}
+        />
+      </div>
+    {:else}
+      <svg
+        fill="#000000"
+        width="30px"
+        height="30px"
+        viewBox="0 0 32 32"
+        version="1.1"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <title>trail</title>
+        <path
+          d="M30.165 30.887c-1.604 0.076-21.522-0.043-21.522-0.043-12.101-12.151 18.219-16.173-0.521-26.154l-1.311 1.383-1.746-4.582 5.635 0.439-1.128 1.267c23.438 6.83-3.151 19.631 20.594 27.69v0z"
+        ></path>
+      </svg>
+    {/if}
   </button>
 </div>
 

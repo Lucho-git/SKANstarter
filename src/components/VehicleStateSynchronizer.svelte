@@ -108,7 +108,7 @@
               )
               otherVehiclesDataChanges.set(changes)
             } else {
-              console.log("Updated vehicle state from self:", payload.new)
+              //   console.log("Updated vehicle state from self:", payload.new)
             }
           },
         )
@@ -269,7 +269,7 @@
       console.warn("Coordinates not available. Skipping vehicle state update.")
       return
     }
-    console.log("Sending heading to server:", heading)
+    // console.log("Sending heading to server:", heading)
 
     const vehicleStateData = {
       vehicle_id: userId,
@@ -283,7 +283,7 @@
     if (heading !== null) {
       vehicleStateData.heading = heading
     } else {
-      console.log("heading is null")
+      //   console.log("heading is null")
     }
 
     const { data, error } = await supabase

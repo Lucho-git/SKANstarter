@@ -459,7 +459,7 @@
 </script>
 
 <button
-  class="btn btn-circle btn-md absolute top-40 right-20 z-10"
+  class="btn btn-circle btn-md absolute top-36 right-20 z-10"
   on:click={() => debouncedSynchronizeMarkers("Sync Button")}
 >
   <svg
