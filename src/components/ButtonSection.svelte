@@ -171,17 +171,17 @@
     on:click={toggleTrailing}
   >
     {#if $userVehicleTrailing}
-      <div class="flex flex-col -mt-2.5 pb-0">
+      <div class="flex flex-col -mt-7 pb-0">
         <LottiePlayer
-          src="/animations/drivingtruckanimation.json"
+          src="/animations/PulsingBlueBeacon.json"
           autoplay={true}
           loop={true}
           controls={false}
           controlsLayout={null}
           renderer="svg"
           background="transparent"
-          height={65}
-          width={65}
+          height={80}
+          width={80}
         />
       </div>
     {:else}
