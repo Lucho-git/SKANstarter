@@ -2,8 +2,7 @@
 <script>
   import { createEventDispatcher, beforeUpdate, afterUpdate } from "svelte"
   import { mapStore } from "../stores/mapStore"
-  import { userVehicleStore } from "../stores/vehicleStore"
-  import { isTrailingStore } from "../stores/trailingStore"
+  import { userVehicleStore, userVehicleTrailing } from "../stores/vehicleStore"
   import { LottiePlayer } from "@lottiefiles/svelte-lottie-player"
 
   export let isSatelliteView = true
@@ -14,7 +13,7 @@
   const DEFAULT_OUTDOORS_STYLE = "mapbox://styles/mapbox/outdoors-v12"
 
   function toggleTrailing() {
-    isTrailingStore.update((value) => {
+    userVehicleTrailing.update((value) => {
       const newValue = !value
       console.log("Toggling isTrailing:", newValue)
       return newValue
@@ -171,7 +170,7 @@
     class="btn btn-circle btn-md absolute top-36 right-4 z-10"
     on:click={toggleTrailing}
   >
-    {#if $isTrailingStore}
+    {#if $userVehicleTrailing}
       <div class="flex flex-col -mt-2.5 pb-0">
         <LottiePlayer
           src="/animations/drivingtruckanimation.json"

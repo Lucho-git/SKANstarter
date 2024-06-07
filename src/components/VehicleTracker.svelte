@@ -14,14 +14,12 @@
 
   let geolocateControl
   let userMarker
-  let locationTrackingInterval
   let lastRecordedTime = 0
   let lastClientTime = 0
   let otherVehicleMarkers = []
 
   const ANIMATION_DURATION = 500 // Adjust this value as needed
   const DISTANCE_THRESHOLD = 0.0
-  const LOCATION_TRACKING_INTERVAL_TRIGGER = 11114000 // Adjust this value as needed
   const LOCATION_TRACKING_INTERVAL_MIN = 1000
   let isTrailingOn = false // Flag to control the trailing feature
   let otherVehiclesUnsubscribe
@@ -55,8 +53,6 @@
       streamMarkerPosition(coords)
     })
 
-    startLocationTracking()
-
     // Subscribe to userVehicleStore updates
     userVehicleUnsubscribe = userVehicleStore.subscribe((value) => {
       userCoordinates = value.coordinates
@@ -73,8 +69,8 @@
     if (userMarker) {
       userMarker.remove()
     }
-    stopLocationTracking()
 
+    // Unsubscribe from userVehicleupdates
     if (userVehicleUnsubscribe) {
       userVehicleUnsubscribe()
     }
@@ -312,16 +308,6 @@
     })
 
     return el
-  }
-
-  function startLocationTracking() {
-    locationTrackingInterval = setInterval(() => {
-      geolocateControl.trigger()
-    }, LOCATION_TRACKING_INTERVAL_TRIGGER)
-  }
-
-  function stopLocationTracking() {
-    clearInterval(locationTrackingInterval)
   }
 
   function streamMarkerPosition(coords) {

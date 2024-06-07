@@ -13,6 +13,7 @@ const defaultUserVehicle = {
     size: '25px',
   },
 };
+export const userVehicleTrailing = writable(defaultUserVehicle.is_trailing);
 
 export const userVehicleStore = writable(defaultUserVehicle);
 
