@@ -172,17 +172,17 @@
     on:click={toggleTrailing}
   >
     {#if $isTrailingStore}
-      <div class="flex flex-col">
+      <div class="flex flex-col -mt-2.5 pb-0">
         <LottiePlayer
-          src="/animations/lineloopbrown.json"
+          src="/animations/rollingBalls.json"
           autoplay={true}
           loop={true}
           controls={false}
           controlsLayout={null}
           renderer="svg"
           background="transparent"
-          height={60}
-          width={60}
+          height={65}
+          width={65}
         />
       </div>
     {:else}
