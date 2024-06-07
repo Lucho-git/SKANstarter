@@ -161,13 +161,7 @@
     // Clear the otherVehicleDataChanges store after processing the changes
   }
 
-  function animateMarker(
-    marker,
-    targetLng,
-    targetLat,
-    targetRotation,
-    isUserVehicle = false,
-  ) {
+  function animateMarker(marker, targetLng, targetLat, targetRotation) {
     const currentLngLat = marker.getLngLat()
     const currentRotation = marker.getRotation() // Rotation is already in degrees
 
@@ -219,53 +213,31 @@
       } else {
         // Animation completed, log the rotation information
         const rotationDegrees = Math.round(rotationDiff)
-        if (isUserVehicle) {
-          console.log(
-            `User vehicle rotated ${rotationDegrees}° from ${Math.round(
-              currentRotation,
-            )}° to ${Math.round(newRotation)}°`,
-          )
-        } else {
-          const markerElement = marker.getElement()
-          const vehicleId = markerElement.getAttribute("data-vehicle-id")
-          console.log(
-            `Marker ${vehicleId} rotated ${rotationDegrees}° from ${Math.round(
-              currentRotation,
-            )}° to ${Math.round(newRotation)}°`,
-          )
-        }
-      }
 
-      // Log the current rotation at each step of the animation
-      if (isUserVehicle) {
-        console.log(
-          `User vehicle - Step ${currentStep}: Current rotation: ${Math.round(
-            newRotation,
-          )}°`,
-        )
-      } else {
         const markerElement = marker.getElement()
         const vehicleId = markerElement.getAttribute("data-vehicle-id")
         console.log(
-          `Marker ${vehicleId} - Step ${currentStep}: Current rotation: ${Math.round(
-            newRotation,
-          )}°`,
+          `Marker ${vehicleId} rotated ${rotationDegrees}° from ${Math.round(
+            currentRotation,
+          )}° to ${Math.round(newRotation)}°`,
         )
       }
-    }
 
-    // Log the initial rotation before starting the animation
-    if (isUserVehicle) {
-      console.log(
-        `User vehicle - Initial rotation: ${Math.round(currentRotation)}°`,
-      )
-    } else {
       const markerElement = marker.getElement()
       const vehicleId = markerElement.getAttribute("data-vehicle-id")
       console.log(
-        `Marker ${vehicleId} - Initial rotation: ${Math.round(currentRotation)}°`,
+        `Marker ${vehicleId} - Step ${currentStep}: Current rotation: ${Math.round(
+          newRotation,
+        )}°`,
       )
     }
+
+    const markerElement = marker.getElement()
+    const vehicleId = markerElement.getAttribute("data-vehicle-id")
+    console.log(
+      `Marker ${vehicleId} - Initial rotation: ${Math.round(currentRotation)}°`,
+      `User vehicle - Target rotation: ${Math.round(targetRotation)}°`,
+    )
 
     animate()
   }
