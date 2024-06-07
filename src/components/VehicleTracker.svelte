@@ -326,7 +326,7 @@
 
   function streamMarkerPosition(coords) {
     const { latitude, longitude, heading } = coords
-    // console.log("Client-side heading before processing:", heading)
+    // console.log("Client-side heading before processing:", heading);
 
     const currentTime = Date.now()
 
@@ -339,81 +339,71 @@
     }
 
     const updatedHeading = heading !== null ? Math.round(heading) : heading
-    // console.log("Server-side heading before adding to store:", updatedHeading)
+    // console.log("Server-side heading before adding to store:", updatedHeading);
 
+    updateUserVehicleData(currentTime, vehicleData, updatedHeading)
+  }
+
+  function updateUserVehicleData(currentTime, vehicleData, updatedHeading) {
     // Check if the time interval condition is met
     if (currentTime - lastRecordedTime >= LOCATION_TRACKING_INTERVAL_MIN) {
-      // Update the userVehicleStore with the latest vehicle state
-      userVehicleStore.update((vehicle) => {
-        return {
-          ...vehicle,
-          coordinates: vehicleData.coordinates,
-          last_update: vehicleData.last_update,
-          is_trailing: vehicleData.is_trailing,
-          vehicle_marker: vehicleData.vehicle_marker,
-          heading: updatedHeading,
+      const { coordinates } = vehicleData
+      const { latitude, longitude } = coordinates
+
+      // Check if the coordinates or heading have changed
+      if (
+        !lastClientCoordinates ||
+        lastClientCoordinates.latitude !== latitude ||
+        lastClientCoordinates.longitude !== longitude ||
+        lastClientHeading !== updatedHeading
+      ) {
+        let changeLog = ""
+
+        if (!lastClientCoordinates) {
+          changeLog += "Initial coordinates. "
+        } else {
+          if (lastClientCoordinates.latitude !== latitude) {
+            const latitudeDiff = latitude - lastClientCoordinates.latitude
+            changeLog += `Latitude changed by ${latitudeDiff.toFixed(6)}. `
+          }
+          if (lastClientCoordinates.longitude !== longitude) {
+            const longitudeDiff = longitude - lastClientCoordinates.longitude
+            changeLog += `Longitude changed by ${longitudeDiff.toFixed(6)}. `
+          }
         }
-      })
+
+        if (lastClientHeading !== updatedHeading) {
+          const headingDiff = updatedHeading - lastClientHeading
+          changeLog += `Heading changed by ${headingDiff.toFixed(2)}°.`
+        }
+
+        console.log("Changes detected:", changeLog)
+
+        // Update the userVehicleStore with the latest vehicle state
+        userVehicleStore.update((vehicle) => {
+          return {
+            ...vehicle,
+            coordinates: vehicleData.coordinates,
+            last_update: vehicleData.last_update,
+            is_trailing: vehicleData.is_trailing,
+            vehicle_marker: vehicleData.vehicle_marker,
+            heading: updatedHeading,
+          }
+        })
+
+        // Animate the user marker with the new position and heading
+        if (userMarker) {
+          animateMarker(userMarker, longitude, latitude, updatedHeading)
+        }
+
+        // Update the last coordinates and heading
+        lastClientCoordinates = { latitude, longitude }
+        lastClientHeading = updatedHeading
+      } else {
+        // console.log("No changes detected.");
+      }
 
       lastRecordedTime = currentTime
-    }
-
-    // Check if the coordinates or heading have changed
-    if (
-      !lastClientCoordinates ||
-      lastClientCoordinates.latitude !== latitude ||
-      lastClientCoordinates.longitude !== longitude ||
-      lastClientHeading !== heading
-    ) {
-      let changeLog = ""
-
-      if (!lastClientCoordinates) {
-        changeLog += "Initial coordinates. "
-      } else {
-        if (lastClientCoordinates.latitude !== latitude) {
-          const latitudeDiff = latitude - lastClientCoordinates.latitude
-          changeLog += `Latitude changed by ${latitudeDiff.toFixed(6)}. `
-        }
-        if (lastClientCoordinates.longitude !== longitude) {
-          const longitudeDiff = longitude - lastClientCoordinates.longitude
-          changeLog += `Longitude changed by ${longitudeDiff.toFixed(6)}. `
-        }
-      }
-
-      if (lastClientHeading !== heading) {
-        const headingDiff = heading - lastClientHeading
-        changeLog += `Heading changed by ${headingDiff.toFixed(2)}°.`
-      }
-
-      console.log("Changes detected:", changeLog)
-
-      // Check if the time interval condition is met for animation
-      if (currentTime - lastClientTime >= LOCATION_TRACKING_INTERVAL_MIN) {
-        console.log("Client-side heading before animation:", heading)
-
-        if (userMarker) {
-          lastRecordedTime = currentTime
-
-          animateMarker(userMarker, longitude, latitude, heading)
-        }
-      }
-
-      // Debounce the animation update
-      // const debouncedAnimateMarker = debounce(() => {
-      //   console.log("Client-side heading before animation:", heading);
-      //
-      //   if (userMarker) {
-      //     animateMarker(userMarker, longitude, latitude, heading);
-      //   }
-      // }, ANIMATION_DURATION);
-      //
-      // debouncedAnimateMarker();
-
-      // Update the last coordinates and heading
-      lastClientCoordinates = { latitude, longitude }
-      lastClientHeading = heading
-    } else {
-      //   console.log("No changes detected.")
     }
   }
 
@@ -421,16 +411,5 @@
     // Implement the logic to store the location data in local storage
     // You can use IndexedDB or localStorage for this purpose
     // Ensure that the data is stored in an ordered manner
-
-    // Example using localStorage
-    const storedData = localStorage.getItem("vehicleLocationData")
-    const locationDataArray = storedData ? JSON.parse(storedData) : []
-
-    locationDataArray.push(locationData)
-
-    localStorage.setItem(
-      "vehicleLocationData",
-      JSON.stringify(locationDataArray),
-    )
   }
 </script>

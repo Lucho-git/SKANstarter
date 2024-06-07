@@ -174,7 +174,7 @@
     {#if $isTrailingStore}
       <div class="flex flex-col -mt-2.5 pb-0">
         <LottiePlayer
-          src="/animations/rollingBalls.json"
+          src="/animations/drivingtruckanimation.json"
           autoplay={true}
           loop={true}
           controls={false}
