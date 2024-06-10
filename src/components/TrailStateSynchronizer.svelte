@@ -6,14 +6,14 @@
   import {
     userTrailStore,
     otherTrailStore,
-    unsavedMarkers,
+    unsavedTrailStore,
   } from "../stores/trailDataStore"
 
   import { page } from "$app/stores"
 
   let unsubscribeUserTrailData
   let unsubscribeOtherTrailData
-  let unsubscribeUnsavedMarkers
+  let unsubscribeUnsavedTrailData
 
   export let db
 
@@ -23,13 +23,10 @@
     // Load initial trail data
     await loadTrailData()
 
-    // Subscribe to changes in the userTrailStore
-    unsubscribeUserTrailData = userTrailStore.subscribe(
-      async (userTrailData) => {
-        await syncTrailDataWithServer(userTrailData)
-        console.log("User Trail Store:", userTrailData)
-      },
-    )
+    // Subscribe to changes in the otherTrailStore
+    unsubscribeUserTrailData = userTrailStore.subscribe((userTrailData) => {
+      console.log("User Trail Store:", userTrailData)
+    })
 
     // Subscribe to changes in the otherTrailStore
     unsubscribeOtherTrailData = otherTrailStore.subscribe((otherTrailData) => {
@@ -37,11 +34,13 @@
     })
 
     // Subscribe to changes in the unsavedMarkers store
-    unsubscribeUnsavedMarkers = unsavedMarkers.subscribe(async (markers) => {
-      if (markers.length > 0) {
-        await saveUnsavedMarkersToIndexedDB(markers)
-      }
-    })
+    unsubscribeUnsavedTrailData = unsavedTrailStore.subscribe(
+      async (markers) => {
+        if (markers.length > 0) {
+          await processUnsavedMarkers(markers)
+        }
+      },
+    )
   })
 
   onDestroy(() => {
@@ -56,12 +55,12 @@
     }
 
     // Unsubscribe from the unsavedMarkers store
-    if (unsubscribeUnsavedMarkers) {
-      unsubscribeUnsavedMarkers()
+    if (unsubscribeUnsavedTrailData) {
+      unsubscribeUnsavedTrailData()
     }
   })
 
-  async function saveUnsavedMarkersToIndexedDB(markers) {
+  async function processUnsavedMarkers(markers) {
     try {
       const session = $page.data.session
       if (!session) {
@@ -69,13 +68,13 @@
         return
       }
 
-      const userId = session.user.id
+      const vehicleId = session.user.id
 
       // Retrieve the user's profile to get the master_map_id
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("master_map_id")
-        .eq("id", userId)
+        .eq("id", vehicleId)
         .single()
 
       if (profileError) {
@@ -86,30 +85,55 @@
       const masterMapId = profile.master_map_id
 
       const enrichedMarkers = markers.map((marker) => ({
-        id: `${userId}_${marker.timestamp}`, // Generate a unique 'id' for each marker
         ...marker,
-        user_id: userId,
+        id: `${vehicleId}_${marker.timestamp}`,
+        timestamp: new Date(marker.timestamp).getTime(), // Convert to Unix timestamp
+
+        vehicle_id: vehicleId,
+        coordinates: `(${marker.coordinates.longitude},${marker.coordinates.latitude})`, // Format coordinates as a PostgreSQL POINT string
         master_map_id: masterMapId,
-        synced: false,
       }))
 
-      console.log("Saving unsaved markers to IndexedDB:", enrichedMarkers)
+      console.log("Inserting markers into Supabase:", enrichedMarkers)
+      // Attempt to insert the markers into the Supabase database
+      const { data, error } = await supabase
+        .from("trail_data")
+        .insert(enrichedMarkers)
 
-      // Store the enriched location data in the database
-      console.log("Storing location data in IndexedDB", enrichedMarkers)
-      db.TrailData.bulkPut(enrichedMarkers)
-        .then(() => {
-          console.log("Location data stored in IndexedDB")
-          logIndexedDBData() // Call the function to log the stored data
-        })
-        .catch((error) => {
-          console.error("Error storing location data in IndexedDB:", error)
-        })
+      if (error) {
+        console.error("Error inserting markers into Supabase:", error)
+        // If the Supabase request fails or takes too long, add the markers to IndexedDB with synced set to false
+        await saveMarkersToIndexedDB(enrichedMarkers, false)
+      } else {
+        console.log("Markers inserted into Supabase:", data)
+        // If the Supabase request is successful, add the markers to IndexedDB with synced set to true
+        await saveMarkersToIndexedDB(enrichedMarkers, true)
+      }
 
-      // Clear the unsavedMarkers store after saving to IndexedDB
-      unsavedMarkers.set([])
+      // Clear the unsavedTrailStore after processing the markers
+      unsavedTrailStore.set([])
     } catch (error) {
-      console.error("Error saving unsaved markers to IndexedDB:", error)
+      console.error("Error processing unsaved markers:", error)
+    }
+  }
+
+  async function saveMarkersToIndexedDB(markers, synced) {
+    try {
+      const updatedMarkers = markers.map((marker) => ({
+        ...marker,
+        synced: synced,
+      }))
+
+      console.log(
+        `Saving markers to IndexedDB with synced set to ${synced}:`,
+        updatedMarkers,
+      )
+
+      await db.TrailData.bulkPut(updatedMarkers)
+      console.log("Markers stored in IndexedDB")
+      logIndexedDBData()
+    } catch (error) {
+      console.error("Error storing markers in IndexedDB:", error)
     }
   }
 
@@ -133,6 +157,7 @@
         await loadTrailDataFromSupabase()
       userTrailData = loadedUserTrailData
       otherTrailData = loadedOtherTrailData
+      console.log("Trail data loaded from Supabase:", userTrailData)
     }
 
     if (userTrailData.length === 0 && otherTrailData.length === 0) {
@@ -141,6 +166,7 @@
         await loadTrailDataFromIndexedDB()
       userTrailData = loadedUserTrailData
       otherTrailData = loadedOtherTrailData
+      console.log("Trail data loaded from IndexedDB:", userTrailData)
     }
 
     // Update the userTrailStore and otherTrailStore with the loaded trail data points
@@ -172,11 +198,12 @@
 
   async function loadTrailDataFromSupabase() {
     try {
-      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
+
       const { data, error } = await supabase
         .from("trail_data")
         .select("*")
-        .gte("timestamp", sevenDaysAgo.toISOString())
+        .gte("timestamp", sevenDaysAgo)
 
       if (error) {
         throw error
@@ -209,7 +236,7 @@
 
       // Convert the unsynced user trail data points to match the Supabase table structure
       const convertedUserTrailData = unsyncedUserTrailData.map((point) => ({
-        user_id: point.vehicleId,
+        vehicle_id: point.vehicleId,
         timestamp: new Date(point.timestamp).toISOString(),
         location: `(${point.coordinates.longitude},${point.coordinates.latitude})`,
         synced: point.synced,
@@ -240,6 +267,8 @@
         })
         return updatedUserTrailData
       })
+
+      console.log()
 
       // Store the synced user trail data points in IndexedDB for offline access
       await db.TrailData.bulkPut(syncedUserTrailData)

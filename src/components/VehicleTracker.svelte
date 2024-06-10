@@ -9,7 +9,7 @@
     otherVehiclesDataChanges,
   } from "../stores/vehicleStore"
   import UserMarker from "./UserMarker.svelte"
-  import { unsavedMarkers } from "../stores/trailDataStore"
+  import { unsavedTrailStore } from "../stores/trailDataStore"
 
   import { page } from "$app/stores"
 
@@ -326,7 +326,7 @@
           coordinates: { latitude, longitude },
           timestamp: currentTime,
         }
-        unsavedMarkers.update((markers) => [...markers, locationData])
+        unsavedTrailStore.update((markers) => [...markers, locationData])
       }
 
       // Check if the coordinates or heading have changed
