@@ -10,8 +10,11 @@
   import MapStateSaver from "./MapStateSaver.svelte"
   import VehicleTracker from "./VehicleTracker.svelte" // Add this import
   import VehicleStateSynchronizer from "./VehicleStateSynchronizer.svelte"
+  import TrailStateSynchronizer from "./TrailStateSynchronizer.svelte"
+  import { db } from "./db.js"
 
   //Constants and variable initializations
+  let dbInstance
 
   const MAPBOX_ACCESS_TOKEN =
     "pk.eyJ1IjoibHVjaG9kb3JlIiwiYSI6ImNsdndpd2NvNjA5OWUybG14anc1aWJpbXMifQ.7DSbOP9x-3sTZdJ5ee4UKw"
@@ -38,7 +41,7 @@
     zoom: 2,
   }
 
-  onMount(() => {
+  onMount(async () => {
     mapInitialized = false
     mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN
 
@@ -47,15 +50,21 @@
 
     mapStore.set(map)
     mapInitialized = true
+
+    try {
+      await db.open()
+      console.log("IndexedDB database opened")
+      dbInstance = db
+    } catch (error) {
+      console.error("Error opening IndexedDB database:", error)
+    }
   })
 
   onDestroy(() => {
     console.log("DestroyingMap")
     if (map) {
-      // Remove all event listeners and controls from the map
       map.off()
       map.remove()
-      // Set the map reference to null
       map = null
       mapStore.set(null)
     }
@@ -97,8 +106,9 @@
       on:markerPlacement={handleMarkerPlacement}
       on:markerClick={handleMarkerClick}
     />
-    <VehicleTracker {map} />
+    <VehicleTracker {map} db={dbInstance} />
     <VehicleStateSynchronizer />
+    <TrailStateSynchronizer db={dbInstance} />
   {/if}
 </div>
 

@@ -4,14 +4,20 @@
   import mapboxgl from "mapbox-gl"
   import {
     userVehicleStore,
+    userVehicleTrailing,
     otherVehiclesStore,
     otherVehiclesDataChanges,
   } from "../stores/vehicleStore"
   import UserMarker from "./UserMarker.svelte"
+  import { unsavedMarkers } from "../stores/trailDataStore"
+
+  import { page } from "$app/stores"
+
   import { debounce } from "lodash-es"
 
   export let map
 
+  let userVehicleId
   let geolocateControl
   let userMarker
   let lastRecordedTime = 0
@@ -32,6 +38,11 @@
   onMount(() => {
     // Create the geolocateControl and add it to the map
     // console.log("Adding geolocateControl to the map")
+
+    const session = $page.data.session
+    if (session) {
+      userVehicleId = session.user.id
+    }
     geolocateControl = new mapboxgl.GeolocateControl({
       positionOptions: {
         enableHighAccuracy: true,
@@ -41,6 +52,7 @@
       showAccuracyCircle: true,
       showUserLocation: false,
     })
+
     map.addControl(geolocateControl, "bottom-right")
     map.on("load", () => {
       geolocateControl.trigger()
@@ -225,11 +237,11 @@
 
       const markerElement = marker.getElement()
       const vehicleId = markerElement.getAttribute("data-vehicle-id")
-      console.log(
-        `Marker ${vehicleId} - Step ${currentStep}: Current rotation: ${Math.round(
-          newRotation,
-        )}°`,
-      )
+      //   console.log(
+      //     `Marker ${vehicleId} - Step ${currentStep}: Current rotation: ${Math.round(
+      //       newRotation,
+      //     )}°`,
+      //   )
     }
 
     const markerElement = marker.getElement()
@@ -291,7 +303,7 @@
     // Record all the necessary data
     const vehicleData = {
       coordinates: { latitude, longitude },
-      last_update: new Date().toISOString(),
+      last_update: currentTime,
       is_trailing: isTrailingOn,
       vehicle_marker: $userVehicleStore.vehicle_marker,
     }
@@ -307,6 +319,15 @@
     if (currentTime - lastRecordedTime >= LOCATION_TRACKING_INTERVAL_MIN) {
       const { coordinates } = vehicleData
       const { latitude, longitude } = coordinates
+
+      // Store the location data locally only if isTrailingFunction is on
+      if ($userVehicleTrailing) {
+        const locationData = {
+          coordinates: { latitude, longitude },
+          timestamp: currentTime,
+        }
+        unsavedMarkers.update((markers) => [...markers, locationData])
+      }
 
       // Check if the coordinates or heading have changed
       if (
@@ -363,11 +384,5 @@
 
       lastRecordedTime = currentTime
     }
-  }
-
-  function storeLocationDataLocally(locationData) {
-    // Implement the logic to store the location data in local storage
-    // You can use IndexedDB or localStorage for this purpose
-    // Ensure that the data is stored in an ordered manner
   }
 </script>
