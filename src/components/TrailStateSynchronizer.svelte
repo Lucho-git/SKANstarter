@@ -16,10 +16,33 @@
   let unsubscribeUnsavedTrailData
 
   export let db
+  let userId
+  let masterMapId
 
   onMount(async () => {
     console.log("Initializing TrailStateSynchronizer")
 
+    const session = $page.data.session
+    if (!session) {
+      console.error("User not authenticated")
+      return
+    }
+
+    userId = session.user.id
+
+    // Retrieve the user's profile to get the master_map_id
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("master_map_id")
+      .eq("id", userId)
+      .single()
+
+    if (profileError) {
+      console.error("Error retrieving user profile:", profileError)
+      return
+    }
+
+    masterMapId = profile.master_map_id
     // Load initial trail data
     await loadTrailData()
 
@@ -81,8 +104,6 @@
         console.error("Error retrieving user profile:", profileError)
         return
       }
-
-      const masterMapId = profile.master_map_id
 
       const enrichedMarkers = markers.map((marker) => ({
         ...marker,
@@ -180,13 +201,14 @@
 
       const filteredTrailData = await db.TrailData.where("timestamp")
         .above(sevenDaysAgo)
+        .and((point) => point.master_map_id === masterMapId)
         .toArray()
 
       const userTrailData = filteredTrailData.filter(
-        (point) => point.vehicleId === $userTrailStore.userId,
+        (point) => point.vehicle_id === userId,
       )
       const otherTrailData = filteredTrailData.filter(
-        (point) => point.vehicleId !== $userTrailStore.userId,
+        (point) => point.vehicle_id !== userId,
       )
 
       return { user: userTrailData, other: otherTrailData }
@@ -203,18 +225,15 @@
       const { data, error } = await supabase
         .from("trail_data")
         .select("*")
+        .eq("master_map_id", masterMapId)
         .gte("timestamp", sevenDaysAgo)
 
       if (error) {
         throw error
       }
 
-      const userTrailData = data.filter(
-        (point) => point.user_id === $userTrailStore.userId,
-      )
-      const otherTrailData = data.filter(
-        (point) => point.user_id !== $userTrailStore.userId,
-      )
+      const userTrailData = data.filter((point) => point.vehicle_id === userId)
+      const otherTrailData = data.filter((point) => point.vehicle_id !== userId)
 
       return { user: userTrailData, other: otherTrailData }
     } catch (error) {
