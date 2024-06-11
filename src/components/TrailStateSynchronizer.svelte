@@ -19,6 +19,10 @@
   let userId
   let masterMapId
 
+  let syncIntervalId = null
+
+  const TRAIL_SYNC_INTERVAL_MIN = 10000
+
   onMount(async () => {
     console.log("Initializing TrailStateSynchronizer")
 
@@ -64,6 +68,16 @@
         }
       },
     )
+
+    const unsyncedData = await db.TrailData.filter(
+      (point) => point.synced === false,
+    ).toArray()
+    if (unsyncedData.length > 0) {
+      console.log("Unsynced data found on mount. Starting sync scheduler.")
+      startSyncScheduler()
+    } else {
+      console.log("No unsynced data found on mount.")
+    }
   })
 
   onDestroy(() => {
@@ -81,7 +95,22 @@
     if (unsubscribeUnsavedTrailData) {
       unsubscribeUnsavedTrailData()
     }
+
+    if (syncIntervalId) {
+      console.log("Clearing sync interval on component destroy.")
+      clearInterval(syncIntervalId)
+    }
   })
+
+  function startSyncScheduler() {
+    if (!syncIntervalId) {
+      console.log("Starting sync scheduler.")
+      syncIntervalId = setInterval(
+        syncUnsyncedDataWithServer,
+        TRAIL_SYNC_INTERVAL_MIN,
+      )
+    }
+  }
 
   async function processUnsavedMarkers(markers) {
     try {
@@ -109,7 +138,6 @@
         ...marker,
         id: `${vehicleId}_${marker.timestamp}`,
         timestamp: new Date(marker.timestamp).getTime(), // Convert to Unix timestamp
-
         vehicle_id: vehicleId,
         coordinates: `(${marker.coordinates.longitude},${marker.coordinates.latitude})`, // Format coordinates as a PostgreSQL POINT string
         master_map_id: masterMapId,
@@ -120,11 +148,14 @@
       const { data, error } = await supabase
         .from("trail_data")
         .insert(enrichedMarkers)
+        .select("*")
 
       if (error) {
         console.error("Error inserting markers into Supabase:", error)
         // If the Supabase request fails or takes too long, add the markers to IndexedDB with synced set to false
         await saveMarkersToIndexedDB(enrichedMarkers, false)
+        console.log("Unsynced data added. Starting sync scheduler.")
+        startSyncScheduler()
       } else {
         console.log("Markers inserted into Supabase:", data)
         // If the Supabase request is successful, add the markers to IndexedDB with synced set to true
@@ -242,57 +273,54 @@
     }
   }
 
-  async function syncTrailDataWithServer(userTrailData) {
+  async function syncUnsyncedDataWithServer() {
     try {
-      // Filter out the unsynced user trail data points
-      const unsyncedUserTrailData = userTrailData.filter(
-        (point) => !point.synced,
-      )
+      console.log("Syncing unsynced data with server")
 
-      if (unsyncedUserTrailData.length === 0) {
+      const unsyncedData = await db.TrailData.filter(
+        (point) => point.synced === false,
+      ).toArray()
+
+      if (unsyncedData.length === 0) {
+        console.log(
+          "No unsynced data found in IndexedDB. Stopping sync scheduler.",
+        )
+        clearInterval(syncIntervalId)
+        syncIntervalId = null
         return
       }
 
-      // Convert the unsynced user trail data points to match the Supabase table structure
-      const convertedUserTrailData = unsyncedUserTrailData.map((point) => ({
-        vehicle_id: point.vehicleId,
-        timestamp: new Date(point.timestamp).toISOString(),
-        location: `(${point.coordinates.longitude},${point.coordinates.latitude})`,
-        synced: point.synced,
+      console.log("Unsynced data found:", unsyncedData)
+
+      const convertedData = unsyncedData.map((point) => ({
+        id: point.id,
+        vehicle_id: point.vehicle_id,
+        timestamp: new Date(point.timestamp).getTime(), // Convert to Unix timestamp (milliseconds)
+        coordinates: point.coordinates,
+        master_map_id: point.master_map_id,
       }))
 
-      // Send the unsynced user trail data points to the Supabase database
+      console.log("Sending unsynced data to Supabase:", convertedData)
       const { data, error } = await supabase
         .from("trail_data")
-        .insert(convertedUserTrailData)
+        .insert(convertedData)
 
       if (error) {
+        console.error("Error inserting data into Supabase:", error)
         throw error
       }
 
-      // Update the synced flag for successfully synced user trail data points
-      const syncedUserTrailData = unsyncedUserTrailData.map((point) => ({
+      console.log("Data synced with server:", data)
+
+      const syncedData = unsyncedData.map((point) => ({
         ...point,
         synced: true,
       }))
 
-      // Update the userTrailStore with the synced user trail data points
-      userTrailStore.update((userTrailData) => {
-        const updatedUserTrailData = userTrailData.map((point) => {
-          const syncedPoint = syncedUserTrailData.find(
-            (syncedPoint) => syncedPoint.id === point.id,
-          )
-          return syncedPoint || point
-        })
-        return updatedUserTrailData
-      })
-
-      console.log()
-
-      // Store the synced user trail data points in IndexedDB for offline access
-      await db.TrailData.bulkPut(syncedUserTrailData)
+      await db.TrailData.bulkPut(syncedData)
+      console.log("Synced flag updated in IndexedDB")
     } catch (error) {
-      console.error("Error syncing user trail data with server:", error)
+      console.error("Error syncing unsynced data with server:", error)
     }
   }
 </script>

@@ -275,7 +275,7 @@
       vehicle_id: userId,
       master_map_id: masterMapId,
       coordinates: `(${coordinates.longitude},${coordinates.latitude})`,
-      last_update,
+      last_update: new Date(last_update).toISOString(),
       is_trailing,
       vehicle_marker,
     }
@@ -285,6 +285,8 @@
     } else {
       //   console.log("heading is null")
     }
+
+    console.log("Sending vehicle state to server:", vehicleStateData)
 
     const { data, error } = await supabase
       .from("vehicle_state")
