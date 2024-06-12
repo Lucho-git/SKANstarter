@@ -46,6 +46,7 @@
 		"@supabase/auth-helpers-sveltekit": "^0.10.2",
 		"@supabase/auth-ui-svelte": "^0.2.2",
 		"@supabase/supabase-js": "^2.33.0",
+		"@turf/turf": "^7.0.0",
 		"@vectopus/atlas-icons": "^0.0.7",
 		"chart.js": "^4.4.2",
 		"dexie": "^4.0.7",
@@ -56,6 +57,7 @@
 		"plotly.js-basic-dist": "^2.31.1",
 		"plotly.js-dist-min": "^2.31.1",
 		"stripe": "^13.3.0",
+		"turf": "^3.0.14",
 		"uuid": "^9.0.1"
 	}
 }
