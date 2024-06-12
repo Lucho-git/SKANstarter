@@ -72,7 +72,7 @@
     const features = []
     let currentLine = []
 
-    const maxDistance = 1000 // Maximum distance in meters to connect points
+    const maxDistance = 1 // Maximum distance in x units unsure between points
     const maxTimeDiff = 60 * 60 * 1000 // Maximum time difference in milliseconds (1 hour)
 
     for (let i = 0; i < coordinates.length; i++) {
@@ -138,7 +138,7 @@
       id: layerIdLineBackground,
       paint: {
         "line-color": "yellow",
-        "line-width": 20,
+        "line-width": 30,
         "line-opacity": 0.4,
       },
     })
