@@ -38,6 +38,7 @@
   onMount(() => {
     // Create the geolocateControl and add it to the map
     // console.log("Adding geolocateControl to the map")
+    console.log("Mounting VehicleTracker")
 
     const session = $page.data.session
     if (session) {
@@ -77,6 +78,7 @@
   })
 
   onDestroy(() => {
+    console.log("Unmounting VehicleTracker")
     // Clean up the geolocateControl and userMarker
     if (userMarker) {
       userMarker.remove()

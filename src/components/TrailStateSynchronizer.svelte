@@ -8,11 +8,11 @@
     otherTrailStore,
     unsavedTrailStore,
   } from "../stores/trailDataStore"
+  import { trailDataLoaded } from "../stores/loadedStore"
+  import { writable } from "svelte/store"
 
   import { page } from "$app/stores"
 
-  let unsubscribeUserTrailData
-  let unsubscribeOtherTrailData
   let unsubscribeUnsavedTrailData
 
   export let db
@@ -50,16 +50,6 @@
     // Load initial trail data
     await loadTrailData()
 
-    // Subscribe to changes in the otherTrailStore
-    unsubscribeUserTrailData = userTrailStore.subscribe((userTrailData) => {
-      console.log("User Trail Store:", userTrailData)
-    })
-
-    // Subscribe to changes in the otherTrailStore
-    unsubscribeOtherTrailData = otherTrailStore.subscribe((otherTrailData) => {
-      console.log("Other Trail Store:", otherTrailData)
-    })
-
     // Subscribe to changes in the unsavedMarkers store
     unsubscribeUnsavedTrailData = unsavedTrailStore.subscribe(
       async (markers) => {
@@ -81,16 +71,6 @@
   })
 
   onDestroy(() => {
-    // Unsubscribe from the userTrailStore
-    if (unsubscribeUserTrailData) {
-      unsubscribeUserTrailData()
-    }
-
-    // Unsubscribe from the otherTrailStore
-    if (unsubscribeOtherTrailData) {
-      unsubscribeOtherTrailData()
-    }
-
     // Unsubscribe from the unsavedMarkers store
     if (unsubscribeUnsavedTrailData) {
       unsubscribeUnsavedTrailData()
@@ -200,8 +180,8 @@
   }
 
   async function loadTrailData() {
-    let userTrailData = []
-    let otherTrailData = []
+    let userTrailData = {}
+    let otherTrailData = {}
 
     if (navigator.onLine) {
       // Load trail data from Supabase if online
@@ -209,21 +189,33 @@
         await loadTrailDataFromSupabase()
       userTrailData = loadedUserTrailData
       otherTrailData = loadedOtherTrailData
-      console.log("Trail data loaded from Supabase:", userTrailData)
+      console.log(
+        "Trail data loaded from Supabase:",
+        userTrailData,
+        otherTrailData,
+      )
     }
 
-    if (userTrailData.length === 0 && otherTrailData.length === 0) {
+    if (
+      Object.keys(userTrailData).length === 0 &&
+      Object.keys(otherTrailData).length === 0
+    ) {
       // Load trail data from IndexedDB if Supabase data is empty or offline
       const { user: loadedUserTrailData, other: loadedOtherTrailData } =
         await loadTrailDataFromIndexedDB()
       userTrailData = loadedUserTrailData
       otherTrailData = loadedOtherTrailData
-      console.log("Trail data loaded from IndexedDB:", userTrailData)
+      console.log(
+        "Trail data loaded from IndexedDB:",
+        userTrailData,
+        otherTrailData,
+      )
     }
 
-    // Update the userTrailStore and otherTrailStore with the loaded trail data points
+    // Update the userTrailStore and otherTrailStore with the loaded trail data
     userTrailStore.set(userTrailData)
     otherTrailStore.set(otherTrailData)
+    trailDataLoaded.set(true)
   }
 
   async function loadTrailDataFromIndexedDB() {
@@ -235,17 +227,25 @@
         .and((point) => point.master_map_id === masterMapId)
         .toArray()
 
-      const userTrailData = filteredTrailData.filter(
-        (point) => point.vehicle_id === userId,
-      )
-      const otherTrailData = filteredTrailData.filter(
-        (point) => point.vehicle_id !== userId,
+      // Sort the filtered trail data by timestamp in ascending order
+      const sortedTrailData = filteredTrailData.sort(
+        (a, b) => a.timestamp - b.timestamp,
       )
 
-      return { user: userTrailData, other: otherTrailData }
+      // Group the sorted trail data by vehicle ID
+      const groupedUserTrailData = groupBy(
+        sortedTrailData.filter((point) => point.vehicle_id === userId),
+        "vehicle_id",
+      )
+      const groupedOtherTrailData = groupBy(
+        sortedTrailData.filter((point) => point.vehicle_id !== userId),
+        "vehicle_id",
+      )
+
+      return { user: groupedUserTrailData, other: groupedOtherTrailData }
     } catch (error) {
       console.error("Error loading trail data from IndexedDB:", error)
-      return { user: [], other: [] }
+      return { user: {}, other: {} }
     }
   }
 
@@ -253,24 +253,51 @@
     try {
       const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
 
-      const { data, error } = await supabase
+      const { data: userTrailData, error: userError } = await supabase
         .from("trail_data")
         .select("*")
         .eq("master_map_id", masterMapId)
+        .eq("vehicle_id", userId)
         .gte("timestamp", sevenDaysAgo)
+        .order("timestamp", { ascending: true })
 
-      if (error) {
-        throw error
+      if (userError) {
+        throw userError
       }
 
-      const userTrailData = data.filter((point) => point.vehicle_id === userId)
-      const otherTrailData = data.filter((point) => point.vehicle_id !== userId)
+      const { data: otherTrailData, error: otherError } = await supabase
+        .from("trail_data")
+        .select("*")
+        .eq("master_map_id", masterMapId)
+        .neq("vehicle_id", userId)
+        .gte("timestamp", sevenDaysAgo)
+        .order("timestamp", { ascending: true })
 
-      return { user: userTrailData, other: otherTrailData }
+      if (otherError) {
+        throw otherError
+      }
+
+      // Group the trail data by vehicle ID
+      const groupedUserTrailData = groupBy(userTrailData, "vehicle_id")
+      const groupedOtherTrailData = groupBy(otherTrailData, "vehicle_id")
+
+      return { user: groupedUserTrailData, other: groupedOtherTrailData }
     } catch (error) {
       console.error("Error loading trail data from Supabase:", error)
-      return { user: [], other: [] }
+      return { user: {}, other: {} }
     }
+  }
+
+  // Helper function to group an array of objects by a specific property
+  function groupBy(array, property) {
+    return array.reduce((acc, obj) => {
+      const key = obj[property]
+      if (!acc[key]) {
+        acc[key] = []
+      }
+      acc[key].push(obj)
+      return acc
+    }, {})
   }
 
   async function syncUnsyncedDataWithServer() {

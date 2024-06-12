@@ -3,6 +3,8 @@
   import mapboxgl from "mapbox-gl"
   import "mapbox-gl/dist/mapbox-gl.css"
   import { mapStore } from "../stores/mapStore"
+  import { trailDataLoaded, vehicleDataLoaded } from "../stores/loadedStore"
+
   import MarkerManager from "./MarkerManager.svelte"
 
   import ButtonSection from "./ButtonSection.svelte"
@@ -10,7 +12,10 @@
   import MapStateSaver from "./MapStateSaver.svelte"
   import VehicleTracker from "./VehicleTracker.svelte" // Add this import
   import VehicleStateSynchronizer from "./VehicleStateSynchronizer.svelte"
+  import TrailTracker from "./TrailTracker.svelte"
+
   import TrailStateSynchronizer from "./TrailStateSynchronizer.svelte"
+
   import { db } from "./db.js"
 
   //Constants and variable initializations
@@ -23,10 +28,11 @@
 
   let mapContainer
   let map
-  let mapInitialized = false
 
   let isSatelliteStyle = true
   let mapControls
+
+  let mapInitialized = false
 
   setContext("map", {
     getMap: () => Promise.resolve(map),
@@ -96,8 +102,9 @@
 </script>
 
 <div class="map-container" bind:this={mapContainer}>
-  <ButtonSection on:toggleMapStyleDispatcher={toggleMapStyle} />
   {#if mapInitialized}
+    <ButtonSection on:toggleMapStyleDispatcher={toggleMapStyle} />
+
     <MarkerManager {markerPlacementEvent} {markerClickEvent} />
     <MapStateSaver />
     <MapControls
@@ -106,9 +113,18 @@
       on:markerPlacement={handleMarkerPlacement}
       on:markerClick={handleMarkerClick}
     />
-    <VehicleTracker {map} db={dbInstance} />
     <VehicleStateSynchronizer />
-    <TrailStateSynchronizer db={dbInstance} />
+
+    <VehicleTracker {map} />
+
+    // Wait for veihicle data to be loaded before loading the trail data
+    {#if $vehicleDataLoaded}
+      <TrailStateSynchronizer db={dbInstance} />
+    {/if}
+    // Wait for the trail data to be loaded before loading the trail tracker
+    {#if $trailDataLoaded}
+      <TrailTracker {map} />
+    {/if}
   {/if}
 </div>
 

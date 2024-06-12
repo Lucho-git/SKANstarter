@@ -8,6 +8,7 @@
     serverOtherVehiclesData,
     otherVehiclesDataChanges,
   } from "../stores/vehicleStore"
+  import { vehicleDataLoaded } from "../stores/loadedStore"
   import { page } from "$app/stores"
 
   let channel = null
@@ -34,8 +35,8 @@
       }
 
       const masterMapId = profile.master_map_id
-      console.log("User Profile:", profile)
-      console.log("Master Map ID:", profile.master_map_id)
+      //   console.log("User Profile:", profile)
+      //   console.log("Master Map ID:", profile.master_map_id)
 
       // Fetch the user's vehicle data from the server
       const userVehicle = await fetchUserVehicleData(userId)
@@ -58,7 +59,7 @@
 
       // Fetch initial vehicle data from the server
       const initialVehicles = await fetchInitialVehicleData(masterMapId, userId)
-      console.log("Initial vehicle data:", initialVehicles)
+      //   console.log("Initial vehicle data:", initialVehicles)
       serverOtherVehiclesData.set(initialVehicles)
 
       // Compare the serverOtherVehiclesData with the otherVehiclesStore and store the changes
@@ -119,6 +120,8 @@
         await sendVehicleStateToDatabase(vehicleData)
       })
     }
+
+    vehicleDataLoaded.set(true)
   })
 
   onDestroy(() => {
@@ -177,7 +180,7 @@
       }
 
       if (!clientItem) {
-        console.log(`New vehicle found on server: ${serverItem.vehicle_id}`)
+        // console.log(`New vehicle found on server: ${serverItem.vehicle_id}`)
         change.update_types.push("new_vehicle")
       } else {
         const vehicleMarkerChanged =
@@ -233,7 +236,7 @@
       (change) => change.update_types.length > 0,
     )
 
-    console.log("Filtered changes:", filteredChanges)
+    // console.log("Filtered changes:", filteredChanges)
 
     return filteredChanges
   }
