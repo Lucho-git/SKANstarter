@@ -185,20 +185,20 @@
     // })
 
     // Add markers at the beginning and end of the trail
-    if (coordinates.length > 0) {
-      const startCoordinate = coordinates[0]
-      const endCoordinate = coordinates[coordinates.length - 1]
+    // if (coordinates.length > 0) {
+    //   const startCoordinate = coordinates[0]
+    //   const endCoordinate = coordinates[coordinates.length - 1]
 
-      // Create a marker for the start coordinate
-      const startMarker = new mapboxgl.Marker({ color: "green" })
-        .setLngLat(startCoordinate)
-        .addTo(map)
+    //   // Create a marker for the start coordinate
+    //   const startMarker = new mapboxgl.Marker({ color: "green" })
+    //     .setLngLat(startCoordinate)
+    //     .addTo(map)
 
-      // Create a marker for the end coordinate
-      const endMarker = new mapboxgl.Marker({ color: "red" })
-        .setLngLat(endCoordinate)
-        .addTo(map)
-    }
+    //   // Create a marker for the end coordinate
+    //   const endMarker = new mapboxgl.Marker({ color: "red" })
+    //     .setLngLat(endCoordinate)
+    //     .addTo(map)
+    // }
   }
 
   function updateTrailLine(trail, vehicle, sourceId) {
