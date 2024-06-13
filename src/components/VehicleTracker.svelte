@@ -199,65 +199,29 @@
     //   return
     // }
 
-    const duration = ANIMATION_DURATION
-    const steps = duration / 45
+    const duration = 1000 // Animation duration in milliseconds
+    const start = performance.now()
 
-    const lngStep = lngDiff / steps
-    const latStep = latDiff / steps
-    const rotationStep = rotationDiff / steps
+    function animate(timestamp) {
+      const elapsed = timestamp - start
+      const t = Math.min(elapsed / duration, 1) // Normalize time between 0 and 1
 
-    let currentStep = 0
+      // Use an easing function for smoother animation
+      const easing = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
 
-    marker.setLngLat([targetLng, targetLat]).setRotation(targetRotation)
-    console.log("Rotated Marker to ", targetRotation)
-    // function animate() {
-    //   const newLng = currentLngLat.lng + lngStep
-    //   const newLat = currentLngLat.lat + latStep
-    //   const newRotation = currentRotation + rotationStep
+      const lng = currentLngLat.lng + lngDiff * easing
+      const lat = currentLngLat.lat + latDiff * easing
+      const rotation = currentRotation + rotationDiff * easing
 
-    //   marker.setLngLat([newLng, newLat]).setRotation(newRotation) // Rotation is in degrees
+      marker.setLngLat([lng, lat]).setRotation(rotation)
 
-    //   const vehicleIcon = marker.getElement().querySelector(".vehicle-icon")
-    //   if (vehicleIcon) {
-    //     vehicleIcon.style.transform = `rotate(${newRotation}deg)`
-    //   }
+      if (elapsed < duration) {
+        requestAnimationFrame(animate)
+      }
+    }
 
-    //   currentStep++
-
-    //   if (currentStep < steps) {
-    //     requestAnimationFrame(animate)
-    //   } else {
-    //     // Animation completed, log the rotation information
-    //     const rotationDegrees = Math.round(rotationDiff)
-
-    //     const markerElement = marker.getElement()
-    //     const vehicleId = markerElement.getAttribute("data-vehicle-id")
-    //     // console.log(
-    //     //   `Marker ${vehicleId} rotated ${rotationDegrees}° from ${Math.round(
-    //     //     currentRotation,
-    //     //   )}° to ${Math.round(newRotation)}°`,
-    //     // )
-    //   }
-
-    //   const markerElement = marker.getElement()
-    //   const vehicleId = markerElement.getAttribute("data-vehicle-id")
-    //   //   console.log(
-    //   //     `Marker ${vehicleId} - Step ${currentStep}: Current rotation: ${Math.round(
-    //   //       newRotation,
-    //   //     )}°`,
-    //   //   )
-    // }
-
-    // const markerElement = marker.getElement()
-    // const vehicleId = markerElement.getAttribute("data-vehicle-id")
-    // // console.log(
-    // //   `Marker ${vehicleId} - Initial rotation: ${Math.round(currentRotation)}°`,
-    // //   `User vehicle - Target rotation: ${Math.round(targetRotation)}°`,
-    // // )
-
-    // animate()
+    requestAnimationFrame(animate)
   }
-
   function updateUserMarker(vehicleMarker) {
     if (userMarker) {
       userMarker.remove()
