@@ -190,14 +190,14 @@
       rotationDiff += 360
     }
 
-    const distanceThreshold = DISTANCE_THRESHOLD
-    const distance = Math.sqrt(lngDiff ** 2 + latDiff ** 2)
+    // const distanceThreshold = DISTANCE_THRESHOLD
+    // const distance = Math.sqrt(lngDiff ** 2 + latDiff ** 2)
 
-    if (distance < distanceThreshold) {
-      // If the distance is too small, skip the animation
-      console.log("Skipping animation")
-      return
-    }
+    // if (distance < distanceThreshold) {
+    //   // If the distance is too small, skip the animation
+    //   console.log("Skipping animation")
+    //   return
+    // }
 
     const duration = ANIMATION_DURATION
     const steps = duration / 45
@@ -208,52 +208,54 @@
 
     let currentStep = 0
 
-    function animate() {
-      const newLng = currentLngLat.lng + lngStep
-      const newLat = currentLngLat.lat + latStep
-      const newRotation = currentRotation + rotationStep
+    marker.setLngLat([targetLng, targetLat]).setRotation(targetRotation)
+    console.log("Rotated Marker to ", targetRotation)
+    // function animate() {
+    //   const newLng = currentLngLat.lng + lngStep
+    //   const newLat = currentLngLat.lat + latStep
+    //   const newRotation = currentRotation + rotationStep
 
-      marker.setLngLat([newLng, newLat]).setRotation(newRotation) // Rotation is in degrees
+    //   marker.setLngLat([newLng, newLat]).setRotation(newRotation) // Rotation is in degrees
 
-      const vehicleIcon = marker.getElement().querySelector(".vehicle-icon")
-      if (vehicleIcon) {
-        vehicleIcon.style.transform = `rotate(${newRotation}deg)`
-      }
+    //   const vehicleIcon = marker.getElement().querySelector(".vehicle-icon")
+    //   if (vehicleIcon) {
+    //     vehicleIcon.style.transform = `rotate(${newRotation}deg)`
+    //   }
 
-      currentStep++
+    //   currentStep++
 
-      if (currentStep < steps) {
-        requestAnimationFrame(animate)
-      } else {
-        // Animation completed, log the rotation information
-        const rotationDegrees = Math.round(rotationDiff)
+    //   if (currentStep < steps) {
+    //     requestAnimationFrame(animate)
+    //   } else {
+    //     // Animation completed, log the rotation information
+    //     const rotationDegrees = Math.round(rotationDiff)
 
-        const markerElement = marker.getElement()
-        const vehicleId = markerElement.getAttribute("data-vehicle-id")
-        // console.log(
-        //   `Marker ${vehicleId} rotated ${rotationDegrees}° from ${Math.round(
-        //     currentRotation,
-        //   )}° to ${Math.round(newRotation)}°`,
-        // )
-      }
+    //     const markerElement = marker.getElement()
+    //     const vehicleId = markerElement.getAttribute("data-vehicle-id")
+    //     // console.log(
+    //     //   `Marker ${vehicleId} rotated ${rotationDegrees}° from ${Math.round(
+    //     //     currentRotation,
+    //     //   )}° to ${Math.round(newRotation)}°`,
+    //     // )
+    //   }
 
-      const markerElement = marker.getElement()
-      const vehicleId = markerElement.getAttribute("data-vehicle-id")
-      //   console.log(
-      //     `Marker ${vehicleId} - Step ${currentStep}: Current rotation: ${Math.round(
-      //       newRotation,
-      //     )}°`,
-      //   )
-    }
+    //   const markerElement = marker.getElement()
+    //   const vehicleId = markerElement.getAttribute("data-vehicle-id")
+    //   //   console.log(
+    //   //     `Marker ${vehicleId} - Step ${currentStep}: Current rotation: ${Math.round(
+    //   //       newRotation,
+    //   //     )}°`,
+    //   //   )
+    // }
 
-    const markerElement = marker.getElement()
-    const vehicleId = markerElement.getAttribute("data-vehicle-id")
-    // console.log(
-    //   `Marker ${vehicleId} - Initial rotation: ${Math.round(currentRotation)}°`,
-    //   `User vehicle - Target rotation: ${Math.round(targetRotation)}°`,
-    // )
+    // const markerElement = marker.getElement()
+    // const vehicleId = markerElement.getAttribute("data-vehicle-id")
+    // // console.log(
+    // //   `Marker ${vehicleId} - Initial rotation: ${Math.round(currentRotation)}°`,
+    // //   `User vehicle - Target rotation: ${Math.round(targetRotation)}°`,
+    // // )
 
-    animate()
+    // animate()
   }
 
   function updateUserMarker(vehicleMarker) {
