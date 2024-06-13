@@ -212,6 +212,7 @@
     )
 
     console.log("New coordinates to add:", coordinates)
+    console.log("existingTrail", existingTrail)
 
     const features = []
     let currentLine = []
@@ -223,46 +224,56 @@
     coordinates.forEach((currentPoint, i) => {
       const currentTimestamp = trail[i].timestamp
 
-      if (currentLine.length === 0) {
-        currentLine.push(currentPoint)
-      } else {
-        const prevPoint = currentLine[currentLine.length - 1]
-        const prevTimestamp = trail[i - 1].timestamp
+      if (existingTrail && existingTrail.features.length > 0) {
+        console.log("Comparing against last datapoint of existing trail")
+        // Get the last data point of the existing trail
+        const lastFeature =
+          existingTrail.features[existingTrail.features.length - 1]
+        const lastCoordinate =
+          lastFeature.geometry.coordinates[
+            lastFeature.geometry.coordinates.length - 1
+          ]
 
         const distance = turf.distance(
-          turf.point(prevPoint),
+          turf.point(lastCoordinate),
           turf.point(currentPoint),
         )
-        const timeDiff = currentTimestamp - prevTimestamp
 
+        console.log("Distance:", distance, "maxDistance:", maxDistance)
+        const timeDiff = currentTimestamp - lastFeature.properties.timestamp
+        console.log("Time diff:", timeDiff, "maxTimeDiff:", maxTimeDiff)
         if (distance <= maxDistance && timeDiff <= maxTimeDiff) {
-          currentLine.push(currentPoint)
+          // Append the new data point to the existing trail
+          console.log("Appending to existing trail")
+          lastFeature.geometry.coordinates.push(currentPoint)
+          lastFeature.properties.timestamp = currentTimestamp
         } else {
+          // Create a new trail with the new data point
           features.push({
             type: "Feature",
             geometry: {
               type: "LineString",
-              coordinates: currentLine,
+              coordinates: [currentPoint],
             },
-            properties: {},
+            properties: {
+              timestamp: currentTimestamp,
+            },
           })
-          currentLine = [currentPoint]
         }
+      } else {
+        // No existing trail, create a new one with the new data point
+        features.push({
+          type: "Feature",
+          geometry: {
+            type: "LineString",
+            coordinates: [currentPoint],
+          },
+          properties: {
+            timestamp: currentTimestamp,
+          },
+        })
       }
     })
-
-    console.log("Current line:", currentLine)
-
-    if (currentLine.length > 0) {
-      features.push({
-        type: "Feature",
-        geometry: {
-          type: "LineString",
-          coordinates: currentLine,
-        },
-        properties: {},
-      })
-    }
 
     console.log("Processed features:", features)
 
