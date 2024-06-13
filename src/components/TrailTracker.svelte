@@ -1,22 +1,30 @@
 <script>
   import { onMount, onDestroy } from "svelte"
-  import { userTrailStore, otherTrailStore } from "../stores/trailDataStore"
+  import {
+    userTrailStore,
+    otherTrailStore,
+    newUserTrail,
+    newOtherTrail,
+  } from "../stores/trailDataStore"
   import { userVehicleStore, otherVehiclesStore } from "../stores/vehicleStore"
   import mapboxgl from "mapbox-gl"
   import * as turf from "@turf/turf"
 
   export let map
 
-  let userTrailUnsubscribe
-  let otherTrailUnsubscribe
+  let newUserTrailUnsubscribe
+  let newOtherTrailUnsubscribe
+
+  let trailData = {}
 
   onMount(() => {
     console.log("Mounting TrailTracker")
 
+    console.log("Loading User Trail:", $userTrailStore)
     Object.entries($userTrailStore).forEach(([vehicleId, trail]) => {
       loadTrailLines(trail, $userVehicleStore, `user-${vehicleId}`)
     })
-
+    console.log("Loading Other Trail:", $otherTrailStore)
     Object.entries($otherTrailStore).forEach(([vehicleId, trail]) => {
       const vehicle = $otherVehiclesStore.find(
         (v) => v.vehicle_id === vehicleId,
@@ -28,35 +36,21 @@
       }
     })
 
-    // Subscribe to changes in the trail stores
-    userTrailUnsubscribe = userTrailStore.subscribe((userTrail) => {
-      Object.entries(userTrail).forEach(([vehicleId, trail]) => {
-        updateTrailLine(trail, $userVehicleStore, `user-${vehicleId}`)
-      })
-    })
+    console.log(trailData)
 
-    otherTrailUnsubscribe = otherTrailStore.subscribe((otherTrail) => {
-      Object.entries(otherTrail).forEach(([vehicleId, trail]) => {
-        const vehicle = $otherVehiclesStore.find(
-          (v) => v.vehicle_id === vehicleId,
-        )
-        if (vehicle) {
-          updateTrailLine(trail, vehicle, `other-${vehicleId}`)
-        }
-      })
+    newUserTrailUnsubscribe = newUserTrail.subscribe((newTrail) => {
+      console.log("New User Trail:", Object.keys(newTrail).length)
+      if (Object.keys(newTrail).length > 0) {
+        Object.entries(newTrail).forEach(([vehicleId, trail]) => {
+          updateTrailLine(trail, $userVehicleStore, `user-${vehicleId}`)
+        })
+        newUserTrail.set({}) // Clear the newUserTrail store after processing
+      }
     })
   })
 
   onDestroy(() => {
     console.log("Destroying TrailTracker")
-
-    // Unsubscribe from the trail stores
-    if (userTrailUnsubscribe) {
-      userTrailUnsubscribe()
-    }
-    if (otherTrailUnsubscribe) {
-      otherTrailUnsubscribe()
-    }
   })
 
   function loadTrailLines(trail, vehicle, sourceId) {
@@ -123,6 +117,9 @@
       features: features,
     }
 
+    // Store the trail data in the trailData object
+    trailData[sourceId] = geojson
+
     const sourceIdLine = `${sourceId}-line`
     const layerIdLineBackground = `${sourceId}-line-background`
 
@@ -143,7 +140,7 @@
       },
     })
 
-    console.log(`Trail lines added for ${sourceId}`)
+    // console.log(`Trail lines added for ${sourceId}`)
 
     // Add circles for each coordinate point
     const sourceIdCircles = `${sourceId}-circles`
@@ -175,7 +172,7 @@
       },
     })
 
-    console.log(`Trail circles added for ${sourceId}`)
+    // console.log(`Trail circles added for ${sourceId}`)
 
     // Commented out marker code
     // coordinates.forEach((coordinate, index) => {
@@ -203,25 +200,90 @@
   }
 
   function updateTrailLine(trail, vehicle, sourceId) {
-    const source = map.getSource(sourceId)
-    if (source) {
-      const geojson = {
-        type: "FeatureCollection",
-        features: trail.map((point) => ({
+    console.log("Updating trail line", trail, vehicle, sourceId)
+
+    // Retrieve the existing trail data from trailData
+    const existingTrail = trailData[sourceId]
+    console.log("Existing trail", existingTrail)
+
+    if (existingTrail) {
+      const coordinates = trail.map((point) =>
+        point.coordinates.slice(1, -1).split(",").map(parseFloat),
+      )
+
+      const features = []
+      let currentLine = []
+
+      const maxDistance = 1
+      const maxTimeDiff = 60 * 60 * 1000
+
+      // Append the new coordinates to the existing trail
+      coordinates.forEach((currentPoint, i) => {
+        const currentTimestamp = trail[i].timestamp
+
+        if (currentLine.length === 0) {
+          currentLine.push(currentPoint)
+        } else {
+          const prevPoint = currentLine[currentLine.length - 1]
+          const prevTimestamp = trail[i - 1].timestamp
+
+          const distance = turf.distance(
+            turf.point(prevPoint),
+            turf.point(currentPoint),
+          )
+          const timeDiff = currentTimestamp - prevTimestamp
+
+          if (distance <= maxDistance && timeDiff <= maxTimeDiff) {
+            currentLine.push(currentPoint)
+          } else {
+            features.push({
+              type: "Feature",
+              geometry: {
+                type: "LineString",
+                coordinates: currentLine,
+              },
+              properties: {},
+            })
+            currentLine = [currentPoint]
+          }
+        }
+      })
+
+      if (currentLine.length > 1) {
+        features.push({
           type: "Feature",
           geometry: {
-            type: "Point",
-            coordinates: point.coordinates
-              .slice(1, -1)
-              .split(",")
-              .map(parseFloat),
+            type: "LineString",
+            coordinates: currentLine,
           },
-          properties: {
-            timestamp: point.timestamp,
-          },
-        })),
+          properties: {},
+        })
       }
-      source.setData(geojson)
+
+      // Update the existing trail data with the new features
+      existingTrail.features.push(...features)
+
+      // Update the trail on the map
+      const sourceIdLine = `${sourceId}-line`
+      const sourceIdCircles = `${sourceId}-circles`
+
+      map.getSource(sourceIdLine).setData(existingTrail)
+
+      const circleData = {
+        type: "FeatureCollection",
+        features: existingTrail.features.flatMap((feature) => {
+          return feature.geometry.coordinates.map((coordinate) => ({
+            type: "Feature",
+            geometry: {
+              type: "Point",
+              coordinates: coordinate,
+            },
+            properties: {},
+          }))
+        }),
+      }
+
+      map.getSource(sourceIdCircles).setData(circleData)
     }
   }
 </script>

@@ -98,7 +98,7 @@
     synchronizationInProgress = true
     spinning = true
 
-    console.log("Getting sessions")
+    // console.log("Getting sessions")
     const session = $page.data.session
     if (!session) {
       console.error("User not authenticated")

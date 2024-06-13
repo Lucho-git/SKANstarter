@@ -289,7 +289,7 @@
       //   console.log("heading is null")
     }
 
-    console.log("Sending vehicle state to server:", vehicleStateData)
+    // console.log("Sending vehicle state to server:", vehicleStateData)
 
     const { data, error } = await supabase
       .from("vehicle_state")

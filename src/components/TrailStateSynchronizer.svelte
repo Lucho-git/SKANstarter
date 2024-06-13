@@ -7,7 +7,10 @@
     userTrailStore,
     otherTrailStore,
     unsavedTrailStore,
+    newUserTrail,
+    newOtherTrail,
   } from "../stores/trailDataStore"
+
   import { trailDataLoaded } from "../stores/loadedStore"
   import { writable } from "svelte/store"
 
@@ -123,7 +126,6 @@
         master_map_id: masterMapId,
       }))
 
-      console.log("Inserting markers into Supabase:", enrichedMarkers)
       // Attempt to insert the markers into the Supabase database
       const { data, error } = await supabase
         .from("trail_data")
@@ -141,6 +143,25 @@
         // If the Supabase request is successful, add the markers to IndexedDB with synced set to true
         await saveMarkersToIndexedDB(enrichedMarkers, true)
       }
+
+      // Add the unsaved markers to userTrailStore
+      userTrailStore.update((userTrail) => {
+        if (!userTrail[vehicleId]) {
+          userTrail[vehicleId] = []
+        }
+        console.log("Adding markers to userTrailStore:", enrichedMarkers)
+        userTrail[vehicleId].push(...enrichedMarkers)
+        return userTrail
+      })
+
+      newUserTrail.update((newTrail) => {
+        if (!newTrail[vehicleId]) {
+          newTrail[vehicleId] = []
+        }
+        console.log("Adding markers to newUserTrail:", enrichedMarkers)
+        newTrail[vehicleId].push(...enrichedMarkers)
+        return newTrail
+      })
 
       // Clear the unsavedTrailStore after processing the markers
       unsavedTrailStore.set([])
@@ -162,8 +183,7 @@
       )
 
       await db.TrailData.bulkPut(updatedMarkers)
-      console.log("Markers stored in IndexedDB")
-      logIndexedDBData()
+      //   logIndexedDBData()
     } catch (error) {
       console.error("Error storing markers in IndexedDB:", error)
     }
@@ -189,11 +209,7 @@
         await loadTrailDataFromSupabase()
       userTrailData = loadedUserTrailData
       otherTrailData = loadedOtherTrailData
-      console.log(
-        "Trail data loaded from Supabase:",
-        userTrailData,
-        otherTrailData,
-      )
+      console.log("Trail data loaded from Supabase")
     }
 
     if (
@@ -205,11 +221,7 @@
         await loadTrailDataFromIndexedDB()
       userTrailData = loadedUserTrailData
       otherTrailData = loadedOtherTrailData
-      console.log(
-        "Trail data loaded from IndexedDB:",
-        userTrailData,
-        otherTrailData,
-      )
+      console.log("Trail data loaded from IndexedDB")
     }
 
     // Update the userTrailStore and otherTrailStore with the loaded trail data
@@ -330,7 +342,7 @@
       console.log("Sending unsynced data to Supabase:", convertedData)
       const { data, error } = await supabase
         .from("trail_data")
-        .insert(convertedData)
+        .upsert(convertedData)
 
       if (error) {
         console.error("Error inserting data into Supabase:", error)

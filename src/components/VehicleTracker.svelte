@@ -230,11 +230,11 @@
 
         const markerElement = marker.getElement()
         const vehicleId = markerElement.getAttribute("data-vehicle-id")
-        console.log(
-          `Marker ${vehicleId} rotated ${rotationDegrees}° from ${Math.round(
-            currentRotation,
-          )}° to ${Math.round(newRotation)}°`,
-        )
+        // console.log(
+        //   `Marker ${vehicleId} rotated ${rotationDegrees}° from ${Math.round(
+        //     currentRotation,
+        //   )}° to ${Math.round(newRotation)}°`,
+        // )
       }
 
       const markerElement = marker.getElement()
@@ -248,10 +248,10 @@
 
     const markerElement = marker.getElement()
     const vehicleId = markerElement.getAttribute("data-vehicle-id")
-    console.log(
-      `Marker ${vehicleId} - Initial rotation: ${Math.round(currentRotation)}°`,
-      `User vehicle - Target rotation: ${Math.round(targetRotation)}°`,
-    )
+    // console.log(
+    //   `Marker ${vehicleId} - Initial rotation: ${Math.round(currentRotation)}°`,
+    //   `User vehicle - Target rotation: ${Math.round(targetRotation)}°`,
+    // )
 
     animate()
   }
@@ -322,6 +322,7 @@
       const { coordinates } = vehicleData
       const { latitude, longitude } = coordinates
 
+      //TODO move this function after checking if it's a unique marker, ie. different coordinates or heading
       // Store the location data locally only if isTrailingFunction is on
       if ($userVehicleTrailing) {
         const locationData = {
