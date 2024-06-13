@@ -209,7 +209,11 @@
         await loadTrailDataFromSupabase()
       userTrailData = loadedUserTrailData
       otherTrailData = loadedOtherTrailData
-      console.log("Trail data loaded from Supabase")
+      //   console.log(
+      //     "Trail data loaded from Supabase",
+      //     userTrailData,
+      //     otherTrailData,
+      //   )
     }
 
     if (

@@ -9,6 +9,7 @@
   import { userVehicleStore, otherVehiclesStore } from "../stores/vehicleStore"
   import mapboxgl from "mapbox-gl"
   import * as turf from "@turf/turf"
+  import { toast } from "@zerodevx/svelte-toast"
 
   export let map
 
@@ -24,6 +25,7 @@
     Object.entries($userTrailStore).forEach(([vehicleId, trail]) => {
       loadTrailLines(trail, $userVehicleStore, `user-${vehicleId}`)
     })
+
     console.log("Loading Other Trail:", $otherTrailStore)
     Object.entries($otherTrailStore).forEach(([vehicleId, trail]) => {
       const vehicle = $otherVehiclesStore.find(
@@ -204,86 +206,165 @@
 
     // Retrieve the existing trail data from trailData
     const existingTrail = trailData[sourceId]
-    console.log("Existing trail", existingTrail)
 
-    if (existingTrail) {
-      const coordinates = trail.map((point) =>
-        point.coordinates.slice(1, -1).split(",").map(parseFloat),
-      )
+    const coordinates = trail.map((point) =>
+      point.coordinates.slice(1, -1).split(",").map(parseFloat),
+    )
 
-      const features = []
-      let currentLine = []
+    console.log("New coordinates to add:", coordinates)
 
-      const maxDistance = 1
-      const maxTimeDiff = 60 * 60 * 1000
+    const features = []
+    let currentLine = []
 
-      // Append the new coordinates to the existing trail
-      coordinates.forEach((currentPoint, i) => {
-        const currentTimestamp = trail[i].timestamp
+    const maxDistance = 1
+    const maxTimeDiff = 60 * 60 * 1000
 
-        if (currentLine.length === 0) {
+    // Process the new coordinates
+    coordinates.forEach((currentPoint, i) => {
+      const currentTimestamp = trail[i].timestamp
+
+      if (currentLine.length === 0) {
+        currentLine.push(currentPoint)
+      } else {
+        const prevPoint = currentLine[currentLine.length - 1]
+        const prevTimestamp = trail[i - 1].timestamp
+
+        const distance = turf.distance(
+          turf.point(prevPoint),
+          turf.point(currentPoint),
+        )
+        const timeDiff = currentTimestamp - prevTimestamp
+
+        if (distance <= maxDistance && timeDiff <= maxTimeDiff) {
           currentLine.push(currentPoint)
         } else {
-          const prevPoint = currentLine[currentLine.length - 1]
-          const prevTimestamp = trail[i - 1].timestamp
-
-          const distance = turf.distance(
-            turf.point(prevPoint),
-            turf.point(currentPoint),
-          )
-          const timeDiff = currentTimestamp - prevTimestamp
-
-          if (distance <= maxDistance && timeDiff <= maxTimeDiff) {
-            currentLine.push(currentPoint)
-          } else {
-            features.push({
-              type: "Feature",
-              geometry: {
-                type: "LineString",
-                coordinates: currentLine,
-              },
-              properties: {},
-            })
-            currentLine = [currentPoint]
-          }
-        }
-      })
-
-      if (currentLine.length > 1) {
-        features.push({
-          type: "Feature",
-          geometry: {
-            type: "LineString",
-            coordinates: currentLine,
-          },
-          properties: {},
-        })
-      }
-
-      // Update the existing trail data with the new features
-      existingTrail.features.push(...features)
-
-      // Update the trail on the map
-      const sourceIdLine = `${sourceId}-line`
-      const sourceIdCircles = `${sourceId}-circles`
-
-      map.getSource(sourceIdLine).setData(existingTrail)
-
-      const circleData = {
-        type: "FeatureCollection",
-        features: existingTrail.features.flatMap((feature) => {
-          return feature.geometry.coordinates.map((coordinate) => ({
+          features.push({
             type: "Feature",
             geometry: {
-              type: "Point",
-              coordinates: coordinate,
+              type: "LineString",
+              coordinates: currentLine,
             },
             properties: {},
-          }))
-        }),
+          })
+          currentLine = [currentPoint]
+        }
+      }
+    })
+
+    console.log("Current line:", currentLine)
+
+    if (currentLine.length > 0) {
+      features.push({
+        type: "Feature",
+        geometry: {
+          type: "LineString",
+          coordinates: currentLine,
+        },
+        properties: {},
+      })
+    }
+
+    console.log("Processed features:", features)
+
+    if (existingTrail) {
+      console.log("Existing trail found")
+      console.log(
+        "Existing trail features length:",
+        existingTrail.features.length,
+      )
+
+      // If there is an existing trail, append the new features to it
+      existingTrail.features.push(...features)
+
+      console.log(
+        "Updated trail features length:",
+        existingTrail.features.length,
+      )
+    } else {
+      console.log("No existing trail found")
+
+      // If there is no existing trail, create a new one with the new features
+      trailData[sourceId] = {
+        type: "FeatureCollection",
+        features: features,
       }
 
-      map.getSource(sourceIdCircles).setData(circleData)
+      console.log("New trail created with features length:", features.length)
     }
+
+    // Update the trail on the map
+    const sourceIdLine = `${sourceId}-line`
+    const sourceIdCircles = `${sourceId}-circles`
+
+    // Check if the line source exists, and create it if it doesn't
+    if (!map.getSource(sourceIdLine)) {
+      console.log("Line source does not exist, creating it")
+
+      map.addSource(sourceIdLine, {
+        type: "geojson",
+        data: trailData[sourceId],
+      })
+
+      map.addLayer({
+        type: "line",
+        source: sourceIdLine,
+        id: `${sourceId}-line-background`,
+        paint: {
+          "line-color": "yellow",
+          "line-width": 30,
+          "line-opacity": 0.4,
+        },
+      })
+    } else {
+      console.log("Line source exists, updating data")
+    }
+
+    // Check if the circle source exists, and create it if it doesn't
+    if (!map.getSource(sourceIdCircles)) {
+      console.log("Circle source does not exist, creating it")
+
+      map.addSource(sourceIdCircles, {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: [],
+        },
+      })
+
+      map.addLayer({
+        id: `${sourceId}-circles`,
+        type: "circle",
+        source: sourceIdCircles,
+        paint: {
+          "circle-color": "blue",
+          "circle-radius": 5,
+          "circle-opacity": 0.8,
+        },
+      })
+    } else {
+      console.log("Circle source exists, updating data")
+    }
+
+    console.log("Setting trail data:", trailData[sourceId])
+
+    map.getSource(sourceIdLine).setData(trailData[sourceId])
+
+    const circleData = {
+      type: "FeatureCollection",
+      features: trailData[sourceId].features.flatMap((feature) => {
+        return feature.geometry.coordinates.map((coordinate) => ({
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: coordinate,
+          },
+          properties: {},
+        }))
+      }),
+    }
+
+    console.log("Setting circle data:", circleData)
+
+    map.getSource(sourceIdCircles).setData(circleData)
   }
 </script>
