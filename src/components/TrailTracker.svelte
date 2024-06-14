@@ -130,17 +130,34 @@
       data: geojson,
     })
 
+    console.log("COLOR", vehicle, vehicle.vehicle_marker.color)
     // Add a line layer without line-dasharray defined to fill the gaps in the dashed line
     map.addLayer({
       type: "line",
       source: sourceIdLine,
       id: layerIdLineBackground,
       paint: {
-        "line-color": "yellow",
+        "line-color": vehicle.vehicle_marker.color,
         "line-width": 30,
         "line-opacity": 0.4,
       },
     })
+
+    // Add the dashed line layer for the user's trail
+    const layerIdLineDashed = `${sourceId}-line-dashed`
+
+    map.addLayer({
+      type: "line",
+      source: sourceIdLine,
+      id: layerIdLineDashed,
+      paint: {
+        "line-color": "yellow",
+        "line-width": 6,
+        "line-dasharray": [0, 4, 3],
+      },
+    })
+
+    animateDashArray(sourceId)
 
     // console.log(`Trail lines added for ${sourceId}`)
 
@@ -168,8 +185,8 @@
       type: "circle",
       source: sourceIdCircles,
       paint: {
-        "circle-color": "blue",
-        "circle-radius": 5,
+        "circle-color": vehicle.vehicle_marker.color,
+        "circle-radius": 2,
         "circle-opacity": 0.8,
       },
     })
@@ -315,17 +332,21 @@
         type: "geojson",
         data: trailData[sourceId],
       })
+      console.log("COLOR", vehicle, vehicle.vehicle_marker.color)
 
       map.addLayer({
         type: "line",
         source: sourceIdLine,
         id: `${sourceId}-line-background`,
         paint: {
-          "line-color": "yellow",
+          "line-color": vehicle.vehicle_marker.color,
           "line-width": 30,
           "line-opacity": 0.4,
         },
       })
+
+      map.getSource(`${sourceId}-line`).setData(trailData[sourceId])
+      map.getSource(`${sourceId}-line-dashed`).setData(trailData[sourceId])
     } else {
       console.log("Line source exists, updating data")
     }
@@ -347,8 +368,8 @@
         type: "circle",
         source: sourceIdCircles,
         paint: {
-          "circle-color": "blue",
-          "circle-radius": 5,
+          "circle-color": vehicle.vehicle_marker.color,
+          "circle-radius": 2,
           "circle-opacity": 0.8,
         },
       })
@@ -377,5 +398,43 @@
     console.log("Setting circle data:", circleData)
 
     map.getSource(sourceIdCircles).setData(circleData)
+  }
+
+  function animateDashArray(sourceId) {
+    const dashArraySequence = [
+      [0, 4, 3],
+      [0.5, 4, 2.5],
+      [1, 4, 2],
+      [1.5, 4, 1.5],
+      [2, 4, 1],
+      [2.5, 4, 0.5],
+      [3, 4, 0],
+      [0, 0.5, 3, 3.5],
+      [0, 1, 3, 3],
+      [0, 1.5, 3, 2.5],
+      [0, 2, 3, 2],
+      [0, 2.5, 3, 1.5],
+      [0, 3, 3, 1],
+      [0, 3.5, 3, 0.5],
+    ]
+
+    let step = 0
+
+    function animate(timestamp) {
+      const newStep = parseInt((timestamp / 50) % dashArraySequence.length)
+
+      if (newStep !== step) {
+        map.setPaintProperty(
+          `${sourceId}-line-dashed`,
+          "line-dasharray",
+          dashArraySequence[step],
+        )
+        step = newStep
+      }
+
+      requestAnimationFrame(animate)
+    }
+
+    animate(0)
   }
 </script>
