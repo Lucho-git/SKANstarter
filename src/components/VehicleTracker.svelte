@@ -245,6 +245,7 @@ We could group up an centralize more of the startup logic.
         vehicleMarker.size === previousVehicleMarker.size
       ) {
         // Vehicle marker hasn't changed, no need to update the marker
+        console.log("Vehicle marker hasn't changed")
         return
       }
     }
@@ -260,13 +261,15 @@ We could group up an centralize more of the startup logic.
       rotationAlignment: "map",
     })
 
+    console.log("Created user marker", userMarker)
+
     if ($userVehicleStore.coordinates) {
+      console.log("Adding user marker to map at", $userVehicleStore.coordinates)
       const { latitude, longitude } = $userVehicleStore.coordinates
       userMarker.setLngLat([longitude, latitude]).addTo(map)
+      // Update the previous vehicle marker
+      previousVehicleMarker = { ...vehicleMarker }
     }
-
-    // Update the previous vehicle marker
-    previousVehicleMarker = { ...vehicleMarker }
   }
 
   function createMarkerElement(
