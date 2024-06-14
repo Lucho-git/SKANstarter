@@ -10,5 +10,11 @@ export const newOtherTrail = writable([]);
 
 export const unsavedTrailStore = writable([]);
 
+export const animationConfig = writable({
+    userTrails: true,
+    otherTrails: false,
+    latestTrails: false,
+    latestUserTrail: false
+  })
 
 

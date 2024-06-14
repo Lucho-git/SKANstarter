@@ -6,7 +6,12 @@
     newUserTrail,
     newOtherTrail,
   } from "../stores/trailDataStore"
-  import { userVehicleStore, otherVehiclesStore } from "../stores/vehicleStore"
+  import {
+    userVehicleStore,
+    otherVehiclesStore,
+    userVehicleTrailing,
+  } from "../stores/vehicleStore"
+
   import mapboxgl from "mapbox-gl"
   import * as turf from "@turf/turf"
   import { toast } from "@zerodevx/svelte-toast"
@@ -15,8 +20,10 @@
 
   let newUserTrailUnsubscribe
   let newOtherTrailUnsubscribe
+  let userVehicleTrailingUnsubscribe
 
   let trailData = {}
+  let animationEnabled = {}
 
   onMount(() => {
     console.log("Mounting TrailTracker")
@@ -50,6 +57,13 @@
       }
     })
   })
+
+  userVehicleTrailingUnsubscribe = userVehicleTrailing.subscribe(
+    (isTrailing) => {
+      console.log("Vehicle Trailing:", isTrailing)
+      toggleAntLines(isTrailing)
+    },
+  )
 
   onDestroy(() => {
     console.log("Destroying TrailTracker")
@@ -150,6 +164,10 @@
       type: "line",
       source: sourceIdLine,
       id: layerIdLineDashed,
+      layout: {
+        // Make the layer visible by default.
+        visibility: "none",
+      },
       paint: {
         "line-color": "yellow",
         "line-width": 6,
@@ -436,5 +454,13 @@
     }
 
     animate(0)
+  }
+
+  function toggleAntLines(isTrailing) {
+    Object.keys(trailData).forEach((sourceId) => {
+      const layerIdLineDashed = `${sourceId}-line-dashed`
+      const visibility = isTrailing ? "visible" : "none"
+      map.setLayoutProperty(layerIdLineDashed, "visibility", visibility)
+    })
   }
 </script>
