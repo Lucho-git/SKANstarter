@@ -1,4 +1,8 @@
 <!-- VehicleTracker.svelte -->
+<!-- TODO, fix a bug where if vehicle doesn't exist we need to click a vehicle button before it appears, or it won't appear 
+We could group up an centralize more of the startup logic. 
+-->
+
 <script>
   import { onMount, onDestroy } from "svelte"
   import mapboxgl from "mapbox-gl"
@@ -34,6 +38,7 @@
   let userCoordinates = null
   let lastClientCoordinates = null
   let lastClientHeading = null
+  let previousVehicleMarker = null
 
   onMount(() => {
     // Create the geolocateControl and add it to the map
@@ -69,6 +74,7 @@
     // Subscribe to userVehicleStore updates
     userVehicleUnsubscribe = userVehicleStore.subscribe((value) => {
       userCoordinates = value.coordinates
+      console.log("UserVehicleStore updated", value)
       updateUserMarker(value.vehicle_marker)
     })
 
@@ -176,6 +182,13 @@
   }
 
   function animateMarker(marker, targetLng, targetLat, targetRotation) {
+    console.log(
+      "Animating marker",
+      marker,
+      targetLng,
+      targetLat,
+      targetRotation,
+    )
     const currentLngLat = marker.getLngLat()
     const currentRotation = marker.getRotation() // Rotation is already in degrees
 
@@ -222,7 +235,21 @@
 
     requestAnimationFrame(animate)
   }
+
   function updateUserMarker(vehicleMarker) {
+    if (userMarker && previousVehicleMarker) {
+      // Compare the current vehicle marker with the previous one
+      if (
+        vehicleMarker.type === previousVehicleMarker.type &&
+        vehicleMarker.color === previousVehicleMarker.color &&
+        vehicleMarker.size === previousVehicleMarker.size
+      ) {
+        // Vehicle marker hasn't changed, no need to update the marker
+        return
+      }
+    }
+
+    // Vehicle marker has changed or user marker hasn't been placed yet
     if (userMarker) {
       userMarker.remove()
     }
@@ -237,6 +264,9 @@
       const { latitude, longitude } = $userVehicleStore.coordinates
       userMarker.setLngLat([longitude, latitude]).addTo(map)
     }
+
+    // Update the previous vehicle marker
+    previousVehicleMarker = { ...vehicleMarker }
   }
 
   function createMarkerElement(
@@ -340,7 +370,7 @@
         })
 
         // Animate the user marker with the new position and heading
-        if (userMarker) {
+        if (userMarker && userMarker.getLngLat()) {
           animateMarker(userMarker, longitude, latitude, updatedHeading)
         }
 

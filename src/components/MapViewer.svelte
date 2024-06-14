@@ -45,6 +45,7 @@
     style: DEFAULT_SATELLITE_STYLE,
     center: [90, -40],
     zoom: 2,
+    // failIfMajorPerformanceCaveat: true,
   }
 
   onMount(async () => {
