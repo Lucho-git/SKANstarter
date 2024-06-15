@@ -10,11 +10,9 @@ export const newOtherTrail = writable([]);
 
 export const unsavedTrailStore = writable([]);
 
-export const animationConfig = writable({
-    userTrails: true,
-    otherTrails: false,
-    latestTrails: false,
-    latestUserTrail: false
-  })
-
-
+export const antLineConfigStore = writable({
+    noTrails: true,
+    allTrails: false,
+    latestTrail: false,
+    userLatestTrail: false,
+  });

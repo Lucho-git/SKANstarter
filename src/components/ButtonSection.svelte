@@ -4,6 +4,7 @@
   import { mapStore } from "../stores/mapStore"
   import { userVehicleStore, userVehicleTrailing } from "../stores/vehicleStore"
   import { LottiePlayer } from "@lottiefiles/svelte-lottie-player"
+  import { antLineConfigStore } from "../stores/trailDataStore"
 
   export let isSatelliteView = true
 
@@ -68,6 +69,34 @@
         size: colorSizeOptions[currentColorSizeIndex].size,
       },
     }))
+  }
+
+  //Cycles between 3 animation styles of the trailtracker
+  const antLineConfigModes = [
+    "noTrails",
+    "allTrails",
+    "latestTrail",
+    "userLatestTrail",
+  ]
+  let currentAntLineConfigIndex = 0
+
+  function cycleAntLineConfig() {
+    currentAntLineConfigIndex =
+      (currentAntLineConfigIndex + 1) % antLineConfigModes.length
+    const currentMode = antLineConfigModes[currentAntLineConfigIndex]
+
+    antLineConfigStore.update((config) => {
+      // Reset all modes to false
+      config.noTrails = false
+      config.allTrails = false
+      config.latestTrail = false
+      config.userLatestTrail = false
+
+      // Set the current mode to true
+      config[currentMode] = true
+
+      return config
+    })
   }
 </script>
 
@@ -199,6 +228,13 @@
         ></path>
       </svg>
     {/if}
+  </button>
+
+  <button
+    class="btn btn-circle btn-md absolute top-52 right-4 z-10 text-xs"
+    on:click={cycleAntLineConfig}
+  >
+    {antLineConfigModes[currentAntLineConfigIndex]}
   </button>
 </div>
 

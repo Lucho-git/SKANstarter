@@ -5,6 +5,7 @@
     otherTrailStore,
     newUserTrail,
     newOtherTrail,
+    antLineConfigStore,
   } from "../stores/trailDataStore"
   import {
     userVehicleStore,
@@ -20,10 +21,11 @@
 
   let newUserTrailUnsubscribe
   let newOtherTrailUnsubscribe
-  let userVehicleTrailingUnsubscribe
+  let antLineConfigUnsubscribe
 
   let trailData = {}
   let animationEnabled = {}
+  let latestTrails = {}
 
   onMount(() => {
     console.log("Mounting TrailTracker")
@@ -56,16 +58,14 @@
         newUserTrail.set({}) // Clear the newUserTrail store after processing
       }
     })
+
+    antLineConfigUnsubscribe = antLineConfigStore.subscribe(toggleAntLines)
   })
 
-  userVehicleTrailingUnsubscribe = userVehicleTrailing.subscribe(
-    (isTrailing) => {
-      console.log("Vehicle Trailing:", isTrailing)
-      toggleAntLines(isTrailing)
-    },
-  )
-
   onDestroy(() => {
+    if (antLineConfigUnsubscribe) {
+      antLineConfigUnsubscribe()
+    }
     console.log("Destroying TrailTracker")
   })
 
@@ -118,14 +118,23 @@
     }
 
     if (currentLine.length > 1) {
-      features.push({
+      const feature = {
         type: "Feature",
         geometry: {
           type: "LineString",
           coordinates: currentLine,
         },
         properties: {},
-      })
+      }
+
+      features.push(feature)
+
+      // Update the latest trail information
+      const vehicleId = sourceId.split("-")[1]
+      latestTrails[vehicleId] = {
+        sourceId: sourceId,
+        feature: feature,
+      }
     }
 
     const geojson = {
@@ -157,25 +166,44 @@
       },
     })
 
-    // Add the dashed line layer for the user's trail
-    const layerIdLineDashed = `${sourceId}-line-dashed`
+    // Create a separate layer for each trail
+    features.forEach((feature, index) => {
+      const trailId = `${sourceId}-trail-${index}`
+      const trailSourceId = `${sourceId}-trail-${index}-line`
+      console.log(`Creating trail layer for ${trailId}`)
+      map.addSource(trailSourceId, {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: [feature],
+        },
+      })
+      map.addLayer({
+        type: "line",
+        source: trailSourceId,
+        id: trailId,
+        layout: {
+          visibility: "none",
+        },
+        paint: {
+          "line-color": "yellow",
+          "line-width": 6,
+          "line-dasharray": [0, 4, 3],
+        },
+      })
 
-    map.addLayer({
-      type: "line",
-      source: sourceIdLine,
-      id: layerIdLineDashed,
-      layout: {
-        // Make the layer visible by default.
-        visibility: "none",
-      },
-      paint: {
-        "line-color": "yellow",
-        "line-width": 6,
-        "line-dasharray": [0, 4, 3],
-      },
+      // Update the latest trail information
+      const vehicleId = sourceId.split("-")[1]
+      if (index === features.length - 1) {
+        console.log(
+          `Updating latestTrails for vehicle ${vehicleId} with trailId ${trailId}`,
+        )
+        latestTrails[vehicleId] = {
+          sourceId: sourceId,
+          trailId: trailId,
+        }
+      }
     })
-
-    animateDashArray(sourceId)
 
     // console.log(`Trail lines added for ${sourceId}`)
 
@@ -283,8 +311,7 @@
           lastFeature.geometry.coordinates.push(currentPoint)
           lastFeature.properties.timestamp = currentTimestamp
         } else {
-          // Create a new trail with the new data point
-          features.push({
+          const feature = {
             type: "Feature",
             geometry: {
               type: "LineString",
@@ -293,11 +320,19 @@
             properties: {
               timestamp: currentTimestamp,
             },
-          })
+          }
+
+          features.push(feature)
+
+          // Update the latest trail information
+          const vehicleId = sourceId.split("-")[1]
+          latestTrails[vehicleId] = {
+            sourceId: sourceId,
+            feature: feature,
+          }
         }
       } else {
-        // No existing trail, create a new one with the new data point
-        features.push({
+        const feature = {
           type: "Feature",
           geometry: {
             type: "LineString",
@@ -306,7 +341,16 @@
           properties: {
             timestamp: currentTimestamp,
           },
-        })
+        }
+
+        features.push(feature)
+
+        // Update the latest trail information
+        const vehicleId = sourceId.split("-")[1]
+        latestTrails[vehicleId] = {
+          sourceId: sourceId,
+          feature: feature,
+        }
       }
     })
 
@@ -363,10 +407,50 @@
         },
       })
 
-      map.getSource(`${sourceId}-line`).setData(trailData[sourceId])
-      map.getSource(`${sourceId}-line-dashed`).setData(trailData[sourceId])
+      // Create a separate source and layer for each trail
+      trailData[sourceId].features.forEach((feature, index) => {
+        const trailId = `${sourceId}-trail-${index}`
+        const trailSourceId = `${sourceId}-trail-${index}-line`
+        if (!map.getSource(trailSourceId)) {
+          map.addSource(trailSourceId, {
+            type: "geojson",
+            data: {
+              type: "FeatureCollection",
+              features: [feature],
+            },
+          })
+          map.addLayer({
+            type: "line",
+            source: trailSourceId,
+            id: trailId,
+            layout: {
+              visibility: "none",
+            },
+            paint: {
+              "line-color": "yellow",
+              "line-width": 6,
+              "line-dasharray": [0, 4, 3],
+            },
+          })
+        } else {
+          map.getSource(trailSourceId).setData({
+            type: "FeatureCollection",
+            features: [feature],
+          })
+        }
+      })
     } else {
       console.log("Line source exists, updating data")
+      map.getSource(sourceIdLine).setData(trailData[sourceId])
+
+      // Update the data for each trail source
+      trailData[sourceId].features.forEach((feature, index) => {
+        const trailSourceId = `${sourceId}-trail-${index}-line`
+        map.getSource(trailSourceId).setData({
+          type: "FeatureCollection",
+          features: [feature],
+        })
+      })
     }
 
     // Check if the circle source exists, and create it if it doesn't
@@ -418,7 +502,7 @@
     map.getSource(sourceIdCircles).setData(circleData)
   }
 
-  function animateDashArray(sourceId) {
+  function animateDashArray(trailId) {
     const dashArraySequence = [
       [0, 4, 3],
       [0.5, 4, 2.5],
@@ -442,11 +526,7 @@
       const newStep = parseInt((timestamp / 50) % dashArraySequence.length)
 
       if (newStep !== step) {
-        map.setPaintProperty(
-          `${sourceId}-line-dashed`,
-          "line-dasharray",
-          dashArraySequence[step],
-        )
+        map.setPaintProperty(trailId, "line-dasharray", dashArraySequence[step])
         step = newStep
       }
 
@@ -456,11 +536,43 @@
     animate(0)
   }
 
-  function toggleAntLines(isTrailing) {
+  function toggleAntLines() {
+    console.log("Toggle ant lines mode:", $antLineConfigStore)
+    console.log("Latest trails:", latestTrails)
     Object.keys(trailData).forEach((sourceId) => {
-      const layerIdLineDashed = `${sourceId}-line-dashed`
-      const visibility = isTrailing ? "visible" : "none"
-      map.setLayoutProperty(layerIdLineDashed, "visibility", visibility)
+      const isUserTrail = sourceId.startsWith("user-")
+      const vehicleId = sourceId.split("-")[1]
+      const isLatestTrail = latestTrails[vehicleId]?.sourceId === sourceId
+      console.log(`Vehicle ${vehicleId}: isLatestTrail = ${isLatestTrail}`)
+      const isUserLatestTrail = isUserTrail && isLatestTrail
+
+      const shouldShowAntLines =
+        $antLineConfigStore.allTrails ||
+        ($antLineConfigStore.latestTrail && isLatestTrail) ||
+        ($antLineConfigStore.userLatestTrail && isUserLatestTrail)
+
+      console.log(`Should show ant lines for ${sourceId}:`, shouldShowAntLines)
+
+      const visibility = shouldShowAntLines ? "visible" : "none"
+
+      // Set the visibility on the individual trail layer
+      if (latestTrails[vehicleId]) {
+        const trailId = latestTrails[vehicleId].trailId
+        console.log(`Setting visibility for ${trailId}:`, visibility)
+        map.setLayoutProperty(trailId, "visibility", visibility)
+
+        // Start the animation if the trail is visible
+        if (visibility === "visible") {
+          animateDashArray(trailId)
+        }
+      }
+
+      // Check the visibility of all trail layers
+      trailData[sourceId].features.forEach((feature, index) => {
+        const layerId = `${sourceId}-trail-${index}`
+        const layerVisibility = map.getLayoutProperty(layerId, "visibility")
+        console.log(`Visibility of ${layerId}:`, layerVisibility)
+      })
     })
   }
 </script>
