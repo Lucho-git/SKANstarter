@@ -472,7 +472,7 @@
             source: trailSourceId,
             id: `${sourceId}-trail-${index}`,
             layout: {
-              visibility: "none",
+              visibility: "visible",
             },
             paint: {
               "line-color": vehicle.vehicle_marker.color,
