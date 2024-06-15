@@ -186,7 +186,7 @@
           visibility: "none",
         },
         paint: {
-          "line-color": "yellow",
+          "line-color": vehicle.vehicle_marker.color,
           "line-width": 6,
           "line-dasharray": [0, 4, 3],
         },
@@ -428,7 +428,7 @@
               visibility: "none",
             },
             paint: {
-              "line-color": "yellow",
+              "line-color": vehicle.vehicle_marker.color,
               "line-width": 6,
               "line-dasharray": [0, 4, 3],
             },
@@ -475,12 +475,13 @@
               visibility: "none",
             },
             paint: {
-              "line-color": "yellow",
+              "line-color": vehicle.vehicle_marker.color,
               "line-width": 6,
               "line-dasharray": [0, 4, 3],
             },
           })
           console.log("Trail source created and data set")
+          animateDashArray(trailSourceId)
         }
       })
     }
