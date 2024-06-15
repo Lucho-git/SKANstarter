@@ -411,6 +411,7 @@
       trailData[sourceId].features.forEach((feature, index) => {
         const trailId = `${sourceId}-trail-${index}`
         const trailSourceId = `${sourceId}-trail-${index}-line`
+        console.log("Creating trail source and layer for", trailId)
         if (!map.getSource(trailSourceId)) {
           map.addSource(trailSourceId, {
             type: "geojson",
@@ -433,6 +434,7 @@
             },
           })
         } else {
+          console.log("Trail source already exists, updating data for", trailId)
           map.getSource(trailSourceId).setData({
             type: "FeatureCollection",
             features: [feature],
@@ -442,14 +444,44 @@
     } else {
       console.log("Line source exists, updating data")
       map.getSource(sourceIdLine).setData(trailData[sourceId])
-
+      console.log("Source", trailData[sourceId])
       // Update the data for each trail source
       trailData[sourceId].features.forEach((feature, index) => {
         const trailSourceId = `${sourceId}-trail-${index}-line`
-        map.getSource(trailSourceId).setData({
-          type: "FeatureCollection",
-          features: [feature],
-        })
+        console.log("Updating trail source data for", trailSourceId)
+
+        if (map.getSource(trailSourceId)) {
+          // If the trail source exists, update its data
+          map.getSource(trailSourceId).setData({
+            type: "FeatureCollection",
+            features: [feature],
+          })
+          console.log("Trail source data updated")
+        } else {
+          // If the trail source doesn't exist, create it and set its data
+          console.log("Trail source doesn't exist, creating it")
+          map.addSource(trailSourceId, {
+            type: "geojson",
+            data: {
+              type: "FeatureCollection",
+              features: [feature],
+            },
+          })
+          map.addLayer({
+            type: "line",
+            source: trailSourceId,
+            id: `${sourceId}-trail-${index}`,
+            layout: {
+              visibility: "none",
+            },
+            paint: {
+              "line-color": "yellow",
+              "line-width": 6,
+              "line-dasharray": [0, 4, 3],
+            },
+          })
+          console.log("Trail source created and data set")
+        }
       })
     }
 

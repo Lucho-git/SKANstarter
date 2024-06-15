@@ -118,11 +118,11 @@
 
     <VehicleTracker {map} />
 
-    // Wait for veihicle data to be loaded before loading the trail data
+    <!-- // Wait for veihicle data to be loaded before loading the trail data -->
     {#if $vehicleDataLoaded}
       <TrailStateSynchronizer db={dbInstance} />
     {/if}
-    // Wait for the trail data to be loaded before loading the trail tracker
+    <!-- // Wait for the trail data to be loaded before loading the trail tracker -->
     {#if $trailDataLoaded}
       <TrailTracker {map} />
     {/if}
