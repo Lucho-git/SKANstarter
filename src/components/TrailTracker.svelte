@@ -539,35 +539,64 @@
   function toggleAntLines() {
     console.log("Toggle ant lines mode:", $antLineConfigStore)
     console.log("Latest trails:", latestTrails)
-    Object.keys(trailData).forEach((sourceId) => {
-      const isUserTrail = sourceId.startsWith("user-")
-      const vehicleId = sourceId.split("-")[1]
-      const isLatestTrail = latestTrails[vehicleId]?.sourceId === sourceId
-      console.log(`Vehicle ${vehicleId}: isLatestTrail = ${isLatestTrail}`)
-      const isUserLatestTrail = isUserTrail && isLatestTrail
 
-      const shouldShowAntLines =
-        $antLineConfigStore.allTrails ||
-        ($antLineConfigStore.latestTrail && isLatestTrail) ||
-        ($antLineConfigStore.userLatestTrail && isUserLatestTrail)
-
-      console.log(`Should show ant lines for ${sourceId}:`, shouldShowAntLines)
-
-      const visibility = shouldShowAntLines ? "visible" : "none"
-
-      // Set the visibility on the individual trail layer
-      if (latestTrails[vehicleId]) {
-        const trailId = latestTrails[vehicleId].trailId
-        console.log(`Setting visibility for ${trailId}:`, visibility)
-        map.setLayoutProperty(trailId, "visibility", visibility)
-
-        // Start the animation if the trail is visible
-        if (visibility === "visible") {
+    // Set visibility based on the selected option
+    if ($antLineConfigStore.allTrails) {
+      // Set all trails for all users to visible
+      Object.keys(trailData).forEach((sourceId) => {
+        trailData[sourceId].features.forEach((feature, index) => {
+          const trailId = `${sourceId}-trail-${index}`
+          map.setLayoutProperty(trailId, "visibility", "visible")
           animateDashArray(trailId)
-        }
-      }
+        })
+      })
+    } else if ($antLineConfigStore.noTrails) {
+      // Set all trails for all users to none
+      Object.keys(trailData).forEach((sourceId) => {
+        trailData[sourceId].features.forEach((feature, index) => {
+          const trailId = `${sourceId}-trail-${index}`
+          map.setLayoutProperty(trailId, "visibility", "none")
+        })
+      })
+    } else if ($antLineConfigStore.latestTrail) {
+      // Set latest trails to visible and the rest to none
+      Object.keys(trailData).forEach((sourceId) => {
+        const vehicleId = sourceId.split("-")[1]
+        const latestTrailId = latestTrails[vehicleId]?.trailId
 
-      // Check the visibility of all trail layers
+        trailData[sourceId].features.forEach((feature, index) => {
+          const trailId = `${sourceId}-trail-${index}`
+          const isLatestTrail = trailId === latestTrailId
+          const visibility = isLatestTrail ? "visible" : "none"
+          map.setLayoutProperty(trailId, "visibility", visibility)
+
+          if (isLatestTrail) {
+            animateDashArray(trailId)
+          }
+        })
+      })
+    } else if ($antLineConfigStore.userLatestTrail) {
+      // Set user's latest trail to visible and the rest to none
+      Object.keys(trailData).forEach((sourceId) => {
+        const vehicleId = sourceId.split("-")[1]
+        const latestTrailId = latestTrails[vehicleId]?.trailId
+        const isUserTrail = sourceId.startsWith("user-")
+
+        trailData[sourceId].features.forEach((feature, index) => {
+          const trailId = `${sourceId}-trail-${index}`
+          const isLatestTrail = trailId === latestTrailId
+          const visibility = isUserTrail && isLatestTrail ? "visible" : "none"
+          map.setLayoutProperty(trailId, "visibility", visibility)
+
+          if (isUserTrail && isLatestTrail) {
+            animateDashArray(trailId)
+          }
+        })
+      })
+    }
+
+    // Check the visibility of all trail layers
+    Object.keys(trailData).forEach((sourceId) => {
       trailData[sourceId].features.forEach((feature, index) => {
         const layerId = `${sourceId}-trail-${index}`
         const layerVisibility = map.getLayoutProperty(layerId, "visibility")
