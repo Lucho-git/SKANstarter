@@ -37,27 +37,16 @@
       opacity: 0.8,
       dashArray: [0, 4, 3],
     },
+    circle: {
+      radius: 2,
+      opacity: 0.8,
+    },
   }
 
   onMount(() => {
     console.log("Mounting TrailTracker")
 
-    console.log("Loading User Trail:", $userTrailStore)
-    Object.entries($userTrailStore).forEach(([vehicleId, trail]) => {
-      updateTrailLine(trail, $userVehicleStore, `user-${vehicleId}`)
-    })
-
-    console.log("Loading Other Trail:", $otherTrailStore)
-    Object.entries($otherTrailStore).forEach(([vehicleId, trail]) => {
-      const vehicle = $otherVehiclesStore.find(
-        (v) => v.vehicle_id === vehicleId,
-      )
-      if (vehicle) {
-        updateTrailLine(trail, vehicle, `other-${vehicleId}`)
-      } else {
-        console.warn(`Vehicle not found for trail data: ${vehicleId}`)
-      }
-    })
+    loadTrailData()
 
     newUserTrailUnsubscribe = newUserTrail.subscribe((newTrail) => {
       if (Object.keys(newTrail).length > 0) {
@@ -84,12 +73,18 @@
       }
     })
     antLineConfigUnsubscribe = antLineConfigStore.subscribe(toggleAntLines)
+
+    // Listen to the 'style.load' event
+    map.on("style.load", loadTrailData)
   })
 
   onDestroy(() => {
     if (antLineConfigUnsubscribe) {
       antLineConfigUnsubscribe()
     }
+
+    map.off("style.load", recreateTrailData)
+
     console.log("Destroying TrailTracker")
   })
 
@@ -102,6 +97,28 @@
     } else {
       map.getSource(sourceId).setData(data)
     }
+  }
+
+  function loadTrailData() {
+    trailData = {}
+    latestTrails = {}
+
+    console.log("Loading User Trail:", $userTrailStore)
+    Object.entries($userTrailStore).forEach(([vehicleId, trail]) => {
+      updateTrailLine(trail, $userVehicleStore, `user-${vehicleId}`)
+    })
+
+    console.log("Loading Other Trail:", $otherTrailStore)
+    Object.entries($otherTrailStore).forEach(([vehicleId, trail]) => {
+      const vehicle = $otherVehiclesStore.find(
+        (v) => v.vehicle_id === vehicleId,
+      )
+      if (vehicle) {
+        updateTrailLine(trail, vehicle, `other-${vehicleId}`)
+      } else {
+        console.warn(`Vehicle not found for trail data: ${vehicleId}`)
+      }
+    })
   }
 
   function createTrailLayer(
@@ -149,6 +166,27 @@
           properties: {},
         }))
       }),
+    }
+  }
+
+  function createCircleSource(sourceId, features, vehicle) {
+    const sourceIdCircles = `${sourceId}-circles`
+
+    const circleData = generateCircleData(features)
+
+    createTrailSource(sourceIdCircles, circleData)
+
+    if (!map.getLayer(`${sourceId}-circles`)) {
+      map.addLayer({
+        id: `${sourceId}-circles`,
+        type: "circle",
+        source: sourceIdCircles,
+        paint: {
+          "circle-color": vehicle.vehicle_marker.color,
+          "circle-radius": trailConfig.circle.radius,
+          "circle-opacity": trailConfig.circle.opacity,
+        },
+      })
     }
   }
 
@@ -301,27 +339,8 @@
       }
     })
 
-    // Check if the circle source exists, and create it if it doesn't
-    if (!map.getSource(sourceIdCircles)) {
-      createTrailSource(sourceIdCircles, {
-        type: "FeatureCollection",
-        features: [],
-      })
-
-      map.addLayer({
-        id: `${sourceId}-circles`,
-        type: "circle",
-        source: sourceIdCircles,
-        paint: {
-          "circle-color": vehicle.vehicle_marker.color,
-          "circle-radius": 2,
-          "circle-opacity": 0.8,
-        },
-      })
-    }
-
-    const circleData = generateCircleData(trailData[sourceId].features)
-    createTrailSource(sourceIdCircles, circleData)
+    // Create or update the circle source
+    createCircleSource(sourceId, trailData[sourceId].features, vehicle)
   }
 
   function animateDashArray(trailId) {
@@ -345,7 +364,7 @@
     let step = 0
 
     function animate(timestamp) {
-      const newStep = parseInt((timestamp / 50) % dashArraySequence.length)
+      const newStep = parseInt((timestamp / 60) % dashArraySequence.length)
 
       if (newStep !== step) {
         map.setPaintProperty(trailId, "line-dasharray", dashArraySequence[step])

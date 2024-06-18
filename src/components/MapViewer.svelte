@@ -26,12 +26,13 @@
   const DEFAULT_SATELLITE_STYLE = "mapbox://styles/mapbox/satellite-streets-v12"
   const DEFAULT_OUTDOORS_STYLE = "mapbox://styles/mapbox/outdoors-v12"
 
+  let isSatelliteStyle = true
+  let currentMapStyle = DEFAULT_SATELLITE_STYLE
+
   let mapContainer
   let map
 
-  let isSatelliteStyle = true
   let mapControls
-
   let mapInitialized = false
 
   setContext("map", {
@@ -93,10 +94,11 @@
 
   function toggleMapStyle() {
     if (isSatelliteStyle) {
-      map.setStyle(DEFAULT_OUTDOORS_STYLE)
+      currentMapStyle = DEFAULT_OUTDOORS_STYLE
     } else {
-      map.setStyle(DEFAULT_SATELLITE_STYLE)
+      currentMapStyle = DEFAULT_SATELLITE_STYLE
     }
+    map.setStyle(currentMapStyle)
     isSatelliteStyle = !isSatelliteStyle
   }
 </script>
@@ -123,7 +125,9 @@
     {/if}
     <!-- // Wait for the trail data to be loaded before loading the trail tracker -->
     {#if $trailDataLoaded}
-      <TrailTracker {map} />
+      {#key currentMapStyle}
+        <TrailTracker {map} />
+      {/key}
     {/if}
   {/if}
 </div>
