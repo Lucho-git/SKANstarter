@@ -27,6 +27,20 @@
   let animationEnabled = {}
   let latestTrails = {}
 
+  // Configuration object for trail properties
+  const trailConfig = {
+    solidLine: {
+      width: 30,
+      opacity: 0.4,
+      dashArray: [1],
+    },
+    dashedLine: {
+      width: 6,
+      opacity: 0.8,
+      dashArray: [0, 4, 3],
+    },
+  }
+
   onMount(() => {
     console.log("Mounting TrailTracker")
 
@@ -63,7 +77,7 @@
             (v) => v.vehicle_id === vehicleId,
           )
           if (vehicle) {
-            // updateTrailLine(trail, vehicle, `other-${vehicleId}`)
+            updateTrailLine(trail, vehicle, `other-${vehicleId}`)
           } else {
             console.warn(`Vehicle not found for trail data: ${vehicleId}`)
           }
@@ -132,31 +146,40 @@
     }
   }
 
-  function loadTrailLines(trail, vehicle, sourceId) {
-    if (!trail || !Array.isArray(trail)) {
-      console.warn(`Trail data for ${sourceId} is not an array`)
-      return
+  // Function to generate circle data from trail features
+  function generateCircleData(features) {
+    return {
+      type: "FeatureCollection",
+      features: features.flatMap((feature) => {
+        return feature.geometry.coordinates.map((coordinate) => ({
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: coordinate,
+          },
+          properties: {},
+        }))
+      }),
     }
+  }
 
-    const coordinates = trail.map((point) =>
-      point.coordinates.slice(1, -1).split(",").map(parseFloat),
-    )
-
+  // Function to process trail coordinates and generate features
+  function processTrailCoordinates(coordinates, maxDistance, maxTimeDiff) {
     const features = []
     let currentLine = []
 
-    const maxDistance = 1 // Maximum distance in x units unsure between points
-    const maxTimeDiff = 60 * 60 * 1000 // Maximum time difference in milliseconds (1 hour)
-
     for (let i = 0; i < coordinates.length; i++) {
-      const currentPoint = coordinates[i]
-      const currentTimestamp = trail[i].timestamp
+      const currentPoint = coordinates[i].coordinates
+        .slice(1, -1)
+        .split(",")
+        .map(parseFloat)
+      const currentTimestamp = coordinates[i].timestamp
 
       if (currentLine.length === 0) {
         currentLine.push(currentPoint)
       } else {
         const prevPoint = currentLine[currentLine.length - 1]
-        const prevTimestamp = trail[i - 1].timestamp
+        const prevTimestamp = coordinates[i - 1].timestamp
 
         const distance = turf.distance(
           turf.point(prevPoint),
@@ -191,14 +214,21 @@
       }
 
       features.push(feature)
-
-      // Update the latest trail information
-      const vehicleId = sourceId.split("-")[1]
-      latestTrails[vehicleId] = {
-        sourceId: sourceId,
-        feature: feature,
-      }
     }
+
+    return features
+  }
+
+  function loadTrailLines(trail, vehicle, sourceId) {
+    if (!trail || !Array.isArray(trail)) {
+      console.warn(`Trail data for ${sourceId} is not an array`)
+      return
+    }
+
+    const maxDistance = 1
+    const maxTimeDiff = 60 * 60 * 1000
+
+    const features = processTrailCoordinates(trail, maxDistance, maxTimeDiff)
 
     const geojson = {
       type: "FeatureCollection",
@@ -210,20 +240,17 @@
     // Store the trail data in the trailData object
     trailData[sourceId] = geojson
 
-    // Create and add the trailLines and sources
-
     const sourceIdLine = `${sourceId}-line`
     const layerIdLineBackground = `${sourceId}-line-background`
-
-    // Create the Solid Line
 
     createTrailSource(sourceIdLine, geojson)
     createTrailLayer(
       sourceIdLine,
       layerIdLineBackground,
       vehicle.vehicle_marker.color,
-      30,
-      0.4,
+      trailConfig.solidLine.width,
+      trailConfig.solidLine.opacity,
+      trailConfig.solidLine.dashArray,
     )
 
     features.forEach((feature, index) => {
@@ -239,9 +266,9 @@
         trailSourceId,
         trailId,
         vehicle.vehicle_marker.color,
-        6,
-        0.8,
-        [0, 4, 3],
+        trailConfig.dashedLine.width,
+        trailConfig.dashedLine.opacity,
+        trailConfig.dashedLine.dashArray,
       )
 
       // Update the latest trail information
@@ -256,20 +283,10 @@
 
     // Add circles for each coordinate point
     const sourceIdCircles = `${sourceId}-circles`
-    const geojsonCircles = {
-      type: "FeatureCollection",
-      features: coordinates.map((coordinate) => ({
-        type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: coordinate,
-        },
-        properties: {},
-      })),
-    }
+    const circleData = generateCircleData(features)
 
     console.log("Creating circle source:", sourceIdCircles)
-    createTrailSource(sourceIdCircles, geojsonCircles)
+    createTrailSource(sourceIdCircles, circleData)
 
     console.log("Adding circle layer:", `${sourceId}-circles`)
     map.addLayer({
@@ -284,97 +301,15 @@
     })
   }
 
+  //UPDATE TRAIL LINE
   function updateTrailLine(trail, vehicle, sourceId) {
     console.log("Updating trail line", trail, vehicle, sourceId)
 
     // Retrieve the existing trail data from trailData
     const existingTrail = trailData[sourceId]
 
-    const coordinates = trail.map((point) =>
-      point.coordinates.slice(1, -1).split(",").map(parseFloat),
-    )
-
-    console.log("New coordinates to add:", coordinates)
-    console.log("existingTrail", existingTrail)
-
-    const features = []
-    let currentLine = []
-
     const maxDistance = 1
     const maxTimeDiff = 60 * 60 * 1000
-
-    // Process the new coordinates
-    coordinates.forEach((currentPoint, i) => {
-      const currentTimestamp = trail[i].timestamp
-
-      if (existingTrail && existingTrail.features.length > 0) {
-        console.log("Comparing against last datapoint of existing trail")
-        // Get the last data point of the existing trail
-        const lastFeature =
-          existingTrail.features[existingTrail.features.length - 1]
-        const lastCoordinate =
-          lastFeature.geometry.coordinates[
-            lastFeature.geometry.coordinates.length - 1
-          ]
-
-        const distance = turf.distance(
-          turf.point(lastCoordinate),
-          turf.point(currentPoint),
-        )
-
-        console.log("Distance:", distance, "maxDistance:", maxDistance)
-        const timeDiff = currentTimestamp - lastFeature.properties.timestamp
-        console.log("Time diff:", timeDiff, "maxTimeDiff:", maxTimeDiff)
-        if (distance <= maxDistance && timeDiff <= maxTimeDiff) {
-          // Append the new data point to the existing trail
-          console.log("Appending to existing trail")
-          lastFeature.geometry.coordinates.push(currentPoint)
-          lastFeature.properties.timestamp = currentTimestamp
-        } else {
-          const feature = {
-            type: "Feature",
-            geometry: {
-              type: "LineString",
-              coordinates: [currentPoint],
-            },
-            properties: {
-              timestamp: currentTimestamp,
-            },
-          }
-
-          features.push(feature)
-
-          // Update the latest trail information
-          const vehicleId = sourceId.split("-")[1]
-          latestTrails[vehicleId] = {
-            sourceId: sourceId,
-            feature: feature,
-          }
-        }
-      } else {
-        const feature = {
-          type: "Feature",
-          geometry: {
-            type: "LineString",
-            coordinates: [currentPoint],
-          },
-          properties: {
-            timestamp: currentTimestamp,
-          },
-        }
-
-        features.push(feature)
-
-        // Update the latest trail information
-        const vehicleId = sourceId.split("-")[1]
-        latestTrails[vehicleId] = {
-          sourceId: sourceId,
-          feature: feature,
-        }
-      }
-    })
-
-    console.log("Processed features:", features)
 
     if (existingTrail) {
       console.log("Existing trail found")
@@ -383,8 +318,52 @@
         existingTrail.features.length,
       )
 
-      // If there is an existing trail, append the new features to it
-      existingTrail.features.push(...features)
+      // Get the last feature of the existing trail
+      const lastFeature =
+        existingTrail.features[existingTrail.features.length - 1]
+      const lastCoordinate =
+        lastFeature.geometry.coordinates[
+          lastFeature.geometry.coordinates.length - 1
+        ]
+
+      // Compare the last coordinate of the existing trail with the new coordinate
+      const newCoordinate = trail[0].coordinates
+        .slice(1, -1)
+        .split(",")
+        .map(parseFloat)
+      const distance = turf.distance(
+        turf.point(lastCoordinate),
+        turf.point(newCoordinate),
+      )
+      const timeDiff = trail[0].timestamp - lastFeature.properties.timestamp
+
+      console.log(
+        "Distance between last coordinate and new coordinate:",
+        distance,
+      )
+      console.log(
+        "Time difference between last coordinate and new coordinate:",
+        timeDiff,
+      )
+
+      if (distance <= maxDistance && timeDiff <= maxTimeDiff) {
+        console.log("Appending new coordinate to the last feature")
+        lastFeature.geometry.coordinates.push(newCoordinate)
+        lastFeature.properties.timestamp = trail[0].timestamp
+      } else {
+        console.log("Creating a new feature for the new coordinate")
+        const newFeature = {
+          type: "Feature",
+          geometry: {
+            type: "LineString",
+            coordinates: [newCoordinate],
+          },
+          properties: {
+            timestamp: trail[0].timestamp,
+          },
+        }
+        existingTrail.features.push(newFeature)
+      }
 
       console.log(
         "Updated trail features length:",
@@ -393,13 +372,25 @@
     } else {
       console.log("No existing trail found")
 
-      // If there is no existing trail, create a new one with the new features
+      // If there is no existing trail, create a new one with the new coordinate
+      const newFeature = {
+        type: "Feature",
+        geometry: {
+          type: "LineString",
+          coordinates: [
+            trail[0].coordinates.slice(1, -1).split(",").map(parseFloat),
+          ],
+        },
+        properties: {
+          timestamp: trail[0].timestamp,
+        },
+      }
       trailData[sourceId] = {
         type: "FeatureCollection",
-        features: features,
+        features: [newFeature],
       }
 
-      console.log("New trail created with features length:", features.length)
+      console.log("New trail created with features length:", 1)
     }
 
     // Update the trail on the map
@@ -421,12 +412,19 @@
         trailSourceId,
         trailId,
         vehicle.vehicle_marker.color,
-        6,
-        0.8,
-        [0, 4, 3],
+        trailConfig.dashedLine.width,
+        trailConfig.dashedLine.opacity,
+        trailConfig.dashedLine.dashArray,
       )
 
       animateDashArray(trailId)
+
+      // Update the latest trail information
+      const vehicleId = sourceId.split("-")[1]
+      latestTrails[vehicleId] = {
+        sourceId: sourceId,
+        trailId: trailId,
+      }
     })
 
     // Check if the circle source exists, and create it if it doesn't
@@ -454,19 +452,7 @@
 
     console.log("Setting trail data:", trailData[sourceId])
 
-    const circleData = {
-      type: "FeatureCollection",
-      features: trailData[sourceId].features.flatMap((feature) => {
-        return feature.geometry.coordinates.map((coordinate) => ({
-          type: "Feature",
-          geometry: {
-            type: "Point",
-            coordinates: coordinate,
-          },
-          properties: {},
-        }))
-      }),
-    }
+    const circleData = generateCircleData(trailData[sourceId].features)
 
     console.log("Setting circle data:", circleData)
 
