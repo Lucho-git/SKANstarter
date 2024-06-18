@@ -46,7 +46,7 @@
 
     console.log("Loading User Trail:", $userTrailStore)
     Object.entries($userTrailStore).forEach(([vehicleId, trail]) => {
-      loadTrailLines(trail, $userVehicleStore, `user-${vehicleId}`)
+      updateTrailLine(trail, $userVehicleStore, `user-${vehicleId}`)
     })
 
     console.log("Loading Other Trail:", $otherTrailStore)
@@ -55,7 +55,7 @@
         (v) => v.vehicle_id === vehicleId,
       )
       if (vehicle) {
-        loadTrailLines(trail, vehicle, `other-${vehicleId}`)
+        updateTrailLine(trail, vehicle, `other-${vehicleId}`)
       } else {
         console.warn(`Vehicle not found for trail data: ${vehicleId}`)
       }
@@ -220,94 +220,6 @@
     }
 
     return features
-  }
-
-  function loadTrailLines(trail, vehicle, sourceId) {
-    if (!trail || !Array.isArray(trail)) {
-      console.warn(`Trail data for ${sourceId} is not an array`)
-      return
-    }
-
-    const maxDistance = 1
-    const maxTimeDiff = 60 * 60 * 1000
-
-    const features = processTrailCoordinates(trail, maxDistance, maxTimeDiff)
-
-    const geojson = {
-      type: "FeatureCollection",
-      features: features,
-    }
-
-    console.log("Trail GeoJSON:", geojson)
-
-    // Store the trail data in the trailData object
-    trailData[sourceId] = geojson
-
-    const sourceIdLine = `${sourceId}-line`
-    const layerIdLineBackground = `${sourceId}-line-background`
-
-    createTrailSource(sourceIdLine, geojson)
-    createTrailLayer(
-      sourceIdLine,
-      layerIdLineBackground,
-      vehicle.vehicle_marker.color,
-      trailConfig.solidLine.width,
-      trailConfig.solidLine.opacity,
-      trailConfig.solidLine.dashArray,
-    )
-
-    features.forEach((feature, index) => {
-      const trailId = `${sourceId}-trail-${index}`
-      const trailSourceId = `${sourceId}-trail-${index}-line`
-
-      createTrailSource(trailSourceId, {
-        type: "FeatureCollection",
-        features: [feature],
-      })
-
-      createTrailLayer(
-        trailSourceId,
-        trailId,
-        vehicle.vehicle_marker.color,
-        trailConfig.dashedLine.width,
-        trailConfig.dashedLine.opacity,
-        trailConfig.dashedLine.dashArray,
-      )
-
-      // Update the latest trail information
-      const vehicleId = sourceId.split("-")[1]
-      if (index === features.length - 1) {
-        latestTrails[vehicleId] = {
-          sourceId: sourceId,
-          trailId: trailId,
-        }
-      }
-
-      console.log(
-        "Feature properties in loadTrailLines:",
-        feature.properties,
-        sourceId,
-      )
-    })
-
-    // Add circles for each coordinate point
-    const sourceIdCircles = `${sourceId}-circles`
-    const circleData = generateCircleData(features)
-
-    console.log("Creating circle source:", sourceIdCircles)
-    createTrailSource(sourceIdCircles, circleData)
-
-    console.log("Adding circle layer:", `${sourceId}-circles`)
-    map.addLayer({
-      id: `${sourceId}-circles`,
-      type: "circle",
-      source: sourceIdCircles,
-      paint: {
-        "circle-color": vehicle.vehicle_marker.color,
-        "circle-radius": 2,
-        "circle-opacity": 0.8,
-      },
-    })
   }
 
   //UPDATE TRAIL LINE
