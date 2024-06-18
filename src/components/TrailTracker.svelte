@@ -15,7 +15,6 @@
 
   import mapboxgl from "mapbox-gl"
   import * as turf from "@turf/turf"
-  import { toast } from "@zerodevx/svelte-toast"
 
   export let map
 
@@ -24,7 +23,6 @@
   let antLineConfigUnsubscribe
 
   let trailData = {}
-  let animationEnabled = {}
   let latestTrails = {}
 
   // Configuration object for trail properties
@@ -96,17 +94,12 @@
   })
 
   function createTrailSource(sourceId, data) {
-    console.log("Creating trail source:", sourceId)
-    console.log("Source data:", data)
-
     if (!map.getSource(sourceId)) {
-      console.log("Adding source to the map:", sourceId)
       map.addSource(sourceId, {
         type: "geojson",
         data: data,
       })
     } else {
-      console.log("Updating source data:", sourceId)
       map.getSource(sourceId).setData(data)
     }
   }
@@ -119,10 +112,7 @@
     opacity,
     dashArray = [1],
   ) {
-    console.log("Creating trail layer:", layerId)
-
     if (!map.getLayer(layerId)) {
-      console.log("Adding layer to the map:", layerId)
       map.addLayer({
         type: "line",
         source: sourceId,
@@ -138,7 +128,6 @@
         },
       })
     } else {
-      console.log("Layer already exists on the map:", layerId)
       map.setPaintProperty(layerId, "line-color", color)
       map.setPaintProperty(layerId, "line-width", width)
       map.setPaintProperty(layerId, "line-opacity", opacity)
@@ -222,10 +211,7 @@
     return features
   }
 
-  //UPDATE TRAIL LINE
   function updateTrailLine(trail, vehicle, sourceId) {
-    console.log("Updating trail line", trail, vehicle, sourceId)
-
     // Retrieve the existing trail data from trailData
     const existingTrail = trailData[sourceId]
 
@@ -233,12 +219,6 @@
     const maxTimeDiff = 60 * 60 * 1000
 
     if (existingTrail) {
-      console.log("Existing trail found")
-      console.log(
-        "Existing trail features length:",
-        existingTrail.features.length,
-      )
-
       // Combine the existing trail data with the new trail data
       const combinedTrail = [
         ...existingTrail.features.flatMap((feature) =>
@@ -257,18 +237,9 @@
         maxTimeDiff,
       )
 
-      console.log("Processed new features:", newFeatures)
-
       // Update the existing trail with the new features
       trailData[sourceId].features = newFeatures
-
-      console.log(
-        "Updated trail features length:",
-        trailData[sourceId].features.length,
-      )
     } else {
-      console.log("No existing trail found")
-
       // If there is no existing trail, create a new one with the new trail data
       const newFeatures = processTrailCoordinates(
         trail,
@@ -280,8 +251,6 @@
         type: "FeatureCollection",
         features: newFeatures,
       }
-
-      console.log("New trail created with features length:", newFeatures.length)
 
       // Create the solid line for the new trail
       const sourceIdLine = `${sourceId}-line`
@@ -297,6 +266,7 @@
         trailConfig.solidLine.dashArray,
       )
     }
+
     // Update the trail on the map
     const sourceIdLine = `${sourceId}-line`
     const sourceIdCircles = `${sourceId}-circles`
@@ -333,8 +303,6 @@
 
     // Check if the circle source exists, and create it if it doesn't
     if (!map.getSource(sourceIdCircles)) {
-      console.log("Circle source does not exist, creating it")
-
       createTrailSource(sourceIdCircles, {
         type: "FeatureCollection",
         features: [],
@@ -350,18 +318,12 @@
           "circle-opacity": 0.8,
         },
       })
-    } else {
-      console.log("Circle source exists, updating data")
     }
 
-    console.log("Setting trail data:", trailData[sourceId])
-
     const circleData = generateCircleData(trailData[sourceId].features)
-
-    console.log("Setting circle data:", circleData)
-
     createTrailSource(sourceIdCircles, circleData)
   }
+
   function animateDashArray(trailId) {
     const dashArraySequence = [
       [0, 4, 3],
