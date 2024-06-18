@@ -21,6 +21,7 @@
   export let db
   let userId
   let masterMapId
+  let channel
 
   let syncIntervalId = null
 
@@ -71,6 +72,34 @@
     } else {
       console.log("No unsynced data found on mount.")
     }
+
+    // Subscribe to real-time updates from the trail_data table
+    channel = supabase
+      .channel("trail_data_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "trail_data",
+          filter: `master_map_id=eq.${masterMapId}`,
+        },
+        (payload) => {
+          // Handle the real-time updates for other vehicles' trails
+          if (payload.new.vehicle_id !== userId) {
+            // Update was made by another vehicle
+            const { vehicle_id, coordinates, timestamp } = payload.new
+            newOtherTrail.update((trails) => {
+              if (!trails[vehicle_id]) {
+                trails[vehicle_id] = []
+              }
+              trails[vehicle_id].push({ coordinates, timestamp })
+              return trails
+            })
+          }
+        },
+      )
+      .subscribe()
   })
 
   onDestroy(() => {
@@ -82,6 +111,10 @@
     if (syncIntervalId) {
       console.log("Clearing sync interval on component destroy.")
       clearInterval(syncIntervalId)
+    }
+
+    if (channel) {
+      supabase.removeChannel(channel)
     }
   })
 

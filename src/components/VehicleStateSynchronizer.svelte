@@ -80,12 +80,7 @@
           (payload) => {
             if (payload.new.vehicle_id !== userId) {
               // Update was made by another vehicle
-              console.log("Received heading from server:", payload.new.heading)
 
-              console.log(
-                "Updated vehicle state from another vehicle:",
-                payload.new,
-              )
               // Update the serverOtherVehiclesData store with the received vehicle state
               serverOtherVehiclesData.update((vehicles) => {
                 const existingVehicleIndex = vehicles.findIndex(
@@ -145,6 +140,7 @@
 
     if (userVehicleError) {
       console.error("Error retrieving user vehicle data:", userVehicleError)
+
       return null
     }
 
@@ -191,42 +187,43 @@
         const headingChanged = serverItem.heading !== clientItem.heading
 
         if (vehicleMarkerChanged) {
-          console.log(
-            `Vehicle marker changed for vehicle: ${serverItem.vehicle_id}`,
-          )
+          console
+            .log
+            // `Vehicle marker changed for vehicle: ${serverItem.vehicle_id}`,
+            ()
           change.update_types.push("vehicle_marker_changed")
         }
         if (coordinatesChanged) {
-          console.log(`Position changed for vehicle: ${serverItem.vehicle_id}`)
+          //   console.log(`Position changed for vehicle: ${serverItem.vehicle_id}`)
           change.update_types.push("position_changed")
         }
         if (headingChanged) {
-          console.log(`Heading changed for vehicle: ${serverItem.vehicle_id}`)
+          //   console.log(`Heading changed for vehicle: ${serverItem.vehicle_id}`)
           change.update_types.push("heading_changed")
         }
 
         // Log specific differences
-        if (vehicleMarkerChanged) {
-          console.log(
-            `Difference in vehicle_marker for vehicle: ${serverItem.vehicle_id}`,
-          )
-          console.log(`Server value:`, serverItem.vehicle_marker)
-          console.log(`Client value:`, clientItem.vehicle_marker)
-        }
-        if (coordinatesChanged) {
-          console.log(
-            `Difference in coordinates for vehicle: ${serverItem.vehicle_id}`,
-          )
-          console.log(`Server value:`, serverItem.coordinates)
-          console.log(`Client value:`, clientItem.coordinates)
-        }
-        if (headingChanged) {
-          console.log(
-            `Difference in heading for vehicle: ${serverItem.vehicle_id}`,
-          )
-          console.log(`Server value:`, serverItem.heading)
-          console.log(`Client value:`, clientItem.heading)
-        }
+        // if (vehicleMarkerChanged) {
+        //   console.log(
+        //     `Difference in vehicle_marker for vehicle: ${serverItem.vehicle_id}`,
+        //   )
+        //   console.log(`Server value:`, serverItem.vehicle_marker)
+        //   console.log(`Client value:`, clientItem.vehicle_marker)
+        // }
+        // if (coordinatesChanged) {
+        //   console.log(
+        //     `Difference in coordinates for vehicle: ${serverItem.vehicle_id}`,
+        //   )
+        //   console.log(`Server value:`, serverItem.coordinates)
+        //   console.log(`Client value:`, clientItem.coordinates)
+        // }
+        // if (headingChanged) {
+        //   console.log(
+        //     `Difference in heading for vehicle: ${serverItem.vehicle_id}`,
+        //   )
+        //   console.log(`Server value:`, serverItem.heading)
+        //   console.log(`Client value:`, clientItem.heading)
+        // }
       }
 
       return change

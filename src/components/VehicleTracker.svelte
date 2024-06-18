@@ -74,7 +74,6 @@ We could group up an centralize more of the startup logic.
     // Subscribe to userVehicleStore updates
     userVehicleUnsubscribe = userVehicleStore.subscribe((value) => {
       userCoordinates = value.coordinates
-      console.log("UserVehicleStore updated", value)
       updateUserMarker(value.vehicle_marker)
     })
 
@@ -148,7 +147,6 @@ We could group up an centralize more of the startup logic.
           update_types.includes("position_changed") ||
           update_types.includes("heading_changed")
         ) {
-          console.log("Animating user marker")
           // Animate the marker to the new position and heading
           animateMarker(existingMarker, longitude, latitude, heading)
         }
@@ -182,13 +180,6 @@ We could group up an centralize more of the startup logic.
   }
 
   function animateMarker(marker, targetLng, targetLat, targetRotation) {
-    console.log(
-      "Animating marker",
-      marker,
-      targetLng,
-      targetLat,
-      targetRotation,
-    )
     const currentLngLat = marker.getLngLat()
     const currentRotation = marker.getRotation() // Rotation is already in degrees
 
@@ -261,10 +252,7 @@ We could group up an centralize more of the startup logic.
       rotationAlignment: "map",
     })
 
-    console.log("Created user marker", userMarker)
-
     if ($userVehicleStore.coordinates) {
-      console.log("Adding user marker to map at", $userVehicleStore.coordinates)
       const { latitude, longitude } = $userVehicleStore.coordinates
       userMarker.setLngLat([longitude, latitude]).addTo(map)
       // Update the previous vehicle marker

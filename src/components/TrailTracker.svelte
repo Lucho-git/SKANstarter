@@ -47,10 +47,7 @@
       }
     })
 
-    console.log(trailData)
-
     newUserTrailUnsubscribe = newUserTrail.subscribe((newTrail) => {
-      console.log("New User Trail:", Object.keys(newTrail).length)
       if (Object.keys(newTrail).length > 0) {
         Object.entries(newTrail).forEach(([vehicleId, trail]) => {
           updateTrailLine(trail, $userVehicleStore, `user-${vehicleId}`)
@@ -59,6 +56,21 @@
       }
     })
 
+    newOtherTrailUnsubscribe = newOtherTrail.subscribe((newTrail) => {
+      if (Object.keys(newTrail).length > 0) {
+        Object.entries(newTrail).forEach(([vehicleId, trail]) => {
+          const vehicle = $otherVehiclesStore.find(
+            (v) => v.vehicle_id === vehicleId,
+          )
+          if (vehicle) {
+            // updateTrailLine(trail, vehicle, `other-${vehicleId}`)
+          } else {
+            console.warn(`Vehicle not found for trail data: ${vehicleId}`)
+          }
+        })
+        newOtherTrail.set({}) // Clear the newOtherTrail store after processing
+      }
+    })
     antLineConfigUnsubscribe = antLineConfigStore.subscribe(toggleAntLines)
   })
 
@@ -68,6 +80,57 @@
     }
     console.log("Destroying TrailTracker")
   })
+
+  function createTrailSource(sourceId, data) {
+    console.log("Creating trail source:", sourceId)
+    console.log("Source data:", data)
+
+    if (!map.getSource(sourceId)) {
+      console.log("Adding source to the map:", sourceId)
+      map.addSource(sourceId, {
+        type: "geojson",
+        data: data,
+      })
+    } else {
+      console.log("Updating source data:", sourceId)
+      map.getSource(sourceId).setData(data)
+    }
+  }
+
+  function createTrailLayer(
+    sourceId,
+    layerId,
+    color,
+    width,
+    opacity,
+    dashArray = [1],
+  ) {
+    console.log("Creating trail layer:", layerId)
+
+    if (!map.getLayer(layerId)) {
+      console.log("Adding layer to the map:", layerId)
+      map.addLayer({
+        type: "line",
+        source: sourceId,
+        id: layerId,
+        layout: {
+          visibility: "visible",
+        },
+        paint: {
+          "line-color": color,
+          "line-width": width,
+          "line-opacity": opacity,
+          "line-dasharray": dashArray,
+        },
+      })
+    } else {
+      console.log("Layer already exists on the map:", layerId)
+      map.setPaintProperty(layerId, "line-color", color)
+      map.setPaintProperty(layerId, "line-width", width)
+      map.setPaintProperty(layerId, "line-opacity", opacity)
+      map.setPaintProperty(layerId, "line-dasharray", dashArray)
+    }
+  }
 
   function loadTrailLines(trail, vehicle, sourceId) {
     if (!trail || !Array.isArray(trail)) {
@@ -117,7 +180,7 @@
       }
     }
 
-    if (currentLine.length > 1) {
+    if (currentLine.length > 0) {
       const feature = {
         type: "Feature",
         geometry: {
@@ -142,70 +205,54 @@
       features: features,
     }
 
+    console.log("Trail GeoJSON:", geojson)
+
     // Store the trail data in the trailData object
     trailData[sourceId] = geojson
+
+    // Create and add the trailLines and sources
 
     const sourceIdLine = `${sourceId}-line`
     const layerIdLineBackground = `${sourceId}-line-background`
 
-    map.addSource(sourceIdLine, {
-      type: "geojson",
-      data: geojson,
-    })
+    // Create the Solid Line
 
-    console.log("COLOR", vehicle, vehicle.vehicle_marker.color)
-    // Add a line layer without line-dasharray defined to fill the gaps in the dashed line
-    map.addLayer({
-      type: "line",
-      source: sourceIdLine,
-      id: layerIdLineBackground,
-      paint: {
-        "line-color": vehicle.vehicle_marker.color,
-        "line-width": 30,
-        "line-opacity": 0.4,
-      },
-    })
+    createTrailSource(sourceIdLine, geojson)
+    createTrailLayer(
+      sourceIdLine,
+      layerIdLineBackground,
+      vehicle.vehicle_marker.color,
+      30,
+      0.4,
+    )
 
-    // Create a separate layer for each trail
     features.forEach((feature, index) => {
       const trailId = `${sourceId}-trail-${index}`
       const trailSourceId = `${sourceId}-trail-${index}-line`
-      console.log(`Creating trail layer for ${trailId}`)
-      map.addSource(trailSourceId, {
-        type: "geojson",
-        data: {
-          type: "FeatureCollection",
-          features: [feature],
-        },
+
+      createTrailSource(trailSourceId, {
+        type: "FeatureCollection",
+        features: [feature],
       })
-      map.addLayer({
-        type: "line",
-        source: trailSourceId,
-        id: trailId,
-        layout: {
-          visibility: "none",
-        },
-        paint: {
-          "line-color": vehicle.vehicle_marker.color,
-          "line-width": 6,
-          "line-dasharray": [0, 4, 3],
-        },
-      })
+
+      createTrailLayer(
+        trailSourceId,
+        trailId,
+        vehicle.vehicle_marker.color,
+        6,
+        0.8,
+        [0, 4, 3],
+      )
 
       // Update the latest trail information
       const vehicleId = sourceId.split("-")[1]
       if (index === features.length - 1) {
-        console.log(
-          `Updating latestTrails for vehicle ${vehicleId} with trailId ${trailId}`,
-        )
         latestTrails[vehicleId] = {
           sourceId: sourceId,
           trailId: trailId,
         }
       }
     })
-
-    // console.log(`Trail lines added for ${sourceId}`)
 
     // Add circles for each coordinate point
     const sourceIdCircles = `${sourceId}-circles`
@@ -221,11 +268,10 @@
       })),
     }
 
-    map.addSource(sourceIdCircles, {
-      type: "geojson",
-      data: geojsonCircles,
-    })
+    console.log("Creating circle source:", sourceIdCircles)
+    createTrailSource(sourceIdCircles, geojsonCircles)
 
+    console.log("Adding circle layer:", `${sourceId}-circles`)
     map.addLayer({
       id: `${sourceId}-circles`,
       type: "circle",
@@ -236,32 +282,6 @@
         "circle-opacity": 0.8,
       },
     })
-
-    // console.log(`Trail circles added for ${sourceId}`)
-
-    // Commented out marker code
-    // coordinates.forEach((coordinate, index) => {
-    //   const marker = new mapboxgl.Marker()
-    //     .setLngLat(coordinate)
-    //     .setPopup(new mapboxgl.Popup().setText(`Point ${index + 1}`))
-    //     .addTo(map)
-    // })
-
-    // Add markers at the beginning and end of the trail
-    // if (coordinates.length > 0) {
-    //   const startCoordinate = coordinates[0]
-    //   const endCoordinate = coordinates[coordinates.length - 1]
-
-    //   // Create a marker for the start coordinate
-    //   const startMarker = new mapboxgl.Marker({ color: "green" })
-    //     .setLngLat(startCoordinate)
-    //     .addTo(map)
-
-    //   // Create a marker for the end coordinate
-    //   const endMarker = new mapboxgl.Marker({ color: "red" })
-    //     .setLngLat(endCoordinate)
-    //     .addTo(map)
-    // }
   }
 
   function updateTrailLine(trail, vehicle, sourceId) {
@@ -386,116 +406,36 @@
     const sourceIdLine = `${sourceId}-line`
     const sourceIdCircles = `${sourceId}-circles`
 
-    // Check if the line source exists, and create it if it doesn't
-    if (!map.getSource(sourceIdLine)) {
-      console.log("Line source does not exist, creating it")
+    createTrailSource(sourceIdLine, trailData[sourceId])
 
-      map.addSource(sourceIdLine, {
-        type: "geojson",
-        data: trailData[sourceId],
-      })
-      console.log("COLOR", vehicle, vehicle.vehicle_marker.color)
+    trailData[sourceId].features.forEach((feature, index) => {
+      const trailSourceId = `${sourceId}-trail-${index}-line`
+      const trailId = `${sourceId}-trail-${index}`
 
-      map.addLayer({
-        type: "line",
-        source: sourceIdLine,
-        id: `${sourceId}-line-background`,
-        paint: {
-          "line-color": vehicle.vehicle_marker.color,
-          "line-width": 30,
-          "line-opacity": 0.4,
-        },
+      createTrailSource(trailSourceId, {
+        type: "FeatureCollection",
+        features: [feature],
       })
 
-      // Create a separate source and layer for each trail
-      trailData[sourceId].features.forEach((feature, index) => {
-        const trailId = `${sourceId}-trail-${index}`
-        const trailSourceId = `${sourceId}-trail-${index}-line`
-        console.log("Creating trail source and layer for", trailId)
-        if (!map.getSource(trailSourceId)) {
-          map.addSource(trailSourceId, {
-            type: "geojson",
-            data: {
-              type: "FeatureCollection",
-              features: [feature],
-            },
-          })
-          map.addLayer({
-            type: "line",
-            source: trailSourceId,
-            id: trailId,
-            layout: {
-              visibility: "none",
-            },
-            paint: {
-              "line-color": vehicle.vehicle_marker.color,
-              "line-width": 6,
-              "line-dasharray": [0, 4, 3],
-            },
-          })
-        } else {
-          console.log("Trail source already exists, updating data for", trailId)
-          map.getSource(trailSourceId).setData({
-            type: "FeatureCollection",
-            features: [feature],
-          })
-        }
-      })
-    } else {
-      console.log("Line source exists, updating data")
-      map.getSource(sourceIdLine).setData(trailData[sourceId])
-      console.log("Source", trailData[sourceId])
-      // Update the data for each trail source
-      trailData[sourceId].features.forEach((feature, index) => {
-        const trailSourceId = `${sourceId}-trail-${index}-line`
-        console.log("Updating trail source data for", trailSourceId)
+      createTrailLayer(
+        trailSourceId,
+        trailId,
+        vehicle.vehicle_marker.color,
+        6,
+        0.8,
+        [0, 4, 3],
+      )
 
-        if (map.getSource(trailSourceId)) {
-          // If the trail source exists, update its data
-          map.getSource(trailSourceId).setData({
-            type: "FeatureCollection",
-            features: [feature],
-          })
-          console.log("Trail source data updated")
-        } else {
-          // If the trail source doesn't exist, create it and set its data
-          console.log("Trail source doesn't exist, creating it")
-          map.addSource(trailSourceId, {
-            type: "geojson",
-            data: {
-              type: "FeatureCollection",
-              features: [feature],
-            },
-          })
-          map.addLayer({
-            type: "line",
-            source: trailSourceId,
-            id: `${sourceId}-trail-${index}`,
-            layout: {
-              visibility: "visible",
-            },
-            paint: {
-              "line-color": vehicle.vehicle_marker.color,
-              "line-width": 6,
-              "line-dasharray": [0, 4, 3],
-            },
-          })
-          console.log("Trail source created and data set")
-          animateDashArray(trailSourceId)
-        }
-      })
-    }
+      animateDashArray(trailId)
+    })
 
     // Check if the circle source exists, and create it if it doesn't
     if (!map.getSource(sourceIdCircles)) {
       console.log("Circle source does not exist, creating it")
 
-      map.addSource(sourceIdCircles, {
-        type: "geojson",
-        data: {
-          type: "FeatureCollection",
-          features: [],
-        },
+      createTrailSource(sourceIdCircles, {
+        type: "FeatureCollection",
+        features: [],
       })
 
       map.addLayer({
@@ -514,8 +454,6 @@
 
     console.log("Setting trail data:", trailData[sourceId])
 
-    map.getSource(sourceIdLine).setData(trailData[sourceId])
-
     const circleData = {
       type: "FeatureCollection",
       features: trailData[sourceId].features.flatMap((feature) => {
@@ -532,7 +470,7 @@
 
     console.log("Setting circle data:", circleData)
 
-    map.getSource(sourceIdCircles).setData(circleData)
+    createTrailSource(sourceIdCircles, circleData)
   }
 
   function animateDashArray(trailId) {
@@ -570,9 +508,6 @@
   }
 
   function toggleAntLines() {
-    console.log("Toggle ant lines mode:", $antLineConfigStore)
-    console.log("Latest trails:", latestTrails)
-
     // Set visibility based on the selected option
     if ($antLineConfigStore.allTrails) {
       // Set all trails for all users to visible
@@ -633,7 +568,6 @@
       trailData[sourceId].features.forEach((feature, index) => {
         const layerId = `${sourceId}-trail-${index}`
         const layerVisibility = map.getLayoutProperty(layerId, "visibility")
-        console.log(`Visibility of ${layerId}:`, layerVisibility)
       })
     })
   }

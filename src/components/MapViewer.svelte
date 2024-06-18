@@ -60,7 +60,6 @@
 
     try {
       await db.open()
-      console.log("IndexedDB database opened")
       dbInstance = db
     } catch (error) {
       console.error("Error opening IndexedDB database:", error)
