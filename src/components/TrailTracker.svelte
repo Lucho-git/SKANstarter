@@ -196,24 +196,27 @@
               type: "LineString",
               coordinates: currentLine,
             },
-            properties: {},
+            properties: {
+              timestamp: coordinates[i - 1].timestamp,
+            },
           })
           currentLine = [currentPoint]
         }
       }
     }
 
+    // Handle the last feature separately
     if (currentLine.length > 0) {
-      const feature = {
+      features.push({
         type: "Feature",
         geometry: {
           type: "LineString",
           coordinates: currentLine,
         },
-        properties: {},
-      }
-
-      features.push(feature)
+        properties: {
+          timestamp: coordinates[coordinates.length - 1].timestamp, // Set the timestamp value for the last feature
+        },
+      })
     }
 
     return features
@@ -279,6 +282,12 @@
           trailId: trailId,
         }
       }
+
+      console.log(
+        "Feature properties in loadTrailLines:",
+        feature.properties,
+        sourceId,
+      )
     })
 
     // Add circles for each coordinate point
@@ -312,7 +321,7 @@
     const maxTimeDiff = 60 * 60 * 1000
 
     if (existingTrail) {
-      console.log("Existing trail found")
+      console.log("Existing trail found", existingTrail)
       console.log(
         "Existing trail features length:",
         existingTrail.features.length,
@@ -321,16 +330,31 @@
       // Get the last feature of the existing trail
       const lastFeature =
         existingTrail.features[existingTrail.features.length - 1]
+
       const lastCoordinate =
         lastFeature.geometry.coordinates[
           lastFeature.geometry.coordinates.length - 1
         ]
+
+      console.log(
+        "Last feature properties in updateTrailLine:",
+        lastFeature.properties,
+        sourceId,
+      )
 
       // Compare the last coordinate of the existing trail with the new coordinate
       const newCoordinate = trail[0].coordinates
         .slice(1, -1)
         .split(",")
         .map(parseFloat)
+
+      console.log(
+        "New coordinate:",
+        newCoordinate,
+        "old coordinate:",
+        lastCoordinate,
+      )
+
       const distance = turf.distance(
         turf.point(lastCoordinate),
         turf.point(newCoordinate),
