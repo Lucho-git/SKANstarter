@@ -1,0 +1,21 @@
+{
+    "name": "Skan Farming Logistics",
+    "short_name": "AgSkan",
+    "start_url":"/",
+    "id": "/",
+    "display":"standalone",
+    "theme_color":"#ff3e00",
+    "background_color":"#ffffff",
+    "icons":[
+        {
+            "sizes":"192x192",
+            "src": "favicon.png",
+            "type": "image/png"
+        },
+        {
+            "sizes":"453x457",
+            "src": "faviconsquare.png",
+            "type": "image/png"
+        }
+    ]
+}
