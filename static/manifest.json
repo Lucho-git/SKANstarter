@@ -5,7 +5,7 @@
     "id": "/account/",
     "display":"standalone",
     "theme_color":"#F7DB5C",
-    "background_color":"#000000",
+    "background_color":"#F7DB5C",
     "icons":[
         {
             "sizes":"192x192",
