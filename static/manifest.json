@@ -1,8 +1,8 @@
 {
     "name": "Skan Farming Logistics",
     "short_name": "AgSkan",
-    "start_url":"/",
-    "id": "/",
+    "start_url":"/account/",
+    "id": "/account/",
     "display":"standalone",
     "theme_color":"#F7DB5C",
     "background_color":"#000000",
