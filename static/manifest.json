@@ -27,5 +27,26 @@
             "src": "x512.png",
             "type": "image/png"
         }
+    ],
+
+    "screenshots": [
+        {
+         "src": "/images/mobiledisplay1.jpg",
+          "sizes": "1080x1920",
+          "type": "image/jpg",
+          "label": "MapDisplay"
+        },
+        {
+            "src": "/images/mobiledisplay2.jpg",
+             "sizes": "1080x1920",
+             "type": "image/jpg",
+             "label": "MarkerDisplay"
+        },
+           {
+            "src": "/images/mobiledisplay3.jpg",
+             "sizes": "1080x1920",
+             "type": "image/jpg",
+             "label": "UploadDisplay"
+        }
     ]
 }
