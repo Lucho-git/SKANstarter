@@ -8,7 +8,7 @@
 
   let errorMessage = ""
   $: userFiles = $userFilesStore
-  $: isMobile = window.innerWidth <= 768 // Adjust the breakpoint as needed
+  let isMobile = false
 
   function deleteFile(file: string) {
     console.log("deleteFile event dispatched with file:", file)
@@ -25,6 +25,18 @@
   onMount(() => {
     const event = new CustomEvent("fetchUploadedFiles")
     dispatchEvent(event)
+
+    // Perform mobile detection on component mount
+    const handleResize = () => {
+      isMobile = window.innerWidth <= 768
+    }
+
+    handleResize() // Initial mobile detection
+    window.addEventListener("resize", handleResize) // Update on window resize
+
+    return () => {
+      window.removeEventListener("resize", handleResize) // Cleanup on component destroy
+    }
   })
 </script>
 
