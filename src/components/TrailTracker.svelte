@@ -79,13 +79,13 @@
   })
 
   onDestroy(() => {
+    console.log("Destroying TrailTracker")
+
+    map.off("style.load", loadTrailData)
+
     if (antLineConfigUnsubscribe) {
       antLineConfigUnsubscribe()
     }
-
-    map.off("style.load", recreateTrailData)
-
-    console.log("Destroying TrailTracker")
   })
 
   function createTrailSource(sourceId, data) {
@@ -447,7 +447,7 @@
     let step = 0
 
     function animate(timestamp) {
-      const newStep = parseInt((timestamp / 60) % dashArraySequence.length)
+      const newStep = parseInt((timestamp / 40) % dashArraySequence.length)
 
       if (newStep !== step) {
         map.setPaintProperty(trailId, "line-dasharray", dashArraySequence[step])

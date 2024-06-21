@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from "svelte"
+  import { onMount, onDestroy } from "svelte"
 
   let timeData = []
   let cropData = []
@@ -75,6 +75,23 @@
     addEventListener("animationprogress", (event) => {
       progress = event.detail
     })
+  })
+
+  onDestroy(() => {
+    // Clear event listeners
+    animationContainer.removeEventListener("wheel", handleWheel)
+    removeEventListener("animationprogress", (event) => {
+      progress = event.detail
+    })
+
+    // Clear the timeline and reset progress
+    if (timeline) {
+      timeline.clear()
+      progress = 0
+    }
+
+    // Clear the animation SVG
+    animationSvg.innerHTML = ""
   })
 
   async function loadData() {
