@@ -21,14 +21,14 @@
     <div class="max-w-lg">
       <h1 class="text-5xl font-bold">This is embarrassing...</h1>
       <p class="py-6 text-2xl">There was an error: {error.message}</p>
-
-      {#if dev}
-        <pre class="text-left">{stackTrace}</pre>
-      {/if}
-
-      <div>
+      <div class="flex justify-center space-x-4 mt-6 mb-6">
         <a href="/" class="btn btn-primary btn-wide">Return Home</a>
+        <a href="/account/" class="btn btn-info btn-wide">Dashboard</a>
       </div>
+      <p class="py-6 text-2xl">Developer details</p>
+      <p class="text-lg">URL: {$page.url.href}</p>
+      <p class="text-lg">Error: {JSON.stringify(error, null, 2)}</p>
+      <pre class="text-left whitespace-pre-wrap">{stackTrace}</pre>
     </div>
   </div>
 </div>
