@@ -24,8 +24,15 @@
         },
         {
             "sizes":"512x512",
-            "src": "x512.png",
-            "type": "image/png"
+            "src": "x512small.png",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "sizes":"512x512",
+            "src": "x512smallsharp.png",
+            "type": "image/png",
+            "purpose": "maskable"
         }
     ],
 
