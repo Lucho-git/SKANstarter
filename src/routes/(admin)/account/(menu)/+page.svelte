@@ -34,7 +34,7 @@
     }
   }
 
-  console.log("Parent component mounted")
+  console.log("Account Parent component mounted")
 
   async function deleteFile(event: CustomEvent) {
     console.log("deleteFile event received with file:", event.detail.file)

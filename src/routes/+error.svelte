@@ -5,6 +5,7 @@
 
   const error = $page.error
 
+  console.log("page", $page)
   // Log the error details
   console.error("Error occurred:", error)
 
