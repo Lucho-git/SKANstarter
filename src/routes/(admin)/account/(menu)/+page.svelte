@@ -4,6 +4,7 @@
   import UploadPopoverTrigger from "../../../../components/UploadPopoverTrigger.svelte"
   import UserFiles from "../../../../components/UserFiles.svelte"
   import { userFilesStore } from "../../../../stores/userFilesStore"
+  import FloatingChat from "../../../../components/FloatingChat.svelte"
 
   import MasterMapManager from "../(menu)/MasterMapManager.svelte"
 
@@ -144,3 +145,5 @@
     </div>
   </div>
 </div>
+
+<FloatingChat />

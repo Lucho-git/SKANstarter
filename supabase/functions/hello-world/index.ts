@@ -2,19 +2,20 @@
 // https://deno.land/manual/getting_started/setup_your_environment
 // This enables autocomplete, go to definition, etc.
 
-console.log("Hello from Functions!")
+import {serve} from "https://deno.land/std@0.106.0/http/server.ts";
 
-Deno.serve(async (req) => {
-  const { name } = await req.json()
-  const data = {
-    message: `Hello ${name}!`,
-  }
+console.log("Hello World!");
 
-  return new Response(
-    JSON.stringify(data),
-    { headers: { "Content-Type": "application/json" } },
-  )
-})
+serve(async (req) => {
+  const body = await req.json()
+  const data = { message: `Hello  + ${name}!`,
+  
+  return new Response(JSON.stringify(data), {
+    headers: {
+      "content-type": "application/json"
+    }
+  },)
+});
 
 /* To invoke locally:
 
@@ -27,3 +28,4 @@ Deno.serve(async (req) => {
     --data '{"name":"Functions"}'
 
 */
+

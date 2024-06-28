@@ -25,6 +25,8 @@
   let trailData = {}
   let latestTrails = {}
 
+  let animationFrameIds = {}
+
   // Configuration object for trail properties
   const trailConfig = {
     solidLine: {
@@ -80,12 +82,11 @@
 
   onDestroy(() => {
     console.log("Destroying TrailTracker")
-
-    map.off("style.load", loadTrailData)
-
-    if (antLineConfigUnsubscribe) {
-      antLineConfigUnsubscribe()
+    if (map) {
+      map.off("style.load", loadTrailData)
     }
+    cancelAllAnimations()
+    if (antLineConfigUnsubscribe) antLineConfigUnsubscribe()
   })
 
   function createTrailSource(sourceId, data) {
@@ -447,17 +448,33 @@
     let step = 0
 
     function animate(timestamp) {
-      const newStep = parseInt((timestamp / 40) % dashArraySequence.length)
+      try {
+        const newStep = parseInt((timestamp / 40) % dashArraySequence.length)
 
-      if (newStep !== step) {
-        map.setPaintProperty(trailId, "line-dasharray", dashArraySequence[step])
-        step = newStep
+        if (newStep !== step && map && map.getLayer(trailId)) {
+          map.setPaintProperty(
+            trailId,
+            "line-dasharray",
+            dashArraySequence[step],
+          )
+          step = newStep
+        }
+
+        animationFrameIds[trailId] = requestAnimationFrame(animate)
+      } catch (error) {
+        // Silently stop the animation if an error occurs
+        cancelAnimationFrame(animationFrameIds[trailId])
+        delete animationFrameIds[trailId]
       }
-
-      requestAnimationFrame(animate)
     }
 
     animate(0)
+  }
+
+  //Not really neccessary
+  function cancelAllAnimations() {
+    Object.values(animationFrameIds).forEach(cancelAnimationFrame)
+    animationFrameIds = {}
   }
 
   function toggleAntLines() {
