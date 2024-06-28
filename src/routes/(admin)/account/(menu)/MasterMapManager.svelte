@@ -3,7 +3,9 @@
   import { supabase } from "../../../../lib/supabaseClient"
   import { page } from "$app/stores"
   import { v4 as uuidv4 } from "uuid"
-  import { LottiePlayer } from "@lottiefiles/svelte-lottie-player"
+  import { browser } from "$app/environment"
+
+  let LottiePlayer
 
   let masterMapId = ""
   let masterMapName = ""
@@ -52,6 +54,13 @@
       disabled: !isMasterUser,
     },
   ]
+
+  onMount(async () => {
+    if (browser) {
+      const module = await import("@lottiefiles/svelte-lottie-player")
+      LottiePlayer = module.LottiePlayer
+    }
+  })
 
   function openSettingsModal() {
     showSettingsModal = true
@@ -319,8 +328,6 @@
   function cancelRenameMap() {
     isRenaming = false
   }
-
-  onMount(fetchMasterMapDetails)
 </script>
 
 <div class="alert alert-info w-full mt-2">
@@ -391,17 +398,23 @@
             window.location.href = "/account/mapviewer"
           }}
         >
-          <LottiePlayer
-            src="/animations/CoolLineMap.json"
-            autoplay={true}
-            loop={true}
-            controls={false}
-            renderer="svg"
-            background="transparent"
-            height={40}
-            width={40}
-            controlsLayout={false}
-          />
+          {#if browser && LottiePlayer}
+            <svelte:component
+              this={LottiePlayer}
+              src="/animations/CoolLineMap.json"
+              autoplay={true}
+              loop={true}
+              controls={false}
+              renderer="svg"
+              background="transparent"
+              height={40}
+              width={40}
+              controlsLayout={false}
+            />
+          {:else}
+            <!-- Placeholder or alternative content when LottiePlayer is not available -->
+            <span>Map Viewer</span>
+          {/if}
         </button>
         <!-- Replace the "Disconnect from Map" button with a settings button -->
         <button

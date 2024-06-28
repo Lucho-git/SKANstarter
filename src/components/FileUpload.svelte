@@ -3,7 +3,18 @@
   import { createEventDispatcher } from "svelte"
   import { userFilesStore } from "../stores/userFilesStore"
   import FileInspector from "./FileInspector.svelte"
-  import { LottiePlayer } from "@lottiefiles/svelte-lottie-player"
+
+  import { browser } from "$app/environment"
+  import { onMount } from "svelte"
+
+  let LottiePlayer
+
+  onMount(async () => {
+    if (browser) {
+      const module = await import("@lottiefiles/svelte-lottie-player")
+      LottiePlayer = module.LottiePlayer
+    }
+  })
 
   export let isPopoverOpen = false
 
@@ -192,48 +203,57 @@
           >
             {#if file && !errorMessage}
               <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                <LottiePlayer
-                  src="/animations/OneFileMovement.json"
-                  autoplay={true}
-                  loop={true}
-                  controls={false}
-                  controlsLayout={null}
-                  renderer="svg"
-                  background="transparent"
-                  height={150}
-                  width={200}
-                />
+                {#if browser && LottiePlayer}
+                  <svelte:component
+                    this={LottiePlayer}
+                    src="/animations/OneFileMovement.json"
+                    autoplay={true}
+                    loop={true}
+                    controls={false}
+                    controlsLayout={null}
+                    renderer="svg"
+                    background="transparent"
+                    height={150}
+                    width={200}
+                  />
+                {/if}
                 <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
                   <span class="font-semibold">{file.name}</span>
                 </p>
               </div>
             {:else if errorMessage}
               <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                <LottiePlayer
-                  src="/animations/Error2.json"
-                  autoplay={true}
-                  loop={true}
-                  controls={false}
-                  controlsLayout={null}
-                  renderer="svg"
-                  background="transparent"
-                  height={200}
-                  width={200}
-                />
+                {#if browser && LottiePlayer}
+                  <svelte:component
+                    this={LottiePlayer}
+                    src="/animations/Error2.json"
+                    autoplay={true}
+                    loop={true}
+                    controls={false}
+                    controlsLayout={null}
+                    renderer="svg"
+                    background="transparent"
+                    height={200}
+                    width={200}
+                  />
+                {/if}
               </div>
             {:else}
               <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                <LottiePlayer
-                  src="/animations/IdleFile.json"
-                  autoplay={true}
-                  loop={true}
-                  controls={false}
-                  controlsLayout={null}
-                  renderer="svg"
-                  background="transparent"
-                  height={150}
-                  width={150}
-                />
+                {#if browser && LottiePlayer}
+                  <svelte:component
+                    this={LottiePlayer}
+                    src="/animations/IdleFile.json"
+                    autoplay={true}
+                    loop={true}
+                    controls={false}
+                    controlsLayout={null}
+                    renderer="svg"
+                    background="transparent"
+                    height={150}
+                    width={150}
+                  />
+                {/if}
                 <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
                   <span class="font-semibold">Click to upload</span> or drag and
                   drop
@@ -250,7 +270,6 @@
               on:change={handleFileChange}
             />
           </label>
-
           <button
             class="btn mt-4"
             class:bg-gray-400={!file || !isFileValid}

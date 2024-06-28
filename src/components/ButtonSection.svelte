@@ -3,8 +3,18 @@
   import { createEventDispatcher, beforeUpdate, afterUpdate } from "svelte"
   import { mapStore } from "../stores/mapStore"
   import { userVehicleStore, userVehicleTrailing } from "../stores/vehicleStore"
-  import { LottiePlayer } from "@lottiefiles/svelte-lottie-player"
   import { antLineConfigStore } from "../stores/trailDataStore"
+  import { browser } from "$app/environment"
+  import { onMount } from "svelte"
+
+  let LottiePlayer
+
+  onMount(async () => {
+    if (browser) {
+      const module = await import("@lottiefiles/svelte-lottie-player")
+      LottiePlayer = module.LottiePlayer
+    }
+  })
 
   export let isSatelliteView = true
 
@@ -201,17 +211,20 @@
   >
     {#if $userVehicleTrailing}
       <div class="flex flex-col -mt-7 pb-0">
-        <LottiePlayer
-          src="/animations/PulsingBlueBeacon.json"
-          autoplay={true}
-          loop={true}
-          controls={false}
-          controlsLayout={null}
-          renderer="svg"
-          background="transparent"
-          height={80}
-          width={80}
-        />
+        {#if browser && LottiePlayer}
+          <svelte:component
+            this={LottiePlayer}
+            src="/animations/PulsingBlueBeacon.json"
+            autoplay={true}
+            loop={true}
+            controls={false}
+            controlsLayout={null}
+            renderer="svg"
+            background="transparent"
+            height={80}
+            width={80}
+          />
+        {/if}
       </div>
     {:else}
       <svg
