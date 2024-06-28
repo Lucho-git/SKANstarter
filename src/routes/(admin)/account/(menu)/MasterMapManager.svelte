@@ -55,13 +55,6 @@
     },
   ]
 
-  onMount(async () => {
-    if (browser) {
-      const module = await import("@lottiefiles/svelte-lottie-player")
-      LottiePlayer = module.LottiePlayer
-    }
-  })
-
   function openSettingsModal() {
     showSettingsModal = true
   }
@@ -328,6 +321,15 @@
   function cancelRenameMap() {
     isRenaming = false
   }
+
+  onMount(async () => {
+    if (browser) {
+      const module = await import("@lottiefiles/svelte-lottie-player")
+      LottiePlayer = module.LottiePlayer
+    }
+
+    await fetchMasterMapDetails()
+  })
 </script>
 
 <div class="alert alert-info w-full mt-2">
