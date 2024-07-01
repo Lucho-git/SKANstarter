@@ -1,0 +1,46 @@
+<!-- src/components/IconSVG.svelte -->
+<script>
+  export let type = ''
+  export let state = ''
+
+  const icons = [
+    {
+      type: 'fertilizer',
+      path: `<!-- SVG path for fertilizer icon -->`,
+    },
+    {
+      type: 'fileUpload',
+      path: `<!-- SVG path for fileUpload icon -->`,
+    },
+    {
+      type: 'fuel',
+      path: `<!-- SVG path for fuel icon -->`,
+    },
+    {
+      type: 'gear',
+      path: `<!-- SVG path for gear icon -->`,
+    },
+    {
+      type: 'gear2',
+      path: `<!-- SVG path for gear2 icon -->`,
+    },
+    {
+      type: 'tractor',
+      path: `<!-- SVG path for tractor icon -->`,
+    },
+  ]
+
+  $: icon = icons.find((icon) => icon.type === type)
+</script>
+
+{#if icon}
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    class={$$props.class}
+    fill={state === 'solid' ? 'currentColor' : 'none'}
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    {@html icon.path}
+  </svg>
+{/if}
