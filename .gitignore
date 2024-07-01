@@ -10,5 +10,7 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 # Vercel
-.vercel
-.vercel/output
+.vercel/**
+
+# Ignore all files named private.js anywhere in the project
+**/private.js
