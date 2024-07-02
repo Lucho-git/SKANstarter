@@ -25,54 +25,70 @@
   }
 
   async function enableNotifications() {
-    try {
-      const permission = await Notification.requestPermission()
-      notificationPermission = permission
+    const promise = new Promise(async (resolve, reject) => {
+      try {
+        const permission = await Notification.requestPermission()
+        notificationPermission = permission
 
-      if (permission === "granted" && userId) {
-        const result = await subscribeToPushNotifications(userId)
-        if (result.success) {
-          toast.success("Notifications enabled successfully!")
+        if (permission === "granted" && userId) {
+          const result = await subscribeToPushNotifications(userId)
+          if (result.success) {
+            resolve("Notifications enabled successfully!")
+          } else {
+            reject(new Error(result.error || "Failed to enable notifications"))
+          }
         } else {
-          throw new Error(result.error || "Failed to enable notifications")
+          reject(new Error("Permission not granted or user ID not available"))
         }
+      } catch (error) {
+        reject(error)
       }
-    } catch (error) {
-      console.error("Error enabling notifications:", error)
-      toast.error(`Error: ${error.message}`)
-    }
+    })
+
+    toast.promise(promise, {
+      loading: "Enabling notifications...",
+      success: (data) => data,
+      error: (error) => `Error: ${error.message}`,
+    })
   }
 
   async function testPushNotification() {
-    try {
-      const { data, error } = await supabase
-        .from("push_subscriptions")
-        .select("subscription")
-        .eq("user_id", userId)
-        .single()
+    const promise = new Promise(async (resolve, reject) => {
+      try {
+        const { data, error } = await supabase
+          .from("push_subscriptions")
+          .select("subscription")
+          .eq("user_id", userId)
+          .single()
 
-      if (error) throw error
+        if (error) throw error
 
-      if (data) {
-        const subscription = JSON.parse(data.subscription)
-        const result = await sendPushNotification(
-          subscription,
-          "Test Notification",
-          "Hi !",
-        )
+        if (data) {
+          const subscription = JSON.parse(data.subscription)
+          const result = await sendPushNotification(
+            subscription,
+            "Test Notification",
+            "Hi !",
+          )
 
-        if (result.success) {
-          toast.success("Test notification sent successfully!")
+          if (result.success) {
+            resolve("Test notification sent successfully!")
+          } else {
+            reject(new Error(result.error || "Failed to send notification"))
+          }
         } else {
-          throw new Error(result.error || "Failed to send notification")
+          reject(new Error("No subscription found for this user"))
         }
-      } else {
-        throw new Error("No subscription found for this user")
+      } catch (error) {
+        reject(error)
       }
-    } catch (error) {
-      console.error("Error sending test notification:", error)
-      toast.error(`Error: ${error.message}`)
-    }
+    })
+
+    toast.promise(promise, {
+      loading: "Sending test notification...",
+      success: (data) => data,
+      error: (error) => `Error: ${error.message}`,
+    })
   }
 </script>
 
