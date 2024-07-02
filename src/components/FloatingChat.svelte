@@ -92,13 +92,9 @@
   }
 </script>
 
-<div class="fixed bottom-8 right-8 z-50">
-  <button class="btn btn-circle btn-lg btn-primary" on:click={toggleChat}>
-    <!-- Chat icon -->
-  </button>
-
+<div class="fixed bottom-8 right-8 z-50 flex flex-col items-end">
   {#if isOpen}
-    <div class="card w-80 bg-base-100 shadow-xl">
+    <div class="card w-80 bg-base-100 shadow-xl mb-4">
       <div class="card-body">
         <h3 class="card-title">Chat</h3>
         <!-- Chat interface goes here -->
@@ -115,4 +111,8 @@
       </div>
     </div>
   {/if}
+
+  <button class="btn btn-circle btn-lg btn-primary" on:click={toggleChat}>
+    <i class={isOpen ? "at-minus-chats" : "at-messages-text"}></i>
+  </button>
 </div>
