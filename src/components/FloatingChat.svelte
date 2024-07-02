@@ -6,6 +6,7 @@
     sendPushNotification,
   } from "$lib/pushNotifications"
   import { supabase } from "$lib/supabaseClient"
+  import { toast } from "svelte-sonner"
 
   let isOpen = false
   let notificationPermission = "default"
@@ -29,10 +30,16 @@
       notificationPermission = permission
 
       if (permission === "granted" && userId) {
-        await subscribeToPushNotifications(userId)
+        const result = await subscribeToPushNotifications(userId)
+        if (result.success) {
+          toast.success("Notifications enabled successfully!")
+        } else {
+          throw new Error(result.error || "Failed to enable notifications")
+        }
       }
     } catch (error) {
       console.error("Error enabling notifications:", error)
+      toast.error(`Error: ${error.message}`)
     }
   }
 
@@ -48,16 +55,23 @@
 
       if (data) {
         const subscription = JSON.parse(data.subscription)
-        await sendPushNotification(
+        const result = await sendPushNotification(
           subscription,
           "Test Notification",
-          "This is a test push notification!",
+          "Hi !",
         )
+
+        if (result.success) {
+          toast.success("Test notification sent successfully!")
+        } else {
+          throw new Error(result.error || "Failed to send notification")
+        }
       } else {
-        console.error("No subscription found for this user")
+        throw new Error("No subscription found for this user")
       }
     } catch (error) {
       console.error("Error sending test notification:", error)
+      toast.error(`Error: ${error.message}`)
     }
   }
 </script>
@@ -74,13 +88,13 @@
         <!-- Chat interface goes here -->
 
         {#if notificationPermission !== "granted"}
-          <button class="btn btn-primary" on:click={enableNotifications}
-            >Enable Notifications</button
-          >
+          <button class="btn btn-primary" on:click={enableNotifications}>
+            Enable Notifications
+          </button>
         {:else}
-          <button class="btn btn-secondary" on:click={testPushNotification}
-            >Test Push Notification</button
-          >
+          <button class="btn btn-secondary" on:click={testPushNotification}>
+            Test Push Notification
+          </button>
         {/if}
       </div>
     </div>

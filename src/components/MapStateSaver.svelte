@@ -8,7 +8,7 @@
   } from "../stores/mapStore"
   import { supabase } from "../lib/supabaseClient"
   import { page } from "$app/stores"
-  import { toast } from "@zerodevx/svelte-toast"
+  import { toast } from "svelte-sonner"
   import { debounce } from "lodash-es"
 
   let spinning = false
@@ -102,13 +102,9 @@
     const session = $page.data.session
     if (!session) {
       console.error("User not authenticated")
-      toast.push("User not authenticated", {
-        theme: {
-          "--toastBackground": "hsl(var(--er))",
-          "--toastColor": "hsl(var(--erc))",
-          "--toastBarBackground": "hsl(var(--er))",
-        },
-      })
+
+      toast.error("User not authenticated")
+
       return
     }
 
@@ -159,7 +155,7 @@
         serverMarkersToBeUpdated,
         serverMarkersToBeDeleted,
       })
-      toast.push(toasttext)
+      toast.success(toasttext)
     } catch (error) {
       console.error("Error synchronizing markers:", error)
 
@@ -181,13 +177,7 @@
           "Failed to retrieve latest markers from the server. Please try again later."
       }
 
-      toast.push(errorMessage, {
-        theme: {
-          "--toastBackground": "hsl(var(--er))",
-          "--toastColor": "hsl(var(--erc))",
-          "--toastBarBackground": "hsl(var(--er))",
-        },
-      })
+      toast.error(errorMessage)
     }
     synchronizationInProgress = false
     spinning = false

@@ -30,7 +30,8 @@ We could group up an centralize more of the startup logic.
 
   const ANIMATION_DURATION = 500 // Adjust this value as needed
   const DISTANCE_THRESHOLD = 0.0
-  const LOCATION_TRACKING_INTERVAL_MIN = 1000
+  const LOCATION_TRACKING_INTERVAL_MIN = 30
+
   let isTrailingOn = false // Flag to control the trailing feature
   let otherVehiclesUnsubscribe
   let userVehicleUnsubscribe

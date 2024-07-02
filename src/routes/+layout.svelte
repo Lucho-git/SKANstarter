@@ -7,44 +7,43 @@
   import "@fontsource/archivo/700.css"
   import "@fontsource/archivo/800.css"
   import "@fontsource/archivo/900.css"
-  import { SvelteToast } from "@zerodevx/svelte-toast"
-  import ToastContainer from "../components/ToastContainer.svelte"
+  import { Toaster, toast } from "svelte-sonner"
 
   import { onMount } from "svelte"
   import { getAuthState } from "../stores/user"
 
-  const options = {
-    rounded: true,
-    theme: {
-      "--toastBackground": "hsl(var(--in))",
-      "--toastColor": "hsl(var(--inc))",
-      "--toastBarBackground": "hsl(var(--in))",
-      "--toastBorderRadius": "1rem",
-      //   "--toastContainerTop": "auto",
-      //   "--toastContainerRight": "auto",
-      //   "--toastContainerBottom": "1.5rem",
-      //   "--toastContainerLeft": "50%",
-      //   "--toastContainerTransform": "translateX(-50%)",
-    },
-    classes: ["text-center"],
-  }
   onMount(async () => {
     await getAuthState()
   })
 </script>
 
 {#if $navigating}
-  <!-- 
-      Loading animation for next page since svelte doesn't show any indicator. 
-       - delay 100ms because most page loads are instant, and we don't want to flash 
-       - long 12s duration because we don't actually know how long it will take
-       - exponential easing so fast loads (>100ms and <1s) still see enough progress,
-         while slow networks see it moving for a full 12 seconds
-    -->
+  <!--
+        Loading animation for next page since svelte doesn't show any indicator.
+         - delay 100ms because most page loads are instant, and we don't want to flash
+         - long 12s duration because we don't actually know how long it will take
+         - exponential easing so fast loads (>100ms and <1s) still see enough progress,
+           while slow networks see it moving for a full 12 seconds
+      -->
   <div
     class="fixed w-full top-0 right-0 left-0 h-1 z-50 bg-primary"
     in:slide={{ delay: 100, duration: 12000, axis: "x", easing: expoOut }}
   ></div>
 {/if}
+
 <slot />
-<SvelteToast {options} />
+
+<Toaster position="bottom-center" richColors />
+
+<button
+  on:click={() =>
+    toast.success("Event has been created", {
+      description: "Sunday, December 03, 2023 at 9:00 AM",
+      action: {
+        label: "Undo",
+        onClick: () => console.info("Undo"),
+      },
+    })}
+>
+  Show Toast
+</button>

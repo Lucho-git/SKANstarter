@@ -10,33 +10,47 @@ export async function subscribeToPushNotifications(userId) {
         applicationServerKey: PUBLIC_VAPID_KEY
       });
 
-      await supabase.from('push_subscriptions').upsert({
+      const { data, error } = await supabase.from('push_subscriptions').upsert({
         user_id: userId,
         subscription: JSON.stringify(subscription)
       }, {
         onConflict: 'user_id'
       });
 
-      return subscription;
+      if (error) {
+        throw new Error(`Failed to save subscription: ${error.message}`);
+      }
+
+      return { success: true, subscription };
     } catch (error) {
       console.error('Error subscribing to push notifications:', error);
+      return { success: false, error: error.message };
     }
+  } else {
+    return { success: false, error: 'Push notifications not supported' };
   }
 }
 
 export async function sendPushNotification(subscription, title, body) {
-    console.log('Sending push notification...');
-  const response = await fetch('/api/send-notification', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ subscription, title, body }),
-  });
+  console.log('Sending push notification...');
+  try {
+    const response = await fetch('/api/send-notification', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ subscription, title, body }),
+    });
 
-  if (!response.ok) {
-    throw new Error('Failed to send push notification');
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to send push notification');
+    }
+
+    const result = await response.json();
+    return { success: true, ...result };
+  } catch (error) {
+    console.error('Error sending push notification:', error);
+    return { success: false, error: error.message };
   }
-
-  return response.json();
 }
