@@ -43,6 +43,7 @@
     "dependencies": {
         "@fontsource/archivo": "^5.0.17",
         "@lottiefiles/svelte-lottie-player": "^0.3.1",
+        "@sendbird/chat": "^4.13.0",
         "@supabase/auth-helpers-sveltekit": "^0.10.2",
         "@supabase/auth-ui-svelte": "^0.2.2",
         "@supabase/supabase-js": "^2.33.0",

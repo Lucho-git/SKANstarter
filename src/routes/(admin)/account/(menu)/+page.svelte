@@ -5,6 +5,7 @@
   import UserFiles from "../../../../components/UserFiles.svelte"
   import { userFilesStore } from "../../../../stores/userFilesStore"
   import FloatingChat from "../../../../components/FloatingChat.svelte"
+  import TawkToChat from "../../../../components/TawkToChat.svelte"
 
   import MasterMapManager from "../(menu)/MasterMapManager.svelte"
 
@@ -146,4 +147,5 @@
   </div>
 </div>
 
-<FloatingChat />
+<!-- <FloatingChat /> -->
+<TawkToChat />
