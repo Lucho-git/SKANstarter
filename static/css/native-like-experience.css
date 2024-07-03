@@ -1,0 +1,44 @@
+/* ✓ Use System Font Stack */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", 
+                 Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", 
+                 "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+/* ✓ Add Safe Areas Container */
+.container {
+    /* Using safe areas with fallback values */
+    margin: 5px 5px 0 0;
+    margin: env(safe-area-inset-top, 5px) 
+            env(safe-area-inset-right, 5px)
+            env(safe-area-inset-bottom, 5px)
+            env(safe-area-inset-left, 5px) !important;
+}
+
+/* ✓ Avoid Content Selection */
+.element, button, label {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* ✓ Tap Highlight color */
+button {
+    -webkit-tap-highlight-color: #ffffff;
+}
+
+/* ✓ @media Standalone mode */
+@media (display-mode: standalone) {
+    /* rules... */
+}
+
+/* ✓ @media Standalone IOS/IPadOS */
+@supports (-webkit-touch-callout: none) {
+
+    @media (display-mode: standalone) {
+        /* this will  apply on IOS/IPadOS on installed PWA */
+    }
+}
+
+link[rel="manifest"] {
+        --pwacompat-splash-font: 24px Verdana;
+}
