@@ -9,11 +9,13 @@
 
   import MasterMapManager from "../(menu)/MasterMapManager.svelte"
 
-  import { onMount } from "svelte"
+  import { onMount, onDestroy } from "svelte"
   import { page } from "$app/stores"
 
   let adminSection: Writable<string> = getContext("adminSection")
   adminSection.set("home")
+
+  let showTawkTo = false
 
   async function fetchUploadedFiles() {
     try {
@@ -104,7 +106,18 @@
   onMount(() => {
     console.log("Parent component mounted with session:", $page.data.session)
     fetchUploadedFiles()
+    showTawkTo = true
   })
+
+  onDestroy(() => {
+    showTawkTo = false
+  })
+
+  // This will update showTawkTo whenever the page changes
+  $: {
+    const currentPath = $page.url.pathname
+    showTawkTo = currentPath.includes("/account") // Adjust this condition as needed
+  }
 </script>
 
 <svelte:head>
@@ -148,4 +161,4 @@
 </div>
 
 <!-- <FloatingChat /> -->
-<TawkToChat />
+<TawkToChat visible={showTawkTo} />
