@@ -4,6 +4,9 @@
   import UploadPopoverTrigger from "../../../../components/UploadPopoverTrigger.svelte"
   import UserFiles from "../../../../components/UserFiles.svelte"
   import { userFilesStore } from "../../../../stores/userFilesStore"
+  import { userStore } from "../../../../stores/userStore"
+  import { supabase } from "$lib/supabaseClient"
+
   import FloatingChat from "../../../../components/FloatingChat.svelte"
   import TawkToChat from "../../../../components/TawkToChat.svelte"
 
@@ -16,6 +19,7 @@
   adminSection.set("home")
 
   let showTawkTo = false
+  let user = null
 
   async function fetchUploadedFiles() {
     try {
@@ -103,10 +107,27 @@
     // Handle invalid file scenario, e.g., show an error message
   }
 
-  onMount(() => {
-    console.log("Parent component mounted with session:", $page.data.session)
-    fetchUploadedFiles()
-    showTawkTo = true
+  onMount(async () => {
+    const session = $page.data.session
+    if (session) {
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("full_name, company_name, website")
+        .eq("id", session.user.id)
+        .single()
+
+      if (error) {
+        console.error("Error fetching user profile:", error)
+      } else {
+        userStore.setUser({
+          id: session.user.id,
+          email: session.user.email,
+          fullName: profile?.full_name ?? "",
+          companyName: profile?.company_name ?? "",
+          website: profile?.website ?? "",
+        })
+      }
+    }
   })
 
   onDestroy(() => {
@@ -162,3 +183,7 @@
 
 <!-- <FloatingChat /> -->
 <TawkToChat visible={showTawkTo} />
+<p>You are logged in as {$userStore.email}.</p>
+<p>Full Name: {$userStore.fullName}</p>
+<p>Company: {$userStore.companyName}</p>
+<p>Website: {$userStore.website}</p>
