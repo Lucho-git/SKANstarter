@@ -7,18 +7,6 @@ const precache_list = [...build, ...files, ...prerendered].map((s) => ({
 }));
 
 precacheAndRoute(precache_list);
-//Tawk bullshit
-
-
-
-
-
-
-
-
-
-
-
 
 self.addEventListener('push', function(event) {
   const data = event.data.json();
