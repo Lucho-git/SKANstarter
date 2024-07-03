@@ -183,7 +183,7 @@
 
 <!-- <FloatingChat /> -->
 <TawkToChat visible={showTawkTo} />
-<p>You are logged in as {$userStore.email}.</p>
+<!-- <p>You are logged in as {$userStore.email}.</p>
 <p>Full Name: {$userStore.fullName}</p>
 <p>Company: {$userStore.companyName}</p>
-<p>Website: {$userStore.website}</p>
+<p>Website: {$userStore.website}</p> -->
