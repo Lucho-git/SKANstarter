@@ -21,6 +21,8 @@
   adminSection.set("home")
 
   let showTawkTo = false
+  let showUserlikeButton = false
+
   let user = null
 
   async function fetchUploadedFiles() {
@@ -132,6 +134,11 @@
     }
   })
 
+  $: {
+    const currentPath = $page.url.pathname
+    showUserlikeButton = currentPath === "/account" // Only show the button on the main account page
+  }
+
   onDestroy(() => {
     showTawkTo = false
   })
@@ -182,8 +189,7 @@
     </div>
   </div>
 </div>
-<UserlikeWidget />
-
+<UserlikeWidget visible={showUserlikeButton} />
 <!-- <FloatingChat /> -->
 <!-- <TawkToChat visible={showTawkTo} /> -->
 <!-- <WhatsAppWidget /> -->
