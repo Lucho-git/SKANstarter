@@ -85,37 +85,44 @@ import {
     }
   
     try {
-      const response = await resolve(event);
-      
-      if (response.status === 404) {
-        const session = await event.locals.getSession();
-        const errorId = uuidv4();
-        const userId = session?.user?.id;
-        const userFullName = await getUserFullName(event.locals.supabaseServiceRole, userId);
+        const response = await resolve(event, {
+          transformPageChunk: ({ html }) => html.replace(
+            '%sveltekit.head%',
+            `%sveltekit.head%
+            <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' https://salesiq.zohopublic.com.au;">
+            `
+          )
+        });
         
-        const errorDetails = {
-          id: errorId,
-          status: 404,
-          url: event.url.toString(),
-          method: event.request.method,
-          headers: Object.fromEntries(event.request.headers),
-          userAgent: event.request.headers.get('user-agent'),
-          referer: event.request.headers.get('referer'),
-          userId: userId,
-          userFullName: userFullName,
-          timestamp: new Date().toISOString(),
-          route: event.route?.id
-        };
+        if (response.status === 404) {
+          const session = await event.locals.getSession();
+          const errorId = uuidv4();
+          const userId = session?.user?.id;
+          const userFullName = await getUserFullName(event.locals.supabaseServiceRole, userId);
+          
+          const errorDetails = {
+            id: errorId,
+            status: 404,
+            url: event.url.toString(),
+            method: event.request.method,
+            headers: Object.fromEntries(event.request.headers),
+            userAgent: event.request.headers.get('user-agent'),
+            referer: event.request.headers.get('referer'),
+            userId: userId,
+            userFullName: userFullName,
+            timestamp: new Date().toISOString(),
+            route: event.route?.id
+          };
+          
+          console.error('404 Error:', errorDetails);
+          await logErrorToDatabase(event.locals.supabaseServiceRole, errorDetails, errorId);
+        }
         
-        console.error('404 Error:', errorDetails);
-        await logErrorToDatabase(event.locals.supabaseServiceRole, errorDetails, errorId);
+        return response;
+      } catch (error) {
+        throw error;
       }
-      
-      return response;
-    } catch (error) {
-      throw error;
     }
-  }
   
   export const handleError: HandleServerError = async ({ error, event }) => {
     const errorId = uuidv4();

@@ -52,6 +52,7 @@
         "@userlike/messenger": "^1.3.0-alpha.2",
         "@vectopus/atlas-icons": "^0.0.7",
         "chart.js": "^4.4.2",
+        "crisp-sdk-web": "^1.0.25",
         "dexie": "^4.0.7",
         "gsap": "^3.12.5",
         "lodash-es": "^4.17.21",

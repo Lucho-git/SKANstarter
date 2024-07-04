@@ -11,6 +11,9 @@
   import TawkToChat from "../../../../components/TawkToChat.svelte"
   import WhatsAppWidget from "../../../../components/WhatsAppWidget.svelte"
   import UserlikeWidget from "../../../../components/UserlikeWidget.svelte"
+  import JivoChatWidget from "../../../../components/JivoChatWidget.svelte"
+  import ZohoSalesIQWidget from "../../../../components/ZohoSalesIQWidget.svelte"
+  import CrispChatWidget from "../../../../components/CrispChatWidget.svelte"
 
   import MasterMapManager from "../(menu)/MasterMapManager.svelte"
 
@@ -22,6 +25,9 @@
 
   let showTawkTo = false
   let showUserlikeButton = false
+  let showJivoChat = false
+  let showZohoSalesIQ = false
+  let showCrispChat = false
 
   let user = null
 
@@ -137,6 +143,9 @@
   $: {
     const currentPath = $page.url.pathname
     showUserlikeButton = currentPath === "/account" // Only show the button on the main account page
+    showJivoChat = currentPath === "/account" // Adjust this condition as needed
+    showZohoSalesIQ = currentPath === "/account" // Adjust this condition as needed
+    showCrispChat = $page.url.pathname === "/account"
   }
 
   onDestroy(() => {
@@ -189,7 +198,11 @@
     </div>
   </div>
 </div>
-<UserlikeWidget visible={showUserlikeButton} />
+<!-- <UserlikeWidget visible={showUserlikeButton} /> -->
+<!-- <JivoChatWidget visible={showJivoChat} /> -->
+
 <!-- <FloatingChat /> -->
 <!-- <TawkToChat visible={showTawkTo} /> -->
 <!-- <WhatsAppWidget /> -->
+<!-- <ZohoSalesIQWidget visible={showZohoSalesIQ} /> -->
+<CrispChatWidget visible={showCrispChat} />
