@@ -2,16 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-
-@layer base {
-    @font-face {
-      font-family: 'Roboto';
-      font-style: normal;
-      font-weight: 400;
-      font-display: swap;
-      src: url(/fonts/Roboto.woff2) format('woff2');
-    }
-  }
+/* Remove the @font-face declaration */
 
 a {
   @apply cursor-pointer;
@@ -21,10 +12,12 @@ a {
 .authBtn {
   @apply btn;
 }
+
 button[disabled].authBtn {
   font-size: 0.001px;
   filter: brightness(65%);
 }
+
 button[disabled].authBtn::before {
   font-size: 14px;
   content: "Loading...";

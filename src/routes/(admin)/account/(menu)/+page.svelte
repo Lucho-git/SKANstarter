@@ -9,6 +9,8 @@
 
   import FloatingChat from "../../../../components/FloatingChat.svelte"
   import TawkToChat from "../../../../components/TawkToChat.svelte"
+  import WhatsAppWidget from "../../../../components/WhatsAppWidget.svelte"
+  import UserlikeWidget from "../../../../components/UserlikeWidget.svelte"
 
   import MasterMapManager from "../(menu)/MasterMapManager.svelte"
 
@@ -180,10 +182,8 @@
     </div>
   </div>
 </div>
+<UserlikeWidget />
 
 <!-- <FloatingChat /> -->
-<TawkToChat visible={showTawkTo} />
-<!-- <p>You are logged in as {$userStore.email}.</p>
-<p>Full Name: {$userStore.fullName}</p>
-<p>Company: {$userStore.companyName}</p>
-<p>Website: {$userStore.website}</p> -->
+<!-- <TawkToChat visible={showTawkTo} /> -->
+<!-- <WhatsAppWidget /> -->

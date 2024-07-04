@@ -7,6 +7,10 @@
   import "@fontsource/archivo/700.css"
   import "@fontsource/archivo/800.css"
   import "@fontsource/archivo/900.css"
+
+  import "@fontsource/roboto/400.css" // Imports the weight 400 with normal style
+  import "@fontsource/roboto/700.css" // If you also want to use bold weight
+
   import { Toaster, toast } from "svelte-sonner"
 
   import { onMount } from "svelte"
