@@ -1,9 +1,11 @@
 import { build, files, prerendered, version } from '$service-worker';
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
 
+const APP_VERSION = '1.0.1'; // Add this line
+
 const precache_list = [...build, ...files, ...prerendered].map((s) => ({
   url: s,
-  revision: version,
+  revision: `${version}-${APP_VERSION}`, // Update this line
 }));
 
 precacheAndRoute(precache_list);

@@ -1,6 +1,7 @@
 {
     "name": "Skan Farming",
     "short_name": "AgSKAN",
+    "version": "1.0.1", 
     "description": "",
     "theme_color": "#f7db5c",
     "background_color": "#d4fea9",

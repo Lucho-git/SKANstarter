@@ -5,7 +5,7 @@ export default {
         
       extend: {
         fontFamily: {
-          archivo: ['Archivo', 'sans'],
+          archivo: ['Roboto', 'Archivo', 'sans'],
         },
       },
     },
