@@ -21,6 +21,12 @@
     { id: "electric_tower", class: "custom-svg" },
     { id: "tractor", class: "custom-svg" },
     { id: "recharge_icon", class: "custom-svg" },
+    { id: "repair_shop", class: "custom-svg" },
+    { id: "repair_house", class: "custom-svg" },
+    { id: "repair_marker", class: "custom-svg" },
+    { id: "rock", class: "custom-svg" },
+    { id: "tree1", class: "custom-svg" },
+    { id: "gate", class: "custom-svg" },
 
     // Ionic icons
 
