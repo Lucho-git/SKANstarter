@@ -178,7 +178,7 @@
     } else if (icon.startsWith("ionic-")) {
       const ionIcon = document.createElement("ion-icon")
       ionIcon.setAttribute("name", icon.replace("ionic-", ""))
-      ionIcon.style.fontSize = "20px"
+      ionIcon.style.fontSize = "28px"
       ionIcon.style.color = "black"
       markerElement.appendChild(ionIcon)
     } else {
