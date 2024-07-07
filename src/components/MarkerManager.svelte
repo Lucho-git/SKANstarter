@@ -23,35 +23,37 @@
     { id: "recharge_icon", class: "custom-svg" },
 
     // Ionic icons
-    { id: "heart", class: "ionic-heart" },
-    { id: "star", class: "ionic-star" },
+
     { id: "pin", class: "ionic-pin" },
 
-    { id: "arrow-up-circle", class: "at-arrow-up-circle" },
-    { id: "arrow-down-circle", class: "at-arrow-down-circle" },
-    { id: "arrow-left-circle", class: "at-arrow-left-circle" },
-    { id: "arrow-right-circle", class: "at-arrow-right-circle" },
-    { id: "user", class: "at-user" },
-    { id: "users", class: "at-users" },
-    { id: "gear", class: "at-gear" },
-    { id: "home", class: "at-home" },
-    { id: "check-shield", class: "at-check-shield" },
-    { id: "trash", class: "at-trash" },
+    { id: "arrow-up-circle", class: "ionic-arrow-up-circle" },
+    { id: "arrow-down-circle", class: "ionic-arrow-down-circle" },
+    { id: "arrow-back-circle", class: "ionic-arrow-back-circle" },
+    { id: "arrow-forward-circle", class: "ionic-arrow-forward-circle" },
+    { id: "accessibility", class: "ionic-accessibility" },
+    { id: "people", class: "ionic-people" },
+    { id: "settings", class: "ionic-settings" },
+    { id: "home", class: "ionic-home" },
+    { id: "checkmark-circle", class: "ionic-checkmark-circle" },
+    { id: "trash", class: "ionic-trash" },
     { id: "exit", class: "at-exit" },
-    { id: "xmark-circle", class: "at-xmark-circle" },
-    { id: "info-circle", class: "at-info-circle" },
-    { id: "pin-destination", class: "at-pin-destination" },
-    { id: "lock-keyhole", class: "at-lock-keyhole" },
-    { id: "unlock-keyhole", class: "at-unlock-keyhole" },
-    { id: "shopping-cart", class: "at-shopping-cart" },
-    { id: "crosshairs", class: "at-crosshairs" },
-    { id: "dollar-sign", class: "at-dollar-sign" },
-    { id: "berries", class: "at-berries" },
-    { id: "call", class: "at-call" },
-    { id: "call-xmark", class: "at-call-xmark" },
+
+    { id: "close-circle", class: "ionic-close-circle" },
+    { id: "information-circle", class: "ionic-information-circle" },
+    { id: "warning", class: "ionic-warning" },
+
+    { id: "location", class: "ionic-location" },
+
+    { id: "lock-closed", class: "ionic-lock-closed" },
+    { id: "lock-open", class: "ionic-lock-open" },
+    { id: "cart", class: "ionic-cart" },
+
+    { id: "locate", class: "ionic-locate" },
+    { id: "leaf", class: "ionic-leaf" },
+    { id: "call", class: "ionic-call" },
+
     { id: "signal", class: "at-signal" },
     { id: "wifi", class: "at-wifi" },
-    { id: "triangle-exclamation", class: "at-triangle-exclamation" },
     { id: "street-cone", class: "at-street-cone" },
     { id: "construction-truck", class: "at-construction-truck" },
     { id: "electric-battery-charge", class: "at-electric-battery-charge" },
@@ -489,14 +491,14 @@
             >
               <div
                 class="bg-gray-200 hover:bg-gray-300 rounded-lg p-3 transition duration-200 transform hover:scale-125 flex items-center justify-center"
-                style="width: 45px; height: 45px;"
+                style="width: 55px; height: 55px;"
               >
                 {#if icon.class.startsWith("custom-svg")}
-                  <IconSVG icon={icon.id} size="32px" />
+                  <IconSVG icon={icon.id} size="42px" />
                 {:else if icon.class.startsWith("ionic-")}
                   <ion-icon name={icon.id} style="font-size: 32px;"></ion-icon>
                 {:else}
-                  <i class={`${icon.class} text-4xl text-gray-700`}></i>
+                  <i class={`${icon.class} text-3xl text-gray-700`}></i>
                 {/if}
               </div>
             </button>
