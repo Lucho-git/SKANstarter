@@ -21,6 +21,11 @@ body {
     -webkit-user-select: none;
 }
 
+/* ✓ Tap Highlight color */
+button {
+    -webkit-tap-highlight-color: #d31818;
+}
+
 /* ✓ @media Standalone mode */
 @media (display-mode: standalone) {
     /* rules... */

@@ -23,3 +23,4 @@ button[disabled].authBtn::before {
   content: "Loading...";
   color: hsl(var(--pc));
 }
+

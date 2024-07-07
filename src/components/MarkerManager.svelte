@@ -10,11 +10,23 @@
   import { getContext, onMount, onDestroy } from "svelte"
   import mapboxgl from "mapbox-gl"
   import { v4 as uuidv4 } from "uuid"
+  import IconSVG from "../components/IconSVG.svelte"
 
   const { getMap } = getContext("map")
   let markerActionsUnsubscribe
 
   const markerIcons = [
+    { id: "kangaroo", class: "custom-svg" },
+    { id: "cell_tower", class: "custom-svg" },
+    { id: "electric_tower", class: "custom-svg" },
+    { id: "tractor", class: "custom-svg" },
+    { id: "recharge_icon", class: "custom-svg" },
+
+    // Ionic icons
+    { id: "heart", class: "ionic-heart" },
+    { id: "star", class: "ionic-star" },
+    { id: "pin", class: "ionic-pin" },
+
     { id: "arrow-up-circle", class: "at-arrow-up-circle" },
     { id: "arrow-down-circle", class: "at-arrow-down-circle" },
     { id: "arrow-left-circle", class: "at-arrow-left-circle" },
@@ -133,53 +145,65 @@
       // Create a default Mapbox marker
       const marker = new mapboxgl.Marker().setLngLat(lngLat)
       marker.getElement().setAttribute("data-marker-id", id)
-
-      const handleUpdateMarkerListeners = new CustomEvent(
-        "handleUpdateMarkerListeners",
-        {
-          detail: { marker: marker, id },
-        },
-      )
-      document.dispatchEvent(handleUpdateMarkerListeners)
-
+      dispatchUpdateEvent(marker, id)
       return marker
-    } else {
-      // Create a custom marker element
-      const markerElement = document.createElement("div")
-      markerElement.style.display = "flex"
-      markerElement.style.justifyContent = "center"
-      markerElement.style.alignItems = "center"
-      markerElement.style.width = "35px"
-      markerElement.style.height = "35px"
-      markerElement.style.borderRadius = "100%"
-      markerElement.style.backgroundColor = "LightGray"
-      markerElement.style.opacity = 0.9
-      markerElement.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.2)"
-      markerElement.setAttribute("data-marker-id", id)
+    }
 
+    const markerElement = document.createElement("div")
+    markerElement.style.width = "35px"
+    markerElement.style.height = "35px"
+    markerElement.setAttribute("data-marker-id", id)
+    markerElement.style.display = "flex"
+    markerElement.style.justifyContent = "center"
+    markerElement.style.alignItems = "center"
+    markerElement.style.borderRadius = "100%"
+    markerElement.style.backgroundColor = "LightGray"
+    markerElement.style.opacity = 0.9
+    markerElement.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.2)"
+
+    if (icon.startsWith("custom-svg-")) {
+      const svgComponent = new IconSVG({
+        target: markerElement,
+        props: {
+          icon: icon.replace("custom-svg-", ""),
+          size: "25px",
+        },
+      })
+      markerElement.querySelector("svg").dataset.icon = icon.replace(
+        "custom-svg-",
+        "",
+      )
+    } else if (icon.startsWith("ionic-")) {
+      const ionIcon = document.createElement("ion-icon")
+      ionIcon.setAttribute("name", icon.replace("ionic-", ""))
+      ionIcon.style.fontSize = "20px"
+      ionIcon.style.color = "black"
+      markerElement.appendChild(ionIcon)
+    } else {
       const iconElement = document.createElement("i")
       iconElement.className = icon
       iconElement.style.fontSize = "20px"
       iconElement.style.color = "black"
       iconElement.style.fill = "#ff6347"
       iconElement.style.fontWeight = "bold"
-
       markerElement.appendChild(iconElement)
-
-      const marker = new mapboxgl.Marker({ element: markerElement }).setLngLat(
-        lngLat,
-      )
-
-      const handleUpdateMarkerListeners = new CustomEvent(
-        "handleUpdateMarkerListeners",
-        {
-          detail: { marker: marker, id },
-        },
-      )
-      document.dispatchEvent(handleUpdateMarkerListeners)
-
-      return marker
     }
+
+    const marker = new mapboxgl.Marker({ element: markerElement }).setLngLat(
+      lngLat,
+    )
+    dispatchUpdateEvent(marker, id)
+    return marker
+  }
+
+  function dispatchUpdateEvent(marker, id) {
+    const handleUpdateMarkerListeners = new CustomEvent(
+      "handleUpdateMarkerListeners",
+      {
+        detail: { marker: marker, id },
+      },
+    )
+    document.dispatchEvent(handleUpdateMarkerListeners)
   }
 
   async function handleMarkerPlacement(event) {
@@ -220,73 +244,45 @@
   }
 
   function confirmMarker() {
-    // Check if a selected marker is available
     if ($selectedMarkerStore) {
       const { marker: selectedMarker, id } = $selectedMarkerStore
-
-      // Create a timestamp
       const currentTimestamp = new Date().toISOString()
-
-      // Check if the marker ID already exists in confirmedMarkersStore
       const existingMarker = $confirmedMarkersStore.find((m) => m.id === id)
 
-      if (!existingMarker) {
-        // If the marker ID doesn't exist, create a new marker data
-        const iconClass =
-          selectedMarker.getElement().querySelector("i")?.className || "default"
+      let iconClass = "default"
+      const markerElement = selectedMarker.getElement()
+      const iconElement = markerElement.querySelector("i")
+      const svgElement = markerElement.querySelector("svg")
+      const ionIconElement = markerElement.querySelector("ion-icon")
 
-        const newMarkerData = {
-          marker: selectedMarker,
-          id,
-          last_confirmed: currentTimestamp,
-        }
-
-        console.log("New marker icon:", iconClass)
-
-        // Add the new marker data to confirmedMarkersStore
-        confirmedMarkersStore.update((markers) => [...markers, newMarkerData])
-      } else {
-        // If the marker ID exists, compare the icon values
-        const selectedIcon = selectedMarker
-          .getElement()
-          .querySelector("i")?.className
-        const existingIcon = existingMarker.marker
-          .getElement()
-          .querySelector("i")?.className
-
-        if (selectedIcon === existingIcon) {
-          console.log("No changes made to the marker icon")
-          // If the icons are the same, do nothing and exit the function
-          selectedMarkerStore.set(null)
-          controlStore.update((controls) => ({
-            ...controls,
-            showMarkerMenu: false,
-          }))
-          return
-        }
-
-        console.log("Updating marker icon")
-
-        // If the icons are different, update the confirmedMarkersStore
-        confirmedMarkersStore.update((markers) => {
-          const updatedMarker = {
-            marker: selectedMarker,
-            id,
-            last_confirmed: currentTimestamp,
-          }
-
-          console.log("Updated marker data:", updatedMarker)
-          console.log("Updated marker icon:", selectedIcon)
-
-          return markers.map((m) => (m.id === id ? updatedMarker : m))
-        })
+      if (iconElement) {
+        iconClass = iconElement.className
+      } else if (svgElement) {
+        iconClass = `custom-svg-${svgElement.dataset.icon || "unknown"}`
+      } else if (ionIconElement) {
+        iconClass = `ionic-${ionIconElement.getAttribute("name")}`
       }
 
-      // Reset the selectedMarkerStore
+      const markerData = {
+        marker: selectedMarker,
+        id,
+        last_confirmed: currentTimestamp,
+        iconClass: iconClass,
+      }
+
+      if (!existingMarker) {
+        console.log("Adding new marker:", markerData)
+        confirmedMarkersStore.update((markers) => [...markers, markerData])
+      } else {
+        console.log("Updating existing marker:", markerData)
+        confirmedMarkersStore.update((markers) =>
+          markers.map((m) => (m.id === id ? markerData : m)),
+        )
+      }
+
       selectedMarkerStore.set(null)
     }
 
-    // Hide the marker menu
     controlStore.update((controls) => ({
       ...controls,
       showMarkerMenu: false,
@@ -355,23 +351,18 @@
       const lngLat = marker.getLngLat()
 
       marker.remove()
-      // Find the selected icon object based on the iconId
-      const selectedIcon = markerIcons.find((icon) => icon.id === iconId)
 
-      if (selectedIcon) {
-        // Create a custom marker element based on the selected icon
-        const newMarker = createCustomMarker(lngLat, selectedIcon.class, id)
-
-        newMarker.addTo(map)
-
-        // Store the updated marker data in a separate variable
-        const updatedMarker = { marker: newMarker, id }
-
-        // Set the $selectedMarkerStore to the updatedMarker value
-        selectedMarkerStore.set(updatedMarker)
+      let newMarker
+      if (icon.class.startsWith("custom-svg")) {
+        newMarker = createCustomMarker(lngLat, `custom-svg-${iconId}`, id)
       } else {
-        console.log("recentMarker is null or undefined")
+        newMarker = createCustomMarker(lngLat, icon.class, id)
       }
+
+      newMarker.addTo(map)
+
+      const updatedMarker = { marker: newMarker, id }
+      selectedMarkerStore.set(updatedMarker)
     }
   }
 
@@ -382,59 +373,31 @@
 
     actions.forEach((action, index) => {
       const { markerData } = action
-      const { id, marker_data, last_confirmed } = markerData
+      const { id, marker_data, last_confirmed, iconClass } = markerData
 
-      if (action.action === "add") {
+      if (action.action === "add" || action.action === "update") {
         const { geometry, properties } = marker_data
         const { coordinates } = geometry
-        const { icon } = properties
-
         const lngLat = new mapboxgl.LngLat(coordinates[0], coordinates[1])
 
-        // Create a custom marker element based on the icon
+        // Use iconClass if available, otherwise fall back to properties.icon
+        const icon = iconClass || properties.icon
         const newMarker = createCustomMarker(lngLat, icon, id)
-
         newMarker.setLngLat(lngLat).addTo(map)
 
-        // Add the marker to the confirmedMarkersStore
-        confirmedMarkersStore.update((markers) => [
-          ...markers,
-          { marker: newMarker, id, last_confirmed },
-        ])
-
-        completedActions.push(index)
-      } else if (action.action === "update") {
-        // Find the corresponding marker in the confirmedMarkersStore
-        const existingMarker = $confirmedMarkersStore.find(
-          (marker) => marker.id === id,
-        )
-
-        if (existingMarker) {
-          const { marker: oldMarker } = existingMarker
-          const { geometry, properties } = marker_data
-          const { coordinates } = geometry
-          const { icon } = properties
-
-          const lngLat = new mapboxgl.LngLat(coordinates[0], coordinates[1])
-
-          // Remove the old marker from the map
-          oldMarker.remove()
-
-          // Create a new marker element based on the updated data
-          const newMarker = createCustomMarker(lngLat, icon, id)
-
-          newMarker.setLngLat(lngLat).addTo(map)
-
-          // Update the confirmedMarkersStore with the new marker and last_confirmed value
+        if (action.action === "add") {
+          confirmedMarkersStore.update((markers) => [
+            ...markers,
+            { marker: newMarker, id, last_confirmed, iconClass: icon },
+          ])
+        } else {
           confirmedMarkersStore.update((markers) =>
             markers.map((marker) =>
               marker.id === id
-                ? { marker: newMarker, id, last_confirmed }
+                ? { marker: newMarker, id, last_confirmed, iconClass: icon }
                 : marker,
             ),
           )
-
-          console.log("Marker updated:", markerData)
         }
 
         completedActions.push(index)
@@ -525,9 +488,16 @@
               on:click={() => handleIconSelection(icon)}
             >
               <div
-                class="bg-gray-200 hover:bg-gray-300 rounded-lg p-3 transition duration-200 transform hover:scale-125"
+                class="bg-gray-200 hover:bg-gray-300 rounded-lg p-3 transition duration-200 transform hover:scale-125 flex items-center justify-center"
+                style="width: 45px; height: 45px;"
               >
-                <i class={`${icon.class} text-4xl text-gray-700`}></i>
+                {#if icon.class.startsWith("custom-svg")}
+                  <IconSVG icon={icon.id} size="32px" />
+                {:else if icon.class.startsWith("ionic-")}
+                  <ion-icon name={icon.id} style="font-size: 32px;"></ion-icon>
+                {:else}
+                  <i class={`${icon.class} text-4xl text-gray-700`}></i>
+                {/if}
               </div>
             </button>
           {/each}

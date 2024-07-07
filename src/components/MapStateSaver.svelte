@@ -227,7 +227,15 @@
         )
 
         if (!removedMarker) {
-          serverMarkersToBeAdded.push(localMarker)
+          serverMarkersToBeAdded.push({
+            ...localMarker,
+            iconClass: localMarker.marker.getElement().querySelector("svg")
+              ? `custom-svg-${localMarker.marker.getElement().querySelector("svg").dataset.icon}`
+              : localMarker.marker.getElement().querySelector("ion-icon")
+                ? `ionic-${localMarker.marker.getElement().querySelector("ion-icon").getAttribute("name")}`
+                : localMarker.marker.getElement().querySelector("i")
+                    ?.className || "default",
+          })
         }
       }
     }
@@ -298,14 +306,24 @@
 
     const masterMapId = profile.master_map_id
 
+    // Helper function to get iconClass
+    const getIconClass = (mapboxMarker) => {
+      const element = mapboxMarker.getElement()
+      if (element.querySelector("svg")) {
+        return `custom-svg-${element.querySelector("svg").dataset.icon}`
+      } else if (element.querySelector("ion-icon")) {
+        return `ionic-${element.querySelector("ion-icon").getAttribute("name")}`
+      } else {
+        return element.querySelector("i")?.className || "default"
+      }
+    }
+
     // Process markers to be added
     if (serverMarkersToBeAdded.length > 0) {
       const addMarkerData = serverMarkersToBeAdded.map((marker) => {
         const { marker: mapboxMarker, id, last_confirmed } = marker
         const coordinates = mapboxMarker.getLngLat().toArray()
-
-        const iconClass =
-          mapboxMarker.getElement().querySelector("i")?.className || "default"
+        const iconClass = getIconClass(mapboxMarker)
 
         const feature = {
           type: "Feature",
@@ -324,7 +342,7 @@
           id: id,
           marker_data: feature,
           last_confirmed: last_confirmed,
-          update_user_id: userId, // Add the user ID who made the update
+          update_user_id: userId,
         }
       })
 
@@ -343,9 +361,7 @@
       const updateMarkerData = serverMarkersToBeUpdated.map((marker) => {
         const { marker: mapboxMarker, id, last_confirmed } = marker
         const coordinates = mapboxMarker.getLngLat().toArray()
-
-        const iconClass =
-          mapboxMarker.getElement().querySelector("i")?.className || "default"
+        const iconClass = getIconClass(mapboxMarker)
 
         const feature = {
           type: "Feature",
@@ -363,7 +379,7 @@
           id: id,
           marker_data: feature,
           last_confirmed: last_confirmed,
-          update_user_id: userId, // Add the user ID who made the update
+          update_user_id: userId,
         }
       })
 
@@ -376,7 +392,6 @@
         throw new Error("Failed to update markers on server")
       }
     }
-
     // Process markers to be deleted
     if (serverMarkersToBeDeleted.length > 0) {
       const deleteMarkerData = serverMarkersToBeDeleted.map((marker) => ({
@@ -444,7 +459,10 @@
       throw new Error("Failed to retrieve latest markers from server")
     }
 
-    return latestMarkers
+    return latestMarkers.map((marker) => ({
+      ...marker,
+      iconClass: marker.marker_data.properties.icon,
+    }))
   }
 </script>
 

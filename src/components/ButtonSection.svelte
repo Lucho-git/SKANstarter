@@ -193,17 +193,10 @@
     class="btn btn-circle btn-md absolute top-20 right-20 z-10"
     on:click={cycleColorSize}
   >
-    <!-- src/components/ButtonSection.svelte -->
-    <!-- src/components/ButtonSection.svelte -->
-    <!-- src/components/ButtonSection.svelte -->
-    <!-- src/components/ButtonSection.svelte -->
-    <!-- src/components/ButtonSection.svelte -->
-
     {colorSizeOptions[currentColorSizeIndex].color}
     {colorSizeOptions[currentColorSizeIndex].size}
   </button>
 
-  <!-- Toggle Trailing Button -->
   <!-- Toggle Trailing Button -->
   <button
     class="btn btn-circle btn-md absolute top-36 right-4 z-10"

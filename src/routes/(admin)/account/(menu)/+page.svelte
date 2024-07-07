@@ -15,6 +15,7 @@
   import ZohoSalesIQWidget from "../../../../components/ZohoSalesIQWidget.svelte"
   import CrispChatWidget from "../../../../components/CrispChatWidget.svelte"
 
+  import IconSVG from "../../../../components/IconSVG.svelte"
   import MasterMapManager from "../(menu)/MasterMapManager.svelte"
 
   import { onMount, onDestroy } from "svelte"
