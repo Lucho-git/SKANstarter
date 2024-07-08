@@ -16,31 +16,39 @@
   let markerActionsUnsubscribe
 
   const markerIcons = [
-    { id: "barn", class: "custom-svg" },
-    { id: "color_tractor", class: "custom-svg" },
-    { id: "corn_field", class: "custom-svg" },
-    { id: "cell_tower", class: "custom-svg" },
-    { id: "electric_tower", class: "custom-svg" },
+    // { id: "barn", class: "custom-svg" },
+    // { id: "color_tractor", class: "custom-svg" },
+    // { id: "corn_field", class: "custom-svg" },
+    // { id: "cell_tower", class: "custom-svg" },
+    // { id: "electric_tower", class: "custom-svg" },
+    { id: "electric_tower_2", class: "custom-svg" },
     { id: "gate", class: "custom-svg" },
     { id: "kangaroo", class: "custom-svg" },
-    { id: "grain", class: "custom-svg" },
-    { id: "farmer", class: "custom-svg" },
-    { id: "pickup_truck", class: "custom-svg" },
+    // { id: "farmer", class: "custom-svg" },
+    // { id: "pickup_truck", class: "custom-svg" },
 
-    { id: "liquid_tank", class: "custom-svg" },
+    // { id: "liquid_tank", class: "custom-svg" },
     { id: "machine_pump", class: "custom-svg" },
     { id: "recharge_icon", class: "custom-svg" },
     { id: "repair_shop", class: "custom-svg" },
-    { id: "repair_house", class: "custom-svg" },
-    { id: "repair_marker", class: "custom-svg" },
+    // { id: "repair_house", class: "custom-svg" },
+    // { id: "repair_marker", class: "custom-svg" },
     { id: "rock", class: "custom-svg" },
     { id: "tree1", class: "custom-svg" },
-    { id: "tree8", class: "custom-svg" },
-    { id: "tree12", class: "custom-svg" },
+    // { id: "tree8", class: "custom-svg" },
+    // { id: "tree12", class: "custom-svg" },
     { id: "tree13", class: "custom-svg" },
 
     { id: "tractor", class: "custom-svg" },
     { id: "wheat2", class: "custom-svg" },
+    { id: "silo2", class: "custom-svg" },
+    { id: "tree_stump", class: "custom-svg" },
+    // { id: "vehicle_workshop", class: "custom-svg" },
+    // { id: "water_pump", class: "custom-svg" },
+    // { id: "water_tank", class: "custom-svg" },
+    { id: "watertank2", class: "custom-svg" },
+    { id: "workshop_icon", class: "custom-svg" },
+    // { id: "workshop2", class: "custom-svg" },
 
     // Ionic icons
 
@@ -50,13 +58,15 @@
     { id: "arrow-down-circle", class: "ionic-arrow-down-circle" },
     { id: "arrow-back-circle", class: "ionic-arrow-back-circle" },
     { id: "arrow-forward-circle", class: "ionic-arrow-forward-circle" },
+    { id: "thumbs-down", class: "ionic-thumbs-down" },
+    { id: "thumbs-up", class: "ionic-thumbs-up" },
+
     { id: "accessibility", class: "ionic-accessibility" },
     { id: "people", class: "ionic-people" },
     { id: "settings", class: "ionic-settings" },
     { id: "home", class: "ionic-home" },
     { id: "checkmark-circle", class: "ionic-checkmark-circle" },
     { id: "trash", class: "ionic-trash" },
-    { id: "exit", class: "at-exit" },
 
     { id: "close-circle", class: "ionic-close-circle" },
     { id: "information-circle", class: "ionic-information-circle" },
@@ -72,42 +82,68 @@
     { id: "leaf", class: "ionic-leaf" },
     { id: "call", class: "ionic-call" },
 
-    { id: "signal", class: "at-signal" },
-    { id: "wifi", class: "at-wifi" },
-    { id: "street-cone", class: "at-street-cone" },
+    { id: "wifi", class: "ionic-wifi" },
+    { id: "cloud-offline", class: "ionic-cloud-offline" },
+    { id: "radio", class: "ionic-radio" },
+
+    { id: "battery-charging", class: "ionic-battery-charging" },
+
+    { id: "thermometer", class: "ionic-thermometer" },
+    { id: "cloud", class: "ionic-cloud" },
+    { id: "sunny", class: "ionic-sunny" },
+    { id: "thunderstorm", class: "ionic-thunderstorm" },
+    { id: "rainy", class: "ionic-rainy" },
+    { id: "water", class: "ionic-water" },
+
+    { id: "fast-food", class: "ionic-fast-food" },
+    { id: "restaurant", class: "ionic-restaurant" },
+    { id: "cart", class: "ionic-cart" },
+    { id: "airplane", class: "ionic-airplane" },
+    { id: "trail-sign", class: "ionic-trail-sign" },
+    { id: "car", class: "ionic-car" },
+    { id: "beer", class: "ionic-beer" },
+    { id: "ban", class: "ionic-ban" },
+    { id: "bonfire", class: "ionic-bonfire" },
+    { id: "boat", class: "ionic-boat" },
+    { id: "bed", class: "ionic-bed" },
+    { id: "bicycle", class: "ionic-bicycle" },
+    { id: "build", class: "ionic-build" },
+    { id: "desktop", class: "ionic-desktop" },
+    { id: "earth", class: "ionic-earth" },
+    { id: "camera", class: "ionic-camera" },
+    { id: "fish", class: "ionic-fish" },
+    { id: "flame", class: "ionic-flame" },
+    { id: "footsteps", class: "ionic-footsteps" },
+    { id: "help-circle", class: "ionic-help-circle" },
+    { id: "key", class: "ionic-key" },
+    { id: "man", class: "ionic-man" },
+    { id: "paw", class: "ionic-paw" },
+    { id: "skull", class: "ionic-skull" },
+
+    { id: "construct", class: "ionic-construct" },
+
+    { id: "bus", class: "ionic-bus" },
+    { id: "subway", class: "ionic-subway" },
+    { id: "telescope", class: "ionic-telescope" },
+
     { id: "construction-truck", class: "at-construction-truck" },
-    { id: "electric-battery-charge", class: "at-electric-battery-charge" },
     { id: "electric-car", class: "at-electric-car" },
-    { id: "flower", class: "at-flower" },
     { id: "gasoline", class: "at-gasoline" },
-    { id: "green-gas", class: "at-green-gas" },
-    { id: "green-container", class: "at-green-container" },
-    { id: "green-can", class: "at-green-can" },
-    { id: "plant-house", class: "at-plant-house" },
-    { id: "arrows-recycle", class: "at-arrows-recycle" },
-    { id: "water-container", class: "at-water-container" },
-    { id: "gewindmillar", class: "at-windmill" },
+
     { id: "kg-weight", class: "at-kg-weight" },
     { id: "carrot", class: "at-carrot" },
-    { id: "hamburger", class: "at-hamburger" },
     { id: "middle-finger", class: "at-middle-finger" },
     { id: "toilet-bathroom", class: "at-toilet-bathroom" },
-    { id: "taxi-service", class: "at-taxi-service" },
-    { id: "block", class: "at-block" },
-    { id: "wheelchair", class: "at-wheelchair" },
+
     { id: "car-garage", class: "at-car-garage" },
     { id: "electricity-home", class: "at-electricity-home" },
-    { id: "house-home", class: "at-house-home" },
-    { id: "houses", class: "at-houses" },
+
     { id: "carrot-turnip-vegetable", class: "at-carrot-turnip-vegetable" },
-    { id: "cart", class: "at-cart" },
     { id: "wheat-harvest", class: "at-wheat-harvest" },
     { id: "helicopter-travel", class: "at-helicopter-travel" },
-    { id: "airplane", class: "at-airplane" },
-    { id: "farming-tractor", class: "at-farming-tractor" },
 
     { id: "camper-vehicle", class: "at-camper-vehicle" },
-    { id: "car-vehicle", class: "at-car-vehicle" },
+
     { id: "cargo-transport", class: "at-cargo-transport" },
     { id: "bulldozer", class: "at-bulldozer" },
     { id: "construction-transport", class: "at-construction-transport" },
@@ -116,11 +152,6 @@
     { id: "liquid-transportation", class: "at-liquid-transportation" },
     { id: "transport-truck", class: "at-transport-truck" },
     { id: "ladder-truck", class: "at-ladder-truck" },
-    { id: "celcius", class: "at-celcius" },
-    { id: "clouds", class: "at-clouds" },
-    { id: "crosswinds", class: "at-crosswinds" },
-    { id: "rain-storm", class: "at-rain-storm" },
-    { id: "rain-drops", class: "at-rain-drops" },
   ]
 
   export let markerPlacementEvent = null
@@ -537,6 +568,6 @@
 
   .grid-auto-flow {
     grid-auto-flow: row;
-    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
   }
 </style>
