@@ -16,17 +16,31 @@
   let markerActionsUnsubscribe
 
   const markerIcons = [
-    { id: "kangaroo", class: "custom-svg" },
+    { id: "barn", class: "custom-svg" },
+    { id: "color_tractor", class: "custom-svg" },
+    { id: "corn_field", class: "custom-svg" },
     { id: "cell_tower", class: "custom-svg" },
     { id: "electric_tower", class: "custom-svg" },
-    { id: "tractor", class: "custom-svg" },
+    { id: "gate", class: "custom-svg" },
+    { id: "kangaroo", class: "custom-svg" },
+    { id: "grain", class: "custom-svg" },
+    { id: "farmer", class: "custom-svg" },
+    { id: "pickup_truck", class: "custom-svg" },
+
+    { id: "liquid_tank", class: "custom-svg" },
+    { id: "machine_pump", class: "custom-svg" },
     { id: "recharge_icon", class: "custom-svg" },
     { id: "repair_shop", class: "custom-svg" },
     { id: "repair_house", class: "custom-svg" },
     { id: "repair_marker", class: "custom-svg" },
     { id: "rock", class: "custom-svg" },
     { id: "tree1", class: "custom-svg" },
-    { id: "gate", class: "custom-svg" },
+    { id: "tree8", class: "custom-svg" },
+    { id: "tree12", class: "custom-svg" },
+    { id: "tree13", class: "custom-svg" },
+
+    { id: "tractor", class: "custom-svg" },
+    { id: "wheat2", class: "custom-svg" },
 
     // Ionic icons
 
@@ -488,7 +502,7 @@
           </svg>
         </button>
       </div>
-      <div class="p-4 overflow-auto max-h-64">
+      <div class="p-2 overflow-auto max-h-64">
         <div class="grid grid-auto-flow grid-auto-columns gap-2">
           {#each markerIcons as icon}
             <button
@@ -497,7 +511,7 @@
             >
               <div
                 class="bg-gray-200 hover:bg-gray-300 rounded-lg p-3 transition duration-200 transform hover:scale-125 flex items-center justify-center"
-                style="width: 55px; height: 55px;"
+                style="width: 50px; height: 45px;"
               >
                 {#if icon.class.startsWith("custom-svg")}
                   <IconSVG icon={icon.id} size="42px" />
@@ -523,6 +537,6 @@
 
   .grid-auto-flow {
     grid-auto-flow: row;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
   }
 </style>
