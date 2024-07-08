@@ -20,10 +20,16 @@
     // { id: "color_tractor", class: "custom-svg" },
     // { id: "corn_field", class: "custom-svg" },
     // { id: "cell_tower", class: "custom-svg" },
-    // { id: "electric_tower", class: "custom-svg" },
-    { id: "electric_tower_2", class: "custom-svg" },
-    { id: "gate", class: "custom-svg" },
+    { id: "rock", class: "custom-svg" },
+    { id: "tree13", class: "custom-svg" },
+    { id: "watertank2", class: "custom-svg" },
+    { id: "wheat2", class: "custom-svg" },
     { id: "kangaroo", class: "custom-svg" },
+
+    // { id: "tree1", class: "custom-svg" },
+    { id: "electric_tower", class: "custom-svg" },
+    // { id: "electric_tower_2", class: "custom-svg" },
+    { id: "gate", class: "custom-svg" },
     // { id: "farmer", class: "custom-svg" },
     // { id: "pickup_truck", class: "custom-svg" },
 
@@ -33,20 +39,16 @@
     { id: "repair_shop", class: "custom-svg" },
     // { id: "repair_house", class: "custom-svg" },
     // { id: "repair_marker", class: "custom-svg" },
-    { id: "rock", class: "custom-svg" },
-    { id: "tree1", class: "custom-svg" },
+
     // { id: "tree8", class: "custom-svg" },
     // { id: "tree12", class: "custom-svg" },
-    { id: "tree13", class: "custom-svg" },
 
     { id: "tractor", class: "custom-svg" },
-    { id: "wheat2", class: "custom-svg" },
     { id: "silo2", class: "custom-svg" },
     { id: "tree_stump", class: "custom-svg" },
     // { id: "vehicle_workshop", class: "custom-svg" },
     // { id: "water_pump", class: "custom-svg" },
     // { id: "water_tank", class: "custom-svg" },
-    { id: "watertank2", class: "custom-svg" },
     { id: "workshop_icon", class: "custom-svg" },
     // { id: "workshop2", class: "custom-svg" },
 
@@ -83,14 +85,14 @@
     { id: "call", class: "ionic-call" },
 
     { id: "wifi", class: "ionic-wifi" },
-    { id: "cloud-offline", class: "ionic-cloud-offline" },
     { id: "radio", class: "ionic-radio" },
+    { id: "cloud-offline", class: "ionic-cloud-offline" },
 
     { id: "battery-charging", class: "ionic-battery-charging" },
 
     { id: "thermometer", class: "ionic-thermometer" },
-    { id: "cloud", class: "ionic-cloud" },
     { id: "sunny", class: "ionic-sunny" },
+    { id: "cloud", class: "ionic-cloud" },
     { id: "thunderstorm", class: "ionic-thunderstorm" },
     { id: "rainy", class: "ionic-rainy" },
     { id: "water", class: "ionic-water" },
