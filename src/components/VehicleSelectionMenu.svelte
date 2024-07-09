@@ -69,18 +69,17 @@
 </script>
 
 <div
-  class="fixed left-0 right-0 bottom-0 bg-white shadow-lg rounded-t-lg p-4 sm:p-6 z-20 transform transition-transform duration-300 overflow-y-auto"
+  class="fixed left-0 right-0 bottom-0 bg-white shadow-lg rounded-t-lg p-4 sm:p-6 z-20 transform transition-transform duration-300 flex flex-col"
   class:translate-y-full={!showMenu}
   class:translate-y-0={showMenu}
-  style={isMobile ? "height: 100%;" : "max-height: 45vh;"}
+  style={isMobile ? "height: 100%;" : "height: 45vh;"}
 >
   <h2 class="text-2xl font-bold mb-4 text-center sm:hidden">Select Vehicle</h2>
-  <div class="flex flex-col sm:flex-row h-full">
+  <div class="flex flex-col sm:flex-row flex-grow overflow-hidden">
     <!-- Vehicle selection (scrollable) -->
-    <div class="w-full sm:w-1/2 sm:pr-3 mb-4 sm:mb-0 flex-grow sm:flex-grow-0">
+    <div class="w-full sm:w-1/2 sm:pr-3 flex-grow overflow-hidden">
       <div
-        class="border-2 border-gray-300 rounded-lg p-4 h-full flex flex-col"
-        style="max-height: 30vh;"
+        class="border-2 border-gray-300 rounded-lg p-4 h-full flex flex-col overflow-hidden"
       >
         <div class="overflow-y-auto flex-grow">
           <div
@@ -106,7 +105,7 @@
     </div>
 
     <!-- Select Vehicle text at the top and wireframe box -->
-    <div class="w-full sm:w-1/2 sm:pl-3 flex flex-col">
+    <div class="w-full sm:w-1/2 sm:pl-3 flex flex-col mt-4 sm:mt-0">
       <h2 class="text-2xl font-bold mb-4 text-center hidden sm:block">
         Select Vehicle
       </h2>
