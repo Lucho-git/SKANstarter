@@ -21,19 +21,13 @@
       path: () => import("../components/SVG/SimpleTractor.svelte"),
       type: "svg",
     },
-
-    phone: {
-      path: () => import("../components/SVG/PhoneBlock.svelte"),
-      type: "svg",
-    },
-
     pointer: {
       path: () => import("../components/SVG/Pointer.svelte"),
       type: "svg",
     },
 
     CombineHarvester: {
-      path: () => import("./SVG/CombineHarvester.svelte"),
+      path: () => import("../components/SVG/CombineHarvester.svelte"),
       type: "svg",
     },
 

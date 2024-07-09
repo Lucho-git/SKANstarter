@@ -4,8 +4,12 @@
   import { mapStore } from "../stores/mapStore"
   import { userVehicleStore, userVehicleTrailing } from "../stores/vehicleStore"
   import { antLineConfigStore } from "../stores/trailDataStore"
+  import { controlStore } from "../stores/controlStore"
+
   import { browser } from "$app/environment"
   import { onMount } from "svelte"
+  import VehicleSelectionMenu from "./VehicleSelectionMenu.svelte"
+  import SVGComponents from "../components/SVG/index.js"
 
   let LottiePlayer
 
@@ -17,6 +21,19 @@
   })
 
   export let isSatelliteView = true
+  let isVehicleMenuOpen = false
+  let VehicleIcon
+
+  $: {
+    if (
+      $userVehicleStore.vehicle_marker &&
+      $userVehicleStore.vehicle_marker.type
+    ) {
+      VehicleIcon =
+        SVGComponents[$userVehicleStore.vehicle_marker.type] ||
+        SVGComponents.simpleTractor
+    }
+  }
 
   const dispatch = createEventDispatcher()
 
@@ -41,6 +58,22 @@
     })
     dispatch("toggleMapStyleDispatcher", isSatelliteView)
   }
+
+  function toggleVehicleMenu() {
+    isVehicleMenuOpen = !isVehicleMenuOpen
+    console.log("Set vehicleMenuVisibility to", isVehicleMenuOpen)
+    controlStore.update((store) => {
+      const updatedStore = {
+        ...store,
+        showVehicleMenu: isVehicleMenuOpen,
+      }
+      console.log("Updated controlStore:", updatedStore)
+      return updatedStore
+    })
+  }
+
+  // Add this reactive statement to keep isVehicleMenuOpen in sync with the store
+  $: isVehicleMenuOpen = $controlStore.showVehicleMenu
 
   function handleBackToDashboard() {
     dispatch("backToDashboard")
@@ -252,6 +285,41 @@
   >
     {antLineConfigModes[currentAntLineConfigIndex]}
   </button>
+
+  <!-- Vehicle Selection Button -->
+  <button
+    class="btn btn-circle btn-md absolute top-52 right-20 z-10 text-xs"
+    on:click={toggleVehicleMenu}
+  >
+    <div class="flex items-center justify-center w-full h-full">
+      {#if VehicleIcon}
+        <svelte:component
+          this={VehicleIcon}
+          color={$userVehicleStore.vehicle_marker.color}
+          size={$userVehicleStore.vehicle_marker.size}
+        />
+      {:else}
+        Loading...
+      {/if}
+    </div>
+  </button>
+
+  {#if isVehicleMenuOpen}
+    <VehicleSelectionMenu
+      showMenu={$controlStore.showVehicleMenu}
+      currentVehicleType={$userVehicleStore.vehicle_marker.type}
+      on:closeMenu={() => {
+        controlStore.update((store) => ({ ...store, showVehicleMenu: false }))
+      }}
+      on:vehicleSelected={(event) => {
+        userVehicleStore.update((vehicle) => ({
+          ...vehicle,
+          vehicle_marker: event.detail,
+        }))
+        controlStore.update((store) => ({ ...store, showVehicleMenu: false }))
+      }}
+    />
+  {/if}
 </div>
 
 <style>

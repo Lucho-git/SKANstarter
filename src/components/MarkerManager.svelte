@@ -68,16 +68,19 @@
     { id: "settings", class: "ionic-settings" },
     { id: "home", class: "ionic-home" },
     { id: "checkmark-circle", class: "ionic-checkmark-circle" },
-    { id: "trash", class: "ionic-trash" },
-
     { id: "close-circle", class: "ionic-close-circle" },
+
     { id: "information-circle", class: "ionic-information-circle" },
     { id: "warning", class: "ionic-warning" },
+    { id: "help-circle", class: "ionic-help-circle" },
+    { id: "ban", class: "ionic-ban" },
 
     { id: "location", class: "ionic-location" },
 
     { id: "lock-closed", class: "ionic-lock-closed" },
     { id: "lock-open", class: "ionic-lock-open" },
+    { id: "trash", class: "ionic-trash" },
+
     { id: "cart", class: "ionic-cart" },
 
     { id: "locate", class: "ionic-locate" },
@@ -104,7 +107,6 @@
     { id: "trail-sign", class: "ionic-trail-sign" },
     { id: "car", class: "ionic-car" },
     { id: "beer", class: "ionic-beer" },
-    { id: "ban", class: "ionic-ban" },
     { id: "bonfire", class: "ionic-bonfire" },
     { id: "boat", class: "ionic-boat" },
     { id: "bed", class: "ionic-bed" },
@@ -116,7 +118,6 @@
     { id: "fish", class: "ionic-fish" },
     { id: "flame", class: "ionic-flame" },
     { id: "footsteps", class: "ionic-footsteps" },
-    { id: "help-circle", class: "ionic-help-circle" },
     { id: "key", class: "ionic-key" },
     { id: "man", class: "ionic-man" },
     { id: "paw", class: "ionic-paw" },
