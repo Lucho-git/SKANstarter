@@ -148,8 +148,8 @@
 
   @media (max-width: 640px) {
     .btn-circle {
-      width: 4rem;
-      height: 4rem;
+      width: 5rem;
+      height: 5rem;
     }
   }
 </style>
