@@ -18,19 +18,6 @@
     { type: "WheelLoader", color: "yellow", size: "50px" },
     { type: "WorkCar", color: "red", size: "45px" },
     { type: "Airplane", color: "blue", size: "60px" },
-    { type: "Airplane", color: "blue", size: "60px" },
-    { type: "Airplane", color: "blue", size: "60px" },
-    { type: "Airplane", color: "blue", size: "60px" },
-    { type: "Airplane", color: "blue", size: "60px" },
-    { type: "Airplane", color: "blue", size: "60px" },
-    { type: "Airplane", color: "blue", size: "60px" },
-    { type: "Airplane", color: "blue", size: "60px" },
-    { type: "Airplane", color: "blue", size: "60px" },
-    { type: "Airplane", color: "blue", size: "60px" },
-    { type: "Airplane", color: "blue", size: "60px" },
-    { type: "Airplane", color: "blue", size: "60px" },
-    { type: "Airplane", color: "blue", size: "60px" },
-    { type: "Airplane", color: "blue", size: "60px" },
   ]
 
   $: initialVehicle =
