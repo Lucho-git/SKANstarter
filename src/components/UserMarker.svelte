@@ -17,18 +17,8 @@
       path: "/images/ChaserBinUp.png",
       type: "image",
     },
-    tractor: {
+    simpleTractor: {
       path: () => import("../components/SVG/SimpleTractor.svelte"),
-      type: "svg",
-    },
-
-    combine: {
-      path: () => import("../components/SVG/CombineHeader.svelte"),
-      type: "svg",
-    },
-
-    loader: {
-      path: () => import("../components/SVG/TractorLoader.svelte"),
       type: "svg",
     },
 
@@ -39,6 +29,34 @@
 
     pointer: {
       path: () => import("../components/SVG/Pointer.svelte"),
+      type: "svg",
+    },
+
+    CombineHarvester: {
+      path: () => import("./SVG/CombineHarvester.svelte"),
+      type: "svg",
+    },
+
+    excavator: {
+      path: () => import("../components/SVG/Excavator.svelte"),
+      type: "svg",
+    },
+
+    tractor: {
+      path: () => import("../components/SVG/Tractor.svelte"),
+      type: "svg",
+    },
+
+    WheelLoader: {
+      path: () => import("../components/SVG/WheelLoader.svelte"),
+      type: "svg",
+    },
+    WorkCar: {
+      path: () => import("../components/SVG/WorkCar.svelte"),
+      type: "svg",
+    },
+    Airplane: {
+      path: () => import("../components/SVG/Airplane.svelte"),
       type: "svg",
     },
   }
