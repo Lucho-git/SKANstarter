@@ -83,7 +83,7 @@
       >
         <div class="overflow-y-auto flex-grow">
           <div
-            class="grid grid-cols-3 gap-4 justify-items-center content-start"
+            class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3 justify-items-center content-start"
           >
             {#each vehicles as vehicle}
               <button
@@ -142,8 +142,8 @@
 
 <style>
   .btn-circle {
-    width: 6rem;
-    height: 6rem;
+    width: 5rem;
+    height: 5rem;
   }
 
   @media (max-width: 640px) {
