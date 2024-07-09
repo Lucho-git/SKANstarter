@@ -77,10 +77,10 @@
   <h2 class="text-2xl font-bold mb-4 text-center sm:hidden">Select Vehicle</h2>
   <div class="flex flex-col sm:flex-row h-full">
     <!-- Vehicle selection (scrollable) -->
-    <div class="w-full sm:w-1/2 sm:pr-3 mb-4 sm:mb-0 flex-grow">
+    <div class="w-full sm:w-1/2 sm:pr-3 mb-4 sm:mb-0 flex-grow sm:flex-grow-0">
       <div
         class="border-2 border-gray-300 rounded-lg p-4 h-full flex flex-col"
-        style={isMobile ? "height: calc(100vh - 13rem);" : "max-height: 30vh;"}
+        style="max-height: 30vh;"
       >
         <div class="overflow-y-auto flex-grow">
           <div
