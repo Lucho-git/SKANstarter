@@ -142,14 +142,14 @@
 
 <style>
   .btn-circle {
-    width: 4rem;
-    height: 4rem;
+    width: 6rem;
+    height: 6rem;
   }
 
   @media (max-width: 640px) {
     .btn-circle {
-      width: 3rem;
-      height: 3rem;
+      width: 4rem;
+      height: 4rem;
     }
   }
 </style>
