@@ -64,8 +64,20 @@
   function cancelSelection() {
     dispatch("closeMenu")
   }
+  let isColorSelectionMode = false
+  let colors = ["red", "blue", "green", "yellow", "orange", "purple"]
 
-  $: hasChanged = selectedVehicle.type !== initialVehicle.type
+  function toggleSelectionMode() {
+    isColorSelectionMode = !isColorSelectionMode
+  }
+
+  function selectColor(color) {
+    selectedVehicle = { ...selectedVehicle, color }
+  }
+
+  $: hasChanged =
+    selectedVehicle.type !== initialVehicle.type ||
+    selectedVehicle.color !== initialVehicle.color
 </script>
 
 <div
@@ -74,43 +86,64 @@
   class:translate-y-0={showMenu}
   style={isMobile ? "height: 100%;" : "height: 45vh;"}
 >
-  <h2 class="text-2xl font-bold mb-4 text-center sm:hidden">Select Vehicle</h2>
+  <h2 class="text-2xl font-bold mb-4 text-center sm:hidden">
+    {isColorSelectionMode ? "Select Color" : "Select Vehicle"}
+  </h2>
   <div class="flex flex-col sm:flex-row flex-grow overflow-hidden">
-    <!-- Vehicle selection (scrollable) -->
+    <!-- Vehicle/Color selection (scrollable) -->
     <div class="w-full sm:w-1/2 sm:pr-3 flex-grow overflow-hidden">
       <div
         class="border-2 border-gray-300 rounded-lg p-4 h-full flex flex-col overflow-hidden"
       >
         <div class="overflow-y-auto flex-grow">
-          <div
-            class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3 justify-items-center content-start"
-          >
-            {#each vehicles as vehicle}
-              <button
-                class="btn btn-circle {selectedVehicle.type === vehicle.type
-                  ? 'btn-primary'
-                  : ''}"
-                on:click={() => selectVehicle(vehicle)}
-              >
-                <svelte:component
-                  this={SVGComponents[vehicle.type]}
-                  color={vehicle.color}
-                  size={vehicle.size}
-                />
-              </button>
-            {/each}
-          </div>
+          {#if isColorSelectionMode}
+            <div
+              class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3 justify-items-center content-start"
+            >
+              {#each colors as color}
+                <button
+                  class="btn btn-circle border-4 transition-all duration-200"
+                  style="background-color: {color}; border-color: {selectedVehicle.color ===
+                  color
+                    ? 'white'
+                    : color};"
+                  on:click={() => selectColor(color)}
+                ></button>
+              {/each}
+            </div>
+          {:else}
+            <div
+              class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3 justify-items-center content-start"
+            >
+              {#each vehicles as vehicle}
+                <button
+                  class="btn btn-circle {selectedVehicle.type === vehicle.type
+                    ? 'btn-primary'
+                    : ''}"
+                  on:click={() => selectVehicle(vehicle)}
+                >
+                  <svelte:component
+                    this={SVGComponents[vehicle.type]}
+                    color={vehicle.color}
+                    size={vehicle.size}
+                  />
+                </button>
+              {/each}
+            </div>
+          {/if}
         </div>
       </div>
     </div>
 
-    <!-- Select Vehicle text at the top and wireframe box -->
+    <!-- Select Vehicle/Color text at the top and wireframe box -->
     <div class="w-full sm:w-1/2 sm:pl-3 flex flex-col mt-4 sm:mt-0">
       <h2 class="text-2xl font-bold mb-4 text-center hidden sm:block">
-        Select Vehicle
+        {isColorSelectionMode ? "Select Color" : "Select Vehicle"}
       </h2>
-      <div
-        class="flex-grow border-2 border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center"
+      <button
+        class="flex-grow border-2 rounded-lg p-4 flex flex-col items-center justify-center transition-all duration-300 hover:bg-gray-100 active:bg-gray-200 focus:outline-none"
+        on:click={toggleSelectionMode}
+        style="border-color: {isColorSelectionMode ? '#3b82f6' : '#d1d5db'};"
       >
         <svelte:component
           this={SVGComponents[selectedVehicle.type]}
@@ -123,7 +156,10 @@
         <p class="text-center text-xs sm:text-sm text-gray-500">
           Color: {selectedVehicle.color}
         </p>
-      </div>
+        <p class="mt-2 text-blue-500 text-sm">
+          Click to {isColorSelectionMode ? "select vehicle" : "change color"}
+        </p>
+      </button>
     </div>
   </div>
 
