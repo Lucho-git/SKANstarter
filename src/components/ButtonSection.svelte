@@ -10,6 +10,19 @@
   import { onMount } from "svelte"
   import VehicleSelectionMenu from "./VehicleSelectionMenu.svelte"
   import SVGComponents from "../components/SVG/index.js"
+  import GridColorPicker from "../components/GridColorPicker.svelte"
+  let showGridPicker = false
+  let gridSelectedColor = "#FF0000"
+
+  function toggleGridColorPicker() {
+    showGridPicker = !showGridPicker
+    console.log("showGridPicker:", showGridPicker)
+  }
+
+  function handleColorSelected(event) {
+    gridSelectedColor = event.detail
+    // Removed: showGridPicker = false;
+  }
 
   let LottiePlayer
 
@@ -320,6 +333,23 @@
       }}
     />
   {/if}
+
+  <!-- New Color Picker Button -->
+  <button
+    class="btn btn-circle btn-md absolute top-80 right-4 z-10"
+    on:click={toggleGridColorPicker}
+    style="background-color: {gridSelectedColor};"
+  >
+    Color
+  </button>
+
+  <!-- GridColorPicker component -->
+  <GridColorPicker
+    bind:showPicker={showGridPicker}
+    bind:selectedColor={gridSelectedColor}
+    on:colorSelected={handleColorSelected}
+    on:close={() => (showGridPicker = false)}
+  />
 </div>
 
 <style>
