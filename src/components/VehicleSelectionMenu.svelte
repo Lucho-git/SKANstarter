@@ -182,9 +182,9 @@
         <p class="text-center text-xs sm:text-sm text-gray-500">
           Color: {selectedVehicle.color}
         </p>
-        <p class="text-center text-xs sm:text-sm text-gray-500 mt-1">
+        <!-- <p class="text-center text-xs sm:text-sm text-gray-500 mt-1">
           Size: {sizeOptions[currentSizeIndex]}
-        </p>
+        </p> -->
         <div class="flex mt-2 space-x-3 items-center">
           {#each sizeOptions as size, index}
             <div
