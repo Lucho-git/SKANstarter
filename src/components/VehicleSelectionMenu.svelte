@@ -28,6 +28,8 @@
   let isColorSelectionMode = false
 
   const colors = ["red", "blue", "green", "yellow", "orange", "purple"]
+  const sizeOptions = ["small", "medium", "large"]
+  let currentSizeIndex = 1 // Start with medium size
 
   onMount(() => {
     const checkMobile = () => {
@@ -46,7 +48,10 @@
   }
 
   function confirmSelection() {
-    dispatch("vehicleSelected", selectedVehicle)
+    dispatch("vehicleSelected", {
+      ...selectedVehicle,
+      size: sizeOptions[currentSizeIndex],
+    })
     dispatch("closeMenu")
   }
 
@@ -62,9 +67,25 @@
     selectedVehicle = { ...selectedVehicle, color }
   }
 
+  function cycleSize() {
+    currentSizeIndex = (currentSizeIndex + 1) % sizeOptions.length
+  }
+
+  function getSizeInPixels(size) {
+    switch (size) {
+      case "small":
+        return isMobile ? "40px" : "60px"
+      case "medium":
+        return isMobile ? "60px" : "80px"
+      case "large":
+        return isMobile ? "80px" : "100px"
+    }
+  }
+
   $: hasChanged =
     selectedVehicle.type !== initialVehicle.type ||
-    selectedVehicle.color !== initialVehicle.color
+    selectedVehicle.color !== initialVehicle.color ||
+    sizeOptions[currentSizeIndex] !== initialVehicle.size
 </script>
 
 <div
@@ -146,13 +167,14 @@
     <!-- Vehicle display box -->
     <div class="w-full sm:w-1/2 sm:pl-3 flex flex-col mt-4 sm:mt-0">
       <h2 class="text-2xl font-bold mb-4 text-center">Selected Vehicle</h2>
-      <div
+      <button
         class="flex-grow border-2 border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center transition-all duration-300 hover:bg-gray-100 active:bg-gray-200"
+        on:click={cycleSize}
       >
         <svelte:component
           this={SVGComponents[selectedVehicle.type]}
           color={selectedVehicle.color}
-          size={isMobile ? "60px" : "80px"}
+          size={getSizeInPixels(sizeOptions[currentSizeIndex])}
         />
         <p class="mt-2 sm:mt-4 text-center font-semibold">
           {selectedVehicle.type}
@@ -160,7 +182,22 @@
         <p class="text-center text-xs sm:text-sm text-gray-500">
           Color: {selectedVehicle.color}
         </p>
-      </div>
+        <p class="text-center text-xs sm:text-sm text-gray-500 mt-1">
+          Size: {sizeOptions[currentSizeIndex]}
+        </p>
+        <div class="flex mt-2 space-x-3 items-center">
+          {#each sizeOptions as size, index}
+            <div
+              class="rounded-full transition-all duration-200 border-2"
+              class:bg-blue-500={index === currentSizeIndex}
+              class:border-blue-500={index === currentSizeIndex}
+              class:bg-gray-300={index !== currentSizeIndex}
+              class:border-gray-300={index !== currentSizeIndex}
+              style="width: {8 + index * 4}px; height: {8 + index * 4}px;"
+            ></div>
+          {/each}
+        </div>
+      </button>
     </div>
   </div>
 
