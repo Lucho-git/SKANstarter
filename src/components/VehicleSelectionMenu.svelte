@@ -34,6 +34,7 @@
       isMobile = window.innerWidth < 640
     }
     checkMobile()
+
     window.addEventListener("resize", checkMobile)
     return () => {
       window.removeEventListener("resize", checkMobile)
@@ -71,7 +72,6 @@
   class:translate-y-full={!showMenu}
   class:translate-y-0={showMenu}
   style={isMobile ? "height: 100%;" : "height: 45vh;"}
-  style:--selected-color={selectedVehicle.color}
 >
   <div class="flex flex-col sm:flex-row flex-grow overflow-hidden">
     <!-- Vehicle/Color selection (scrollable) -->
@@ -83,18 +83,18 @@
       >
         <a
           role="tab"
-          class="flex-1 py-4 text-center transition-colors duration-200 font-bold text-lg"
-          class:active-tab={!isColorSelectionMode}
-          class:inactive-tab={isColorSelectionMode}
+          class="flex-1 py-3 text-center transition-colors duration-200 font-semibold text-lg {!isColorSelectionMode
+            ? 'bg-white border-b-2 border-transparent'
+            : 'bg-green-200 hover:bg-green-300'}"
           on:click={() => toggleSelectionMode("vehicle")}
         >
           Vehicles
         </a>
         <a
           role="tab"
-          class="flex-1 py-4 text-center transition-colors duration-200 font-bold text-lg"
-          class:active-tab={isColorSelectionMode}
-          class:inactive-tab={!isColorSelectionMode}
+          class="flex-1 py-3 text-center transition-colors duration-200 font-semibold text-lg {isColorSelectionMode
+            ? 'bg-white border-b-2 border-transparent'
+            : 'bg-green-200 hover:bg-green-300'}"
           on:click={() => toggleSelectionMode("color")}
         >
           Colors
@@ -188,18 +188,5 @@
       width: 5rem;
       height: 5rem;
     }
-  }
-
-  .active-tab {
-    background-color: white;
-    border-bottom: 2px solid transparent;
-  }
-
-  .inactive-tab {
-    background-color: color-mix(in srgb, var(--selected-color) 20%, white);
-  }
-
-  .inactive-tab:hover {
-    background-color: color-mix(in srgb, var(--selected-color) 30%, white);
   }
 </style>
