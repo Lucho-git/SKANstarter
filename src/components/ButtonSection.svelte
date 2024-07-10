@@ -336,7 +336,7 @@
   {/if}
 
   <!-- New Color Picker Button -->
-  <button
+  <!-- <button
     class="btn btn-circle btn-md absolute top-80 right-4 z-10"
     on:click={toggleGridColorPicker}
     style="background-color: {gridSelectedColor};"
@@ -345,13 +345,14 @@
   </button>
 
   <!-- GridColorPicker component -->
-  <GridColorPicker
+  <!-- <GridColorPicker
     bind:showPicker={showGridPicker}
     bind:selectedColor={gridSelectedColor}
     on:colorSelected={handleColorSelected}
     on:close={() => (showGridPicker = false)}
-  />
+  /> -->
 </div>
+-->
 
 <style>
 </style>

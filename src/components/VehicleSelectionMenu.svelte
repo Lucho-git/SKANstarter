@@ -45,6 +45,9 @@
 
   $: currentSizeIndex = sizeOptions.indexOf(selectedVehicle.size)
 
+  let startX = 0
+  let startY = 0
+
   onMount(() => {
     const checkMobile = () => {
       isMobile = window.innerWidth < 640
@@ -81,8 +84,9 @@
     selectedVehicle = { ...selectedVehicle, color }
   }
 
-  function cycleSize() {
-    currentSizeIndex = (currentSizeIndex + 1) % sizeOptions.length
+  function cycleSize(direction = 1) {
+    currentSizeIndex =
+      (currentSizeIndex + direction + sizeOptions.length) % sizeOptions.length
     selectedVehicle = {
       ...selectedVehicle,
       size: sizeOptions[currentSizeIndex],
@@ -97,6 +101,38 @@
         return "80px"
       case "large":
         return "100px"
+    }
+  }
+
+  function handleTouchStart(event) {
+    startX = event.touches[0].clientX
+    startY = event.touches[0].clientY
+  }
+
+  function handleTouchEnd(event) {
+    const endX = event.changedTouches[0].clientX
+    const endY = event.changedTouches[0].clientY
+    handleSwipe(startX - endX, startY - endY)
+  }
+
+  function handleMouseDown(event) {
+    startX = event.clientX
+    startY = event.clientY
+  }
+
+  function handleMouseUp(event) {
+    const endX = event.clientX
+    const endY = event.clientY
+    handleSwipe(startX - endX, startY - endY)
+  }
+
+  function handleSwipe(deltaX, deltaY) {
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      if (deltaX > 50) {
+        cycleSize(1) // Swipe left
+      } else if (deltaX < -50) {
+        cycleSize(-1) // Swipe right
+      }
     }
   }
 
@@ -187,7 +223,11 @@
       <h2 class="text-2xl font-bold mb-4 text-center">Selected Vehicle</h2>
       <button
         class="flex-grow border-2 border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center transition-all duration-300 hover:bg-gray-100 active:bg-gray-200"
-        on:click={cycleSize}
+        on:click={() => cycleSize(1)}
+        on:touchstart={handleTouchStart}
+        on:touchend={handleTouchEnd}
+        on:mousedown={handleMouseDown}
+        on:mouseup={handleMouseUp}
       >
         <svelte:component
           this={SVGComponents[selectedVehicle.type]}
