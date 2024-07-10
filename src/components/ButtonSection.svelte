@@ -321,6 +321,7 @@
     <VehicleSelectionMenu
       showMenu={$controlStore.showVehicleMenu}
       currentVehicleType={$userVehicleStore.vehicle_marker.type}
+      currentVehicleSize={$userVehicleStore.vehicle_marker.size}
       on:closeMenu={() => {
         controlStore.update((store) => ({ ...store, showVehicleMenu: false }))
       }}

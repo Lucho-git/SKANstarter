@@ -8,28 +8,42 @@
 
   export let showMenu = false
   export let currentVehicleType
+  export let currentVehicleSize
+
+  const sizeMappings = {
+    small: "30px",
+    medium: "45px",
+    large: "60px",
+  }
+
+  const reverseSizeMappings = Object.fromEntries(
+    Object.entries(sizeMappings).map(([k, v]) => [v, k]),
+  )
 
   const vehicles = [
-    { type: "simpleTractor", color: "red", size: "25px" },
-    { type: "pointer", color: "green", size: "45px" },
-    { type: "CombineHarvester", color: "yellow", size: "60px" },
-    { type: "excavator", color: "orange", size: "50px" },
-    { type: "tractor", color: "green", size: "55px" },
-    { type: "WheelLoader", color: "yellow", size: "50px" },
-    { type: "WorkCar", color: "red", size: "45px" },
-    { type: "Airplane", color: "blue", size: "60px" },
+    { type: "simpleTractor", color: "red", size: "small" },
+    { type: "pointer", color: "green", size: "medium" },
+    { type: "CombineHarvester", color: "yellow", size: "large" },
+    { type: "excavator", color: "orange", size: "medium" },
+    { type: "tractor", color: "green", size: "large" },
+    { type: "WheelLoader", color: "yellow", size: "medium" },
+    { type: "WorkCar", color: "red", size: "medium" },
+    { type: "Airplane", color: "blue", size: "large" },
   ]
 
-  $: initialVehicle =
-    vehicles.find((v) => v.type === currentVehicleType) || vehicles[0]
-  $: selectedVehicle = initialVehicle
+  $: initialVehicle = {
+    ...(vehicles.find((v) => v.type === currentVehicleType) || vehicles[0]),
+    size: reverseSizeMappings[currentVehicleSize] || "medium",
+  }
+  $: selectedVehicle = { ...initialVehicle }
 
   let isMobile = false
   let isColorSelectionMode = false
 
   const colors = ["red", "blue", "green", "yellow", "orange", "purple"]
   const sizeOptions = ["small", "medium", "large"]
-  let currentSizeIndex = 1 // Start with medium size
+
+  $: currentSizeIndex = sizeOptions.indexOf(selectedVehicle.size)
 
   onMount(() => {
     const checkMobile = () => {
@@ -44,13 +58,13 @@
   })
 
   function selectVehicle(vehicle) {
-    selectedVehicle = vehicle
+    selectedVehicle = { ...vehicle, size: selectedVehicle.size }
   }
 
   function confirmSelection() {
     dispatch("vehicleSelected", {
       ...selectedVehicle,
-      size: sizeOptions[currentSizeIndex],
+      size: sizeMappings[selectedVehicle.size],
     })
     dispatch("closeMenu")
   }
@@ -69,23 +83,27 @@
 
   function cycleSize() {
     currentSizeIndex = (currentSizeIndex + 1) % sizeOptions.length
+    selectedVehicle = {
+      ...selectedVehicle,
+      size: sizeOptions[currentSizeIndex],
+    }
   }
 
   function getSizeInPixels(size) {
     switch (size) {
       case "small":
-        return isMobile ? "40px" : "60px"
+        return "60px"
       case "medium":
-        return isMobile ? "60px" : "80px"
+        return "80px"
       case "large":
-        return isMobile ? "80px" : "100px"
+        return "100px"
     }
   }
 
   $: hasChanged =
     selectedVehicle.type !== initialVehicle.type ||
     selectedVehicle.color !== initialVehicle.color ||
-    sizeOptions[currentSizeIndex] !== initialVehicle.size
+    selectedVehicle.size !== initialVehicle.size
 </script>
 
 <div
@@ -154,7 +172,7 @@
                   <svelte:component
                     this={SVGComponents[vehicle.type]}
                     color={vehicle.color}
-                    size={vehicle.size}
+                    size={sizeMappings[vehicle.size]}
                   />
                 </button>
               {/each}
@@ -174,7 +192,7 @@
         <svelte:component
           this={SVGComponents[selectedVehicle.type]}
           color={selectedVehicle.color}
-          size={getSizeInPixels(sizeOptions[currentSizeIndex])}
+          size={getSizeInPixels(selectedVehicle.size)}
         />
         <p class="mt-2 sm:mt-4 text-center font-semibold">
           {selectedVehicle.type}
@@ -182,9 +200,9 @@
         <p class="text-center text-xs sm:text-sm text-gray-500">
           Color: {selectedVehicle.color}
         </p>
-        <!-- <p class="text-center text-xs sm:text-sm text-gray-500 mt-1">
-          Size: {sizeOptions[currentSizeIndex]}
-        </p> -->
+        <p class="text-center text-xs sm:text-sm text-gray-500">
+          Size: {selectedVehicle.size}
+        </p>
         <div class="flex mt-2 space-x-3 items-center">
           {#each sizeOptions as size, index}
             <div
