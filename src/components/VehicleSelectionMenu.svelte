@@ -25,15 +25,16 @@
   $: selectedVehicle = initialVehicle
 
   let isMobile = false
+  let isColorSelectionMode = false
+
+  const colors = ["red", "blue", "green", "yellow", "orange", "purple"]
 
   onMount(() => {
     const checkMobile = () => {
-      isMobile = window.innerWidth < 640 // Adjust this breakpoint as needed
+      isMobile = window.innerWidth < 640
     }
-
     checkMobile()
     window.addEventListener("resize", checkMobile)
-
     return () => {
       window.removeEventListener("resize", checkMobile)
     }
@@ -51,11 +52,9 @@
   function cancelSelection() {
     dispatch("closeMenu")
   }
-  let isColorSelectionMode = false
-  let colors = ["red", "blue", "green", "yellow", "orange", "purple"]
 
-  function toggleSelectionMode() {
-    isColorSelectionMode = !isColorSelectionMode
+  function toggleSelectionMode(mode) {
+    isColorSelectionMode = mode === "color"
   }
 
   function selectColor(color) {
@@ -72,15 +71,37 @@
   class:translate-y-full={!showMenu}
   class:translate-y-0={showMenu}
   style={isMobile ? "height: 100%;" : "height: 45vh;"}
+  style:--selected-color={selectedVehicle.color}
 >
-  <h2 class="text-2xl font-bold mb-4 text-center sm:hidden">
-    {isColorSelectionMode ? "Select Color" : "Select Vehicle"}
-  </h2>
   <div class="flex flex-col sm:flex-row flex-grow overflow-hidden">
     <!-- Vehicle/Color selection (scrollable) -->
-    <div class="w-full sm:w-1/2 sm:pr-3 flex-grow overflow-hidden">
+    <div
+      class="w-full sm:w-1/2 sm:pr-3 flex-grow overflow-hidden flex flex-col"
+    >
       <div
-        class="border-2 border-gray-300 rounded-lg p-4 h-full flex flex-col overflow-hidden"
+        class="flex w-full border-2 border-b-0 border-gray-300 rounded-t-lg overflow-hidden"
+      >
+        <a
+          role="tab"
+          class="flex-1 py-2 text-center transition-colors duration-200"
+          class:active-tab={!isColorSelectionMode}
+          class:inactive-tab={isColorSelectionMode}
+          on:click={() => toggleSelectionMode("vehicle")}
+        >
+          Vehicles
+        </a>
+        <a
+          role="tab"
+          class="flex-1 py-2 text-center transition-colors duration-200"
+          class:active-tab={isColorSelectionMode}
+          class:inactive-tab={!isColorSelectionMode}
+          on:click={() => toggleSelectionMode("color")}
+        >
+          Colors
+        </a>
+      </div>
+      <div
+        class="border-2 border-t-0 border-gray-300 rounded-b-lg p-4 h-full flex flex-col overflow-hidden flex-grow bg-white"
       >
         <div class="overflow-y-auto flex-grow">
           {#if isColorSelectionMode}
@@ -122,15 +143,11 @@
       </div>
     </div>
 
-    <!-- Select Vehicle/Color text at the top and wireframe box -->
+    <!-- Vehicle display box -->
     <div class="w-full sm:w-1/2 sm:pl-3 flex flex-col mt-4 sm:mt-0">
-      <h2 class="text-2xl font-bold mb-4 text-center hidden sm:block">
-        {isColorSelectionMode ? "Select Color" : "Select Vehicle"}
-      </h2>
-      <button
-        class="flex-grow border-2 rounded-lg p-4 flex flex-col items-center justify-center transition-all duration-300 hover:bg-gray-100 active:bg-gray-200 focus:outline-none"
-        on:click={toggleSelectionMode}
-        style="border-color: {isColorSelectionMode ? '#3b82f6' : '#d1d5db'};"
+      <h2 class="text-2xl font-bold mb-4 text-center">Selected Vehicle</h2>
+      <div
+        class="flex-grow border-2 border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center transition-all duration-300 hover:bg-gray-100 active:bg-gray-200"
       >
         <svelte:component
           this={SVGComponents[selectedVehicle.type]}
@@ -143,10 +160,7 @@
         <p class="text-center text-xs sm:text-sm text-gray-500">
           Color: {selectedVehicle.color}
         </p>
-        <p class="mt-2 text-blue-500 text-sm">
-          Click to {isColorSelectionMode ? "select vehicle" : "change color"}
-        </p>
-      </button>
+      </div>
     </div>
   </div>
 
@@ -174,5 +188,18 @@
       width: 5rem;
       height: 5rem;
     }
+  }
+
+  .active-tab {
+    background-color: white;
+    border-bottom: 2px solid transparent;
+  }
+
+  .inactive-tab {
+    background-color: color-mix(in srgb, var(--selected-color) 15%, white);
+  }
+
+  .inactive-tab:hover {
+    background-color: color-mix(in srgb, var(--selected-color) 40%, white);
   }
 </style>
