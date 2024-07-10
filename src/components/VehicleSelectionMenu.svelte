@@ -83,7 +83,7 @@
       >
         <a
           role="tab"
-          class="flex-1 py-2 text-center transition-colors duration-200"
+          class="flex-1 py-4 text-center transition-colors duration-200 font-bold text-lg"
           class:active-tab={!isColorSelectionMode}
           class:inactive-tab={isColorSelectionMode}
           on:click={() => toggleSelectionMode("vehicle")}
@@ -92,7 +92,7 @@
         </a>
         <a
           role="tab"
-          class="flex-1 py-2 text-center transition-colors duration-200"
+          class="flex-1 py-4 text-center transition-colors duration-200 font-bold text-lg"
           class:active-tab={isColorSelectionMode}
           class:inactive-tab={!isColorSelectionMode}
           on:click={() => toggleSelectionMode("color")}
@@ -196,10 +196,10 @@
   }
 
   .inactive-tab {
-    background-color: color-mix(in srgb, var(--selected-color) 15%, white);
+    background-color: color-mix(in srgb, var(--selected-color) 20%, white);
   }
 
   .inactive-tab:hover {
-    background-color: color-mix(in srgb, var(--selected-color) 40%, white);
+    background-color: color-mix(in srgb, var(--selected-color) 30%, white);
   }
 </style>
