@@ -25,7 +25,8 @@
 
   let syncIntervalId = null
 
-  const TRAIL_SYNC_INTERVAL_MIN = 10000
+  const TRAIL_SYNC_INTERVAL_MIN = 30000 // 30 seconds
+  const TRAIL_DATA_RETENTION_DAYS = 7
 
   onMount(async () => {
     console.log("Initializing TrailStateSynchronizer")
@@ -269,11 +270,10 @@
 
   async function loadTrailDataFromIndexedDB() {
     try {
-      const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 3000
-
+      const retentionDate = getRetentionDate()
       const filteredTrailData = await db.TrailData.where("timestamp")
         .above(sevenDaysAgo)
-        .and((point) => point.master_map_id === masterMapId)
+        .and((point) => point.master_map_id === retentionDate)
         .toArray()
 
       // Sort the filtered trail data by timestamp in ascending order
@@ -300,14 +300,14 @@
 
   async function loadTrailDataFromSupabase() {
     try {
-      const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 3000
+      const retentionDate = getRetentionDate()
 
       const { data: userTrailData, error: userError } = await supabase
         .from("trail_data")
         .select("*")
         .eq("master_map_id", masterMapId)
         .eq("vehicle_id", userId)
-        .gte("timestamp", sevenDaysAgo)
+        .gte("timestamp", retentionDate)
         .order("timestamp", { ascending: true })
 
       if (userError) {
@@ -319,7 +319,7 @@
         .select("*")
         .eq("master_map_id", masterMapId)
         .neq("vehicle_id", userId)
-        .gte("timestamp", sevenDaysAgo)
+        .gte("timestamp", retentionDate)
         .order("timestamp", { ascending: true })
 
       if (otherError) {
@@ -347,6 +347,9 @@
       acc[key].push(obj)
       return acc
     }, {})
+  }
+  function getRetentionDate() {
+    return Date.now() - TRAIL_DATA_RETENTION_DAYS * 24 * 60 * 60 * 1000
   }
 
   async function syncUnsyncedDataWithServer() {
