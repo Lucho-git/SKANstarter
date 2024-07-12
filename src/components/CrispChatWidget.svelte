@@ -15,23 +15,38 @@
         autoload: false,
       })
       isInitialized = true
+
+      // Wait for Crisp to be fully loaded
+      const crispInterval = setInterval(() => {
+        if (window.$crisp) {
+          clearInterval(crispInterval)
+          setupCrispEvents()
+        }
+      }, 100)
     }
 
     setVisibility(visible)
     setUserInfo()
   }
 
-  //   function setVisibility(isVisible: boolean) {
-  //     if (isInitialized) {
-  //       if (isVisible) {
-  //         console.log("Showing Crisp Chat")
-  //         Crisp.chat.show()
-  //       } else {
-  //         console.log("Hiding Crisp Chat")
-  //         Crisp.chat.hide()
-  //       }
-  //     }
-  //   }
+  function setupCrispEvents() {
+    window.$crisp.push(["on", "session:loaded", handleNewMessage])
+  }
+
+  function handleNewMessage() {
+    window.$crisp.push([
+      "on",
+      "message:received",
+      (message) => {
+        console.log("New message received:", message, visible)
+        if (!visible) {
+          // Show a toast notification
+          console.log("New message received! Check your chat.")
+        }
+      },
+    ])
+  }
+
   function setVisibility(isVisible: boolean) {
     if (isInitialized) {
       setZIndex(isVisible)

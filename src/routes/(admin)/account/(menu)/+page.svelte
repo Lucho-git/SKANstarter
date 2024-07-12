@@ -5,6 +5,8 @@
   import UserFiles from "../../../../components/UserFiles.svelte"
   import { userFilesStore } from "../../../../stores/userFilesStore"
   import { userStore } from "../../../../stores/userStore"
+  import { crispVisibility } from "../../../../stores/controlStore"
+
   import { supabase } from "$lib/supabaseClient"
 
   import FloatingChat from "../../../../components/FloatingChat.svelte"
@@ -28,7 +30,6 @@
   let showUserlikeButton = false
   let showJivoChat = false
   let showZohoSalesIQ = false
-  let showCrispChat = false
 
   let user = null
 
@@ -143,10 +144,7 @@
 
   $: {
     const currentPath = $page.url.pathname
-    showUserlikeButton = currentPath === "/account" // Only show the button on the main account page
-    showJivoChat = currentPath === "/account" // Adjust this condition as needed
-    showZohoSalesIQ = currentPath === "/account" // Adjust this condition as needed
-    showCrispChat = $page.url.pathname === "/account"
+    $crispVisibility = currentPath === "/account"
   }
 
   onDestroy(() => {
@@ -206,4 +204,4 @@
 <!-- <TawkToChat visible={showTawkTo} /> -->
 <!-- <WhatsAppWidget /> -->
 <!-- <ZohoSalesIQWidget visible={showZohoSalesIQ} /> -->
-<CrispChatWidget visible={showCrispChat} />
+<CrispChatWidget />
