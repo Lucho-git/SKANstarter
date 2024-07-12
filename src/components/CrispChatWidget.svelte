@@ -21,14 +21,35 @@
     setUserInfo()
   }
 
+  //   function setVisibility(isVisible: boolean) {
+  //     if (isInitialized) {
+  //       if (isVisible) {
+  //         console.log("Showing Crisp Chat")
+  //         Crisp.chat.show()
+  //       } else {
+  //         console.log("Hiding Crisp Chat")
+  //         Crisp.chat.hide()
+  //       }
+  //     }
+  //   }
   function setVisibility(isVisible: boolean) {
     if (isInitialized) {
+      setZIndex(isVisible)
       if (isVisible) {
         console.log("Showing Crisp Chat")
         Crisp.chat.show()
       } else {
         console.log("Hiding Crisp Chat")
         Crisp.chat.hide()
+      }
+    }
+  }
+
+  function setZIndex(isVisible: boolean) {
+    if (isInitialized) {
+      const crispElement = document.querySelector(".crisp-client")
+      if (crispElement) {
+        crispElement.style.zIndex = isVisible ? "1000" : "-1"
       }
     }
   }

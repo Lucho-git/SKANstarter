@@ -269,7 +269,7 @@
 
   async function loadTrailDataFromIndexedDB() {
     try {
-      const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
+      const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 3000
 
       const filteredTrailData = await db.TrailData.where("timestamp")
         .above(sevenDaysAgo)
@@ -300,7 +300,7 @@
 
   async function loadTrailDataFromSupabase() {
     try {
-      const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
+      const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 3000
 
       const { data: userTrailData, error: userError } = await supabase
         .from("trail_data")
