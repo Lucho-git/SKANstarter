@@ -3,6 +3,7 @@
   import { controlStore } from "../stores/controlStore"
   import SVGComponents from "../components/SVG/index.js"
   import { onMount } from "svelte"
+  import { toast } from "svelte-sonner"
 
   const dispatch = createEventDispatcher()
 
@@ -15,9 +16,9 @@
   let usedSizes = []
 
   const sizeMappings = {
-    small: "30px",
-    medium: "45px",
-    large: "60px",
+    Small: "30px",
+    Medium: "45px",
+    Large: "60px",
   }
 
   const reverseSizeMappings = Object.fromEntries(
@@ -25,11 +26,11 @@
   )
 
   $: vehicles = [
-    { type: "simpleTractor", color: "red", size: "small" },
-    { type: "pointer", color: "green", size: "medium" },
+    { type: "SimpleTractor", color: "red", size: "small" },
+    { type: "Pointer", color: "green", size: "medium" },
     { type: "CombineHarvester", color: "yellow", size: "large" },
-    { type: "excavator", color: "orange", size: "medium" },
-    { type: "tractor", color: "green", size: "large" },
+    { type: "Excavator", color: "orange", size: "medium" },
+    { type: "Tractor", color: "green", size: "large" },
     { type: "WheelLoader", color: "yellow", size: "medium" },
     { type: "WorkCar", color: "red", size: "medium" },
     { type: "Airplane", color: "blue", size: "large" },
@@ -43,8 +44,8 @@
   let isMobile = false
   let isColorSelectionMode = false
 
-  const colors = ["red", "blue", "green", "yellow", "orange", "purple"]
-  const sizeOptions = ["small", "medium", "large"]
+  const colors = ["Red", "Blue", "Green", "Yellow", "Orange", "Purple"]
+  const sizeOptions = ["Small", "Medium", "Large"]
 
   $: currentSizeIndex = sizeOptions.indexOf(selectedVehicle.size)
 
@@ -85,10 +86,16 @@
   }
 
   function confirmSelection() {
+    toast.success(
+      `Selected Vehicle: [${selectedVehicle.color} ${selectedVehicle.type}]`,
+      { duration: 5000 },
+    )
+
     dispatch("vehicleSelected", {
       ...selectedVehicle,
       size: sizeMappings[selectedVehicle.size],
     })
+
     dispatch("closeMenu")
   }
 
@@ -115,11 +122,11 @@
 
   function getSizeInPixels(size) {
     switch (size) {
-      case "small":
+      case "Small":
         return "60px"
-      case "medium":
+      case "Medium":
         return "80px"
-      case "large":
+      case "Large":
         return "100px"
     }
   }

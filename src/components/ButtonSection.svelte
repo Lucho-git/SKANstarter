@@ -5,6 +5,7 @@
   import { userVehicleStore, userVehicleTrailing } from "../stores/vehicleStore"
   import { antLineConfigStore } from "../stores/trailDataStore"
   import { controlStore } from "../stores/controlStore"
+  import { toast } from "svelte-sonner"
 
   import { browser } from "$app/environment"
   import { onMount } from "svelte"
@@ -57,6 +58,13 @@
     userVehicleTrailing.update((value) => {
       const newValue = !value
       console.log("Toggling isTrailing:", newValue)
+
+      if (newValue) {
+        toast.info("Trail recording started")
+      } else {
+        toast.info("Ended trail recording")
+      }
+
       return newValue
     })
   }
@@ -132,6 +140,7 @@
 
   function handleLocationClick() {
     console.log("Location button clicked")
+    toast.info("Marker created at your location (coming soon)")
   }
 </script>
 

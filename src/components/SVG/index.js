@@ -8,11 +8,11 @@ import WorkCar from './WorkCar.svelte';
 import Airplane from './Airplane.svelte';
 
 export default {
-  simpleTractor: SimpleTractor,
-  pointer: Pointer,
+  SimpleTractor: SimpleTractor,
+  Pointer: Pointer,
   CombineHarvester: CombineHarvester,
-  excavator: Excavator,
-  tractor: Tractor,
+  Excavator: Excavator,
+  Tractor: Tractor,
   WheelLoader: WheelLoader,
   WorkCar: WorkCar,
   Airplane: Airplane,
