@@ -209,7 +209,7 @@
     <!-- Button list container -->
     <div
       class="flex flex-col space-y-3 transition-all duration-700 ease-in-out origin-top {isExpanded
-        ? 'scale-100 opacity-100'
+        ? 'scale-100 opacity-90'
         : 'scale-0 opacity-0 h-50 overflow-hidden'}"
     >
       <!--Sync Button-->
