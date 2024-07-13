@@ -128,7 +128,7 @@
 
   <!-- Back to Dashboard Button, Top Left -->
   <button
-    class="btn btn-circle btn-lg bg-white bg-opacity-50 hover:bg-opacity-100 absolute top-4 left-4 z-10"
+    class="btn btn-square btn-lg bg-white bg-opacity-50 hover:bg-opacity-100 absolute top-4 left-4 z-10"
     on:click={handleBackToDashboard}
   >
     <svg
@@ -149,7 +149,7 @@
 
   <!-- Toggle Map Style Button, Top Right -->
   <!-- <button
-    class="btn btn-circle btn-md absolute top-4 right-4 z-10"
+    class="btn btn-square btn-md absolute top-4 right-4 z-10"
     on:click={toggleMapStyle}
   >
     {#if isSatelliteView}
@@ -185,7 +185,7 @@
   <div class="fixed top-4 right-4 z-20 flex flex-col items-end">
     <!-- Toggle expand/collapse button -->
     <button
-      class="btn btn-circle btn-lg bg-white hover:bg-opacity-90 mb-3"
+      class="top-button btn btn-square btn-lg bg-white hover:bg-opacity-90 mb-3"
       on:click={toggleExpanded}
     >
       <svg
@@ -214,7 +214,7 @@
     >
       <!--Sync Button-->
       <button
-        class="btn btn-circle btn-lg bg-white hover:bg-opacity-90"
+        class="menu-button btn btn-square btn-lg bg-white hover:bg-opacity-90"
         on:click={handleSync}
       >
         <svg
@@ -234,7 +234,7 @@
       </button>
 
       <button
-        class="btn btn-circle btn-lg bg-white hover:bg-opacity-90 text-sm"
+        class="menu-button btn btn-square btn-lg bg-white hover:bg-opacity-90 text-sm"
         on:click={cycleAntLineConfig}
       >
         {antLineConfigModes[currentAntLineConfigIndex]}
@@ -242,7 +242,7 @@
 
       <!-- Toggle Trailing Button -->
       <button
-        class="btn btn-circle btn-lg bg-white hover:bg-opacity-90"
+        class="menu-button btn btn-square btn-lg bg-white hover:bg-opacity-90"
         on:click={toggleTrailing}
       >
         {#if $userVehicleTrailing}
@@ -264,7 +264,7 @@
           </div>
         {:else}
           <svg
-            fill="#000000"
+            fill="currentColor"
             width="36px"
             height="36px"
             viewBox="0 0 32 32"
@@ -281,7 +281,7 @@
 
       <!-- Vehicle Selection Button -->
       <button
-        class="btn btn-circle btn-lg bg-white hover:bg-opacity-90"
+        class="menu-button btn btn-square btn-lg bg-white hover:bg-opacity-90"
         on:click={toggleVehicleMenu}
       >
         <div class="flex items-center justify-center w-full h-full">
@@ -322,4 +322,121 @@
 </div>
 
 <style>
+  /* Base styles for all menu buttons */
+  .menu-button {
+    transition: all 0.3s ease;
+  }
+
+  /* Glassmorphism effect */
+  /* .menu-button {
+    background-color: rgba(255, 255, 255, 0.5);
+    color: white;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  .menu-button:hover {
+    background-color: rgba(255, 255, 255, 0.7);
+  } */
+
+  /* Gradient background with hover effect */
+
+  /* .menu-button {
+    background: linear-gradient(to right, #60a5fa, #a78bfa);
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  .menu-button:hover {
+    background: linear-gradient(to right, #3b82f6, #8b5cf6);
+  } */
+
+  /* Outlined style with hover fill */
+
+  /* .menu-button {
+    background-color: rgb(199, 202, 208);
+    border: 2px solid #374151;
+    color: #374151;
+  }
+  .menu-button:hover {
+    background-color: #374151;
+    color: white;
+  } */
+
+  /* .top-button {
+    background-color: rgb(199, 202, 208);
+    border: 2px solid #374151;
+    color: #374151;
+  }
+  .top-button:hover {
+    background-color: #374151;
+    color: white;
+  } */
+
+  /* Neon glow effect */
+  /*
+  .menu-button {
+    background-color: black;
+    color: #4ade80;
+    border: 2px solid #4ade80;
+    box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+  }
+  .menu-button:hover {
+    background-color: #4ade80;
+    color: black;
+  }
+  */
+
+  /* Minimal flat design */
+  /*
+  .menu-button {
+    background-color: #f3f4f6;
+    color: #1f2937;
+  }
+  .menu-button:hover {
+    background-color: #e5e7eb;
+  }
+  */
+
+  /* Neumorphism effect */
+
+  /* .menu-button {
+    background-color: #e6e9ee;
+    box-shadow:
+      3px 3px 6px #c8ccd1,
+      -3px -3px 6px #ffffff;
+    color: #4a5568;
+  }
+  .menu-button:hover {
+    box-shadow:
+      inset 3px 3px 6px #c8ccd1,
+      inset -3px -3px 6px #ffffff;
+  } */
+
+  /* Cyberpunk-inspired */
+
+  /* .menu-button {
+    background-color: #000000;
+    border: 2px solid #00ff00;
+    color: #00ff00;
+    text-shadow: 0 0 5px #00ff00;
+    box-shadow: 0 0 10px #00ff00;
+  }
+  .menu-button:hover {
+    background-color: #00ff00;
+    color: #000000;
+    text-shadow: none;
+  } */
+
+  /* Inverted Cyberpunk */
+
+  .menu-button,
+  .top-button {
+    background-color: #f7db5c;
+    border: 2px solid #000000;
+    color: #000000;
+  }
+  .menu-button:hover,
+  .top-button:hover {
+    background-color: rgb(0, 0, 0, 0.3);
+    color: #f7db5c;
+  }
 </style>
