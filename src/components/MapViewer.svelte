@@ -18,6 +18,8 @@
 
   import { db } from "./db.js"
 
+  export let handleBackToDashboard
+
   //Constants and variable initializations
   let dbInstance
 
@@ -105,7 +107,10 @@
 
 <div class="map-container" bind:this={mapContainer}>
   {#if mapInitialized}
-    <ButtonSection on:toggleMapStyleDispatcher={toggleMapStyle} />
+    <ButtonSection
+      on:toggleMapStyleDispatcher={toggleMapStyle}
+      on:backToDashboard={handleBackToDashboard}
+    />
 
     <MarkerManager {markerPlacementEvent} {markerClickEvent} />
     <MapStateSaver />

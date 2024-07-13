@@ -14,10 +14,15 @@
   let LottiePlayer
 
   onMount(async () => {
+    console.log("Mounting ButtonSection")
     if (browser) {
       const module = await import("@lottiefiles/svelte-lottie-player")
       LottiePlayer = module.LottiePlayer
     }
+
+    setTimeout(() => {
+      isExpanded = true
+    }, 200) // Adjust the delay as needed
   })
 
   export let isSatelliteView = true
@@ -111,7 +116,7 @@
     $syncStore.synchronizeMarkers("Sync Button")
   }
 
-  let isExpanded = false
+  let isExpanded = false // Set default state to open
 
   function toggleExpanded() {
     isExpanded = !isExpanded
@@ -138,27 +143,6 @@
         stroke-linejoin="round"
         stroke-width="2"
         d="M10 19l-7-7m0 0l7-7m-7 7h18"
-      />
-    </svg>
-  </button>
-
-  <!--Sync Button, Top Right 1st-->
-  <button
-    class="btn btn-circle btn-md absolute top-4 right-4 z-10"
-    on:click={handleSync}
-  >
-    <svg
-      class="w-6 h-6 {$syncStore.spinning ? 'animate-spin' : ''}"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
       />
     </svg>
   </button>
@@ -197,69 +181,125 @@
     {/if}
   </button> -->
 
-  <!-- Toggle Trailing Button -->
-  <button
-    class="btn btn-circle btn-md absolute top-36 right-4 z-10"
-    on:click={toggleTrailing}
-  >
-    {#if $userVehicleTrailing}
-      <div class="flex flex-col -mt-7 pb-0">
-        {#if browser && LottiePlayer}
-          <svelte:component
-            this={LottiePlayer}
-            src="/animations/PulsingBlueBeacon.json"
-            autoplay={true}
-            loop={true}
-            controls={false}
-            controlsLayout={null}
-            renderer="svg"
-            background="transparent"
-            height={80}
-            width={80}
-          />
-        {/if}
-      </div>
-    {:else}
+  <!-- Floating button container -->
+  <div class="fixed top-4 right-4 z-20 flex flex-col items-end">
+    <!-- Toggle expand/collapse button -->
+    <button
+      class="btn btn-circle btn-lg bg-white hover:bg-opacity-90 mb-3"
+      on:click={toggleExpanded}
+    >
       <svg
-        fill="#000000"
-        width="30px"
-        height="30px"
-        viewBox="0 0 32 32"
-        version="1.1"
         xmlns="http://www.w3.org/2000/svg"
+        class="h-8 w-8 transition-transform duration-300 {isExpanded
+          ? 'rotate-180'
+          : ''}"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
       >
-        <title>trail</title>
         <path
-          d="M30.165 30.887c-1.604 0.076-21.522-0.043-21.522-0.043-12.101-12.151 18.219-16.173-0.521-26.154l-1.311 1.383-1.746-4.582 5.635 0.439-1.128 1.267c23.438 6.83-3.151 19.631 20.594 27.69v0z"
-        ></path>
-      </svg>
-    {/if}
-  </button>
-
-  <button
-    class="btn btn-circle btn-md absolute top-20 right-4 z-10 text-xs"
-    on:click={cycleAntLineConfig}
-  >
-    {antLineConfigModes[currentAntLineConfigIndex]}
-  </button>
-
-  <!-- Vehicle Selection Button -->
-  <button
-    class="btn btn-circle btn-md absolute top-52 right-4 z-10 text-xs"
-    on:click={toggleVehicleMenu}
-  >
-    <div class="flex items-center justify-center w-full h-full">
-      {#if VehicleIcon}
-        <svelte:component
-          this={VehicleIcon}
-          color={$userVehicleStore.vehicle_marker.color}
-          size={$userVehicleStore.vehicle_marker.size}
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M19 9l-7 7-7-7"
         />
-      {:else}
-        Loading...
-      {/if}
+      </svg>
+    </button>
+
+    <!-- Button list container -->
+    <div
+      class="flex flex-col space-y-3 transition-all duration-700 ease-in-out origin-top {isExpanded
+        ? 'scale-100 opacity-100'
+        : 'scale-0 opacity-0 h-50 overflow-hidden'}"
+    >
+      <!--Sync Button-->
+      <button
+        class="btn btn-circle btn-lg bg-white hover:bg-opacity-90"
+        on:click={handleSync}
+      >
+        <svg
+          class="w-8 h-8 {$syncStore.spinning ? 'animate-spin' : ''}"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+          />
+        </svg>
+      </button>
+
+      <!-- Toggle Trailing Button -->
+      <button
+        class="btn btn-circle btn-lg bg-white hover:bg-opacity-90"
+        on:click={toggleTrailing}
+      >
+        {#if $userVehicleTrailing}
+          <div class="flex flex-col -mt-7 pb-0">
+            {#if browser && LottiePlayer}
+              <svelte:component
+                this={LottiePlayer}
+                src="/animations/PulsingBlueBeacon.json"
+                autoplay={true}
+                loop={true}
+                controls={false}
+                controlsLayout={null}
+                renderer="svg"
+                background="transparent"
+                height={100}
+                width={100}
+              />
+            {/if}
+          </div>
+        {:else}
+          <svg
+            fill="#000000"
+            width="36px"
+            height="36px"
+            viewBox="0 0 32 32"
+            version="1.1"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <title>trail</title>
+            <path
+              d="M30.165 30.887c-1.604 0.076-21.522-0.043-21.522-0.043-12.101-12.151 18.219-16.173-0.521-26.154l-1.311 1.383-1.746-4.582 5.635 0.439-1.128 1.267c23.438 6.83-3.151 19.631 20.594 27.69v0z"
+            ></path>
+          </svg>
+        {/if}
+      </button>
+
+      <button
+        class="btn btn-circle btn-lg bg-white hover:bg-opacity-90 text-sm"
+        on:click={cycleAntLineConfig}
+      >
+        {antLineConfigModes[currentAntLineConfigIndex]}
+      </button>
+
+      <!-- Vehicle Selection Button -->
+      <button
+        class="btn btn-circle btn-lg bg-white hover:bg-opacity-90"
+        on:click={toggleVehicleMenu}
+      >
+        <div class="flex items-center justify-center w-full h-full">
+          {#if VehicleIcon}
+            <svelte:component
+              this={VehicleIcon}
+              color={$userVehicleStore.vehicle_marker.color}
+              size={$userVehicleStore.vehicle_marker.size}
+            />
+          {:else}
+            Loading...
+          {/if}
+        </div>
+      </button>
     </div>
-  </button>
+  </div>
+
+  <!-- End of Floating button container -->
 
   {#if isVehicleMenuOpen}
     <VehicleSelectionMenu

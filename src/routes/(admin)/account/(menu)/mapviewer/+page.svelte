@@ -5,7 +5,6 @@
   import { toast } from "svelte-sonner"
   import { browser } from "$app/environment"
   import MapViewer from "../../../../../components/MapViewer.svelte"
-  import ButtonSection from "../../../../../components/ButtonSection.svelte"
 
   let adminSection: Writable<string> = getContext("adminSection")
   adminSection.set("mapviewer")
@@ -75,6 +74,5 @@
 </script>
 
 <div class="fixed top-0 left-0 w-full h-full overflow-hidden">
-  <MapViewer />
-  <ButtonSection on:backToDashboard={handleBackToDashboard} />
+  <MapViewer {handleBackToDashboard} />
 </div>
