@@ -22,8 +22,12 @@ body {
 }
 
 /* ✓ Tap Highlight color */
-button {
-    -webkit-tap-highlight-color: #ffffff;
+* {
+    -webkit-tap-highlight-color: rgb(255, 255, 0, 0.05);
+}
+
+button, a {
+    -webkit-tap-highlight-color: rgb(255, 255, 0, 0.05);
 }
 
 /* ✓ @media Standalone mode */
