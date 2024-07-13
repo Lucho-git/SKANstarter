@@ -11,6 +11,9 @@
   export let currentVehicleSize
   export let currentVehicleColor
 
+  let usedColors = []
+  let usedSizes = []
+
   const sizeMappings = {
     small: "30px",
     medium: "45px",
@@ -21,7 +24,7 @@
     Object.entries(sizeMappings).map(([k, v]) => [v, k]),
   )
 
-  const vehicles = [
+  $: vehicles = [
     { type: "simpleTractor", color: "red", size: "small" },
     { type: "pointer", color: "green", size: "medium" },
     { type: "CombineHarvester", color: "yellow", size: "large" },
@@ -32,14 +35,8 @@
     { type: "Airplane", color: "blue", size: "large" },
   ]
 
-  $: initialVehicle = {
-    ...(vehicles.find((v) => v.type === currentVehicleType) || vehicles[0]),
-    size: reverseSizeMappings[currentVehicleSize] || "medium",
-    color:
-      currentVehicleColor ||
-      (vehicles.find((v) => v.type === currentVehicleType) || vehicles[0])
-        .color,
-  }
+  $: initialVehicle =
+    vehicles.find((v) => v.type === currentVehicleType) || vehicles[0]
 
   $: selectedVehicle = { ...initialVehicle }
 
@@ -61,13 +58,30 @@
     checkMobile()
 
     window.addEventListener("resize", checkMobile)
+
+    // Randomize vehicle colors and sizes
+    vehicles = vehicles.map((vehicle) => {
+      if (vehicle.type === currentVehicleType) {
+        return {
+          ...vehicle,
+          size: reverseSizeMappings[currentVehicleSize] || "medium",
+          color: currentVehicleColor,
+        }
+      }
+      return {
+        ...vehicle,
+        color: cycleRandomItems(colors, usedColors),
+        size: cycleRandomItems(sizeOptions, usedSizes),
+      }
+    })
+
     return () => {
       window.removeEventListener("resize", checkMobile)
     }
   })
 
   function selectVehicle(vehicle) {
-    selectedVehicle = { ...vehicle, size: selectedVehicle.size }
+    selectedVehicle = { ...vehicle }
   }
 
   function confirmSelection() {
@@ -110,6 +124,20 @@
     }
   }
 
+  function getRandomItem(array) {
+    return array[Math.floor(Math.random() * array.length)]
+  }
+
+  function cycleRandomItems(array, usedItems) {
+    const availableItems = array.filter((item) => !usedItems.includes(item))
+    if (availableItems.length === 0) {
+      usedItems.length = 0
+      return getRandomItem(array)
+    }
+    const selectedItem = getRandomItem(availableItems)
+    usedItems.push(selectedItem)
+    return selectedItem
+  }
   function handleTouchStart(event) {
     startX = event.touches[0].clientX
     startY = event.touches[0].clientY
@@ -187,14 +215,14 @@
         <div class="overflow-y-auto flex-grow">
           {#if isColorSelectionMode}
             <div
-              class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3 justify-items-center content-start"
+              class="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3 justify-items-center content-start"
             >
               {#each colors as color}
                 <button
-                  class="btn btn-circle border-4 transition-all duration-200"
+                  class="btn btn-circle border-8 transition-all duration-200"
                   style="background-color: {color}; border-color: {selectedVehicle.color ===
                   color
-                    ? 'white'
+                    ? 'black'
                     : color};"
                   on:click={() => selectColor(color)}
                 ></button>
