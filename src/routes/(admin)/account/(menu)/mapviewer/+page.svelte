@@ -12,61 +12,33 @@
 
   let wakeLock: WakeLockSentinel | null = null
 
-  function getBrowserType() {
-    if (browser) {
-      if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-        return "iOS"
-      } else if (/Android/.test(navigator.userAgent)) {
-        return "Android"
-      } else {
-        return "Other"
-      }
-    }
-    return "Unknown"
+  function isAndroid() {
+    return browser && /Android/.test(navigator.userAgent)
   }
 
   async function requestWakeLock() {
-    if (browser) {
-      if ("wakeLock" in navigator) {
-        toast.promise(navigator.wakeLock.request("screen"), {
-          loading: "Activating screen wake...",
-          success: (wakeLockSentinel) => {
-            wakeLock = wakeLockSentinel
-            return "Screen will stay awake"
-          },
-          error: (err) => {
-            if (err.name === "NotAllowedError") {
-              return "Screen wake not allowed by system"
-            }
-            return `Couldn't keep screen awake: ${err.message}`
-          },
-        })
-      } else {
-        let message = "Screen may dim during inactivity"
-        const browserType = getBrowserType()
-        if (browserType === "iOS") {
-          message += " on iOS devices"
-        } else if (browserType !== "Android") {
-          message += " on this device"
+    if (browser && isAndroid() && "wakeLock" in navigator) {
+      try {
+        wakeLock = await navigator.wakeLock.request("screen")
+        toast.success("Screen will stay awake")
+      } catch (err) {
+        if (err.name !== "NotAllowedError") {
+          toast.error(`Couldn't keep screen awake: ${err.message}`)
         }
-        toast.info(message, {
-          description: "Consider adjusting your device settings if needed.",
-        })
       }
     }
   }
 
   function releaseWakeLock() {
-    if (browser && wakeLock) {
+    if (wakeLock) {
       wakeLock
         .release()
         .then(() => {
-          toast.success("Screen can now dim normally")
           wakeLock = null
         })
-        .catch((err) =>
-          toast.error(`Error releasing wake lock: ${err.message}`),
-        )
+        .catch((err) => {
+          console.error(`Error releasing wake lock: ${err.message}`)
+        })
     }
   }
 
