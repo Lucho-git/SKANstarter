@@ -78,3 +78,8 @@ function createMarkerActionsStore() {
 }
 
 export const markerActionsStore = createMarkerActionsStore();
+
+export const syncStore = writable({
+    synchronizeMarkers: null,
+    spinning: false
+  });

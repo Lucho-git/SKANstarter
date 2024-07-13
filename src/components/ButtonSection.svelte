@@ -1,7 +1,7 @@
 <!-- src/components/ButtonSection.svelte -->
 <script>
   import { createEventDispatcher, beforeUpdate, afterUpdate } from "svelte"
-  import { mapStore } from "../stores/mapStore"
+  import { mapStore, syncStore } from "../stores/mapStore"
   import { userVehicleStore, userVehicleTrailing } from "../stores/vehicleStore"
   import { antLineConfigStore } from "../stores/trailDataStore"
   import { controlStore } from "../stores/controlStore"
@@ -106,6 +106,16 @@
       return config
     })
   }
+
+  function handleSync() {
+    $syncStore.synchronizeMarkers("Sync Button")
+  }
+
+  let isExpanded = false
+
+  function toggleExpanded() {
+    isExpanded = !isExpanded
+  }
 </script>
 
 <div>
@@ -132,8 +142,29 @@
     </svg>
   </button>
 
-  <!-- Toggle Map Style Button, Top Right -->
+  <!--Sync Button, Top Right 1st-->
   <button
+    class="btn btn-circle btn-md absolute top-4 right-4 z-10"
+    on:click={handleSync}
+  >
+    <svg
+      class="w-6 h-6 {$syncStore.spinning ? 'animate-spin' : ''}"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+      />
+    </svg>
+  </button>
+
+  <!-- Toggle Map Style Button, Top Right -->
+  <!-- <button
     class="btn btn-circle btn-md absolute top-4 right-4 z-10"
     on:click={toggleMapStyle}
   >
@@ -164,7 +195,7 @@
         />
       </svg>
     {/if}
-  </button>
+  </button> -->
 
   <!-- Toggle Trailing Button -->
   <button
@@ -206,7 +237,7 @@
   </button>
 
   <button
-    class="btn btn-circle btn-md absolute top-52 right-4 z-10 text-xs"
+    class="btn btn-circle btn-md absolute top-20 right-4 z-10 text-xs"
     on:click={cycleAntLineConfig}
   >
     {antLineConfigModes[currentAntLineConfigIndex]}
@@ -214,7 +245,7 @@
 
   <!-- Vehicle Selection Button -->
   <button
-    class="btn btn-circle btn-md absolute top-52 right-20 z-10 text-xs"
+    class="btn btn-circle btn-md absolute top-52 right-4 z-10 text-xs"
     on:click={toggleVehicleMenu}
   >
     <div class="flex items-center justify-center w-full h-full">
@@ -248,25 +279,7 @@
       }}
     />
   {/if}
-
-  <!-- New Color Picker Button -->
-  <!-- <button
-    class="btn btn-circle btn-md absolute top-80 right-4 z-10"
-    on:click={toggleGridColorPicker}
-    style="background-color: {gridSelectedColor};"
-  >
-    Color
-  </button>
-
-  <!-- GridColorPicker component -->
-  <!-- <GridColorPicker
-    bind:showPicker={showGridPicker}
-    bind:selectedColor={gridSelectedColor}
-    on:colorSelected={handleColorSelected}
-    on:close={() => (showGridPicker = false)}
-  /> -->
 </div>
--->
 
 <style>
 </style>

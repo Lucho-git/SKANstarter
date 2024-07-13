@@ -5,13 +5,13 @@
     confirmedMarkersStore,
     removeMarkerStore,
     markerActionsStore,
+    syncStore,
   } from "../stores/mapStore"
   import { supabase } from "../lib/supabaseClient"
   import { page } from "$app/stores"
   import { toast } from "svelte-sonner"
   import { debounce } from "lodash-es"
 
-  let spinning = false
   let confirmedMarkersUnsubscribe
 
   let debouncedSynchronizeMarkers
@@ -19,12 +19,10 @@
   let channel // Declare the channel variable
 
   onMount(() => {
-    // Create a single debounced instance of the synchronizeMarkers function
     debouncedSynchronizeMarkers = debounce(synchronizeMarkers, 500)
 
-    const session = $page.data.session // Get the session variable
+    const session = $page.data.session
 
-    // Subscribe to changes in the 'map_markers' table
     channel = supabase
       .channel("map_markers_changes")
       .on(
@@ -32,13 +30,10 @@
         { event: "*", schema: "public", table: "map_markers" },
         (payload) => {
           if (payload.new.update_user_id !== session.user.id) {
-            // Update was made by another user
             if (!synchronizationInProgress) {
               debouncedSynchronizeMarkers("Server Sync")
             }
           } else {
-            // Update was made by the current user
-            // Skip synchronization
             console.log("Skipping synchronization, update made by current user")
           }
         },
@@ -47,12 +42,17 @@
 
     synchronizeMarkers("Loaded from server")
 
-    // Subscribe to changes in the confirmedMarkerStore
     confirmedMarkersUnsubscribe = confirmedMarkersStore.subscribe((markers) => {
       if (!synchronizationInProgress) {
         debouncedSynchronizeMarkers("Local Sync")
       }
     })
+
+    // Update the syncStore with the synchronizeMarkers function
+    syncStore.update((store) => ({
+      ...store,
+      synchronizeMarkers: synchronizeMarkers,
+    }))
   })
 
   onDestroy(() => {
@@ -96,18 +96,14 @@
     }
 
     synchronizationInProgress = true
-    spinning = true
+    syncStore.update((store) => ({ ...store, spinning: true }))
 
-    // console.log("Getting sessions")
     const session = $page.data.session
     if (!session) {
       console.error("User not authenticated")
-
       toast.error("User not authenticated")
-
       return
     }
-
     try {
       const latestMarkers = await retrieveLatestMarkersFromServer(session)
       //   console.log("Latest markers from server:", latestMarkers)
@@ -180,7 +176,7 @@
       toast.error(errorMessage)
     }
     synchronizationInProgress = false
-    spinning = false
+    syncStore.update((store) => ({ ...store, spinning: false }))
     // console.log("Synchronization complete")
   }
 
@@ -465,23 +461,3 @@
     }))
   }
 </script>
-
-<button
-  class="btn btn-circle btn-md absolute top-36 right-20 z-10"
-  on:click={() => debouncedSynchronizeMarkers("Sync Button")}
->
-  <svg
-    class="w-6 h-6 {spinning ? 'animate-spin' : ''}"
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
-    <path
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      stroke-width="2"
-      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-    />
-  </svg>
-</button>

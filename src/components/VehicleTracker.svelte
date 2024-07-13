@@ -1,7 +1,4 @@
 <!-- VehicleTracker.svelte -->
-<!-- TODO, fix a bug where if vehicle doesn't exist we need to click a vehicle button before it appears, or it won't appear 
-We could group up an centralize more of the startup logic. 
--->
 
 <script>
   import { onMount, onDestroy } from "svelte"
