@@ -10,7 +10,7 @@
   import { onMount } from "svelte"
   import VehicleSelectionMenu from "./VehicleSelectionMenu.svelte"
   import SVGComponents from "../components/SVG/index.js"
-
+  import Icons from "$lib/icons"
   let isCircular = false
   let currentStyle = "skan"
 
@@ -128,6 +128,10 @@
 
   function toggleExpanded() {
     isExpanded = !isExpanded
+  }
+
+  function handleLocationClick() {
+    console.log("Location button clicked")
   }
 </script>
 
@@ -254,6 +258,17 @@
         on:click={cycleAntLineConfig}
       >
         {antLineConfigModes[currentAntLineConfigIndex]}
+      </button>
+
+      <!-- InstantLocationMarker Button-->
+
+      <button
+        class="menu-button {currentStyle} btn {isCircular
+          ? 'btn-circle'
+          : 'btn-square'} btn-lg bg-white hover:bg-opacity-90 text-sm"
+        on:click={handleLocationClick}
+      >
+        <Icons.location_drop width="48" height="48" fill="currentColor" />
       </button>
 
       <!-- Toggle Trailing Button -->
