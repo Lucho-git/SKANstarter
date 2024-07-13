@@ -10,19 +10,6 @@
   import { onMount } from "svelte"
   import VehicleSelectionMenu from "./VehicleSelectionMenu.svelte"
   import SVGComponents from "../components/SVG/index.js"
-  import GridColorPicker from "../components/GridColorPicker.svelte"
-  let showGridPicker = false
-  let gridSelectedColor = "#FF0000"
-
-  function toggleGridColorPicker() {
-    showGridPicker = !showGridPicker
-    console.log("showGridPicker:", showGridPicker)
-  }
-
-  function handleColorSelected(event) {
-    gridSelectedColor = event.detail
-    // Removed: showGridPicker = false;
-  }
 
   let LottiePlayer
 
@@ -90,51 +77,6 @@
 
   function handleBackToDashboard() {
     dispatch("backToDashboard")
-  }
-
-  const vehicleTypes = [
-    "simpleTractor",
-    "combine",
-    "pointer",
-    "CombineHarvester",
-    "excavator",
-    "tractor",
-    "WheelLoader",
-    "WorkCar",
-    "Airplane",
-  ]
-  let currentVehicleIndex = 0
-
-  const colorSizeOptions = [
-    { color: "red", size: "25px" },
-    { color: "blue", size: "35px" },
-    { color: "green", size: "45px" },
-    { color: "yellow", size: "60px" },
-  ]
-  let currentColorSizeIndex = 0
-
-  function cycleVehicleType() {
-    currentVehicleIndex = (currentVehicleIndex + 1) % vehicleTypes.length
-    userVehicleStore.update((vehicle) => ({
-      ...vehicle,
-      vehicle_marker: {
-        ...vehicle.vehicle_marker,
-        type: vehicleTypes[currentVehicleIndex],
-      },
-    }))
-  }
-
-  function cycleColorSize() {
-    currentColorSizeIndex =
-      (currentColorSizeIndex + 1) % colorSizeOptions.length
-    userVehicleStore.update((vehicle) => ({
-      ...vehicle,
-      vehicle_marker: {
-        ...vehicle.vehicle_marker,
-        color: colorSizeOptions[currentColorSizeIndex].color,
-        size: colorSizeOptions[currentColorSizeIndex].size,
-      },
-    }))
   }
 
   //Cycles between 3 animation styles of the trailtracker
@@ -224,35 +166,6 @@
     {/if}
   </button>
 
-  <!-- Toggle Vehicle Type Button, Top Right -->
-  <button
-    class="btn btn-circle btn-md absolute top-20 right-4 z-10"
-    on:click={cycleVehicleType}
-  >
-    {vehicleTypes[currentVehicleIndex]}
-
-    <!-- <svg
-      xmlns="http://www.w3.org/2000/svg"
-      class="h-5 w-5"
-      viewBox="0 0 20 20"
-      fill="currentColor"
-    >
-      <path
-        fill-rule="evenodd"
-        d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2a1 1 0 000 2h6a1 1 0 100-2H7zm6 7a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1zm-3 3a1 1 0 100 2h.01a1 1 0 100-2H10zm-4 1a1 1 0 011-1h.01a1 1 0 110 2H7a1 1 0 01-1-1zm1-4a1 1 0 100 2h.01a1 1 0 100-2H7zm2 1a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1zm4-4a1 1 0 100 2h.01a1 1 0 100-2H13zM9 9a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1zM7 8a1 1 0 000 2h.01a1 1 0 000-2H7z"
-        clip-rule="evenodd"
-      />
-    </svg> -->
-  </button>
-
-  <button
-    class="btn btn-circle btn-md absolute top-20 right-20 z-10"
-    on:click={cycleColorSize}
-  >
-    {colorSizeOptions[currentColorSizeIndex].color}
-    {colorSizeOptions[currentColorSizeIndex].size}
-  </button>
-
   <!-- Toggle Trailing Button -->
   <button
     class="btn btn-circle btn-md absolute top-36 right-4 z-10"
@@ -322,6 +235,7 @@
       showMenu={$controlStore.showVehicleMenu}
       currentVehicleType={$userVehicleStore.vehicle_marker.type}
       currentVehicleSize={$userVehicleStore.vehicle_marker.size}
+      currentVehicleColor={$userVehicleStore.vehicle_marker.color}
       on:closeMenu={() => {
         controlStore.update((store) => ({ ...store, showVehicleMenu: false }))
       }}

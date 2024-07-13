@@ -9,6 +9,7 @@
   export let showMenu = false
   export let currentVehicleType
   export let currentVehicleSize
+  export let currentVehicleColor
 
   const sizeMappings = {
     small: "30px",
@@ -34,7 +35,12 @@
   $: initialVehicle = {
     ...(vehicles.find((v) => v.type === currentVehicleType) || vehicles[0]),
     size: reverseSizeMappings[currentVehicleSize] || "medium",
+    color:
+      currentVehicleColor ||
+      (vehicles.find((v) => v.type === currentVehicleType) || vehicles[0])
+        .color,
   }
+
   $: selectedVehicle = { ...initialVehicle }
 
   let isMobile = false
@@ -160,7 +166,7 @@
           role="tab"
           class="flex-1 py-3 text-center transition-colors duration-200 font-semibold text-lg {!isColorSelectionMode
             ? 'bg-white border-b-2 border-transparent'
-            : 'bg-green-200 hover:bg-green-300'}"
+            : 'bg-blue-200 hover:bg-blue-300'}"
           on:click={() => toggleSelectionMode("vehicle")}
         >
           Vehicles
@@ -169,7 +175,7 @@
           role="tab"
           class="flex-1 py-3 text-center transition-colors duration-200 font-semibold text-lg {isColorSelectionMode
             ? 'bg-white border-b-2 border-transparent'
-            : 'bg-green-200 hover:bg-green-300'}"
+            : 'bg-blue-200 hover:bg-blue-300'}"
           on:click={() => toggleSelectionMode("color")}
         >
           Colors
