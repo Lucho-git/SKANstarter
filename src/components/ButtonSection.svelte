@@ -233,6 +233,13 @@
         </svg>
       </button>
 
+      <button
+        class="btn btn-circle btn-lg bg-white hover:bg-opacity-90 text-sm"
+        on:click={cycleAntLineConfig}
+      >
+        {antLineConfigModes[currentAntLineConfigIndex]}
+      </button>
+
       <!-- Toggle Trailing Button -->
       <button
         class="btn btn-circle btn-lg bg-white hover:bg-opacity-90"
@@ -270,13 +277,6 @@
             ></path>
           </svg>
         {/if}
-      </button>
-
-      <button
-        class="btn btn-circle btn-lg bg-white hover:bg-opacity-90 text-sm"
-        on:click={cycleAntLineConfig}
-      >
-        {antLineConfigModes[currentAntLineConfigIndex]}
       </button>
 
       <!-- Vehicle Selection Button -->
