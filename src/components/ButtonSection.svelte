@@ -124,12 +124,28 @@
       // Set the current mode to true
       config[currentMode] = true
 
+      // Show toast notification based on the current mode
+      switch (currentMode) {
+        case "noTrails":
+          toast.info("No trail animation")
+          break
+        case "allTrails":
+          toast.info("Animating all trails")
+          break
+        case "latestTrail":
+          toast.info("Animating only latest trail")
+          break
+        case "userLatestTrail":
+          toast.info("Animating only your latest trail")
+          break
+      }
+
       return config
     })
   }
 
   function handleSync() {
-    $syncStore.synchronizeMarkers("Sync Button")
+    $syncStore.synchronizeMarkers("Synchronizing with server")
   }
 
   let isExpanded = false // Set default state to open
