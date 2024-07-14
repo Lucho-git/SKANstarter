@@ -209,15 +209,39 @@
   // Instant Marker placement
 
   async function placeMarkerAtCurrentLocation() {
-    //   const map = await getMap();
-    //   // Get current location (you might need to implement this)
-    //   const currentLocation = await getCurrentLocation();
-    //   // Place a marker at the current location
-    //   const newMarker = createCustomMarker(currentLocation, 'default', generateUniqueId());
-    //   newMarker.addTo(map);
-    //   // Add to confirmed markers if needed
-    //   confirmedMarkersStore.update(markers => [...markers, { marker: newMarker, id: newMarker.id, last_confirmed: new Date().toISOString() }]);
-    console.log("Success!!!!!!!!!!!")
+    const map = await getMap()
+    const coordinates = $locationMarkerStore
+
+    if (coordinates) {
+      const lngLat = new mapboxgl.LngLat(
+        coordinates.longitude,
+        coordinates.latitude,
+      )
+      const id = uuidv4()
+      const newMarker = createCustomMarker(lngLat, "default", id)
+      newMarker.addTo(map)
+
+      confirmedMarkersStore.update((markers) => [
+        ...markers,
+        {
+          marker: newMarker,
+          id,
+          last_confirmed: new Date().toISOString(),
+          iconClass: "default",
+        },
+      ])
+
+      // Center the map on the new marker
+      map.flyTo({
+        center: lngLat,
+        zoom: 15,
+        duration: 1000,
+      })
+
+      console.log("Marker placed at current location:", lngLat)
+    } else {
+      console.error("Unable to get current location")
+    }
   }
 
   function createCustomMarker(lngLat, icon, id) {

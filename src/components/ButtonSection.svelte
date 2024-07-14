@@ -155,8 +155,15 @@
   }
 
   function handleLocationClick() {
-    locationMarkerStore.triggerLocationMarker()
-    toast.info("Marker created at your location")
+    const coordinates = $userVehicleStore.coordinates
+    if (coordinates) {
+      locationMarkerStore.set(coordinates)
+      toast.info(
+        `Marker created at your location ${JSON.stringify(coordinates)}`,
+      )
+    } else {
+      toast.error("Unable to get your current location")
+    }
   }
 </script>
 
