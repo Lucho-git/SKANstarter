@@ -12,7 +12,7 @@
   import VehicleSelectionMenu from "./VehicleSelectionMenu.svelte"
   import SVGComponents from "../components/SVG/index.js"
   import Icons from "$lib/icons"
-  let isCircular = false
+  let isCircular = true
   let currentStyle = "skan"
 
   const styles = [
@@ -298,7 +298,9 @@
 
       <!-- Toggle Trailing Button -->
       <button
-        class="menu-button {currentStyle} btn btn-square btn-lg bg-white hover:bg-opacity-90"
+        class="menu-button {currentStyle} btn {isCircular
+          ? 'btn-circle'
+          : 'btn-square'} btn-lg bg-white hover:bg-opacity-90"
         on:click={toggleTrailing}
       >
         {#if $userVehicleTrailing}
