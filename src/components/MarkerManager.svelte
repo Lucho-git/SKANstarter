@@ -5,6 +5,7 @@
     confirmedMarkersStore,
     removeMarkerStore,
     markerActionsStore,
+    locationMarkerStore,
   } from "../stores/mapStore"
   import { controlStore } from "../stores/controlStore"
   import { getContext, onMount, onDestroy } from "svelte"
@@ -14,6 +15,7 @@
 
   const { getMap } = getContext("map")
   let markerActionsUnsubscribe
+  let locationMarkerUnsubscribe
 
   const markerIcons = [
     // { id: "barn", class: "custom-svg" },
@@ -176,6 +178,12 @@
     const mapContainer = document.querySelector(".map-container")
 
     markerActionsUnsubscribe = markerActionsStore.subscribe(applyMarkerActions)
+
+    locationMarkerUnsubscribe = locationMarkerStore.subscribe((timestamp) => {
+      if (timestamp) {
+        placeMarkerAtCurrentLocation()
+      }
+    })
   })
 
   onDestroy(() => {
@@ -185,7 +193,9 @@
     if (markerActionsUnsubscribe) {
       markerActionsUnsubscribe()
     }
-
+    if (locationMarkerUnsubscribe) {
+      locationMarkerUnsubscribe()
+    }
     // Clear the confirmedMarkersStore
     confirmedMarkersStore.set([])
 
@@ -195,6 +205,20 @@
     // Clear the markerActionsStore
     markerActionsStore.set([])
   })
+
+  // Instant Marker placement
+
+  async function placeMarkerAtCurrentLocation() {
+    //   const map = await getMap();
+    //   // Get current location (you might need to implement this)
+    //   const currentLocation = await getCurrentLocation();
+    //   // Place a marker at the current location
+    //   const newMarker = createCustomMarker(currentLocation, 'default', generateUniqueId());
+    //   newMarker.addTo(map);
+    //   // Add to confirmed markers if needed
+    //   confirmedMarkersStore.update(markers => [...markers, { marker: newMarker, id: newMarker.id, last_confirmed: new Date().toISOString() }]);
+    console.log("Success!!!!!!!!!!!")
+  }
 
   function createCustomMarker(lngLat, icon, id) {
     if (icon === "default") {

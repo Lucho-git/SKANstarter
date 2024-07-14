@@ -1,7 +1,7 @@
 <!-- src/components/ButtonSection.svelte -->
 <script>
   import { createEventDispatcher, beforeUpdate, afterUpdate } from "svelte"
-  import { mapStore, syncStore } from "../stores/mapStore"
+  import { mapStore, locationMarkerStore, syncStore } from "../stores/mapStore"
   import { userVehicleStore, userVehicleTrailing } from "../stores/vehicleStore"
   import { antLineConfigStore } from "../stores/trailDataStore"
   import { controlStore } from "../stores/controlStore"
@@ -155,8 +155,8 @@
   }
 
   function handleLocationClick() {
-    console.log("Location button clicked")
-    toast.info("Marker created at your location (coming soon)")
+    locationMarkerStore.triggerLocationMarker()
+    toast.info("Marker created at your location")
   }
 </script>
 

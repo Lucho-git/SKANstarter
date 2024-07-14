@@ -88,7 +88,6 @@
   function confirmSelection() {
     toast.success(
       `Selected Vehicle: [${selectedVehicle.color} ${selectedVehicle.type}]`,
-      { duration: 5000 },
     )
 
     dispatch("vehicleSelected", {

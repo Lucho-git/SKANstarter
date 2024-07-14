@@ -83,3 +83,17 @@ export const syncStore = writable({
     synchronizeMarkers: null,
     spinning: false
   });
+
+
+  function createLocationMarkerStore() {
+    const { subscribe, set, update } = writable(null);
+  
+    return {
+      subscribe,
+      set,
+      update,
+      triggerLocationMarker: () => update(n => Date.now())
+    };
+  }
+  
+  export const locationMarkerStore = createLocationMarkerStore();
