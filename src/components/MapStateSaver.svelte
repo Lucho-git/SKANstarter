@@ -109,7 +109,6 @@
       //   console.log("Latest markers from server:", latestMarkers)
 
       const localMarkers = $confirmedMarkersStore
-
       let {
         localMarkersToBeAdded,
         localMarkersToBeUpdated,
@@ -223,14 +222,13 @@
         )
 
         if (!removedMarker) {
+          console.log("Adding marker to server:", localMarker)
+          let iconClass = localMarker.iconClass || "default"
+          console.log("pushing marker to server:", localMarker, iconClass)
+
           serverMarkersToBeAdded.push({
             ...localMarker,
-            iconClass: localMarker.marker.getElement().querySelector("svg")
-              ? `custom-svg-${localMarker.marker.getElement().querySelector("svg").dataset.icon}`
-              : localMarker.marker.getElement().querySelector("ion-icon")
-                ? `ionic-${localMarker.marker.getElement().querySelector("ion-icon").getAttribute("name")}`
-                : localMarker.marker.getElement().querySelector("i")
-                    ?.className || "default",
+            iconClass: iconClass,
           })
         }
       }
@@ -301,25 +299,15 @@
     }
 
     const masterMapId = profile.master_map_id
-
     // Helper function to get iconClass
-    const getIconClass = (mapboxMarker) => {
-      const element = mapboxMarker.getElement()
-      if (element.querySelector("svg")) {
-        return `custom-svg-${element.querySelector("svg").dataset.icon}`
-      } else if (element.querySelector("ion-icon")) {
-        return `ionic-${element.querySelector("ion-icon").getAttribute("name")}`
-      } else {
-        return element.querySelector("i")?.className || "default"
-      }
-    }
 
     // Process markers to be added
     if (serverMarkersToBeAdded.length > 0) {
       const addMarkerData = serverMarkersToBeAdded.map((marker) => {
-        const { marker: mapboxMarker, id, last_confirmed } = marker
+        const { marker: mapboxMarker, id, last_confirmed, iconClass } = marker
+
         const coordinates = mapboxMarker.getLngLat().toArray()
-        const iconClass = getIconClass(mapboxMarker)
+        console.log("servermarkerstobeadded4", iconClass)
 
         const feature = {
           type: "Feature",

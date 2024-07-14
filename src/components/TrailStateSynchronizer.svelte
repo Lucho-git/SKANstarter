@@ -272,7 +272,7 @@
     try {
       const retentionDate = getRetentionDate()
       const filteredTrailData = await db.TrailData.where("timestamp")
-        .above(sevenDaysAgo)
+        .above(retentionDate)
         .and((point) => point.master_map_id === retentionDate)
         .toArray()
 

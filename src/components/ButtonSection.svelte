@@ -158,9 +158,7 @@
     const coordinates = $userVehicleStore.coordinates
     if (coordinates) {
       locationMarkerStore.set(coordinates)
-      toast.info(
-        `Marker created at your location ${JSON.stringify(coordinates)}`,
-      )
+      toast.info(`Marker placed at your location`)
     } else {
       toast.error("Unable to get your current location")
     }

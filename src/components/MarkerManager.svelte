@@ -356,16 +356,23 @@
 
       let iconClass = "default"
       const markerElement = selectedMarker.getElement()
-      const iconElement = markerElement.querySelector("i")
-      const svgElement = markerElement.querySelector("svg")
-      const ionIconElement = markerElement.querySelector("ion-icon")
 
-      if (iconElement) {
-        iconClass = iconElement.className
-      } else if (svgElement) {
-        iconClass = `custom-svg-${svgElement.dataset.icon || "unknown"}`
-      } else if (ionIconElement) {
-        iconClass = `ionic-${ionIconElement.getAttribute("name")}`
+      // Check for custom-svg markers
+      const svgElement = markerElement.querySelector("svg[data-icon]")
+      if (svgElement && svgElement.dataset.icon) {
+        iconClass = `custom-svg-${svgElement.dataset.icon}`
+      } else {
+        // Check for ionic icons
+        const ionIconElement = markerElement.querySelector("ion-icon")
+        if (ionIconElement) {
+          iconClass = `ionic-${ionIconElement.getAttribute("name")}`
+        } else {
+          // Check for atlas icons
+          const iElement = markerElement.querySelector("i")
+          if (iElement) {
+            iconClass = iElement.className
+          }
+        }
       }
 
       const markerData = {
