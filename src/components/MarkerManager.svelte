@@ -12,6 +12,7 @@
   import mapboxgl from "mapbox-gl"
   import { v4 as uuidv4 } from "uuid"
   import IconSVG from "../components/IconSVG.svelte"
+  import { toast } from "svelte-sonner"
 
   const { getMap } = getContext("map")
   let markerActionsUnsubscribe
