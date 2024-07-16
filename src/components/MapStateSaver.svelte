@@ -28,8 +28,24 @@
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "map_markers" },
-        (payload) => {
+        async (payload) => {
           if (payload.new.update_user_id !== session.user.id) {
+            const { data: user } = await supabase
+              .from("profiles")
+              .select("full_name")
+              .eq("id", payload.new.update_user_id)
+              .single()
+
+            console.log("User:", user)
+            console.log(user?.full_name)
+            const username = user ? user.full_name : "Another user"
+            const changeType = payload.eventType
+            const iconClass = payload.new.deleted
+              ? "deleted"
+              : payload.new.marker_data.properties.icon
+
+            showChangeToast(username, changeType, iconClass)
+
             if (!synchronizationInProgress) {
               debouncedSynchronizeMarkers("Server Sync")
             }
@@ -87,6 +103,27 @@
     // Clear the markerActionsStore
     markerActionsStore.set([])
   })
+
+  function showChangeToast(username, changeType, iconClass) {
+    let message = ""
+    console.log("Showing toast", changeType)
+
+    switch (changeType) {
+      case "INSERT":
+        message = `${username} added a new ${iconClass} marker`
+        break
+      case "UPDATE":
+        if (iconClass === "deleted") {
+          message = `${username} removed a marker`
+        } else {
+          message = `${username} updated a ${iconClass} marker`
+        }
+        break
+    }
+
+    console.log("Showing toast", message)
+    toast.info(message)
+  }
 
   async function synchronizeMarkers(toasttext) {
     console.log("Synchronizing markers...")
@@ -172,7 +209,7 @@
           "Failed to retrieve latest markers from the server. Please try again later."
       }
 
-      toast.error(errorMessage)
+      toast.error(error.message)
     }
     synchronizationInProgress = false
     syncStore.update((store) => ({ ...store, spinning: false }))
@@ -431,9 +468,8 @@
     // Retrieve the latest markers from the server, excluding deleted markers
     const { data: latestMarkers, error: markersError } = await supabase
       .from("map_markers")
-      .select("id, marker_data, last_confirmed, deleted")
+      .select("id, marker_data, last_confirmed, deleted, deleted_at")
       .eq("master_map_id", masterMapId)
-      .is("deleted", null)
 
     if (markersError) {
       console.error(
