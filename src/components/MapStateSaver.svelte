@@ -17,6 +17,7 @@
   let debouncedSynchronizeMarkers
   let synchronizationInProgress = false
   let channel // Declare the channel variable
+  export let map
 
   onMount(() => {
     debouncedSynchronizeMarkers = debounce(synchronizeMarkers, 500)
@@ -40,9 +41,16 @@
             const changeType = payload.eventType
             const iconClass =
               payload.new.marker_data?.properties?.icon || "unknown"
+            const coordinates = payload.new.marker_data.geometry.coordinates
             const isDeleted = payload.new.deleted === true
 
-            showChangeToast(username, changeType, iconClass, isDeleted)
+            showChangeToast(
+              username,
+              changeType,
+              iconClass,
+              isDeleted,
+              coordinates,
+            )
 
             if (!synchronizationInProgress) {
               debouncedSynchronizeMarkers()
@@ -102,10 +110,39 @@
     markerActionsStore.set([])
   })
 
-  function showChangeToast(username, changeType, iconClass, isDeleted) {
+  function showLocalChangeToast(changeType, iconClass, isDeleted) {
     let title = ""
     let description = ""
 
+    switch (changeType) {
+      case "add":
+        title = "Marker Added"
+        description = `You added a new ${iconClass} marker`
+        toast.info(title, { description })
+        break
+      case "update":
+        if (isDeleted) {
+          title = "Marker Deleted"
+          description = `You removed a ${iconClass} marker`
+          toast.warning(title, { description })
+        } else {
+          title = "Marker Updated"
+          description = `You updated a marker to ${iconClass}`
+          toast.info(title, { description })
+        }
+        break
+    }
+  }
+
+  function showChangeToast(
+    username,
+    changeType,
+    iconClass,
+    isDeleted,
+    coordinates,
+  ) {
+    let title = ""
+    let description = ""
     switch (changeType) {
       case "INSERT":
         title = "Marker Added"
@@ -115,8 +152,11 @@
           action: {
             label: "Locate",
             onClick: () => {
-              console.log("Locating new marker...")
-              // Add your locate logic here
+              map.flyTo({
+                center: coordinates,
+                zoom: 15,
+                duration: 1000,
+              })
             },
           },
         })
@@ -136,8 +176,11 @@
             action: {
               label: "Locate",
               onClick: () => {
-                console.log("Locating updated marker...")
-                // Add your locate logic here
+                map.flyTo({
+                  center: coordinates,
+                  zoom: 15,
+                  duration: 1000,
+                })
               },
             },
           })
@@ -267,6 +310,7 @@
           ) {
             // If the local modification is newer than the deletion, update the server marker
             serverMarkersToBeUpdated.push(localMarker)
+            showLocalChangeToast("update", localMarker.iconClass, false)
           } else {
             // If the deletion is newer, delete the local marker
             localMarkersToBeDeleted.push(localMarker)
@@ -281,6 +325,7 @@
           new Date(serverMarker.last_confirmed)
         ) {
           serverMarkersToBeUpdated.push(localMarker)
+          showLocalChangeToast("update", localMarker.iconClass, false)
         }
       } else {
         const removedMarker = $removeMarkerStore.find(
@@ -288,14 +333,13 @@
         )
 
         if (!removedMarker) {
-          console.log("Adding marker to server:", localMarker)
           let iconClass = localMarker.iconClass || "default"
-          console.log("pushing marker to server:", localMarker, iconClass)
 
           serverMarkersToBeAdded.push({
             ...localMarker,
             iconClass: iconClass,
           })
+          showLocalChangeToast("add", localMarker.iconClass, false)
         }
       }
     }
@@ -328,6 +372,7 @@
           // If the removal last_confirmed is newer or equal to the server marker's last_confirmed,
           // add the marker to serverMarkersToBeDeleted
           serverMarkersToBeDeleted.push(serverMarker)
+          showLocalChangeToast("update", serverMarker.iconClass, true)
         }
       }
     }

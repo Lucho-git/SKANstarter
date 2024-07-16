@@ -113,7 +113,7 @@
     />
 
     <MarkerManager {markerPlacementEvent} {markerClickEvent} />
-    <MapStateSaver />
+    <MapStateSaver {map} />
     <MapControls
       bind:this={mapControls}
       {map}
