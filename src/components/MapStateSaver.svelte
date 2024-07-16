@@ -36,15 +36,13 @@
               .eq("id", payload.new.update_user_id)
               .single()
 
-            console.log("User:", user)
-            console.log(user?.full_name)
-            const username = user ? user.full_name : "Another user"
+            const username = user?.full_name || "Another user"
             const changeType = payload.eventType
-            const iconClass = payload.new.deleted
-              ? "deleted"
-              : payload.new.marker_data.properties.icon
+            const iconClass =
+              payload.new.marker_data?.properties?.icon || "unknown"
+            const isDeleted = payload.new.deleted === true
 
-            showChangeToast(username, changeType, iconClass)
+            showChangeToast(username, changeType, iconClass, isDeleted)
 
             if (!synchronizationInProgress) {
               debouncedSynchronizeMarkers("Server Sync")
@@ -104,25 +102,48 @@
     markerActionsStore.set([])
   })
 
-  function showChangeToast(username, changeType, iconClass) {
-    let message = ""
-    console.log("Showing toast", changeType)
+  function showChangeToast(username, changeType, iconClass, isDeleted) {
+    let title = ""
+    let description = ""
 
     switch (changeType) {
       case "INSERT":
-        message = `${username} added a new ${iconClass} marker`
+        title = "Marker Added"
+        description = `${username} added a new ${iconClass} marker`
+        toast.info(title, {
+          description: description,
+          action: {
+            label: "Locate",
+            onClick: () => {
+              console.log("Locating new marker...")
+              // Add your locate logic here
+            },
+          },
+        })
         break
       case "UPDATE":
-        if (iconClass === "deleted") {
-          message = `${username} removed a marker`
+        if (isDeleted) {
+          title = "Marker Deleted"
+          description = `${username} removed a ${iconClass} marker`
+          toast.warning(title, {
+            description: description,
+          })
         } else {
-          message = `${username} updated a ${iconClass} marker`
+          title = "Marker Updated"
+          description = `${username} updated a marker to ${iconClass}`
+          toast.info(title, {
+            description: description,
+            action: {
+              label: "Locate",
+              onClick: () => {
+                console.log("Locating updated marker...")
+                // Add your locate logic here
+              },
+            },
+          })
         }
         break
     }
-
-    console.log("Showing toast", message)
-    toast.info(message)
   }
 
   async function synchronizeMarkers(toasttext) {
