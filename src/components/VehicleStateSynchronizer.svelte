@@ -153,6 +153,7 @@
       .select("*")
       .eq("master_map_id", masterMapId)
 
+    console.log("Vehicles:", vehicles)
     if (vehiclesError) {
       console.error("Error retrieving initial vehicle data:", vehiclesError)
       return []

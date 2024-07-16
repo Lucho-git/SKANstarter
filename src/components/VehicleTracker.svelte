@@ -104,6 +104,8 @@
   })
 
   function processChanges(changes) {
+    console.log("Received changes from otherVehiclesDataChanges:", changes)
+    console.log("other vehicles data", $otherVehiclesStore)
     changes.forEach((change) => {
       const { coordinates, heading, vehicle_marker, vehicle_id, update_types } =
         change
