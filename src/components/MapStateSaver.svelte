@@ -214,25 +214,31 @@
     } catch (error) {
       console.error("Error synchronizing markers:", error)
 
-      let errorMessage = "Error synchronizing markers"
+      let errorTitle = "Synchronization Error"
+      let errorMessage = error.message || "Error synchronizing markers"
 
       if (error.message === "Failed to retrieve user profile") {
-        errorMessage =
-          "Please create a map or connect to a map for online synchronization."
+        errorTitle = "User Profile Error"
       } else if (
         error.message ===
         "No master map assigned. Please create or connect to a map."
       ) {
-        errorMessage =
-          "No master map assigned. Please create or connect to a map."
+        errorTitle = "Map Assignment Error"
       } else if (
         error.message === "Failed to retrieve latest markers from server"
       ) {
-        errorMessage =
-          "Failed to retrieve latest markers from the server. Please try again later."
+        errorTitle = "Server Communication Error"
       }
 
-      toast.error(error.message)
+      toast.error(errorTitle, {
+        description: error.details || errorMessage,
+        action: {
+          label: "Reload",
+          onClick: () => {
+            window.location.reload()
+          },
+        },
+      })
     }
     synchronizationInProgress = false
     syncStore.update((store) => ({ ...store, spinning: false }))
@@ -365,7 +371,6 @@
     if (serverMarkersToBeAdded.length > 0) {
       const addMarkerData = serverMarkersToBeAdded.map((marker) => {
         const { marker: mapboxMarker, id, last_confirmed, iconClass } = marker
-
         const coordinates = mapboxMarker.getLngLat().toArray()
         console.log("servermarkerstobeadded4", iconClass)
 
