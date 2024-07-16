@@ -45,7 +45,7 @@
             showChangeToast(username, changeType, iconClass, isDeleted)
 
             if (!synchronizationInProgress) {
-              debouncedSynchronizeMarkers("Server Sync")
+              debouncedSynchronizeMarkers()
             }
           } else {
             console.log("Skipping synchronization, update made by current user")
@@ -58,7 +58,7 @@
 
     confirmedMarkersUnsubscribe = confirmedMarkersStore.subscribe((markers) => {
       if (!synchronizationInProgress) {
-        debouncedSynchronizeMarkers("Local Sync")
+        debouncedSynchronizeMarkers()
       }
     })
 
@@ -208,7 +208,9 @@
         serverMarkersToBeUpdated,
         serverMarkersToBeDeleted,
       })
-      toast.success(toasttext)
+      if (toasttext) {
+        toast.success(toasttext)
+      }
     } catch (error) {
       console.error("Error synchronizing markers:", error)
 
