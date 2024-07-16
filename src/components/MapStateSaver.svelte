@@ -380,9 +380,8 @@
     // Process markers to be updated
     if (serverMarkersToBeUpdated.length > 0) {
       const updateMarkerData = serverMarkersToBeUpdated.map((marker) => {
-        const { marker: mapboxMarker, id, last_confirmed } = marker
+        const { marker: mapboxMarker, id, last_confirmed, iconClass } = marker
         const coordinates = mapboxMarker.getLngLat().toArray()
-        const iconClass = getIconClass(mapboxMarker)
 
         const feature = {
           type: "Feature",
