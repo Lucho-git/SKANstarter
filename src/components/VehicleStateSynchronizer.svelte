@@ -173,11 +173,12 @@
         coordinates: serverItem.coordinates,
         heading: serverItem.heading,
         vehicle_marker: serverItem.vehicle_marker,
+        is_trailing: serverItem.is_trailing,
+        last_update: serverItem.last_update,
         update_types: [],
       }
 
       if (!clientItem) {
-        // console.log(`New vehicle found on server: ${serverItem.vehicle_id}`)
         change.update_types.push("new_vehicle")
       } else {
         const vehicleMarkerChanged =
@@ -186,45 +187,26 @@
         const coordinatesChanged =
           serverItem.coordinates !== clientItem.coordinates
         const headingChanged = serverItem.heading !== clientItem.heading
+        const isTrailingChanged =
+          serverItem.is_trailing !== clientItem.is_trailing
+        const lastUpdateChanged =
+          serverItem.last_update !== clientItem.last_update
 
         if (vehicleMarkerChanged) {
-          console
-            .log
-            // `Vehicle marker changed for vehicle: ${serverItem.vehicle_id}`,
-            ()
           change.update_types.push("vehicle_marker_changed")
         }
         if (coordinatesChanged) {
-          //   console.log(`Position changed for vehicle: ${serverItem.vehicle_id}`)
           change.update_types.push("position_changed")
         }
         if (headingChanged) {
-          //   console.log(`Heading changed for vehicle: ${serverItem.vehicle_id}`)
           change.update_types.push("heading_changed")
         }
-
-        // Log specific differences
-        // if (vehicleMarkerChanged) {
-        //   console.log(
-        //     `Difference in vehicle_marker for vehicle: ${serverItem.vehicle_id}`,
-        //   )
-        //   console.log(`Server value:`, serverItem.vehicle_marker)
-        //   console.log(`Client value:`, clientItem.vehicle_marker)
-        // }
-        // if (coordinatesChanged) {
-        //   console.log(
-        //     `Difference in coordinates for vehicle: ${serverItem.vehicle_id}`,
-        //   )
-        //   console.log(`Server value:`, serverItem.coordinates)
-        //   console.log(`Client value:`, clientItem.coordinates)
-        // }
-        // if (headingChanged) {
-        //   console.log(
-        //     `Difference in heading for vehicle: ${serverItem.vehicle_id}`,
-        //   )
-        //   console.log(`Server value:`, serverItem.heading)
-        //   console.log(`Client value:`, clientItem.heading)
-        // }
+        if (isTrailingChanged) {
+          change.update_types.push("trailing_status_changed")
+        }
+        if (lastUpdateChanged) {
+          change.update_types.push("last_update_changed")
+        }
       }
 
       return change
@@ -233,8 +215,6 @@
     const filteredChanges = changes.filter(
       (change) => change.update_types.length > 0,
     )
-
-    // console.log("Filtered changes:", filteredChanges)
 
     return filteredChanges
   }

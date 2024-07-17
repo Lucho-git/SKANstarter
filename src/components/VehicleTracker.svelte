@@ -11,7 +11,7 @@
   } from "../stores/vehicleStore"
   import UserMarker from "./UserMarker.svelte"
   import { unsavedTrailStore } from "../stores/trailDataStore"
-
+  import { toast } from "svelte-sonner"
   import { page } from "$app/stores"
 
   import { debounce } from "lodash-es"
@@ -28,6 +28,7 @@
   const ANIMATION_DURATION = 500 // Adjust this value as needed
   const DISTANCE_THRESHOLD = 0.0
   const LOCATION_TRACKING_INTERVAL_MIN = 30
+  const INACTIVE_THRESHOLD = 30 * 60 * 1000 // 30 minutes in milliseconds
 
   let isTrailingOn = false // Flag to control the trailing feature
   let otherVehiclesUnsubscribe
@@ -106,15 +107,25 @@
   function processChanges(changes) {
     console.log("Received changes from otherVehiclesDataChanges:", changes)
     console.log("other vehicles data", $otherVehiclesStore)
+
+    const REJOIN_THRESHOLD = 5 * 60 * 1000 // 5 minutes in milliseconds
+
     changes.forEach((change) => {
-      const { coordinates, heading, vehicle_marker, vehicle_id, update_types } =
-        change
+      const {
+        coordinates,
+        heading,
+        vehicle_marker,
+        vehicle_id,
+        update_types,
+        is_trailing,
+        last_update,
+      } = change
 
       // Parse the coordinates string into an array of numbers
       const [longitude, latitude] = coordinates
-        .slice(1, -1) // Remove the parentheses
-        .split(",") // Split by comma
-        .map(parseFloat) // Convert each value to a number
+        .slice(1, -1)
+        .split(",")
+        .map(parseFloat)
 
       // Find the existing marker for the vehicle
       const existingMarkerIndex = otherVehicleMarkers.findIndex((marker) => {
@@ -150,16 +161,6 @@
           // Animate the marker to the new position and heading
           animateMarker(existingMarker, longitude, latitude, heading)
         }
-      } else if (update_types.includes("new_vehicle")) {
-        // Create a new marker for the vehicle
-        const marker = new mapboxgl.Marker({
-          element: createMarkerElement(vehicle_marker, false, vehicle_id),
-          pitchAlignment: "map",
-          rotationAlignment: "map",
-        })
-
-        marker.setLngLat([longitude, latitude]).setRotation(heading).addTo(map)
-        otherVehicleMarkers.push(marker)
       }
 
       // Update the otherVehiclesStore with the change
@@ -168,7 +169,33 @@
           (vehicle) => vehicle.vehicle_id === vehicle_id,
         )
         if (index !== -1) {
-          vehicles[index] = change
+          const oldVehicle = vehicles[index]
+
+          if (
+            update_types.includes("last_update_changed") &&
+            !update_types.includes("new_vehicle")
+          ) {
+            const timeDifference =
+              new Date(last_update) - new Date(oldVehicle.last_update)
+            console.log(
+              `Time difference for vehicle ${vehicle_id}: ${timeDifference} ms`,
+            )
+
+            if (timeDifference > REJOIN_THRESHOLD) {
+              toast.info(`Vehicle ${vehicle_id} has joined the map`)
+            }
+          }
+
+          if (
+            update_types.includes("trailing_status_changed") &&
+            !update_types.includes("new_vehicle")
+          ) {
+            toast.info(
+              `Vehicle ${vehicle_id} has ${is_trailing ? "started" : "stopped"} trailing`,
+            )
+          }
+
+          vehicles[index] = { ...oldVehicle, ...change }
         } else {
           vehicles.push(change)
         }
