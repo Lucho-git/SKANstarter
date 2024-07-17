@@ -60,7 +60,7 @@
 
       // Fetch initial vehicle data from the server
       const initialVehicles = await fetchInitialVehicleData(masterMapId, userId)
-      //   console.log("Initial vehicle data:", initialVehicles)
+      console.log("Initial vehicle data:", initialVehicles)
       serverOtherVehiclesData.set(initialVehicles)
 
       // Compare the serverOtherVehiclesData with the otherVehiclesStore and store the changes
@@ -152,7 +152,12 @@
   async function fetchInitialVehicleData(masterMapId, userId) {
     const { data: vehicles, error: vehiclesError } = await supabase
       .from("vehicle_state")
-      .select("*")
+      .select(
+        `
+      *,
+      profiles:vehicle_id (full_name)
+    `,
+      )
       .eq("master_map_id", masterMapId)
 
     console.log("Vehicles:", vehicles)
@@ -161,10 +166,18 @@
       return []
     }
 
-    return vehicles.filter((vehicle) => vehicle.vehicle_id !== userId)
+    return vehicles
+      .filter((vehicle) => vehicle.vehicle_id !== userId)
+      .map((vehicle) => ({
+        ...vehicle,
+        full_name: vehicle.profiles.full_name,
+      }))
   }
 
   function compareData(serverData, clientData) {
+    console.log("SERVERDATA", serverData)
+    console.log("CLIENTDATA", clientData)
+
     const changes = serverData.map((serverItem) => {
       const clientItem = clientData.find(
         (item) => item.vehicle_id === serverItem.vehicle_id,
@@ -177,6 +190,7 @@
         vehicle_marker: serverItem.vehicle_marker,
         is_trailing: serverItem.is_trailing,
         last_update: serverItem.last_update,
+        full_name: serverItem.full_name,
         update_types: [],
       }
 
@@ -218,6 +232,7 @@
       (change) => change.update_types.length > 0,
     )
 
+    console.log("RETURNINGCHANGEDVALUES", filteredChanges)
     return filteredChanges
   }
 

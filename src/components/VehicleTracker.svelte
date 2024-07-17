@@ -191,7 +191,19 @@
             )
 
             if (timeDifference > REJOIN_THRESHOLD) {
-              toast.info(`Vehicle ${vehicle_id} has joined the map`)
+              toast.info(`Vehicle Rejoined`, {
+                description: `${change.full_name}'s ${change.vehicle_marker.type} has joined the map`,
+                action: {
+                  label: "Locate",
+                  onClick: () => {
+                    map.flyTo({
+                      center: [longitude, latitude],
+                      zoom: 15,
+                      duration: 1000,
+                    })
+                  },
+                },
+              })
             }
           }
 
@@ -199,9 +211,19 @@
             update_types.includes("trailing_status_changed") &&
             !update_types.includes("new_vehicle")
           ) {
-            toast.info(
-              `Vehicle ${vehicle_id} has ${is_trailing ? "started" : "stopped"} trailing`,
-            )
+            toast.info(`Trailing Status Changed`, {
+              description: `${change.full_name}'s ${change.vehicle_marker.type} has ${is_trailing ? "started" : "stopped"} trailing`,
+              action: {
+                label: "Locate",
+                onClick: () => {
+                  map.flyTo({
+                    center: [longitude, latitude],
+                    zoom: 15,
+                    duration: 1000,
+                  })
+                },
+              },
+            })
           }
 
           vehicles[index] = { ...oldVehicle, ...change }
