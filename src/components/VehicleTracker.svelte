@@ -118,6 +118,7 @@
         update_types,
         is_trailing,
         last_update,
+        full_name,
       } = change
 
       // Parse the coordinates string into an array of numbers

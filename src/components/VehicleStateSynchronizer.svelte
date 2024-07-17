@@ -88,8 +88,12 @@
                   (vehicle) => vehicle.vehicle_id === payload.new.vehicle_id,
                 )
                 if (existingVehicleIndex !== -1) {
-                  // Vehicle already exists, update its data
-                  vehicles[existingVehicleIndex] = payload.new
+                  // Vehicle already exists, update its data while preserving the full_name
+                  vehicles[existingVehicleIndex] = {
+                    ...vehicles[existingVehicleIndex],
+                    ...payload.new,
+                    full_name: vehicles[existingVehicleIndex].full_name,
+                  }
                 } else {
                   // Vehicle doesn't exist, add it to the store
                   console.log("pushing new vehicle", payload.new)
@@ -190,7 +194,7 @@
         vehicle_marker: serverItem.vehicle_marker,
         is_trailing: serverItem.is_trailing,
         last_update: serverItem.last_update,
-        full_name: serverItem.full_name,
+        full_name: serverItem.full_name || clientItem?.full_name, // Preserve full_name
         update_types: [],
       }
 
