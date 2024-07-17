@@ -30,7 +30,6 @@
   const LOCATION_TRACKING_INTERVAL_MIN = 30
   const INACTIVE_THRESHOLD = 30 * 60 * 1000 // 30 minutes in milliseconds
 
-  let isTrailingOn = false // Flag to control the trailing feature
   let otherVehiclesUnsubscribe
   let userVehicleUnsubscribe
   let unsubscribeOtherVehiclesDataChanges
@@ -161,6 +160,16 @@
           // Animate the marker to the new position and heading
           animateMarker(existingMarker, longitude, latitude, heading)
         }
+      } else {
+        // Create a new marker for the vehicle
+        const marker = new mapboxgl.Marker({
+          element: createMarkerElement(vehicle_marker, false, vehicle_id),
+          pitchAlignment: "map",
+          rotationAlignment: "map",
+        })
+
+        marker.setLngLat([longitude, latitude]).setRotation(heading).addTo(map)
+        otherVehicleMarkers.push(marker)
       }
 
       // Update the otherVehiclesStore with the change
@@ -320,13 +329,12 @@
     const vehicleData = {
       coordinates: { latitude, longitude },
       last_update: currentTime,
-      is_trailing: isTrailingOn,
       vehicle_marker: $userVehicleStore.vehicle_marker,
     }
 
     const updatedHeading = heading !== null ? Math.round(heading) : heading
     // console.log("Server-side heading before adding to store:", updatedHeading);
-
+    console.log("updating vehicle dataa", vehicleData)
     updateUserVehicleData(currentTime, vehicleData, updatedHeading)
   }
 
@@ -375,13 +383,11 @@
 
         console.log("Changes detected:", changeLog)
 
-        // Update the userVehicleStore with the latest vehicle state
         userVehicleStore.update((vehicle) => {
           return {
             ...vehicle,
             coordinates: vehicleData.coordinates,
             last_update: vehicleData.last_update,
-            is_trailing: vehicleData.is_trailing,
             vehicle_marker: vehicleData.vehicle_marker,
             heading: updatedHeading,
           }

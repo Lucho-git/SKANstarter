@@ -7,6 +7,7 @@
     otherVehiclesStore,
     serverOtherVehiclesData,
     otherVehiclesDataChanges,
+    userVehicleTrailing,
   } from "../stores/vehicleStore"
   import { vehicleDataLoaded } from "../stores/loadedStore"
   import { page } from "$app/stores"
@@ -112,6 +113,7 @@
 
       // Subscribe to changes in the userVehicleStore which are sent to the database
       unsubscribe = userVehicleStore.subscribe(async (vehicleData) => {
+        console.log("Updating vehicle state in the database:", vehicleData)
         await sendVehicleStateToDatabase(vehicleData)
       })
     }
@@ -242,8 +244,7 @@
 
     const masterMapId = profile.master_map_id
 
-    const { coordinates, last_update, heading, is_trailing, vehicle_marker } =
-      vehicleData
+    const { coordinates, last_update, heading, vehicle_marker } = vehicleData
 
     // Check if coordinates exist before proceeding
     if (!coordinates) {
@@ -257,7 +258,7 @@
       master_map_id: masterMapId,
       coordinates: `(${coordinates.longitude},${coordinates.latitude})`,
       last_update: new Date(last_update).toISOString(),
-      is_trailing,
+      is_trailing: $userVehicleTrailing,
       vehicle_marker,
     }
 
@@ -267,7 +268,7 @@
       //   console.log("heading is null")
     }
 
-    // console.log("Sending vehicle state to server:", vehicleStateData)
+    console.log("Sending vehicle state to server:", vehicleStateData)
 
     const { data, error } = await supabase
       .from("vehicle_state")

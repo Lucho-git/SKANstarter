@@ -173,7 +173,7 @@
         console.log("Unsynced data added. Starting sync scheduler.")
         startSyncScheduler()
       } else {
-        console.log("Markers inserted into Supabase:", data)
+        // console.log("Markers inserted into Supabase:", data)
         // If the Supabase request is successful, add the markers to IndexedDB with synced set to true
         await saveMarkersToIndexedDB(enrichedMarkers, true)
       }
