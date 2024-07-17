@@ -121,6 +121,7 @@
       }
     })
   }
+  const TILE_SIZE = 156543.03392 // meters per pixel at zoom level 0
 
   function createTrailLayer(
     sourceId,
@@ -130,6 +131,16 @@
     opacity,
     dashArray = [1],
   ) {
+    const zoomDependentWidth = [
+      "interpolate",
+      ["exponential", 2],
+      ["zoom"],
+      10,
+      ["*", width, ["^", 2, -6]],
+      24,
+      ["*", width, ["^", 2, 8]],
+    ]
+
     if (!map.getLayer(layerId)) {
       map.addLayer({
         type: "line",
@@ -140,14 +151,14 @@
         },
         paint: {
           "line-color": color,
-          "line-width": width,
+          "line-width": zoomDependentWidth,
           "line-opacity": opacity,
           "line-dasharray": dashArray,
         },
       })
     } else {
       map.setPaintProperty(layerId, "line-color", color)
-      map.setPaintProperty(layerId, "line-width", width)
+      map.setPaintProperty(layerId, "line-width", zoomDependentWidth)
       map.setPaintProperty(layerId, "line-opacity", opacity)
       map.setPaintProperty(layerId, "line-dasharray", dashArray)
     }

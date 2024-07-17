@@ -121,7 +121,6 @@
       on:markerClick={handleMarkerClick}
     />
     <VehicleStateSynchronizer />
-
     <VehicleTracker {map} />
 
     <!-- // Wait for veihicle data to be loaded before loading the trail data -->
