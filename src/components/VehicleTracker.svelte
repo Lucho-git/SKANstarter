@@ -28,7 +28,7 @@
   const ANIMATION_DURATION = 500 // Adjust this value as needed
   const DISTANCE_THRESHOLD = 0.0
   const LOCATION_TRACKING_INTERVAL_MIN = 30
-  const INACTIVE_THRESHOLD = 30 * 60 * 1000 // 30 minutes in milliseconds
+  const REJOIN_THRESHOLD = 5 * 60 * 1000 // 5 minutes in milliseconds
 
   let otherVehiclesUnsubscribe
   let userVehicleUnsubscribe
@@ -152,6 +152,21 @@
             .setRotation(heading)
             .addTo(map)
           otherVehicleMarkers[existingMarkerIndex] = newMarker
+
+          // Add toast for vehicle type change
+          //   toast.info(`Vehicle Type Changed`, {
+          //     description: `${full_name} changed their vehicle to ${vehicle_marker.type}`,
+          //     action: {
+          //       label: "Locate",
+          //       onClick: () => {
+          //         map.flyTo({
+          //           center: [longitude, latitude],
+          //           zoom: 15,
+          //           duration: 1000,
+          //         })
+          //       },
+          //     },
+          //   })
         }
 
         if (
@@ -193,7 +208,7 @@
 
             if (timeDifference > REJOIN_THRESHOLD) {
               toast.info(`Vehicle Rejoined`, {
-                description: `${change.full_name}'s ${change.vehicle_marker.type} has joined the map`,
+                description: `${full_name}'s ${vehicle_marker.type} has joined the map`,
                 action: {
                   label: "Locate",
                   onClick: () => {
@@ -213,7 +228,7 @@
             !update_types.includes("new_vehicle")
           ) {
             toast.info(`Trailing Status Changed`, {
-              description: `${change.full_name}'s ${change.vehicle_marker.type} has ${is_trailing ? "started" : "stopped"} trailing`,
+              description: `${full_name}'s ${vehicle_marker.type} has ${is_trailing ? "started" : "stopped"} trailing`,
               action: {
                 label: "Locate",
                 onClick: () => {

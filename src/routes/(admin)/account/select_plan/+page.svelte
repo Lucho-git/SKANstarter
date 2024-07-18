@@ -1,7 +1,7 @@
 <script lang="ts">
-  import PricePlanBox from "../../../(marketing)/pricing/PricePlanBox.svelte"
+  import PricePlanBox from "../../../../components/PricePlanBox.svelte"
   import PricingFAQ from "../../../(marketing)/pricing/PricingFAQ.svelte"
-  import { pricingPlans } from "../../../(marketing)/pricing/pricing_plans"
+  import PricingPlans from "../../../../components/PricingPlans.svelte"
 
   let currentPlanId = ""
 </script>
@@ -19,15 +19,7 @@
       <div
         class="mt-0 flex flex-col lg:flex-row gap-10 justify-center flex-wrap"
       >
-        {#each pricingPlans as plan}
-          <PricePlanBox
-            {plan}
-            isCurrentPlan={plan.id === currentPlanId}
-            callToAction={plan.id === "free" ? "Select Plan" : "Sold Out"}
-            isDisabled={plan.id === "enterprise" || plan.id === "pro"}
-            isHighlighted={plan.id === "free"}
-          />
-        {/each}
+        <PricingPlans {currentPlanId} />
       </div>
     </div>
   </div>

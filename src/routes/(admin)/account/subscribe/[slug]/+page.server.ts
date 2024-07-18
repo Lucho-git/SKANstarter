@@ -8,6 +8,17 @@ import { PRIVATE_STRIPE_API_KEY } from "$env/static/private"
 import Stripe from "stripe"
 const stripe = new Stripe(PRIVATE_STRIPE_API_KEY, { apiVersion: "2023-08-16" })
 
+async function listCoupons() {
+  const coupons = await stripe.coupons.list({
+    limit: 100,
+  });
+
+  console.log("Coupons:");
+  coupons.data.forEach(coupon => {
+    console.log(`ID: ${coupon.id}, Name: ${coupon.name}, Active: ${coupon.valid}`);
+  });
+}
+
 export const load: PageServerLoad = async ({
   params,
   url,
@@ -19,7 +30,6 @@ export const load: PageServerLoad = async ({
   }
 
   if (params.slug === "free_plan") {
-    // plan with no stripe_price_id. Redirect to account home
     throw redirect(303, "/account")
   }
 
@@ -37,21 +47,21 @@ export const load: PageServerLoad = async ({
     customerId,
   })
   if (primarySubscription) {
-    // User already has plan, we shouldn't let them buy another
     throw redirect(303, "/account/billing")
   }
 
+  const quantity = parseInt(url.searchParams.get('seats') || '1', 10);
+
   let checkoutUrl
   try {
-
-    //We add this here to know if we should use the stripe subscription model or the stripe one time payment model, could be made cleaner
     const isOneTimePayment = params.slug === "price_1Oy7FOK3At0l0k1HrMFJ1gcc";
+    const isDiscount = url.searchParams.get('discount') === 'true';
 
-    const stripeSession = await stripe.checkout.sessions.create({
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
       line_items: [
         {
           price: params.slug,
-          quantity: 1,
+          quantity: quantity,
         },
       ],
       customer: customerId,
@@ -61,13 +71,23 @@ export const load: PageServerLoad = async ({
       consent_collection: {
         terms_of_service: 'required',
       },
-    })
+    };
+
+    if (isDiscount) {
+      sessionParams.discounts = [
+        {
+          coupon: '9VKe40q5',
+        },
+      ];
+    }
+
+    const stripeSession = await stripe.checkout.sessions.create(sessionParams);
     checkoutUrl = stripeSession.url
+
+    await listCoupons();
+
   } catch (e) {
-    throw error(
-      500,
-      "Unknown Error (SSE): If issue persists please contact us.",
-    )
+    console.log('e', e)
   }
 
   throw redirect(303, checkoutUrl ?? "/pricing")
