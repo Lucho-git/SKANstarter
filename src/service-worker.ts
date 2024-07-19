@@ -1,7 +1,7 @@
 import { build, files, prerendered, version } from '$service-worker';
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
 
-const CACHE_VERSION = version +Date.now();
+const CACHE_VERSION = version || 1
 
 const precache_list = [...build, ...files, ...prerendered].map((s) => ({
   url: s,
