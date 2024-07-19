@@ -13,3 +13,6 @@ const gitShortHash = execSync('git rev-parse --short HEAD').toString().trim();
 const version = `${BASE_VERSION}.${commitCount}.${gitShortHash}`;
 
 console.log(`PUBLIC_APP_VERSION=${version}`);
+
+
+

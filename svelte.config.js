@@ -13,7 +13,7 @@ const config = {
         }),
         version: {
             name: child_process.execSync('git rev-parse HEAD').toString().trim(),
-            pollInterval: 60000 // Check for updates every minute
+            pollInterval: 600000 // Check for updates every 10 minutes
         }
     },
     preprocess: vitePreprocess(),
