@@ -1,5 +1,5 @@
 {
-    "name": "cmsassstarter",
+    "name": "AgSkan",
     "version": "0.0.1",
     "private": true,
     "scripts": {
@@ -11,7 +11,8 @@
         "test": "vitest",
         "lint": "eslint .",
         "format": "prettier --write --plugin prettier-plugin-svelte ./src",
-        "format_check": "prettier --check --plugin prettier-plugin-svelte ./src"
+        "format_check": "prettier --check --plugin prettier-plugin-svelte ./src",
+        "vercel-build": "node version.js > .env.production.local && npm run build"
     },
     "devDependencies": {
         "@sveltejs/adapter-vercel": "^3.0.0",
