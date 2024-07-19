@@ -15,7 +15,9 @@
   import { writable } from "svelte/store"
 
   import { page } from "$app/stores"
+  import { simplifyPath } from "./pathSimplification" // We'll create this file
 
+  const SIMPLIFICATION_TOLERANCE = 0.000001 // Adjust as needed
   let unsubscribeUnsavedTrailData
 
   export let db
