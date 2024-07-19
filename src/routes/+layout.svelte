@@ -8,8 +8,8 @@
   import "@fontsource/archivo/800.css"
   import "@fontsource/archivo/900.css"
 
-  import "@fontsource/roboto/400.css" // Imports the weight 400 with normal style
-  import "@fontsource/roboto/700.css" // If you also want to use bold weight
+  import "@fontsource/roboto/400.css"
+  import "@fontsource/roboto/700.css"
 
   import { Toaster, toast } from "svelte-sonner"
 
@@ -19,17 +19,19 @@
   onMount(async () => {
     await getAuthState()
   })
+
+  $: if ($updated) {
+    toast.info("An update is available. Refresh to see the latest version.", {
+      action: {
+        label: "Refresh",
+        onClick: () => location.reload(),
+      },
+    })
+  }
 </script>
 
 <main data-sveltekit-reload={$updated ? "" : "off"}>
   {#if $navigating}
-    <!--
-            Loading animation for next page since svelte doesn't show any indicator.
-             - delay 100ms because most page loads are instant, and we don't want to flash
-             - long 12s duration because we don't actually know how long it will take
-             - exponential easing so fast loads (>100ms and <1s) still see enough progress,
-               while slow networks see it moving for a full 12 seconds
-          -->
     <div
       class="fixed w-full top-0 right-0 left-0 h-1 z-50 bg-primary"
       in:slide={{ delay: 100, duration: 12000, axis: "x", easing: expoOut }}
@@ -39,17 +41,4 @@
   <slot />
 
   <Toaster position="bottom-center" richColors />
-
-  <!-- <button
-      on:click={() =>
-        toast.success("Event has been created", {
-          description: "Sunday, December 03, 2023 at 9:00 AM",
-          action: {
-            label: "Undo",
-            onClick: () => console.info("Undo"),
-          },
-        })}
-    >
-      Show Toast
-    </button> -->
 </main>
