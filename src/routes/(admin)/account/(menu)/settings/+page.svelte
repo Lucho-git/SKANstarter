@@ -2,12 +2,14 @@
   import { getContext } from "svelte"
   import type { Writable } from "svelte/store"
   import SettingsModule from "./settings_module.svelte"
+  import { PUBLIC_APP_VERSION } from "$env/static/public"
 
   let adminSection: Writable<string> = getContext("adminSection")
   adminSection.set("settings")
 
   export let data
   let { session, profile } = data
+  const APP_VERSION = PUBLIC_APP_VERSION || "unknown"
 </script>
 
 <svelte:head>
@@ -53,10 +55,10 @@
 />
 
 <SettingsModule
-  title="Danger Zone"
+  title="App Version"
   editable={false}
   dangerous={true}
-  fields={[]}
+  fields={[{ id: "version", initialValue: APP_VERSION }]}
   editButtonTitle="Delete Account"
   editLink="/account/settings/delete_account"
 />
