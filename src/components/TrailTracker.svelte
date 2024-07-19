@@ -369,7 +369,7 @@
     })
 
     // Create or update the circle source
-    createCircleSource(sourceId, trailData[sourceId].features, vehicle)
+    // createCircleSource(sourceId, trailData[sourceId].features, vehicle)
   }
 
   function animateNewTrailSegment(

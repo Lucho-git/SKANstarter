@@ -17,7 +17,7 @@
   import { page } from "$app/stores"
   import { simplifyPath } from "./pathSimplification" // We'll create this file
 
-  const SIMPLIFICATION_TOLERANCE = 0.000001 // Adjust as needed
+  const SIMPLIFICATION_TOLERANCE = 0.000003 // Adjust as needed
   let unsubscribeUnsavedTrailData
 
   export let db
@@ -240,34 +240,52 @@
     let otherTrailData = {}
 
     if (navigator.onLine) {
-      // Load trail data from Supabase if online
       const { user: loadedUserTrailData, other: loadedOtherTrailData } =
         await loadTrailDataFromSupabase()
       userTrailData = loadedUserTrailData
       otherTrailData = loadedOtherTrailData
-      //   console.log(
-      //     "Trail data loaded from Supabase",
-      //     userTrailData,
-      //     otherTrailData,
-      //   )
     }
 
     if (
       Object.keys(userTrailData).length === 0 &&
       Object.keys(otherTrailData).length === 0
     ) {
-      // Load trail data from IndexedDB if Supabase data is empty or offline
       const { user: loadedUserTrailData, other: loadedOtherTrailData } =
         await loadTrailDataFromIndexedDB()
       userTrailData = loadedUserTrailData
       otherTrailData = loadedOtherTrailData
-      console.log("Trail data loaded from IndexedDB")
     }
 
-    // Update the userTrailStore and otherTrailStore with the loaded trail data
+    console.log("Before simplification:")
+    console.log("User trail points:", countTotalPoints(userTrailData))
+    console.log("Other trail points:", countTotalPoints(otherTrailData))
+
+    userTrailData = simplifyTrailData(userTrailData, SIMPLIFICATION_TOLERANCE)
+    otherTrailData = simplifyTrailData(otherTrailData, SIMPLIFICATION_TOLERANCE)
+
+    console.log("After simplification:")
+    console.log("User trail points:", countTotalPoints(userTrailData))
+    console.log("Other trail points:", countTotalPoints(otherTrailData))
+
     userTrailStore.set(userTrailData)
     otherTrailStore.set(otherTrailData)
     trailDataLoaded.set(true)
+  }
+
+  function simplifyTrailData(trailData, tolerance) {
+    return Object.fromEntries(
+      Object.entries(trailData).map(([vehicleId, trail]) => [
+        vehicleId,
+        simplifyPath(trail, tolerance),
+      ]),
+    )
+  }
+
+  function countTotalPoints(trailData) {
+    return Object.values(trailData).reduce(
+      (total, trail) => total + trail.length,
+      0,
+    )
   }
 
   async function loadTrailDataFromIndexedDB() {
