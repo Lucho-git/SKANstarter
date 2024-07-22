@@ -92,7 +92,7 @@
   onDestroy(() => {
     if (isInitialized) {
       console.log("Hiding Crisp Chat on component destroy")
-      //   Crisp.chat.hide()
+      Crisp.chat.hide()
     }
   })
 
