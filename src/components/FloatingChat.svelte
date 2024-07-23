@@ -59,25 +59,31 @@
           .from("push_subscriptions")
           .select("subscription")
           .eq("user_id", userId)
-          .single()
 
         if (error) throw error
 
-        if (data) {
-          const subscription = JSON.parse(data.subscription)
-          const result = await sendPushNotification(
-            subscription,
-            "Test Notification",
-            "Hi !",
+        if (data && data.length > 0) {
+          const results = await Promise.all(
+            data.map(async (sub) => {
+              const subscription = JSON.parse(sub.subscription)
+              return sendPushNotification(
+                subscription,
+                "Test Notification",
+                "Hi !",
+              )
+            }),
           )
 
-          if (result.success) {
-            resolve("Test notification sent successfully!")
+          const successCount = results.filter((r) => r.success).length
+          if (successCount > 0) {
+            resolve(
+              `Test notifications sent successfully to ${successCount} device(s)!`,
+            )
           } else {
-            reject(new Error(result.error || "Failed to send notification"))
+            reject(new Error("Failed to send notifications to any devices"))
           }
         } else {
-          reject(new Error("No subscription found for this user"))
+          reject(new Error("No subscriptions found for this user"))
         }
       } catch (error) {
         reject(error)
@@ -85,7 +91,7 @@
     })
 
     toast.promise(promise, {
-      loading: "Sending test notification...",
+      loading: "Sending test notifications...",
       success: (data) => data,
       error: (error) => `Error: ${error.message}`,
     })
@@ -113,6 +119,6 @@
   {/if}
 
   <button class="btn btn-circle btn-lg btn-primary" on:click={toggleChat}>
-    <i class={isOpen ? "at-minus-chats" : "at-messages-text"}></i>
+    <i class={isOpen ? "at-bell-minus" : "at-bell-plus"}></i>
   </button>
 </div>
