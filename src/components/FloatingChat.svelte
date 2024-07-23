@@ -35,18 +35,32 @@
 
     if (Notification.permission === "granted" && userId) {
       console.log("Getting/Creating device id...")
-      const deviceId = await getOrCreateDeviceId()
-      console.log("Device ID:", deviceId)
+      const deviceInfo = await getOrCreateDeviceId()
+      console.log("Device Info:", deviceInfo)
 
-      // Always attempt to create a new subscription
-      console.log("Creating new subscription...")
-      const result = await subscribeToPushNotifications(userId)
-      console.log("Subscription result:", result)
-      if (result.success) {
-        notificationPermission = "granted"
-        console.log("New subscription created successfully")
+      // Check if a subscription already exists for this user and device
+      const { data, error } = await supabase
+        .from("push_subscriptions")
+        .select("subscription")
+        .eq("user_id", userId)
+        .eq("device_id", deviceInfo.id)
+        .single()
+
+      if (!data || error) {
+        // No existing subscription found, create a new one
+        console.log(
+          "No existing subscription found. Creating new subscription...",
+        )
+        const result = await subscribeToPushNotifications(userId)
+        console.log("Subscription result:", result)
+        if (result.success) {
+          notificationPermission = "granted"
+          console.log("New subscription created successfully")
+        } else {
+          console.error("Failed to create new subscription:", result.error)
+        }
       } else {
-        console.error("Failed to create new subscription:", result.error)
+        console.log("Existing subscription found. No update needed.")
       }
     } else {
       console.log(
