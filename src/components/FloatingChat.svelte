@@ -4,6 +4,7 @@
   import {
     subscribeToPushNotifications,
     sendPushNotification,
+    getOrCreateDeviceId,
   } from "$lib/pushNotifications"
   import { supabase } from "$lib/supabaseClient"
   import { toast } from "svelte-sonner"
@@ -22,6 +23,36 @@
 
   function toggleChat() {
     isOpen = !isOpen
+    if (isOpen) {
+      checkAndUpdateSubscription()
+    }
+  }
+
+  async function checkAndUpdateSubscription() {
+    console.log("Checking and updating subscription...")
+    console.log("Notification permission:", Notification.permission)
+    console.log("User ID:", userId)
+
+    if (Notification.permission === "granted" && userId) {
+      console.log("Getting/Creating device id...")
+      const deviceId = await getOrCreateDeviceId()
+      console.log("Device ID:", deviceId)
+
+      // Always attempt to create a new subscription
+      console.log("Creating new subscription...")
+      const result = await subscribeToPushNotifications(userId)
+      console.log("Subscription result:", result)
+      if (result.success) {
+        notificationPermission = "granted"
+        console.log("New subscription created successfully")
+      } else {
+        console.error("Failed to create new subscription:", result.error)
+      }
+    } else {
+      console.log(
+        "Notification permission not granted or user ID not available",
+      )
+    }
   }
 
   async function enableNotifications() {
@@ -57,7 +88,7 @@
       try {
         const { data, error } = await supabase
           .from("push_subscriptions")
-          .select("subscription")
+          .select("subscription, device_type")
           .eq("user_id", userId)
 
         if (error) throw error
@@ -66,18 +97,24 @@
           const results = await Promise.all(
             data.map(async (sub) => {
               const subscription = JSON.parse(sub.subscription)
-              return sendPushNotification(
+              const result = await sendPushNotification(
                 subscription,
                 "Test Notification",
                 "Hi !",
               )
+              return { ...result, deviceType: sub.device_type }
             }),
           )
 
-          const successCount = results.filter((r) => r.success).length
+          const successfulNotifications = results.filter((r) => r.success)
+          const successCount = successfulNotifications.length
+          const deviceDetails = successfulNotifications
+            .map((r) => r.deviceType)
+            .join(", ")
+
           if (successCount > 0) {
             resolve(
-              `Test notifications sent successfully to ${successCount} device(s)!`,
+              `Test notifications sent successfully to ${successCount} device(s)!\nDevices: ${deviceDetails}`,
             )
           } else {
             reject(new Error("Failed to send notifications to any devices"))
