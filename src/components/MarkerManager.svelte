@@ -550,7 +550,7 @@
 {#if $controlStore.showMarkerMenu}
   <div class="fixed bottom-0 left-0 right-0 flex justify-center mb-8 z-10">
     <div
-      class="bg-white bg-opacity-90 rounded-lg shadow-lg w-11/12 sm:w-1/2 overflow-hidden border-2 border-gray-300"
+      class="bg-white bg-opacity-90 rounded-lg shadow-lg text-black w-11/12 sm:w-1/2 overflow-hidden border-2 border-gray-300"
     >
       <div class="grid grid-cols-2 bg-gray-200">
         <button
