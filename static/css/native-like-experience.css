@@ -1,11 +1,11 @@
-/* ✓ Use System Font Stack */
+/* Use System Font Stack */
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", 
                  Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", 
                  "Segoe UI Emoji", "Segoe UI Symbol";
 }
 
-/* ✓ Add Safe Areas Container */
+/* Add Safe Areas Container */
 .container {
     /* Using safe areas with fallback values */
     margin: 5px 5px 0 0;
@@ -15,34 +15,37 @@ body {
             env(safe-area-inset-left, 5px) !important;
 }
 
-/* ✓ Avoid Content Selection */
-.element, button, label {
+/* Avoid Content Selection */
+* {
     user-select: none;
     -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-user-drag: none;
 }
 
-/* ✓ Tap Highlight color */
+/* Tap Highlight color */
 * {
-    -webkit-tap-highlight-color: rgb(255, 255, 0, 0.05);
+    -webkit-tap-highlight-color: rgba(255, 255, 0, 0.05);
 }
 
 button, a {
-    -webkit-tap-highlight-color: rgb(255, 255, 0, 0.05);
+    -webkit-tap-highlight-color: rgba(255, 255, 0, 0.05);
 }
 
-/* ✓ @media Standalone mode */
+/* @media Standalone mode */
 @media (display-mode: standalone) {
     /* rules... */
 }
 
-/* ✓ @media Standalone IOS/IPadOS */
+/* @media Standalone IOS/IPadOS */
 @supports (-webkit-touch-callout: none) {
-
     @media (display-mode: standalone) {
-        /* this will  apply on IOS/IPadOS on installed PWA */
+        /* this will apply on IOS/IPadOS on installed PWA */
     }
 }
 
 link[rel="manifest"] {
-        --pwacompat-splash-font: 24px Verdana;
+    --pwacompat-splash-font: 24px Verdana;
 }
