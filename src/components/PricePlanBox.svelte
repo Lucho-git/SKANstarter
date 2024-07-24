@@ -36,7 +36,7 @@
 </script>
 
 <div
-  class="flex-none card card-bordered shadow-xl flex-1 flex-grow min-w-[260px] max-w-[310px] p-6 {plan.style}"
+  class="flex-none card card-bordered text-black shadow-xl flex-1 flex-grow min-w-[260px] max-w-[310px] p-6 {plan.style}"
 >
   <div class="flex flex-col h-full">
     <div class="text-xl font-bold text-center">{plan.name}</div>
@@ -69,7 +69,7 @@
     {#if plan.id !== "free"}
       <div class="flex items-center justify-center mt-4">
         <button
-          class="btn btn-sm btn-outline"
+          class="btn btn-sm btn-outline bg-gradient-to-r from-secondary to-accent text-secondary-content hover:from-secondary-focus hover:to-accent-focus"
           on:click={decrementSeats}
           disabled={$seats === 1}
         >
@@ -78,13 +78,16 @@
         <span class="mx-4 text-lg font-bold"
           >{$seats} {$seats === 1 ? "seat" : "seats"}</span
         >
-        <button class="btn btn-sm btn-outline" on:click={incrementSeats}>
+        <button
+          class="btn btn-sm btn-outline bg-gradient-to-r from-secondary to-accent text-secondary-content hover:from-secondary-focus hover:to-accent-focus"
+          on:click={incrementSeats}
+        >
           +
         </button>
       </div>
     {/if}
 
-    <div class="divider my-4"></div>
+    <div class="my-4 border-t-2 border-gray-300 dark:border-gray-400"></div>
 
     <div class="text-sm text-gray-600 text-left">
       Plan Includes:

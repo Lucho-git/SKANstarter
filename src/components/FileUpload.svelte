@@ -159,7 +159,7 @@
 </script>
 
 {#if isPopoverOpen}
-  <div class="fixed inset-0 z-50">
+  <div class="fixed inset-0 z-50 text-base-content">
     <div class="overlay absolute inset-0 bg-black opacity-50"></div>
     <div
       class="card w-full max-w-3xl bg-base-100 shadow-xl z-10 mx-auto fullscreen-modal"
@@ -271,7 +271,7 @@
             />
           </label>
           <button
-            class="btn mt-4"
+            class="btn mt-4 text-white"
             class:bg-gray-400={!file || !isFileValid}
             class:bg-green-500={file && isFileValid}
             class:hover:bg-green-600={file && isFileValid}
@@ -306,55 +306,32 @@
           <ul class="list-none pl-6 mb-4">
             <li class="mb-2">
               <span class="inline-block w-4 h-4 mr-2">
-                <i class="at-check-circle-bold"></i>
+                <ion-icon name="shield-checkmark"></ion-icon>
               </span>
               Zipped Shapefiles, .KML files and ISOXML files are all accepted
             </li>
             <li class="mb-2">
               <span class="inline-block w-4 h-4 mr-2">
-                <i class="at-check-circle-bold"></i>
+                <ion-icon name="shield-checkmark"></ion-icon>
               </span>
               Shapefile ZIP must contain .dbf, .shx and .shp files.
             </li>
             <li class="mb-2">
               <span class="inline-block w-4 h-4 mr-2">
-                <i class="at-check-circle-bold"></i>
+                <ion-icon name="shield-checkmark"></ion-icon>
               </span>
               Multiple ZIP files or an ISOXML can be contained in a single ZIP file.
             </li>
             <li>
               <span class="inline-block w-4 h-4 mr-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
+                <ion-icon name="cloud-download"></ion-icon>
               </span>
               <a
                 href="docs/skan_sample_shapefile.zip"
                 class="text-blue-500 hover:text-blue-700 underline"
               >
                 Download Example Paddock
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5 inline-block ml-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                  />
-                </svg>
+                <ion-icon name="download-outline"></ion-icon>
               </a>
             </li>
           </ul>
@@ -363,13 +340,13 @@
           <ul class="list-none pl-6">
             <li class="mb-2">
               <span class="inline-block w-4 h-4 mr-2">
-                <i class="at-check-circle-bold"></i>
+                <ion-icon name="checkbox"></ion-icon>
               </span>
               Polygon
             </li>
             <li>
               <span class="inline-block w-4 h-4 mr-2">
-                <i class="at-check-circle-bold"></i>
+                <ion-icon name="checkbox"></ion-icon>
               </span>
               Multipolygon
             </li>
