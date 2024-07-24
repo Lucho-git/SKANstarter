@@ -11,11 +11,14 @@
     newOtherTrail,
   } from "../stores/trailDataStore"
 
+  import { userVehicleStore } from "../stores/vehicleStore"
+
   import { trailDataLoaded } from "../stores/loadedStore"
   import { writable } from "svelte/store"
 
   import { page } from "$app/stores"
   import { simplifyPath } from "./pathSimplification" // We'll create this file
+  import { toast } from "svelte-sonner"
 
   const SIMPLIFICATION_TOLERANCE = 0.000003 // Adjust as needed
   let unsubscribeUnsavedTrailData
@@ -141,26 +144,22 @@
 
       const vehicleId = session.user.id
 
-      // Retrieve the user's profile to get the master_map_id
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("master_map_id")
-        .eq("id", vehicleId)
-        .single()
-
-      if (profileError) {
-        console.error("Error retrieving user profile:", profileError)
-        return
-      }
+      // Get the current vehicle data from the userVehicleStore
+      const vehicleData = $userVehicleStore
+      console.log("Vehicle data:", vehicleData)
 
       const enrichedMarkers = markers.map((marker) => ({
         ...marker,
         id: `${vehicleId}_${marker.timestamp}`,
-        timestamp: new Date(marker.timestamp).getTime(), // Convert to Unix timestamp
+        timestamp: new Date(marker.timestamp).getTime(),
         vehicle_id: vehicleId,
-        coordinates: `(${marker.coordinates.longitude},${marker.coordinates.latitude})`, // Format coordinates as a PostgreSQL POINT string
+        coordinates: `(${marker.coordinates.longitude},${marker.coordinates.latitude})`,
         master_map_id: masterMapId,
+        color: vehicleData.vehicle_marker.color,
+        // swath: vehicleData.vehicle_marker.swath, add swath here, rn not working because no swath in current vehiclemarkers / being set in vehicleselectionmenu
       }))
+
+      console.log("Saving new trail marker:", enrichedMarkers)
 
       // Attempt to insert the markers into the Supabase database
       const { data, error } = await supabase
@@ -169,13 +168,14 @@
         .select("*")
 
       if (error) {
+        console.log("Error inserting markers into Supabase:", error)
         console.error("Error inserting markers into Supabase:", error)
         // If the Supabase request fails or takes too long, add the markers to IndexedDB with synced set to false
         await saveMarkersToIndexedDB(enrichedMarkers, false)
         console.log("Unsynced data added. Starting sync scheduler.")
         startSyncScheduler()
       } else {
-        // console.log("Markers inserted into Supabase:", data)
+        console.log("Markers inserted into Supabase:", data)
         // If the Supabase request is successful, add the markers to IndexedDB with synced set to true
         await saveMarkersToIndexedDB(enrichedMarkers, true)
       }

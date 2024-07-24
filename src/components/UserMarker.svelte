@@ -8,13 +8,19 @@
   export let vehicleSize = "60px"
   export let userVehicle = "tractor"
   export let vehicleColor = "red"
+  export let vehicleSwath = 30
   export let showPulse = true
 
   $: vehicle = SVGComponents[userVehicle] || SVGComponents.tractor
 </script>
 
 <div class="user-marker" style="position: relative; display: inline-block;">
-  <svelte:component this={vehicle} color={vehicleColor} size={vehicleSize} />
+  <svelte:component
+    this={vehicle}
+    color={vehicleColor}
+    size={vehicleSize}
+    swath={vehicleSwath}
+  />
   {#if showPulse}
     <div
       class="pulse-circle animate-pulse"

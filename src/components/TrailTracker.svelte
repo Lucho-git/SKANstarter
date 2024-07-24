@@ -121,7 +121,6 @@
       }
     })
   }
-  const TILE_SIZE = 156543.03392 // meters per pixel at zoom level 0
 
   function createTrailLayer(
     sourceId,

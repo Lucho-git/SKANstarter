@@ -350,6 +350,7 @@
         vehicleSize: vehicleMarker.size,
         userVehicle: vehicleMarker.type,
         vehicleColor: vehicleMarker.color,
+        vehicleSwath: vehicleMarker.swath,
         showPulse: isUserVehicle,
       },
     })
