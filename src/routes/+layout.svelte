@@ -26,7 +26,7 @@
         label: "Refresh",
         onClick: () => location.reload(),
       },
-      duration: 10000, // 10 seconds in milliseconds
+      duration: 100000, // 10 seconds in milliseconds
     })
   }
 </script>
