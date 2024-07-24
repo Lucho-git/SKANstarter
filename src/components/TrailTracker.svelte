@@ -30,7 +30,7 @@
   // Configuration object for trail properties
   const trailConfig = {
     solidLine: {
-      width: 10,
+      width: 30,
       opacity: 0.4,
       dashArray: [1],
     },
