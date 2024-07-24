@@ -72,20 +72,32 @@
   async function enableNotifications() {
     const promise = new Promise(async (resolve, reject) => {
       try {
+        console.log("Current notification permission:", Notification.permission)
+        console.log("Current user ID:", userId)
+
         const permission = await Notification.requestPermission()
+        console.log("Requested permission result:", permission)
         notificationPermission = permission
 
-        if (permission === "granted" && userId) {
+        if (permission !== "granted") {
+          console.log("Notification permission not granted")
+          reject(new Error("Notification permission not granted"))
+        } else if (!userId) {
+          console.log("User ID not available")
+          reject(new Error("User ID not available"))
+        } else {
+          console.log("Attempting to subscribe to push notifications")
           const result = await subscribeToPushNotifications(userId)
+          console.log("Subscription result:", result)
+
           if (result.success) {
             resolve("Notifications enabled successfully!")
           } else {
             reject(new Error(result.error || "Failed to enable notifications"))
           }
-        } else {
-          reject(new Error("Permission not granted or user ID not available"))
         }
       } catch (error) {
+        console.error("Error in enableNotifications:", error)
         reject(error)
       }
     })
