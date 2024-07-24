@@ -272,6 +272,7 @@
         props: {
           icon: icon.replace("custom-svg-", ""),
           size: "25px",
+          color: "black",
         },
       })
       markerElement.querySelector("svg").dataset.icon = icon.replace(
