@@ -236,6 +236,7 @@
             },
             properties: {
               timestamp: coordinates[i - 1].timestamp,
+              color: coordinates[i - 1].color, // Add this line
             },
           })
           currentLine = [currentPoint]
@@ -316,11 +317,13 @@
       )
     }
 
-    // Update the trail on the map
-    const sourceIdLine = `${sourceId}-line`
-    const sourceIdCircles = `${sourceId}-circles`
+    //Adds an ant line dasharray to be animated later
 
-    createTrailSource(sourceIdLine, trailData[sourceId])
+    // Update the trail on the map
+    // const sourceIdLine = `${sourceId}-line`
+    // const sourceIdCircles = `${sourceId}-circles`
+
+    // createTrailSource(sourceIdLine, trailData[sourceId])
 
     // trailData[sourceId].features.forEach((feature, index) => {
     //   const trailSourceId = `${sourceId}-trail-${index}-line`
@@ -352,72 +355,6 @@
 
     // Create or update the circle source
     // createCircleSource(sourceId, trailData[sourceId].features, vehicle)
-  }
-
-  function animateNewTrailSegment(
-    sourceId,
-    startCoordinate,
-    endCoordinate,
-    color,
-  ) {
-    const animationDuration = 1000 // Duration of the animation in milliseconds
-    const animationSteps = 50 // Number of steps in the animation
-
-    const deltaLat = (endCoordinate[1] - startCoordinate[1]) / animationSteps
-    const deltaLng = (endCoordinate[0] - startCoordinate[0]) / animationSteps
-
-    let step = 0
-    const animationInterval = setInterval(() => {
-      const currentCoordinate = [
-        endCoordinate[0] - step * deltaLng,
-        endCoordinate[1] - step * deltaLat,
-      ]
-
-      const animationFeature = {
-        type: "Feature",
-        geometry: {
-          type: "LineString",
-          coordinates: [currentCoordinate, endCoordinate],
-        },
-      }
-
-      const animationSourceId = `${sourceId}-animation`
-      const animationLayerId = `${sourceId}-animation-layer`
-
-      if (!map.getSource(animationSourceId)) {
-        map.addSource(animationSourceId, {
-          type: "geojson",
-          data: {
-            type: "FeatureCollection",
-            features: [animationFeature],
-          },
-        })
-
-        map.addLayer({
-          id: animationLayerId,
-          type: "line",
-          source: animationSourceId,
-          paint: {
-            "line-color": color,
-            "line-width": 30,
-            "line-opacity": 0.4,
-          },
-        })
-      } else {
-        map.getSource(animationSourceId).setData({
-          type: "FeatureCollection",
-          features: [animationFeature],
-        })
-      }
-
-      step++
-
-      if (step > animationSteps) {
-        clearInterval(animationInterval)
-        map.removeLayer(animationLayerId)
-        map.removeSource(animationSourceId)
-      }
-    }, animationDuration / animationSteps)
   }
 
   function animateDashArray(trailId) {

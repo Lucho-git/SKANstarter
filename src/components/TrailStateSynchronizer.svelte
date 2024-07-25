@@ -152,7 +152,7 @@
         vehicle_id: vehicleId,
         coordinates: `(${marker.coordinates.longitude},${marker.coordinates.latitude})`,
         master_map_id: masterMapId,
-        color: marker.color,
+        color: marker.color || "black",
         // swath: marker.swath, add swath here, rn not working because no swath in current vehiclemarkers / being set in vehicleselectionmenu
       }))
 
