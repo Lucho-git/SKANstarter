@@ -286,23 +286,6 @@
         maxTimeDiff,
       )
 
-      // Check if only one new feature is being added to an existing trail
-      //   const newFeature = newFeatures[newFeatures.length - 1]
-      //   const lastFeature =
-      //     existingTrail.features[existingTrail.features.length - 1]
-      //   const startCoordinate = newFeature.geometry.coordinates[0]
-      //   const endCoordinate =
-      //     lastFeature.geometry.coordinates[
-      //       lastFeature.geometry.coordinates.length - 1
-      //     ]
-
-      //   animateNewTrailSegment(
-      //     sourceId,
-      //     startCoordinate,
-      //     endCoordinate,
-      //     vehicle.vehicle_marker.color,
-      //   )
-
       // Update the existing trail with the new features
       trailData[sourceId].features = newFeatures
     } else {
@@ -339,33 +322,33 @@
 
     createTrailSource(sourceIdLine, trailData[sourceId])
 
-    trailData[sourceId].features.forEach((feature, index) => {
-      const trailSourceId = `${sourceId}-trail-${index}-line`
-      const trailId = `${sourceId}-trail-${index}`
+    // trailData[sourceId].features.forEach((feature, index) => {
+    //   const trailSourceId = `${sourceId}-trail-${index}-line`
+    //   const trailId = `${sourceId}-trail-${index}`
 
-      createTrailSource(trailSourceId, {
-        type: "FeatureCollection",
-        features: [feature],
-      })
+    //   createTrailSource(trailSourceId, {
+    //     type: "FeatureCollection",
+    //     features: [feature],
+    //   })
 
-      createTrailLayer(
-        trailSourceId,
-        trailId,
-        vehicle.vehicle_marker.color,
-        trailConfig.dashedLine.width,
-        trailConfig.dashedLine.opacity,
-        trailConfig.dashedLine.dashArray,
-      )
+    //   createTrailLayer(
+    //     trailSourceId,
+    //     trailId,
+    //     vehicle.vehicle_marker.color,
+    //     trailConfig.dashedLine.width,
+    //     trailConfig.dashedLine.opacity,
+    //     trailConfig.dashedLine.dashArray,
+    //   )
 
-      animateDashArray(trailId)
+    //   animateDashArray(trailId)
 
-      // Update the latest trail information
-      const vehicleId = sourceId.split("-")[1]
-      latestTrails[vehicleId] = {
-        sourceId: sourceId,
-        trailId: trailId,
-      }
-    })
+    //   // Update the latest trail information
+    //   const vehicleId = sourceId.split("-")[1]
+    //   latestTrails[vehicleId] = {
+    //     sourceId: sourceId,
+    //     trailId: trailId,
+    //   }
+    // })
 
     // Create or update the circle source
     // createCircleSource(sourceId, trailData[sourceId].features, vehicle)
@@ -438,117 +421,101 @@
   }
 
   function animateDashArray(trailId) {
-    const dashArraySequence = [
-      [0, 4, 3],
-      [0.5, 4, 2.5],
-      [1, 4, 2],
-      [1.5, 4, 1.5],
-      [2, 4, 1],
-      [2.5, 4, 0.5],
-      [3, 4, 0],
-      [0, 0.5, 3, 3.5],
-      [0, 1, 3, 3],
-      [0, 1.5, 3, 2.5],
-      [0, 2, 3, 2],
-      [0, 2.5, 3, 1.5],
-      [0, 3, 3, 1],
-      [0, 3.5, 3, 0.5],
-    ]
-
-    let step = 0
-
-    function animate(timestamp) {
-      try {
-        const newStep = parseInt((timestamp / 40) % dashArraySequence.length)
-
-        if (newStep !== step && map && map.getLayer(trailId)) {
-          map.setPaintProperty(
-            trailId,
-            "line-dasharray",
-            dashArraySequence[step],
-          )
-          step = newStep
-        }
-
-        animationFrameIds[trailId] = requestAnimationFrame(animate)
-      } catch (error) {
-        // Silently stop the animation if an error occurs
-        cancelAnimationFrame(animationFrameIds[trailId])
-        delete animationFrameIds[trailId]
-      }
-    }
-
-    animate(0)
-  }
-
-  //Not really neccessary
-  function cancelAllAnimations() {
-    Object.values(animationFrameIds).forEach(cancelAnimationFrame)
-    animationFrameIds = {}
+    // const dashArraySequence = [
+    //   [0, 4, 3],
+    //   [0.5, 4, 2.5],
+    //   [1, 4, 2],
+    //   [1.5, 4, 1.5],
+    //   [2, 4, 1],
+    //   [2.5, 4, 0.5],
+    //   [3, 4, 0],
+    //   [0, 0.5, 3, 3.5],
+    //   [0, 1, 3, 3],
+    //   [0, 1.5, 3, 2.5],
+    //   [0, 2, 3, 2],
+    //   [0, 2.5, 3, 1.5],
+    //   [0, 3, 3, 1],
+    //   [0, 3.5, 3, 0.5],
+    // ]
+    // let step = 0
+    // function animate(timestamp) {
+    //   try {
+    //     const newStep = parseInt((timestamp / 40) % dashArraySequence.length)
+    //     if (newStep !== step && map && map.getLayer(trailId)) {
+    //       map.setPaintProperty(
+    //         trailId,
+    //         "line-dasharray",
+    //         dashArraySequence[step],
+    //       )
+    //       step = newStep
+    //     }
+    //     animationFrameIds[trailId] = requestAnimationFrame(animate)
+    //   } catch (error) {
+    //     // Silently stop the animation if an error occurs
+    //     cancelAnimationFrame(animationFrameIds[trailId])
+    //     delete animationFrameIds[trailId]
+    //   }
+    // }
+    // animate(0)
   }
 
   function toggleAntLines() {
-    // Set visibility based on the selected option
-    if ($antLineConfigStore.allTrails) {
-      // Set all trails for all users to visible
-      Object.keys(trailData).forEach((sourceId) => {
-        trailData[sourceId].features.forEach((feature, index) => {
-          const trailId = `${sourceId}-trail-${index}`
-          map.setLayoutProperty(trailId, "visibility", "visible")
-          animateDashArray(trailId)
-        })
-      })
-    } else if ($antLineConfigStore.noTrails) {
-      // Set all trails for all users to none
-      Object.keys(trailData).forEach((sourceId) => {
-        trailData[sourceId].features.forEach((feature, index) => {
-          const trailId = `${sourceId}-trail-${index}`
-          map.setLayoutProperty(trailId, "visibility", "none")
-        })
-      })
-    } else if ($antLineConfigStore.latestTrail) {
-      // Set latest trails to visible and the rest to none
-      Object.keys(trailData).forEach((sourceId) => {
-        const vehicleId = sourceId.split("-")[1]
-        const latestTrailId = latestTrails[vehicleId]?.trailId
-
-        trailData[sourceId].features.forEach((feature, index) => {
-          const trailId = `${sourceId}-trail-${index}`
-          const isLatestTrail = trailId === latestTrailId
-          const visibility = isLatestTrail ? "visible" : "none"
-          map.setLayoutProperty(trailId, "visibility", visibility)
-
-          if (isLatestTrail) {
-            animateDashArray(trailId)
-          }
-        })
-      })
-    } else if ($antLineConfigStore.userLatestTrail) {
-      // Set user's latest trail to visible and the rest to none
-      Object.keys(trailData).forEach((sourceId) => {
-        const vehicleId = sourceId.split("-")[1]
-        const latestTrailId = latestTrails[vehicleId]?.trailId
-        const isUserTrail = sourceId.startsWith("user-")
-
-        trailData[sourceId].features.forEach((feature, index) => {
-          const trailId = `${sourceId}-trail-${index}`
-          const isLatestTrail = trailId === latestTrailId
-          const visibility = isUserTrail && isLatestTrail ? "visible" : "none"
-          map.setLayoutProperty(trailId, "visibility", visibility)
-
-          if (isUserTrail && isLatestTrail) {
-            animateDashArray(trailId)
-          }
-        })
-      })
-    }
-
-    // Check the visibility of all trail layers
-    Object.keys(trailData).forEach((sourceId) => {
-      trailData[sourceId].features.forEach((feature, index) => {
-        const layerId = `${sourceId}-trail-${index}`
-        const layerVisibility = map.getLayoutProperty(layerId, "visibility")
-      })
-    })
+    // // Set visibility based on the selected option
+    // if ($antLineConfigStore.allTrails) {
+    //   // Set all trails for all users to visible
+    //   Object.keys(trailData).forEach((sourceId) => {
+    //     trailData[sourceId].features.forEach((feature, index) => {
+    //       const trailId = `${sourceId}-trail-${index}`
+    //       map.setLayoutProperty(trailId, "visibility", "visible")
+    //       animateDashArray(trailId)
+    //     })
+    //   })
+    // } else if ($antLineConfigStore.noTrails) {
+    //   // Set all trails for all users to none
+    //   Object.keys(trailData).forEach((sourceId) => {
+    //     trailData[sourceId].features.forEach((feature, index) => {
+    //       const trailId = `${sourceId}-trail-${index}`
+    //       map.setLayoutProperty(trailId, "visibility", "none")
+    //     })
+    //   })
+    // } else if ($antLineConfigStore.latestTrail) {
+    //   // Set latest trails to visible and the rest to none
+    //   Object.keys(trailData).forEach((sourceId) => {
+    //     const vehicleId = sourceId.split("-")[1]
+    //     const latestTrailId = latestTrails[vehicleId]?.trailId
+    //     trailData[sourceId].features.forEach((feature, index) => {
+    //       const trailId = `${sourceId}-trail-${index}`
+    //       const isLatestTrail = trailId === latestTrailId
+    //       const visibility = isLatestTrail ? "visible" : "none"
+    //       map.setLayoutProperty(trailId, "visibility", visibility)
+    //       if (isLatestTrail) {
+    //         animateDashArray(trailId)
+    //       }
+    //     })
+    //   })
+    // } else if ($antLineConfigStore.userLatestTrail) {
+    //   // Set user's latest trail to visible and the rest to none
+    //   Object.keys(trailData).forEach((sourceId) => {
+    //     const vehicleId = sourceId.split("-")[1]
+    //     const latestTrailId = latestTrails[vehicleId]?.trailId
+    //     const isUserTrail = sourceId.startsWith("user-")
+    //     trailData[sourceId].features.forEach((feature, index) => {
+    //       const trailId = `${sourceId}-trail-${index}`
+    //       const isLatestTrail = trailId === latestTrailId
+    //       const visibility = isUserTrail && isLatestTrail ? "visible" : "none"
+    //       map.setLayoutProperty(trailId, "visibility", visibility)
+    //       if (isUserTrail && isLatestTrail) {
+    //         animateDashArray(trailId)
+    //       }
+    //     })
+    //   })
+    // }
+    // // Check the visibility of all trail layers
+    // Object.keys(trailData).forEach((sourceId) => {
+    //   trailData[sourceId].features.forEach((feature, index) => {
+    //     const layerId = `${sourceId}-trail-${index}`
+    //     const layerVisibility = map.getLayoutProperty(layerId, "visibility")
+    //   })
+    // })
   }
 </script>
