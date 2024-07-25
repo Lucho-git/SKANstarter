@@ -20,7 +20,7 @@
   import { simplifyPath } from "./pathSimplification" // We'll create this file
   import { toast } from "svelte-sonner"
 
-  const SIMPLIFICATION_TOLERANCE = 0.000005 // Adjust as needed
+  const SIMPLIFICATION_TOLERANCE = 0.000004 // Adjust as needed
   let unsubscribeUnsavedTrailData
 
   export let db
