@@ -19,8 +19,9 @@
   import { page } from "$app/stores"
   import { simplifyPath } from "./pathSimplification" // We'll create this file
   import { toast } from "svelte-sonner"
+  import * as turf from "@turf/turf"
 
-  const SIMPLIFICATION_TOLERANCE = 0.000004 // Adjust as needed
+  const SIMPLIFICATION_TOLERANCE = 0.0000041 // Adjust as needed
   let unsubscribeUnsavedTrailData
 
   export let db
@@ -144,10 +145,6 @@
 
       const vehicleId = session.user.id
 
-      // Get the current vehicle data from the userVehicleStore
-      const vehicleData = $userVehicleStore
-      console.log("Vehicle data:", vehicleData)
-
       const enrichedMarkers = markers.map((marker) => ({
         ...marker,
         id: `${vehicleId}_${marker.timestamp}`,
@@ -155,8 +152,8 @@
         vehicle_id: vehicleId,
         coordinates: `(${marker.coordinates.longitude},${marker.coordinates.latitude})`,
         master_map_id: masterMapId,
-        color: vehicleData.vehicle_marker.color,
-        // swath: vehicleData.vehicle_marker.swath, add swath here, rn not working because no swath in current vehiclemarkers / being set in vehicleselectionmenu
+        color: marker.color,
+        // swath: marker.swath, add swath here, rn not working because no swath in current vehiclemarkers / being set in vehicleselectionmenu
       }))
 
       console.log("Saving new trail marker:", enrichedMarkers)
@@ -257,15 +254,25 @@
     }
 
     console.log("Before simplification:")
-    console.log("User trail points:", countTotalPoints(userTrailData))
-    console.log("Other trail points:", countTotalPoints(otherTrailData))
+    // console.log("User trail points:", countTotalPoints(userTrailData))
+    // console.log("Other trail points:", countTotalPoints(otherTrailData))
+    // console.log("User trail length (km):", calculateTrailLength(userTrailData))
+    // console.log(
+    //   "Other trail length (km):",
+    //   calculateTrailLength(otherTrailData),
+    // )
 
     userTrailData = simplifyTrailData(userTrailData, SIMPLIFICATION_TOLERANCE)
     otherTrailData = simplifyTrailData(otherTrailData, SIMPLIFICATION_TOLERANCE)
 
     console.log("After simplification:")
-    console.log("User trail points:", countTotalPoints(userTrailData))
-    console.log("Other trail points:", countTotalPoints(otherTrailData))
+    // console.log("User trail points:", countTotalPoints(userTrailData))
+    // console.log("Other trail points:", countTotalPoints(otherTrailData))
+    // console.log("User trail length (km):", calculateTrailLength(userTrailData))
+    // console.log(
+    //   "Other trail length (km):",
+    //   calculateTrailLength(otherTrailData),
+    // )
 
     userTrailStore.set(userTrailData)
     otherTrailStore.set(otherTrailData)
@@ -286,6 +293,23 @@
       (total, trail) => total + trail.length,
       0,
     )
+  }
+
+  function calculateTrailLength(trailData) {
+    let totalLength = 0
+    Object.values(trailData).forEach((trail) => {
+      const coordinates = trail.map((point) => {
+        const [longitude, latitude] = point.coordinates
+          .replace("(", "")
+          .replace(")", "")
+          .split(",")
+          .map(Number)
+        return [longitude, latitude]
+      })
+      const line = turf.lineString(coordinates)
+      totalLength += turf.length(line, { units: "kilometers" })
+    })
+    return totalLength
   }
 
   async function loadTrailDataFromIndexedDB() {

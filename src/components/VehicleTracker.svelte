@@ -14,8 +14,6 @@
   import { toast } from "svelte-sonner"
   import { page } from "$app/stores"
 
-  import { debounce } from "lodash-es"
-
   export let map
 
   let userVehicleId
@@ -25,8 +23,6 @@
   let lastClientTime = 0
   let otherVehicleMarkers = []
 
-  const ANIMATION_DURATION = 500 // Adjust this value as needed
-  const DISTANCE_THRESHOLD = 0.0
   const LOCATION_TRACKING_INTERVAL_MIN = 30
   const REJOIN_THRESHOLD = 5 * 60 * 1000 // 5 minutes in milliseconds
 
@@ -200,27 +196,27 @@
             update_types.includes("last_update_changed") &&
             !update_types.includes("new_vehicle")
           ) {
-            const timeDifference =
-              new Date(last_update) - new Date(oldVehicle.last_update)
-            console.log(
-              `Time difference for vehicle ${vehicle_id}: ${timeDifference} ms`,
-            )
-
-            if (timeDifference > REJOIN_THRESHOLD) {
-              toast.info(`Vehicle Rejoined`, {
-                description: `${full_name}'s ${vehicle_marker.type} has joined the map`,
-                action: {
-                  label: "Locate",
-                  onClick: () => {
-                    map.flyTo({
-                      center: [longitude, latitude],
-                      zoom: 15,
-                      duration: 1000,
-                    })
-                  },
-                },
-              })
-            }
+            //Toast for a vehicle rejoining the map after a given period of time, removed because many calculations required not sure if it's too intensive
+            // const timeDifference =
+            //   new Date(last_update) - new Date(oldVehicle.last_update)
+            // console.log(
+            //   `Time difference for vehicle ${vehicle_id}: ${timeDifference} ms`,
+            // )
+            // if (timeDifference > REJOIN_THRESHOLD) {
+            //   toast.info(`Vehicle Rejoined`, {
+            //     description: `${full_name}'s ${vehicle_marker.type} has joined the map`,
+            //     action: {
+            //       label: "Locate",
+            //       onClick: () => {
+            //         map.flyTo({
+            //           center: [longitude, latitude],
+            //           zoom: 15,
+            //           duration: 1000,
+            //         })
+            //       },
+            //     },
+            //   })
+            // }
           }
 
           if (
@@ -267,15 +263,6 @@
     } else if (rotationDiff < -180) {
       rotationDiff += 360
     }
-
-    // const distanceThreshold = DISTANCE_THRESHOLD
-    // const distance = Math.sqrt(lngDiff ** 2 + latDiff ** 2)
-
-    // if (distance < distanceThreshold) {
-    //   // If the distance is too small, skip the animation
-    //   console.log("Skipping animation")
-    //   return
-    // }
 
     const duration = 1000 // Animation duration in milliseconds
     const start = performance.now()
@@ -381,6 +368,7 @@
     // Check if the time interval condition is met
     if (currentTime - lastRecordedTime >= LOCATION_TRACKING_INTERVAL_MIN) {
       const { coordinates } = vehicleData
+      const { color, swath } = vehicleData.vehicle_marker
       const { latitude, longitude } = coordinates
 
       //TODO move this function after checking if it's a unique marker, ie. different coordinates or heading
@@ -389,6 +377,7 @@
         const locationData = {
           coordinates: { latitude, longitude },
           timestamp: currentTime,
+          color: color,
         }
         unsavedTrailStore.update((markers) => [...markers, locationData])
       }
