@@ -320,41 +320,41 @@
       )
     }
 
-    //Adds an ant line dasharray to be animated later
-
     // Update the trail on the map
-    // const sourceIdLine = `${sourceId}-line`
-    // const sourceIdCircles = `${sourceId}-circles`
+    const sourceIdLine = `${sourceId}-line`
+    const sourceIdCircles = `${sourceId}-circles`
 
-    // createTrailSource(sourceIdLine, trailData[sourceId])
+    createTrailSource(sourceIdLine, trailData[sourceId])
 
-    // trailData[sourceId].features.forEach((feature, index) => {
-    //   const trailSourceId = `${sourceId}-trail-${index}-line`
-    //   const trailId = `${sourceId}-trail-${index}`
+    trailData[sourceId].features.forEach((feature, index) => {
+      const trailSourceId = `${sourceId}-trail-${index}-line`
+      const trailId = `${sourceId}-trail-${index}`
 
-    //   createTrailSource(trailSourceId, {
-    //     type: "FeatureCollection",
-    //     features: [feature],
-    //   })
+      createTrailSource(trailSourceId, {
+        type: "FeatureCollection",
+        features: [feature],
+      })
 
-    //   createTrailLayer(
-    //     trailSourceId,
-    //     trailId,
-    //     vehicle.vehicle_marker.color,
-    //     trailConfig.dashedLine.width,
-    //     trailConfig.dashedLine.opacity,
-    //     trailConfig.dashedLine.dashArray,
-    //   )
+      createTrailLayer(
+        trailSourceId,
+        trailId,
+        vehicle.vehicle_marker.color,
+        trailConfig.dashedLine.width,
+        trailConfig.dashedLine.opacity,
+        trailConfig.dashedLine.dashArray,
+      )
 
-    //   animateDashArray(trailId)
+      //Adds an ant line dasharray to be animated later
 
-    //   // Update the latest trail information
-    //   const vehicleId = sourceId.split("-")[1]
-    //   latestTrails[vehicleId] = {
-    //     sourceId: sourceId,
-    //     trailId: trailId,
-    //   }
-    // })
+      //   animateDashArray(trailId)
+
+      //   // Update the latest trail information
+      const vehicleId = sourceId.split("-")[1]
+      latestTrails[vehicleId] = {
+        sourceId: sourceId,
+        trailId: trailId,
+      }
+    })
 
     // Create or update the circle source
     // createCircleSource(sourceId, trailData[sourceId].features, vehicle)
