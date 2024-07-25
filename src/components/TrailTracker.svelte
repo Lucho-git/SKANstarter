@@ -125,7 +125,6 @@
   function createTrailLayer(
     sourceId,
     layerId,
-    color,
     width,
     opacity,
     dashArray = [1],
@@ -149,14 +148,18 @@
           visibility: "visible",
         },
         paint: {
-          "line-color": color,
+          "line-color": ["coalesce", ["get", "color"], "black"],
           "line-width": zoomDependentWidth,
           "line-opacity": opacity,
           "line-dasharray": dashArray,
         },
       })
     } else {
-      map.setPaintProperty(layerId, "line-color", color)
+      map.setPaintProperty(layerId, "line-color", [
+        "coalesce",
+        ["get", "color"],
+        "black",
+      ])
       map.setPaintProperty(layerId, "line-width", zoomDependentWidth)
       map.setPaintProperty(layerId, "line-opacity", opacity)
       map.setPaintProperty(layerId, "line-dasharray", dashArray)
@@ -236,7 +239,7 @@
             },
             properties: {
               timestamp: coordinates[i - 1].timestamp,
-              color: coordinates[i - 1].color, // Add this line
+              color: coordinates[i - 1].color || "black", // Use black as default if color is null
             },
           })
           currentLine = [currentPoint]
@@ -254,6 +257,7 @@
         },
         properties: {
           timestamp: coordinates[coordinates.length - 1].timestamp, // Set the timestamp value for the last feature
+          color: coordinates[coordinates.length - 1].color || "black", // Use black as default if color is null
         },
       })
     }
@@ -310,7 +314,6 @@
       createTrailLayer(
         sourceIdLine,
         layerIdLineBackground,
-        vehicle.vehicle_marker.color,
         trailConfig.solidLine.width,
         trailConfig.solidLine.opacity,
         trailConfig.solidLine.dashArray,
