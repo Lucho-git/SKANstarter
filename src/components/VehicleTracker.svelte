@@ -101,7 +101,6 @@
 
   function processChanges(changes) {
     console.log("Received changes from otherVehiclesDataChanges:", changes)
-    console.log("other vehicles data", $otherVehiclesStore)
 
     const REJOIN_THRESHOLD = 5 * 60 * 1000 // 5 minutes in milliseconds
 

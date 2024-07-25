@@ -179,9 +179,6 @@
   }
 
   function compareData(serverData, clientData) {
-    console.log("SERVERDATA", serverData)
-    console.log("CLIENTDATA", clientData)
-
     const changes = serverData.map((serverItem) => {
       const clientItem = clientData.find(
         (item) => item.vehicle_id === serverItem.vehicle_id,
@@ -236,7 +233,6 @@
       (change) => change.update_types.length > 0,
     )
 
-    console.log("RETURNINGCHANGEDVALUES", filteredChanges)
     return filteredChanges
   }
 
