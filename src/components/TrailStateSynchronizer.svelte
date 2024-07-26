@@ -21,7 +21,7 @@
   import { toast } from "svelte-sonner"
   import * as turf from "@turf/turf"
 
-  const SIMPLIFICATION_TOLERANCE = 0.0000041 // Adjust as needed
+  const SIMPLIFICATION_TOLERANCE = 0.0000035 // Adjust as needed
   let unsubscribeUnsavedTrailData
 
   export let db
@@ -254,25 +254,25 @@
     }
 
     console.log("Before simplification:")
-    // console.log("User trail points:", countTotalPoints(userTrailData))
-    // console.log("Other trail points:", countTotalPoints(otherTrailData))
-    // console.log("User trail length (km):", calculateTrailLength(userTrailData))
-    // console.log(
-    //   "Other trail length (km):",
-    //   calculateTrailLength(otherTrailData),
-    // )
+    console.log("User trail points:", countTotalPoints(userTrailData))
+    console.log("Other trail points:", countTotalPoints(otherTrailData))
+    console.log("User trail length (km):", calculateTrailLength(userTrailData))
+    console.log(
+      "Other trail length (km):",
+      calculateTrailLength(otherTrailData),
+    )
 
     userTrailData = simplifyTrailData(userTrailData, SIMPLIFICATION_TOLERANCE)
     otherTrailData = simplifyTrailData(otherTrailData, SIMPLIFICATION_TOLERANCE)
 
     console.log("After simplification:")
-    // console.log("User trail points:", countTotalPoints(userTrailData))
-    // console.log("Other trail points:", countTotalPoints(otherTrailData))
-    // console.log("User trail length (km):", calculateTrailLength(userTrailData))
-    // console.log(
-    //   "Other trail length (km):",
-    //   calculateTrailLength(otherTrailData),
-    // )
+    console.log("User trail points:", countTotalPoints(userTrailData))
+    console.log("Other trail points:", countTotalPoints(otherTrailData))
+    console.log("User trail length (km):", calculateTrailLength(userTrailData))
+    console.log(
+      "Other trail length (km):",
+      calculateTrailLength(otherTrailData),
+    )
 
     userTrailStore.set(userTrailData)
     otherTrailStore.set(otherTrailData)
