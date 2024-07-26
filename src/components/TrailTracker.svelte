@@ -292,7 +292,7 @@
 
     const existingTrail = trailData[sourceId]
     const maxDistance = 1
-    const maxTimeDiff = 60 * 60 * 1000
+    const maxTimeDiff = 3 * 60 * 1000
 
     // Ensure trail is always an array
     const trailArray = Array.isArray(trail) ? trail : [trail]
