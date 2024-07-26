@@ -55,7 +55,7 @@
     newUserTrailUnsubscribe = newUserTrail.subscribe((newTrail) => {
       if (Object.keys(newTrail).length > 0) {
         Object.entries(newTrail).forEach(([vehicleId, trail]) => {
-          updateTrailLine(trail, $userVehicleStore, `user-${vehicleId}`)
+          updateTrailLine(trail, `user-${vehicleId}`)
         })
         newUserTrail.set({}) // Clear the newUserTrail store after processing
       }
@@ -64,14 +64,7 @@
     newOtherTrailUnsubscribe = newOtherTrail.subscribe((newTrail) => {
       if (Object.keys(newTrail).length > 0) {
         Object.entries(newTrail).forEach(([vehicleId, trail]) => {
-          const vehicle = $otherVehiclesStore.find(
-            (v) => v.vehicle_id === vehicleId,
-          )
-          if (vehicle) {
-            updateTrailLine(trail, vehicle, `other-${vehicleId}`)
-          } else {
-            console.warn(`Vehicle not found for trail data: ${vehicleId}`)
-          }
+          updateTrailLine(trail, `other-${vehicleId}`)
         })
         newOtherTrail.set({}) // Clear the newOtherTrail store after processing
       }
@@ -102,23 +95,17 @@
   }
 
   function loadTrailData() {
-    console.log("Loading Trail Data")
     trailData = {}
     latestTrails = {}
 
+    console.log("Loading User Trail:", $userTrailStore)
     Object.entries($userTrailStore).forEach(([vehicleId, trail]) => {
-      updateTrailLine(trail, $userVehicleStore, `user-${vehicleId}`)
+      updateTrailLine(trail, `user-${vehicleId}`)
     })
 
+    console.log("Loading Other Trail:", $otherTrailStore)
     Object.entries($otherTrailStore).forEach(([vehicleId, trail]) => {
-      const vehicle = $otherVehiclesStore.find(
-        (v) => v.vehicle_id === vehicleId,
-      )
-      if (vehicle) {
-        updateTrailLine(trail, vehicle, `other-${vehicleId}`)
-      } else {
-        console.warn(`Vehicle not found for trail data: ${vehicleId}`)
-      }
+      updateTrailLine(trail, `other-${vehicleId}`)
     })
   }
 
@@ -183,7 +170,7 @@
     }
   }
 
-  function createCircleSource(sourceId, features, vehicle) {
+  function createCircleSource(sourceId, features) {
     const sourceIdCircles = `${sourceId}-circles`
 
     const circleData = generateCircleData(features)
@@ -196,7 +183,7 @@
         type: "circle",
         source: sourceIdCircles,
         paint: {
-          "circle-color": vehicle.vehicle_marker.color,
+          "circle-color": ["coalesce", ["get", "color"], "black"],
           "circle-radius": trailConfig.circle.radius,
           "circle-opacity": trailConfig.circle.opacity,
         },
@@ -205,6 +192,12 @@
   }
 
   function processTrailCoordinates(coordinates, maxDistance, maxTimeDiff) {
+    console.log("Processing trail coordinates", {
+      coordinates,
+      maxDistance,
+      maxTimeDiff,
+    })
+
     if (
       !coordinates ||
       !Array.isArray(coordinates) ||
@@ -219,6 +212,7 @@
 
     const features = []
     let currentLine = []
+    let currentTimestamps = []
     let lastTimestamp = coordinates[0].timestamp
     let lastColor = coordinates[0].color
 
@@ -231,6 +225,7 @@
 
       if (currentLine.length === 0) {
         currentLine.push(currentPoint)
+        currentTimestamps.push(currentTimestamp)
       } else {
         const prevPoint = currentLine[currentLine.length - 1]
         const distance = turf.distance(
@@ -241,6 +236,7 @@
 
         if (distance <= maxDistance && timeDiff <= maxTimeDiff) {
           currentLine.push(currentPoint)
+          currentTimestamps.push(currentTimestamp)
         } else {
           // End the current segment and start a new one
           features.push({
@@ -250,11 +246,13 @@
               coordinates: currentLine,
             },
             properties: {
-              timestamp: lastTimestamp,
+              startTimestamp: currentTimestamps[0],
+              endTimestamp: lastTimestamp,
               color: lastColor || "black",
             },
           })
           currentLine = [currentPoint]
+          currentTimestamps = [currentTimestamp]
         }
       }
 
@@ -263,6 +261,7 @@
     }
 
     // Add the last segment
+    console.log("Current line", currentLine)
     if (currentLine.length > 0) {
       features.push({
         type: "Feature",
@@ -271,7 +270,8 @@
           coordinates: currentLine,
         },
         properties: {
-          timestamp: lastTimestamp,
+          startTimestamp: currentTimestamps[0],
+          endTimestamp: lastTimestamp,
           color: lastColor || "black",
         },
       })
@@ -280,7 +280,7 @@
     return features
   }
 
-  function updateTrailLine(trail, vehicle, sourceId) {
+  function updateTrailLine(trail, sourceId) {
     const existingTrail = trailData[sourceId]
     const maxDistance = 1
     const maxTimeDiff = 3 * 60 * 1000
@@ -289,6 +289,7 @@
     const trailArray = Array.isArray(trail) ? trail : [trail]
 
     if (existingTrail) {
+      console.log(`Existing trail found for ${sourceId}`, existingTrail)
       const lastSegment = existingTrail.latestSegment
 
       // Combine the last segment with the new trail point(s)
@@ -314,7 +315,7 @@
         ]
         trailData[sourceId].latestSegment = newSegments[newSegments.length - 1]
         trailData[sourceId].lastProcessedTimestamp =
-          newSegments[newSegments.length - 1].properties.timestamp
+          newSegments[newSegments.length - 1].properties.endTimestamp
 
         // Update this line to use updateLatestSegmentOnMap
         updateLatestSegmentOnMap(sourceId, newSegments[newSegments.length - 1])
@@ -337,6 +338,7 @@
   }
 
   function updateLatestSegmentOnMap(sourceId, segment) {
+    console.log("Updating segment", segment)
     const sourceIdLine = `${sourceId}-line`
 
     // Update the entire trail data
@@ -359,11 +361,13 @@
   }
 
   function createInitialTrailOnMap(sourceId, features) {
+    console.log(`Creating initial trail on map for ${sourceId}`, features)
+
     trailData[sourceId] = {
       features: features,
       latestSegment: features[features.length - 1],
       lastProcessedTimestamp:
-        features[features.length - 1].properties.timestamp,
+        features[features.length - 1].properties.endTimestamp,
     }
 
     updateLatestSegmentOnMap(sourceId, features[features.length - 1])
