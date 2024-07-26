@@ -85,7 +85,6 @@
     if (map) {
       map.off("style.load", loadTrailData)
     }
-    cancelAllAnimations()
     if (antLineConfigUnsubscribe) antLineConfigUnsubscribe()
   })
 
@@ -335,14 +334,13 @@
         features: [feature],
       })
 
-      createTrailLayer(
-        trailSourceId,
-        trailId,
-        vehicle.vehicle_marker.color,
-        trailConfig.dashedLine.width,
-        trailConfig.dashedLine.opacity,
-        trailConfig.dashedLine.dashArray,
-      )
+      //   createTrailLayer(
+      //     trailSourceId,
+      //     trailId,
+      //     trailConfig.dashedLine.width,
+      //     trailConfig.dashedLine.opacity,
+      //     trailConfig.dashedLine.dashArray,
+      //   )
 
       //Adds an ant line dasharray to be animated later
 
