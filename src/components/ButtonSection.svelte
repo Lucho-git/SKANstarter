@@ -280,14 +280,14 @@
         </svg>
       </button>
 
-      <button
+      <!-- <button
         class="menu-button {currentStyle} btn {isCircular
           ? 'btn-circle'
           : 'btn-square'} btn-lg bg-white hover:bg-opacity-90 text-sm"
         on:click={cycleAntLineConfig}
       >
         {antLineConfigModes[currentAntLineConfigIndex]}
-      </button>
+      </button> -->
 
       <!-- InstantLocationMarker Button-->
 
