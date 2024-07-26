@@ -230,6 +230,12 @@
         if (distance <= maxDistance && timeDiff <= maxTimeDiff) {
           currentLine.push(currentPoint)
         } else {
+          console.log("Processing trail coordinate:", {
+            coordinates: currentLine,
+            timestamp: coordinates[i - 1].timestamp,
+            color: coordinates[i - 1].color || "black",
+          })
+
           features.push({
             type: "Feature",
             geometry: {
@@ -248,6 +254,12 @@
 
     // Handle the last feature separately
     if (currentLine.length > 0) {
+      console.log("Processing trail coordinate:", {
+        coordinates: currentLine,
+        timestamp: coordinates[coordinates.length - 1].timestamp,
+        color: coordinates[coordinates.length - 1].color || "black",
+      })
+
       features.push({
         type: "Feature",
         geometry: {
@@ -278,6 +290,7 @@
           feature.geometry.coordinates.map((coordinate, index) => ({
             coordinates: `(${coordinate[0]},${coordinate[1]})`,
             timestamp: feature.properties.timestamp,
+            color: feature.properties.color,
           })),
         ),
         ...trail,
