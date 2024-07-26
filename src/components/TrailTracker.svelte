@@ -291,7 +291,7 @@
     console.log(`Updating trail for ${sourceId}`, { trail, vehicle })
 
     const existingTrail = trailData[sourceId]
-    const maxDistance = 5
+    const maxDistance = 1
     const maxTimeDiff = 60 * 60 * 1000
 
     // Ensure trail is always an array
