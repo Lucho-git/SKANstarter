@@ -102,15 +102,14 @@
   }
 
   function loadTrailData() {
+    console.log("Loading Trail Data")
     trailData = {}
     latestTrails = {}
 
-    console.log("Loading User Trail:", $userTrailStore)
     Object.entries($userTrailStore).forEach(([vehicleId, trail]) => {
       updateTrailLine(trail, $userVehicleStore, `user-${vehicleId}`)
     })
 
-    console.log("Loading Other Trail:", $otherTrailStore)
     Object.entries($otherTrailStore).forEach(([vehicleId, trail]) => {
       const vehicle = $otherVehiclesStore.find(
         (v) => v.vehicle_id === vehicleId,
@@ -206,12 +205,6 @@
   }
 
   function processTrailCoordinates(coordinates, maxDistance, maxTimeDiff) {
-    console.log("Processing trail coordinates", {
-      coordinates,
-      maxDistance,
-      maxTimeDiff,
-    })
-
     if (
       !coordinates ||
       !Array.isArray(coordinates) ||
@@ -288,8 +281,6 @@
   }
 
   function updateTrailLine(trail, vehicle, sourceId) {
-    console.log(`Updating trail for ${sourceId}`, { trail, vehicle })
-
     const existingTrail = trailData[sourceId]
     const maxDistance = 1
     const maxTimeDiff = 3 * 60 * 1000
@@ -298,7 +289,6 @@
     const trailArray = Array.isArray(trail) ? trail : [trail]
 
     if (existingTrail) {
-      console.log(`Existing trail found for ${sourceId}`, existingTrail)
       const lastSegment = existingTrail.latestSegment
 
       // Combine the last segment with the new trail point(s)
@@ -347,7 +337,6 @@
   }
 
   function updateLatestSegmentOnMap(sourceId, segment) {
-    console.log("Updating segment", segment)
     const sourceIdLine = `${sourceId}-line`
 
     // Update the entire trail data
@@ -370,8 +359,6 @@
   }
 
   function createInitialTrailOnMap(sourceId, features) {
-    console.log(`Creating initial trail on map for ${sourceId}`, features)
-
     trailData[sourceId] = {
       features: features,
       latestSegment: features[features.length - 1],

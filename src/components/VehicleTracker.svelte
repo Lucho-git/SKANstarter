@@ -100,7 +100,7 @@
   })
 
   function processChanges(changes) {
-    console.log("Received changes from otherVehiclesDataChanges:", changes)
+    // console.log("Received changes from otherVehiclesDataChanges:", changes)
 
     const REJOIN_THRESHOLD = 5 * 60 * 1000 // 5 minutes in milliseconds
 
@@ -359,7 +359,7 @@
 
     const updatedHeading = heading !== null ? Math.round(heading) : heading
     // console.log("Server-side heading before adding to store:", updatedHeading);
-    console.log("updating vehicle dataa", vehicleData)
+    // console.log("updating vehicle dataa", vehicleData)
     updateUserVehicleData(currentTime, vehicleData, updatedHeading)
   }
 
