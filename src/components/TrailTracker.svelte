@@ -347,19 +347,24 @@
   }
 
   function updateLatestSegmentOnMap(sourceId, segment) {
-    const sourceIdLine = `${sourceId}-latest`
-    createTrailSource(sourceIdLine, {
+    console.log("Updating segment", segment)
+    const sourceIdLine = `${sourceId}-line`
+
+    // Update the entire trail data
+    const updatedTrailData = {
       type: "FeatureCollection",
-      features: [segment],
-    })
+      features: trailData[sourceId].features,
+    }
+
+    createTrailSource(sourceIdLine, updatedTrailData)
 
     if (!map.getLayer(sourceIdLine)) {
       createTrailLayer(
         sourceIdLine,
         sourceIdLine,
-        trailConfig.dashedLine.width,
-        trailConfig.dashedLine.opacity,
-        trailConfig.dashedLine.dashArray,
+        trailConfig.solidLine.width,
+        trailConfig.solidLine.opacity,
+        trailConfig.solidLine.dashArray,
       )
     }
   }
@@ -367,23 +372,13 @@
   function createInitialTrailOnMap(sourceId, features) {
     console.log(`Creating initial trail on map for ${sourceId}`, features)
 
-    const sourceIdLine = `${sourceId}-line`
-    const layerIdLineBackground = `${sourceId}-line-background`
-
-    createTrailSource(sourceIdLine, {
-      type: "FeatureCollection",
+    trailData[sourceId] = {
       features: features,
-    })
+      latestSegment: features[features.length - 1],
+      lastProcessedTimestamp:
+        features[features.length - 1].properties.timestamp,
+    }
 
-    createTrailLayer(
-      sourceIdLine,
-      layerIdLineBackground,
-      trailConfig.solidLine.width,
-      trailConfig.solidLine.opacity,
-      trailConfig.solidLine.dashArray,
-    )
-
-    // Create the latest segment layer
     updateLatestSegmentOnMap(sourceId, features[features.length - 1])
   }
 
