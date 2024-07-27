@@ -7,13 +7,7 @@
     newOtherTrail,
     antLineConfigStore,
   } from "../stores/trailDataStore"
-  import {
-    userVehicleStore,
-    otherVehiclesStore,
-    userVehicleTrailing,
-  } from "../stores/vehicleStore"
 
-  import mapboxgl from "mapbox-gl"
   import * as turf from "@turf/turf"
 
   export let map
@@ -28,6 +22,10 @@
   let latestTrails = {}
 
   let animationFrameIds = {}
+
+  // Constants
+  const MAX_DISTANCE = 1 // in kilometers
+  const MAX_TIME_DIFF = 3 * 60 * 1000 // 3 minutes in milliseconds
 
   // Configuration object for trail properties
   const trailConfig = {
@@ -191,12 +189,8 @@
     }
   }
 
-  function processTrailCoordinates(coordinates, maxDistance, maxTimeDiff) {
-    console.log("Processing trail coordinates", {
-      coordinates,
-      maxDistance,
-      maxTimeDiff,
-    })
+  function processTrailCoordinates(coordinates) {
+    console.log("Processing trail coordinates", { coordinates })
 
     if (
       !coordinates ||
@@ -234,7 +228,7 @@
         )
         const timeDiff = currentTimestamp - lastTimestamp
 
-        if (distance <= maxDistance && timeDiff <= maxTimeDiff) {
+        if (distance <= MAX_DISTANCE && timeDiff <= MAX_TIME_DIFF) {
           currentLine.push(currentPoint)
           currentTimestamps.push(currentTimestamp)
         } else {
@@ -261,7 +255,6 @@
     }
 
     // Add the last segment
-    console.log("Current line", currentLine)
     if (currentLine.length > 0) {
       features.push({
         type: "Feature",
@@ -282,8 +275,6 @@
 
   function updateTrailLine(trail, sourceId) {
     const existingTrail = trailData[sourceId]
-    const maxDistance = 1
-    const maxTimeDiff = 3 * 60 * 1000
 
     // Ensure trail is always an array
     const trailArray = Array.isArray(trail) ? trail : [trail]
@@ -304,8 +295,8 @@
 
       const newSegments = processTrailCoordinates(
         combinedCoordinates,
-        maxDistance,
-        maxTimeDiff,
+        MAX_DISTANCE,
+        MAX_TIME_DIFF,
       )
 
       if (newSegments.length > 0) {
@@ -322,11 +313,7 @@
       }
     } else {
       // Initial load
-      const initialSegments = processTrailCoordinates(
-        trailArray,
-        maxDistance,
-        maxTimeDiff,
-      )
+      const initialSegments = processTrailCoordinates(trailArray)
       trailData[sourceId] = {
         features: initialSegments,
         latestSegment: initialSegments[initialSegments.length - 1],

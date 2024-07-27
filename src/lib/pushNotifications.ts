@@ -1,11 +1,10 @@
 import { supabase } from './supabaseClient';
-import { PUBLIC_VAPID_KEY } from "$env/static/public";
 
 function getDeviceType() {
     const ua = navigator.userAgent;
     const screenWidth = window.screen.width;
     const screenHeight = window.screen.height;
-  
+
     if (/Android/i.test(ua)) {
       return screenWidth < 600 ? 'Android Phone' : 'Android Tablet';
     }
@@ -16,7 +15,7 @@ function getDeviceType() {
       return 'Desktop';
     }
     return 'Unknown';
-  }
+}
 
 export async function getOrCreateDeviceId() {
     return new Promise((resolve, reject) => {
@@ -24,20 +23,20 @@ export async function getOrCreateDeviceId() {
       const dbName = 'SKANStarterDB';
       const storeName = 'deviceInfo';
       const request = indexedDB.open(dbName, 1);
-  
+
       request.onerror = (event) => {
         console.error("IndexedDB error:", event);
         reject('IndexedDB error');
       };
-  
+
       request.onsuccess = (event) => {
         console.log("IndexedDB opened successfully");
         const db = event.target.result;
         const transaction = db.transaction([storeName], 'readwrite');
         const store = transaction.objectStore(storeName);
-  
+
         const getRequest = store.get('deviceId');
-  
+
         getRequest.onsuccess = () => {
             let deviceInfo;
             if (getRequest.result) {
@@ -45,7 +44,6 @@ export async function getOrCreateDeviceId() {
               if (typeof getRequest.result === 'object' && getRequest.result.id && getRequest.result.type) {
                 deviceInfo = getRequest.result;
               } else {
-                // Existing ID found, but in old format. Update it.
                 const existingId = typeof getRequest.result === 'object' ? getRequest.result.id : getRequest.result;
                 deviceInfo = { id: existingId, type: getDeviceType() };
                 store.put(deviceInfo, 'deviceId');
@@ -57,41 +55,78 @@ export async function getOrCreateDeviceId() {
             }
             console.log("DeviceInfo:", deviceInfo);
             resolve(deviceInfo);
-          };
-          
-  
+        };
+
         getRequest.onerror = (event) => {
           console.error("Error getting deviceId:", event);
           reject('Error getting deviceId');
         };
       };
-  
+
       request.onupgradeneeded = (event) => {
         console.log("Upgrading or creating IndexedDB");
         const db = event.target.result;
         db.createObjectStore(storeName);
       };
     });
-  }
-  
+}
 
-  export async function subscribeToPushNotifications(userId) {
+export async function subscribeToPushNotifications(userId) {
     if ('serviceWorker' in navigator && 'PushManager' in window) {
       try {
+        console.log("Starting push notification subscription process...");
         const deviceInfo = await getOrCreateDeviceId();
+        console.log("Device info retrieved:", deviceInfo);
+
         const registration = await navigator.serviceWorker.ready;
+        console.log("Service Worker is ready");
+
+        console.log("Calling generate-vapid edge function...");
+        const vapidResponse = await fetch('https://hmxxqacnzxqpcheoeidn.supabase.co/functions/v1/generate-vapid', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHhxYWNuenhxcGNoZW9laWRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDkwMjY1MDgsImV4cCI6MjAyNDYwMjUwOH0.rFOu8vW3QOCgp1VMIPKc7eF-g_8vok-pazjp7R6TJHs'
+          }
+        });
+
+        if (!vapidResponse.ok) {
+          throw new Error('Failed to generate VAPID keys');
+        }
+
+        const vapidData = await vapidResponse.json();
+        console.log("VAPID keys generated:", vapidData);
+
+        const applicationServerKey = new Uint8Array(vapidData.applicationServerKey);
+
+        // Check for existing subscription
+        const existingSubscription = await registration.pushManager.getSubscription();
+        if (existingSubscription) {
+          console.log("Existing subscription found");
+          const existingKey = new Uint8Array(existingSubscription.options.applicationServerKey);
+          if (!arrayBufferEqual(existingKey, applicationServerKey)) {
+            console.log("Existing subscription uses different key, unsubscribing...");
+            await existingSubscription.unsubscribe();
+            console.log("Unsubscribed from existing subscription");
+          } else {
+            console.log("Existing subscription uses the same key, reusing...");
+            return { success: true, subscription: existingSubscription, deviceId: deviceInfo.id, deviceType: deviceInfo.type };
+          }
+        }
+
         const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: PUBLIC_VAPID_KEY
+          applicationServerKey: applicationServerKey
         });
-        console.log("Upserting subscription data:", {
+        console.log("Push subscription created:", subscription);
 
-            user_id: userId,
-            device_id: deviceInfo.id,
-            device_type: deviceInfo.type,
-            subscription: JSON.stringify(subscription)
-          });
-          
+        console.log("Upserting subscription data:", {
+          user_id: userId,
+          device_id: deviceInfo.id,
+          device_type: deviceInfo.type,
+          subscription: JSON.stringify(subscription)
+        });
+
         const { data, error } = await supabase.from('push_subscriptions').upsert({
           user_id: userId,
           device_id: deviceInfo.id,
@@ -100,42 +135,89 @@ export async function getOrCreateDeviceId() {
         }, {
           onConflict: 'user_id, device_id'
         });
-  
+
         if (error) {
           throw new Error(`Failed to save subscription: ${error.message}`);
         }
-  
-        return { success: true, subscription, deviceId: deviceInfo.id, deviceType: deviceInfo.type };
-      } catch (error) {
+
+        console.log("Subscription saved successfully");
+       
+        // Immediately send a test notification
+        console.log("Sending test notification...", vapidData.publicKey, vapidData.privateKey);
+        const testNotificationResult = await sendPushNotification(
+            subscription,
+            "Test Notification",
+            "Hi !",
+            {
+              publicKey: vapidData.publicKey,
+              privateKey: vapidData.privateKey
+            }
+          );
+         
+        console.log("Test notification result:", testNotificationResult);
+
+        return {
+          success: true,
+          subscription,
+          deviceId: deviceInfo.id,
+          deviceType: deviceInfo.type,
+          vapidKeys: {
+            publicKey: vapidData.publicKey,
+            privateKey: vapidData.privateKey
+          },
+          testNotificationResult
+        };
+    } catch (error) {
         console.error('Error subscribing to push notifications:', error);
         return { success: false, error: error.message };
       }
     } else {
+      console.log("Push notifications not supported");
       return { success: false, error: 'Push notifications not supported' };
     }
-  }
-  
+}
 
-export async function sendPushNotification(subscription, title, body) {
-  console.log('Sending push notification...');
-  try {
-    const response = await fetch('/api/send-notification', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ subscription, title, body }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to send push notification');
+function arrayBufferEqual(buf1, buf2) {
+    if (buf1.byteLength !== buf2.byteLength) return false;
+    const dv1 = new Int8Array(buf1);
+    const dv2 = new Int8Array(buf2);
+    for (let i = 0; i !== buf1.byteLength; i++) {
+      if (dv1[i] !== dv2[i]) return false;
     }
-
-    const result = await response.json();
-    return { success: true, ...result };
-  } catch (error) {
-    console.error('Error sending push notification:', error);
-    return { success: false, error: error.message };
+    return true;
   }
+
+export async function sendPushNotification(subscription, title, body, vapidKeys) {
+    console.log('Sending push notification...');
+    console.log('Sending subscription:', subscription);
+
+    try {
+        const response = await fetch('https://hmxxqacnzxqpcheoeidn.supabase.co/functions/v1/send-notification', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHhxYWNuenhxcGNoZW9laWRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDkwMjY1MDgsImV4cCI6MjAyNDYwMjUwOH0.rFOu8vW3QOCgp1VMIPKc7eF-g_8vok-pazjp7R6TJHs'
+            },
+            body: JSON.stringify({
+                subscription,
+                title,
+                body,
+                vapidPublicKey: vapidKeys.publicKey,
+                vapidPrivateKey: vapidKeys.privateKey
+            }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to send push notification');
+        }
+
+        const result = await response.json();
+        console.log('Push notification sent successfully:', result);
+
+        return { success: true, ...result };
+    } catch (error) {
+        console.error('Error sending push notification:', error);
+        return { success: false, error: error.message };
+    }
 }

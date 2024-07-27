@@ -3,6 +3,7 @@
   import { page } from "$app/stores"
   import type { SubmitFunction } from "@sveltejs/kit"
   import FloatingChat from "../../../../../components/FloatingChat.svelte"
+  import EdgeFunction from "../../../../../components/EdgeFunction.svelte"
 
   const fieldError = (liveForm: FormAccountUpdateResult, name: string) => {
     let errors = liveForm?.errorFields ?? []
@@ -156,3 +157,4 @@
 </div>
 
 <FloatingChat />
+<EdgeFunction />

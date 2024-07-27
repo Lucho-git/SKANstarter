@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import webpush from 'web-push';
+import webpush from 'https://esm.sh/web-push@3.5.0'
 import { PRIVATE_VAPID_KEY } from '$env/static/private';
 import { PUBLIC_VAPID_KEY } from '$env/static/public';
 
