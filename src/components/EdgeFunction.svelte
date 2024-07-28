@@ -3,7 +3,7 @@
 
   async function triggerEdgeFunction() {
     const response = await fetch(
-      "https://hmxxqacnzxqpcheoeidn.supabase.co/functions/v1/hello-world",
+      "https://hmxxqacnzxqpcheoeidn.supabase.co/functions/v1/generate-vapid",
       {
         method: "POST",
         headers: {

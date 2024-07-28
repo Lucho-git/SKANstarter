@@ -1,6 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import * as webpush from "jsr:@negrel/webpush"
 
+const PUBLIC_VAPID_KEY = Deno.env.get("PUBLIC_VAPID_KEY");
+const PRIVATE_VAPID_KEY = Deno.env.get("PRIVATE_VAPID_KEY");
+
 serve(async (req) => {
   const origin = req.headers.get('origin') || '*'
   const headers = {
@@ -14,34 +17,32 @@ serve(async (req) => {
   }
 
   try {
-    const { subscription, title, body, vapidPublicKey, vapidPrivateKey } = await req.json()
-    console.log("Received request:", { subscription, title, body, vapidPublicKey, vapidPrivateKey })
+    const { subscription, title, body } = await req.json()
+    console.log("Received request:", { subscription, title, body, PUBLIC_VAPID_KEY, PRIVATE_VAPID_KEY })
+    if (!PUBLIC_VAPID_KEY || !PRIVATE_VAPID_KEY) {
+      throw new Error("VAPID keys are not set in environment variables");
+    }
 
-    // Import VAPID keys
     const vapidKeys = await webpush.importVapidKeys({
-        publicKey: vapidPublicKey,
-        privateKey: vapidPrivateKey
-      });
-      console.log("VAPID keys imported", vapidKeys)
+      publicKey: JSON.parse(PUBLIC_VAPID_KEY),
+      privateKey: JSON.parse(PRIVATE_VAPID_KEY)
+    });
+    console.log("VAPID keys imported", PUBLIC_VAPID_KEY, PRIVATE_VAPID_KEY)
 
-    // Create ApplicationServer instance
     const applicationServer = await webpush.ApplicationServer.new({
       contactInformation: 'mailto:lachie@skanfarming.com',
       vapidKeys: vapidKeys
     })
     console.log("ApplicationServer created")
 
-    // Create PushSubscriber instance
     const pushSubscriber = applicationServer.subscribe(subscription)
     console.log("PushSubscriber created")
 
-    // Prepare message options
     const messageOptions: webpush.PushMessageOptions = {
       urgency: webpush.Urgency.Normal,
-      ttl: 60, // Time To Live in seconds
+      ttl: 60,
     }
 
-    // Send push notification
     await pushSubscriber.pushTextMessage(JSON.stringify({ title, body }), messageOptions)
     console.log("Push notification sent successfully")
 
@@ -56,7 +57,7 @@ serve(async (req) => {
     if (error instanceof webpush.PushMessageError) {
       if (error.isGone()) {
         errorMessage = 'Push subscription is no longer valid'
-        statusCode = 410 // Gone
+        statusCode = 410
       } else {
         errorMessage = `Push service error: ${error.toString()}`
       }
