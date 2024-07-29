@@ -25,7 +25,7 @@
 
   // Constants
   const MAX_DISTANCE = 1 // in kilometers
-  const MAX_TIME_DIFF = 3 * 60 * 1000 // 3 minutes in milliseconds
+  const MAX_TIME_DIFF = 5 * 60 * 1000 // 3 minutes in milliseconds
 
   // Configuration object for trail properties
   const trailConfig = {
@@ -62,6 +62,8 @@
     newOtherTrailUnsubscribe = newOtherTrail.subscribe((newTrail) => {
       if (Object.keys(newTrail).length > 0) {
         Object.entries(newTrail).forEach(([vehicleId, trail]) => {
+          console.log("New other trail data received:", { vehicleId, trail })
+
           updateTrailLine(trail, `other-${vehicleId}`)
         })
         newOtherTrail.set({}) // Clear the newOtherTrail store after processing
@@ -114,6 +116,14 @@
     opacity,
     dashArray = [1],
   ) {
+    console.log("Creating/updating trail layer:", {
+      sourceId,
+      layerId,
+      width,
+      opacity,
+      dashArray,
+    })
+
     const zoomDependentWidth = [
       "interpolate",
       ["exponential", 2],
@@ -149,6 +159,13 @@
       map.setPaintProperty(layerId, "line-opacity", opacity)
       map.setPaintProperty(layerId, "line-dasharray", dashArray)
     }
+
+    console.log("Layer properties set:", {
+      color: map.getPaintProperty(layerId, "line-color"),
+      width: map.getPaintProperty(layerId, "line-width"),
+      opacity: map.getPaintProperty(layerId, "line-opacity"),
+      dashArray: map.getPaintProperty(layerId, "line-dasharray"),
+    })
   }
 
   // Function to generate circle data from trail features
@@ -190,25 +207,15 @@
   }
 
   function processTrailCoordinates(coordinates) {
-    console.log("Processing trail coordinates", { coordinates })
-
-    if (
-      !coordinates ||
-      !Array.isArray(coordinates) ||
-      coordinates.length === 0
-    ) {
-      console.error(
-        "Invalid coordinates provided to processTrailCoordinates",
-        coordinates,
-      )
-      return []
-    }
+    console.log(
+      "Processing trail coordinates",
+      { coordinates },
+      coordinates.length,
+    )
 
     const features = []
     let currentLine = []
-    let currentTimestamps = []
-    let lastTimestamp = coordinates[0].timestamp
-    let lastColor = coordinates[0].color
+    let startTimestamp, endTimestamp, color
 
     for (let i = 0; i < coordinates.length; i++) {
       const currentPoint = coordinates[i].coordinates
@@ -216,82 +223,70 @@
         .split(",")
         .map(parseFloat)
       const currentTimestamp = coordinates[i].timestamp
+      color = coordinates[i].color || color
 
       if (currentLine.length === 0) {
-        currentLine.push(currentPoint)
-        currentTimestamps.push(currentTimestamp)
-      } else {
-        const prevPoint = currentLine[currentLine.length - 1]
-        const distance = turf.distance(
-          turf.point(prevPoint),
-          turf.point(currentPoint),
-        )
-        const timeDiff = currentTimestamp - lastTimestamp
-
-        if (distance <= MAX_DISTANCE && timeDiff <= MAX_TIME_DIFF) {
-          currentLine.push(currentPoint)
-          currentTimestamps.push(currentTimestamp)
-        } else {
-          // End the current segment and start a new one
-          features.push({
-            type: "Feature",
-            geometry: {
-              type: "LineString",
-              coordinates: currentLine,
-            },
-            properties: {
-              startTimestamp: currentTimestamps[0],
-              endTimestamp: lastTimestamp,
-              color: lastColor || "black",
-            },
-          })
-          currentLine = [currentPoint]
-          currentTimestamps = [currentTimestamp]
-        }
+        startTimestamp = currentTimestamp
       }
 
-      lastTimestamp = currentTimestamp
-      lastColor = coordinates[i].color
+      currentLine.push(currentPoint)
+      endTimestamp = currentTimestamp
+
+      if (
+        i === coordinates.length - 1 ||
+        (coordinates[i + 1] &&
+          (turf.distance(
+            turf.point(currentPoint),
+            turf.point(
+              coordinates[i + 1].coordinates
+                .slice(1, -1)
+                .split(",")
+                .map(parseFloat),
+            ),
+          ) > MAX_DISTANCE ||
+            coordinates[i + 1].timestamp - currentTimestamp > MAX_TIME_DIFF))
+      ) {
+        features.push({
+          type: "Feature",
+          geometry: {
+            type: "LineString",
+            coordinates: currentLine,
+          },
+          properties: {
+            startTimestamp,
+            endTimestamp,
+            color,
+          },
+        })
+        currentLine = []
+      }
     }
 
-    // Add the last segment
-    if (currentLine.length > 0) {
-      features.push({
-        type: "Feature",
-        geometry: {
-          type: "LineString",
-          coordinates: currentLine,
-        },
-        properties: {
-          startTimestamp: currentTimestamps[0],
-          endTimestamp: lastTimestamp,
-          color: lastColor || "black",
-        },
-      })
-    }
-
+    console.log("Processed trail segments count:", features.length)
     return features
   }
 
   function updateTrailLine(trail, sourceId) {
+    console.log("Updating trail line:", { trail, sourceId })
     const existingTrail = trailData[sourceId]
-
-    // Ensure trail is always an array
     const trailArray = Array.isArray(trail) ? trail : [trail]
 
     if (existingTrail) {
       console.log(`Existing trail found for ${sourceId}`, existingTrail)
       const lastSegment = existingTrail.latestSegment
 
-      // Combine the last segment with the new trail point(s)
+      console.log("Last segment before combining:", lastSegment)
+
       const combinedCoordinates = [
         ...lastSegment.geometry.coordinates.map((coord) => ({
           coordinates: `(${coord[0]},${coord[1]})`,
-          timestamp: lastSegment.properties.timestamp,
+          timestamp: lastSegment.properties.endTimestamp,
           color: lastSegment.properties.color,
         })),
         ...trailArray,
       ]
+
+      console.log("Combined coordinates:", combinedCoordinates)
 
       const newSegments = processTrailCoordinates(
         combinedCoordinates,
@@ -304,21 +299,36 @@
           ...existingTrail.features.slice(0, -1),
           ...newSegments,
         ]
-        trailData[sourceId].latestSegment = newSegments[newSegments.length - 1]
+
+        trailData[sourceId].latestSegment = {
+          geometry: newSegments[newSegments.length - 1].geometry,
+          properties: {
+            ...newSegments[newSegments.length - 1].properties,
+            timestamp:
+              newSegments[newSegments.length - 1].properties.endTimestamp,
+          },
+        }
+
         trailData[sourceId].lastProcessedTimestamp =
           newSegments[newSegments.length - 1].properties.endTimestamp
 
-        // Update this line to use updateLatestSegmentOnMap
         updateLatestSegmentOnMap(sourceId, newSegments[newSegments.length - 1])
       }
     } else {
-      // Initial load
       const initialSegments = processTrailCoordinates(trailArray)
       trailData[sourceId] = {
         features: initialSegments,
-        latestSegment: initialSegments[initialSegments.length - 1],
+        latestSegment: {
+          geometry: initialSegments[initialSegments.length - 1].geometry,
+          properties: {
+            ...initialSegments[initialSegments.length - 1].properties,
+            timestamp:
+              initialSegments[initialSegments.length - 1].properties
+                .endTimestamp,
+          },
+        },
         lastProcessedTimestamp:
-          initialSegments[initialSegments.length - 1].properties.timestamp,
+          initialSegments[initialSegments.length - 1].properties.endTimestamp,
       }
       createInitialTrailOnMap(sourceId, trailData[sourceId].features)
     }

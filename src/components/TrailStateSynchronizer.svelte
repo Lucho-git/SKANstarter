@@ -95,12 +95,13 @@
           // Handle the real-time updates for other vehicles' trails
           if (payload.new.vehicle_id !== userId) {
             // Update was made by another vehicle
-            const { vehicle_id, coordinates, timestamp } = payload.new
+            const { vehicle_id, coordinates, timestamp, color, swath } =
+              payload.new
             newOtherTrail.update((trails) => {
               if (!trails[vehicle_id]) {
                 trails[vehicle_id] = []
               }
-              trails[vehicle_id].push({ coordinates, timestamp })
+              trails[vehicle_id].push({ coordinates, timestamp, color, swath })
               return trails
             })
           }
