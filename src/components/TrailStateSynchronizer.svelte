@@ -254,9 +254,9 @@
       otherTrailData = loadedOtherTrailData
     }
 
-    // console.log("Before simplification:")
-    // console.log("User trail points:", countTotalPoints(userTrailData))
-    // console.log("Other trail points:", countTotalPoints(otherTrailData))
+    console.log("Before simplification:")
+    console.log("User trail points:", countTotalPoints(userTrailData))
+    console.log("Other trail points:", countTotalPoints(otherTrailData))
     // console.log("User trail length (km):", calculateTrailLength(userTrailData))
     // console.log(
     //   "Other trail length (km):",
