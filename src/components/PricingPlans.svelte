@@ -2,6 +2,7 @@
 <script lang="ts">
   import { writable } from "svelte/store"
   import PricePlanBox from "./PricePlanBox.svelte"
+  import { slide } from "svelte/transition"
 
   export let currentPlanId: string | null = null
 
@@ -87,32 +88,27 @@
 
 <div class="w-full my-8">
   <div class="flex justify-center mb-8">
-    <label class="label cursor-pointer">
-      <span class="label-text mr-2">Support the boys at full price</span>
-      <input
-        type="checkbox"
-        class="checkbox checkbox-primary"
-        checked={$useFullPrice}
-        on:change={toggleFullPrice}
-      />
-    </label>
-  </div>
-
-  <div class="flex justify-center mb-8">
     <div
-      class="bg-gray-300 p-1 rounded-full flex items-center cursor-pointer"
+      class="bg-gray-300 p-1 rounded-full flex items-center cursor-pointer relative"
       on:click={toggleBillingPeriod}
     >
+      {#key $billingPeriod}
+        <div
+          class="absolute bg-primary w-32 h-8 rounded-full"
+          style="transform: translateX({$billingPeriod === 'yearly'
+            ? '100%'
+            : '0'});"
+          transition:slide={{ duration: 300 }}
+        ></div>
+      {/key}
       <div
-        class="w-32 h-8 text-sm rounded-full flex items-center justify-center transition-all duration-300 ease-in-out"
-        class:bg-primary={$billingPeriod === "monthly"}
+        class="w-32 h-8 text-sm rounded-full flex items-center justify-center relative z-10"
         class:text-white={$billingPeriod === "monthly"}
       >
         Monthly
       </div>
       <div
-        class="w-32 h-8 text-sm rounded-full flex items-center justify-center transition-all duration-300 ease-in-out relative"
-        class:bg-primary={$billingPeriod === "yearly"}
+        class="w-32 h-8 text-sm rounded-full flex items-center justify-center relative z-10"
         class:text-white={$billingPeriod === "yearly"}
       >
         Annually
