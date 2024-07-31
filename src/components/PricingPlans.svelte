@@ -15,7 +15,7 @@
   const pricingPlans = [
     {
       id: "free",
-      name: "🚜 SKAN Member",
+      name: "🚜SKAN Member",
       description:
         "Join an existing map as an operator, or test out our features free",
       price: { monthly: "Free", yearly: "Free" },
@@ -44,7 +44,8 @@
       stripe_price_id: "price_1PdxlVK3At0l0k1HoEgkFynm",
       stripe_product_id: "prod_QUxgzq6c3meKyZ",
       features: [
-        "Share map with your # additional seats",
+        "Invite others to share your map",
+        "Customizable # of seats",
         "Unlimited map creation",
         "Unlimited pin drops",
         "Unlimited Trail credits",
@@ -53,6 +54,24 @@
       style: "bg-blue-100 border-blue-300",
     },
   ]
+
+  $: annualDiscount = pricingPlans.some(
+    (plan) =>
+      plan.price.yearly &&
+      plan.price.yearly.discounted &&
+      plan.price.yearly.original,
+  )
+    ? Math.round(
+        parseFloat(
+          pricingPlans[1].price.yearly.original.replace("$", "") /
+            parseFloat(
+              pricingPlans[1].price.yearly.discounted.replace("$", ""),
+            ),
+        ) *
+          100 -
+          100,
+      )
+    : 0
 
   function toggleBillingPeriod() {
     billingPeriod.update((current) =>
@@ -80,17 +99,29 @@
   </div>
 
   <div class="flex justify-center mb-8">
-    <div class="form-control">
-      <label class="label cursor-pointer">
-        <span class="label-text mr-4">Monthly</span>
-        <input
-          type="checkbox"
-          class="toggle toggle-primary"
-          checked={$billingPeriod === "yearly"}
-          on:change={toggleBillingPeriod}
-        />
-        <span class="label-text ml-4">Yearly</span>
-      </label>
+    <div
+      class="bg-gray-300 p-1 rounded-full flex items-center cursor-pointer"
+      on:click={toggleBillingPeriod}
+    >
+      <div
+        class="w-32 h-8 text-sm rounded-full flex items-center justify-center transition-all duration-300 ease-in-out"
+        class:bg-primary={$billingPeriod === "monthly"}
+        class:text-white={$billingPeriod === "monthly"}
+      >
+        Monthly
+      </div>
+      <div
+        class="w-32 h-8 text-sm rounded-full flex items-center justify-center transition-all duration-300 ease-in-out relative"
+        class:bg-primary={$billingPeriod === "yearly"}
+        class:text-white={$billingPeriod === "yearly"}
+      >
+        Annually
+        {#if annualDiscount > 0}
+          <div class="badge badge-secondary absolute -top-3 -right-4 text-xs">
+            Save {annualDiscount}%
+          </div>
+        {/if}
+      </div>
     </div>
   </div>
 
@@ -103,6 +134,7 @@
         callToAction={plan.id === "free" ? "Get Started" : "Upgrade"}
         isDisabled={plan.id === "enterprise"}
         useFullPrice={$useFullPrice}
+        {annualDiscount}
       />
     {/each}
   </div>

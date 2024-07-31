@@ -8,6 +8,7 @@
   export let callToAction: string
   export let isDisabled: boolean
   export let useFullPrice: boolean
+  export let annualDiscount: number
 
   const seats = writable(1)
 
@@ -28,10 +29,6 @@
   $: totalPrice = Math.round(basePrice * $seats).toString()
   $: totalOriginalPrice = Math.round(originalPrice * $seats).toString()
 
-  $: discountPercentage = hasDiscount
-    ? Math.round((originalPrice / basePrice) * 100 - 100)
-    : 0
-
   function incrementSeats() {
     seats.update((n) => n + 1)
   }
@@ -47,8 +44,8 @@
   <div class="flex flex-col h-full">
     <div class="text-xl font-bold text-center flex items-center justify-center">
       {plan.name}
-      {#if hasDiscount}
-        <div class="badge badge-primary ml-2">Save {discountPercentage}%</div>
+      {#if hasDiscount && billingPeriod === "yearly"}
+        <div class="badge badge-primary ml-2">Save {annualDiscount}%</div>
       {/if}
     </div>
     <p class="mt-2 text-sm text-gray-500 leading-relaxed text-center">
@@ -101,9 +98,10 @@
         >
           -
         </button>
-        <span class="mx-4 text-lg font-bold"
-          >{$seats} {$seats === 1 ? "seat" : "seats"}</span
-        >
+        <span class="mx-4 text-lg font-bold">
+          {$seats}
+          {$seats === 1 ? "seat" : "seats"}
+        </span>
         <button
           class="btn btn-sm btn-outline bg-gradient-to-r from-secondary to-accent text-secondary-content hover:from-secondary-focus hover:to-accent-focus"
           on:click={incrementSeats}
