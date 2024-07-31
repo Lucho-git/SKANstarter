@@ -3,7 +3,7 @@
   import { writable } from "svelte/store"
 
   export let plan: any
-  export let billingPeriod: "daily" | "yearly"
+  export let billingPeriod: "monthly" | "yearly"
   export let isCurrentPlan: boolean
   export let callToAction: string
   export let isDisabled: boolean
@@ -11,20 +11,26 @@
 
   const seats = writable(1)
 
-  $: basePrice = plan.price[billingPeriod].discounted
-    ? parseFloat(plan.price[billingPeriod].discounted.replace("$", ""))
-    : parseFloat(plan.price[billingPeriod].replace("$", ""))
+  $: basePrice =
+    typeof plan.price[billingPeriod] === "object"
+      ? parseFloat(plan.price[billingPeriod].discounted.replace("$", ""))
+      : parseFloat(plan.price[billingPeriod].replace("$", ""))
 
-  $: originalPrice = plan.price[billingPeriod].original
-    ? parseFloat(plan.price[billingPeriod].original.replace("$", ""))
-    : basePrice
+  $: originalPrice =
+    typeof plan.price[billingPeriod] === "object"
+      ? parseFloat(plan.price[billingPeriod].original.replace("$", ""))
+      : basePrice
 
-  $: totalPrice = (basePrice * $seats).toFixed(
-    billingPeriod === "yearly" ? 0 : 2,
-  )
-  $: totalOriginalPrice = (originalPrice * $seats).toFixed(
-    billingPeriod === "yearly" ? 0 : 2,
-  )
+  $: hasDiscount =
+    typeof plan.price[billingPeriod] === "object" &&
+    plan.price[billingPeriod].discounted
+
+  $: totalPrice = Math.round(basePrice * $seats).toString()
+  $: totalOriginalPrice = Math.round(originalPrice * $seats).toString()
+
+  $: discountPercentage = hasDiscount
+    ? Math.round((originalPrice / basePrice) * 100 - 100)
+    : 0
 
   function incrementSeats() {
     seats.update((n) => n + 1)
@@ -39,7 +45,12 @@
   class="flex-none card card-bordered text-black shadow-xl flex-1 flex-grow min-w-[260px] max-w-[310px] p-6 {plan.style}"
 >
   <div class="flex flex-col h-full">
-    <div class="text-xl font-bold text-center">{plan.name}</div>
+    <div class="text-xl font-bold text-center flex items-center justify-center">
+      {plan.name}
+      {#if hasDiscount}
+        <div class="badge badge-primary ml-2">Save {discountPercentage}%</div>
+      {/if}
+    </div>
     <p class="mt-2 text-sm text-gray-500 leading-relaxed text-center">
       {plan.description}
     </p>
@@ -48,21 +59,36 @@
       <div class="flex items-end justify-center">
         {#if plan.id === "free"}
           <span class="text-4xl font-bold">Free</span>
-        {:else if plan.price[billingPeriod].discounted}
+          <div class="flex flex-col ml-2 mb-1 text-xs text-gray-400">
+            <span>no credit card</span>
+            <span>required</span>
+          </div>
+        {:else if hasDiscount}
           <span class="text-lg text-gray-400 line-through mr-2">
             ${totalOriginalPrice}
           </span>
           <span class="text-4xl font-bold">
             ${totalPrice}
           </span>
+          <div class="flex flex-col ml-2 mb-1 text-xs text-gray-500">
+            <span>per month</span>
+            <span
+              >billed {billingPeriod === "monthly"
+                ? "monthly"
+                : "annually"}</span
+            >
+          </div>
         {:else}
           <span class="text-4xl font-bold">${totalPrice}</span>
+          <div class="flex flex-col ml-2 mb-1 text-xs text-gray-500">
+            <span>per month</span>
+            <span
+              >billed {billingPeriod === "monthly"
+                ? "monthly"
+                : "annually"}</span
+            >
+          </div>
         {/if}
-        <span class="text-gray-400 ml-2 mb-1">
-          {typeof plan.priceIntervalName === "string"
-            ? plan.priceIntervalName
-            : plan.priceIntervalName[billingPeriod]}
-        </span>
       </div>
     </div>
 
@@ -105,13 +131,17 @@
         >
           Current Plan
         </div>
+      {:else if plan.id === "free"}
+        <a
+          href="/account/subscribe/free_plan"
+          class="btn btn-primary w-[80%] mx-auto"
+        >
+          {callToAction}
+        </a>
       {:else}
         <a
-          href={isDisabled
-            ? "#"
-            : `/account/subscribe/${plan?.stripe_price_id ?? "free_plan"}?seats=${$seats}&discount=${!useFullPrice}`}
-          class="btn btn-primary w-[80%] mx-auto"
-          class:btn-disabled={isDisabled}
+          href={`/account/subscribe/${plan.stripe_price_id}?seats=${$seats}&discount=${!useFullPrice}`}
+          class="btn btn-outline w-[80%] mx-auto bg-gradient-to-r from-secondary to-accent text-secondary-content hover:from-secondary-focus hover:to-accent-focus"
         >
           {callToAction}
         </a>

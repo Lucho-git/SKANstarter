@@ -5,7 +5,7 @@
 
   export let currentPlanId: string | null = null
 
-  const billingPeriod = writable("daily")
+  const billingPeriod = writable("monthly")
   const useFullPrice = writable(false)
   const discountPriceId = "price_1PdxlUK3At0l0k1Hu6tlYnHe"
   const fullPriceId = "price_1PdxlVK3At0l0k1HoEgkFynm"
@@ -15,18 +15,18 @@
   const pricingPlans = [
     {
       id: "free",
-      name: "SKAN Member",
+      name: "🚜 SKAN Member",
       description:
         "Join an existing map as an operator, or test out our features free",
-      price: { daily: "Free", yearly: "Free" },
+      price: { monthly: "Free", yearly: "Free" },
       priceIntervalName: "no credit card required",
       stripe_price_id: null,
       features: [
-        "Unlimited Map Creation",
-        "Unlimited pin drops",
-        "Join other maps",
-        "All vehicle options",
-        "Colored Trails",
+        "Join other maps with unlimited resources",
+
+        "1 Map Creation",
+        "100 active pin drops",
+        "100 000 Trail tokens",
         "Real time location updates",
       ],
       style: "bg-gray-100 border-gray-200",
@@ -37,16 +37,18 @@
       description:
         "Invite other users to your map, completely adjustable # of seats",
       price: {
-        daily: { original: "$1.00", discounted: "$.50" },
-        yearly: { original: "$365", discounted: "$183" },
+        monthly: "$45",
+        yearly: { original: "$45", discounted: "$29" },
       },
-      priceIntervalName: { daily: "per day", yearly: "per year" },
+      priceIntervalName: { monthly: "per month", yearly: "per year" },
       stripe_price_id: "price_1PdxlVK3At0l0k1HoEgkFynm",
       stripe_product_id: "prod_QUxgzq6c3meKyZ",
       features: [
-        "Everything in Free",
-        "Invite other users to your map",
-        "Premium support",
+        "Share map with your # additional seats",
+        "Unlimited map creation",
+        "Unlimited pin drops",
+        "Unlimited Trail credits",
+        "All vehicles unlocked",
       ],
       style: "bg-blue-100 border-blue-300",
     },
@@ -54,7 +56,7 @@
 
   function toggleBillingPeriod() {
     billingPeriod.update((current) =>
-      current === "daily" ? "yearly" : "daily",
+      current === "monthly" ? "yearly" : "monthly",
     )
   }
 
@@ -80,7 +82,7 @@
   <div class="flex justify-center mb-8">
     <div class="form-control">
       <label class="label cursor-pointer">
-        <span class="label-text mr-4">Daily</span>
+        <span class="label-text mr-4">Monthly</span>
         <input
           type="checkbox"
           class="toggle toggle-primary"
