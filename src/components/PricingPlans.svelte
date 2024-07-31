@@ -87,10 +87,27 @@
 </script>
 
 <div class="w-full my-8">
+  <!-- <div class="flex justify-center mb-8">
+    <label class="label cursor-pointer">
+      <span class="label-text mr-2">Support the boys at full price</span>
+      <input
+        type="checkbox"
+        class="checkbox checkbox-primary"
+        checked={$useFullPrice}
+        on:change={toggleFullPrice}
+      />
+    </label>
+  </div> -->
+
   <div class="flex justify-center mb-8">
-    <div
+    <button
+      type="button"
       class="bg-gray-300 p-1 rounded-full flex items-center cursor-pointer relative"
       on:click={toggleBillingPeriod}
+      on:keydown={(e) => e.key === "Enter" && toggleBillingPeriod()}
+      aria-label="Toggle billing period"
+      role="switch"
+      aria-checked={$billingPeriod === "yearly"}
     >
       {#key $billingPeriod}
         <div
@@ -101,27 +118,29 @@
           transition:slide={{ duration: 300 }}
         ></div>
       {/key}
-      <div
+      <span
         class="w-32 h-8 text-sm rounded-full flex items-center justify-center relative z-10"
         class:text-white={$billingPeriod === "monthly"}
       >
         Monthly
-      </div>
-      <div
+      </span>
+      <span
         class="w-32 h-8 text-sm rounded-full flex items-center justify-center relative z-10"
         class:text-white={$billingPeriod === "yearly"}
       >
         Annually
         {#if annualDiscount > 0}
-          <div class="badge badge-secondary absolute -top-3 -right-4 text-xs">
+          <span class="badge badge-secondary absolute -top-3 -right-4 text-xs">
             Save {annualDiscount}%
-          </div>
+          </span>
         {/if}
-      </div>
-    </div>
+      </span>
+    </button>
   </div>
 
-  <div class="mt-12 flex flex-col lg:flex-row gap-10 justify-center flex-wrap">
+  <div
+    class="mt-12 flex flex-col lg:flex-row gap-10 justify-center items-center flex-wrap"
+  >
     {#each pricingPlans as plan}
       <PricePlanBox
         {plan}
