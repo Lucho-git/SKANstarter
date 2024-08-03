@@ -20,5 +20,5 @@
 
   <PricingPlans {currentPlanId} />
 
-  <PricingFAQ />
+  <!-- <PricingFAQ /> -->
 </div>

@@ -25,4 +25,4 @@
   </div>
 </div>
 
-<PricingFAQ />
+<!-- <PricingFAQ /> -->

@@ -22,14 +22,16 @@ serve(async (req) => {
     console.log(`Received request for email: ${email}, fullName: ${fullName}, subscriptionStatus: ${subscriptionStatus}`)
 
     const data = {
-      contacts: [
-        {
-          email,
-          first_name: fullName ? fullName.split(' ')[0] : '',
-          last_name: fullName ? fullName.split(' ').slice(1).join(' ') : ''
-        }
-      ]
-    }
+        contacts: [
+          {
+            email,
+            first_name: fullName ? fullName.split(' ')[0] : '',
+            last_name: fullName ? fullName.split(' ').slice(1).join(' ') : ''
+          }
+        ],
+        list_ids: ["42ec54d4-bb96-4d12-b478-0bf9d0c20c11"]
+      };
+      
     console.log(`Prepared data for SendGrid: ${JSON.stringify(data)}`)
 
     try {

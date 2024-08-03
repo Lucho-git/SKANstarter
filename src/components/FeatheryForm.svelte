@@ -1,20 +1,25 @@
 <!-- FeatheryForm.svelte -->
 <script>
-  import { session } from "/src/stores/user.ts"
+  import { onMount } from "svelte"
+  import { page } from "$app/stores"
   import { supabase } from "$lib/supabaseClient"
   import { createEventDispatcher } from "svelte"
 
   const dispatch = createEventDispatcher()
 
   const formId = "7d624884-1198-4af8-b49d-4b8b5efcb85c"
-  const formName = "Customer Survey"
-
-  import { onMount } from "svelte"
+  const formName = "AgSkan SurveyReal"
 
   let isFormCompleted = false
   let responseData = null
+  let userId
 
   onMount(async () => {
+    const session = $page.data.session
+    if (session) {
+      userId = session.user.id
+    }
+
     const script = document.createElement("script")
     script.src =
       "https://cdn.jsdelivr.net/npm/@feathery/react@latest/umd/index.js"
@@ -23,8 +28,8 @@
       Feathery.init(formId)
 
       // Update the Feathery user ID to match the Supabase user ID
-      if ($session && $session.user) {
-        Feathery.updateUserId($session.user.id)
+      if (userId) {
+        Feathery.updateUserId(userId)
       }
 
       Feathery.renderAt(`container_${formId}`, {
@@ -32,20 +37,19 @@
         initialLoader: {
           show: true,
           loader: `
-                <div class="flex flex-col items-center space-y-4">
-                  <div class="border-t-4 border-primary animate-spin rounded-full w-12 h-12 mb-4"></div>
-                  <p class="text-lg text-primary-content">Loading form...</p>
-                </div>
-              `,
+              <div class="flex flex-col items-center space-y-4">
+                <div class="border-t-4 border-primary animate-spin rounded-full w-12 h-12 mb-4"></div>
+                <p class="text-lg text-primary-content">Loading form...</p>
+              </div>
+            `,
           initialContainerHeight: "600px",
           initialContainerWidth: "100%",
         },
         onFormComplete: async (response) => {
           isFormCompleted = true
           responseData = {
-            id: response.userId, // Set the "ID" field to the User_ID value
+            id: response.userId,
           }
-          // Iterate over the fields in the response
           for (const fieldKey in response.fields) {
             if (response.fields.hasOwnProperty(fieldKey)) {
               const field = response.fields[fieldKey]
@@ -54,14 +58,12 @@
                 ? field.value.join(", ")
                 : field.value
 
-              // Only include fields with a defined value
               if (fieldValue !== undefined) {
                 responseData[columnName] = fieldValue
               }
             }
           }
 
-          // Insert the filtered responseData object into the database
           try {
             const { data, error } = await supabase
               .from("survey_response")
@@ -96,9 +98,9 @@
   {#if isFormCompleted}
     <div class="text-center">
       <h2 class="text-2xl font-bold mb-4">Form Completed!</h2>
-      {#if $session && $session.user}
+      {#if userId}
         <p class="text-lg">
-          Thankyou {$session.user.user_metadata.name}
+          Thank you {$page.data.session?.user.user_metadata.name}
         </p>
       {:else}
         <p class="text-lg">Thank you for submitting the form!</p>
@@ -114,17 +116,3 @@
     <div id="container_{formId}" class="min-h-[90vh] overflow-auto"></div>
   {/if}
 </div>
-
-<!-- User authentication status section -->
-<!-- <div class="mt-8 text-center">
-  {#if !$session}
-    <p class="text-lg text-gray-500">Loading user authentication status...</p>
-  {:else if $session.user}
-    <p class="text-lg text-green-600">
-      User authenticated: {$session.user.user_metadata.name} (ID: {$session.user
-        .id})
-    </p>
-  {:else}
-    <p class="text-lg text-red-600">User not authenticated</p>
-  {/if}
-</div> -->

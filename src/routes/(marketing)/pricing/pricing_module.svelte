@@ -104,7 +104,7 @@
   {/each}
 </div>
 
-<h1 class="text-2xl font-bold text-center mt-24">Pricing FAQ</h1>
+<!-- <h1 class="text-2xl font-bold text-center mt-24">Pricing FAQ</h1>
 <div class="flex place-content-center">
   <div class="join join-vertical max-w-xl py-6 mx-auto">
     <div class="collapse collapse-arrow join-item border border-primary">
@@ -169,7 +169,7 @@
       </div>
     </div>
   </div>
-</div>
+</div> -->
 
 <svg style="display:none" version="2.0">
   <defs>
