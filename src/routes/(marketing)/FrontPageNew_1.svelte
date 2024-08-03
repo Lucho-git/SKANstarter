@@ -138,7 +138,7 @@
 
         <div class="lg:w-1/2">
           <a
-            href="/login/sign_up"
+            href="/login?tab=sign_up"
             class="card bg-base-100 shadow-xl hover:bg-base-200 transition duration-300"
           >
             <div class="card-body">

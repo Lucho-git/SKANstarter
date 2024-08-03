@@ -2,7 +2,7 @@
   const features = [
     {
       name: "User Auth",
-      link: "/login/sign_in",
+      link: "/login",
       description:
         "Sign up, sign out, forgot password, email verification, and oAuth. Powered by Supabase Auth.",
       svgContent: `<path

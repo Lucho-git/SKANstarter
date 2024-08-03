@@ -34,7 +34,7 @@
         {#if session}
           <a href="/account" class="border border-primary">Dashboard</a>
         {:else}
-          <a href="/login/sign_in" class="border border-primary">★ Enter</a>
+          <a href="/login" class="border border-primary">★ Enter</a>
         {/if}
       </li>
     </ul>
@@ -73,7 +73,7 @@
               Welcome, {session.user.user_metadata.name}!
             </div>
           {:else}
-            <a href="/login/sign_in" class="border border-primary">★ Enter</a>
+            <a href="/login" class="border border-primary">★ Enter</a>
           {/if}
         </li>
       </ul>

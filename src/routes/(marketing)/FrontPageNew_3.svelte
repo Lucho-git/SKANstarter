@@ -34,7 +34,7 @@
           <div class="my-auto">
             <div class="px-4 mt-6 text-xl md:text-3xl">
               See how we can optimize your paddocks.<br />
-              <a href="/login/sign_up" class="link font-bold"
+              <a href="/login?tab=sign_up" class="link font-bold"
                 >Upload your paddock boundary files</a
               >
               <br />
@@ -52,7 +52,7 @@
     </div>
     <div class="w-full lg:w-5/12 mt-8 lg:mt-0">
       <a
-        href="/login/sign_up"
+        href="/login?tab=sign_up"
         class="card bg-base-100 shadow-xl hover:bg-base-200 transition duration-300"
       >
         <div class="card-body">
