@@ -11,7 +11,7 @@ export const load: PageServerLoad = async ({
 }) => {
   const session = await getSession()
   if (!session) {
-    throw redirect(303, "/login")
+    throw redirect(303, "/login/sign_in")
   }
 
   const { error: idError, customerId } = await getOrCreateCustomerId({

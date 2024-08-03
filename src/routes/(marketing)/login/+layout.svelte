@@ -1,3 +1,8 @@
+<script>
+  import { Auth } from "@supabase/auth-ui-svelte"
+  import { sharedAppearance } from "./login_config"
+</script>
+
 <div
   class="text-center content-center max-w-lg mx-auto min-h-[70vh] mb-12 flex items-center place-content-center"
 >

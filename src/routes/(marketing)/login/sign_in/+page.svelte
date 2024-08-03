@@ -8,13 +8,13 @@
   export let data
   let { supabase } = data
 
+  // Get the initial tab from the query parameter, default to "sign_in" if not present
+  $: activeTab =
+    $page.url.searchParams.get("tab") === "sign_up" ? "sign_up" : "sign_in"
+
   onMount(() => {
     supabase.auth.onAuthStateChange((event) => {
-      // Redirect to account after sucessful login
       if (event == "SIGNED_IN") {
-        // Delay needed because order of callback not guaranteed.
-        // Give the layout callback priority to update state or
-        // we'll just bounch back to login when /account tries to load
         setTimeout(() => {
           goto("/account")
         }, 1)
@@ -24,11 +24,43 @@
 </script>
 
 <svelte:head>
-  <title>Sign in</title>
+  <title>Sign In / Sign Up</title>
 </svelte:head>
 
+<div class="w-full max-w-xl mx-auto">
+  <div class="flex justify-around mb-5">
+    <button
+      class={`px-5 py-2 ${activeTab === "sign_in" ? "font-bold border-b-2 border-black" : ""}`}
+      on:click={() => (activeTab = "sign_in")}>Sign In</button
+    >
+    <button
+      class={`px-5 py-2 ${activeTab === "sign_up" ? "font-bold border-b-2 border-black" : ""}`}
+      on:click={() => (activeTab = "sign_up")}>Sign Up</button
+    >
+  </div>
+
+  <div class="p-5 border border-gray-300 rounded-lg">
+    <div class="auth-wrapper">
+      <Auth
+        supabaseClient={data.supabase}
+        view={activeTab === "sign_in" ? "sign_in" : "sign_up"}
+        redirectTo={`${data.url}/auth/callback`}
+        providers={oauthProviders}
+        socialLayout="horizontal"
+        showLinks={false}
+        appearance={sharedAppearance}
+      />
+    </div>
+    {#if activeTab === "sign_in"}
+      <div class="text-l text-slate-800 mt-4">
+        <a class="underline" href="/login/forgot_password">Forgot password?</a>
+      </div>
+    {/if}
+  </div>
+</div>
+
 {#if $page.url.searchParams.get("verified") == "true"}
-  <div role="alert" class="alert alert-success mb-5">
+  <div role="alert" class="alert alert-success mt-5">
     <svg
       xmlns="http://www.w3.org/2000/svg"
       class="stroke-current shrink-0 h-6 w-6"
@@ -44,20 +76,10 @@
     <span>Email verified! Please sign in.</span>
   </div>
 {/if}
-<h1 class="text-2xl font-bold mb-6">Sign In</h1>
-<Auth
-  supabaseClient={data.supabase}
-  view="sign_in"
-  redirectTo={`${data.url}/auth/callback`}
-  providers={oauthProviders}
-  socialLayout="horizontal"
-  showLinks={false}
-  appearance={sharedAppearance}
-  additionalData={undefined}
-/>
-<div class="text-l text-slate-800 mt-4">
-  <a class="underline" href="/login/forgot_password">Forgot password?</a>
-</div>
-<div class="text-l text-slate-800 mt-3">
-  Don't have an account? <a class="underline" href="/login/sign_up">Sign up</a>.
-</div>
+
+<style>
+  :global(.auth-wrapper > div) {
+    width: 100% !important;
+    max-width: none !important;
+  }
+</style>

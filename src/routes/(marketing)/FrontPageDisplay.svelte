@@ -113,7 +113,7 @@
       <div class="max-w-6xl w-full">
         <h1 class="mb-5 text-7xl font-bold">Unlock Your Farm's Potential</h1>
         <div class="flex justify-center">
-          <a href="/login/sign_up">
+          <a href="/login?tab=sign_up">
             <button class="btn btn-primary mr-4">Get Started</button>
           </a>
           <button on:click={handleLearnMoreClick}>Learn More</button>

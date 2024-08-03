@@ -31,7 +31,7 @@
         See it in Action
       </div>
       <div class="mt-6 text-lg md:text-xl">
-        <a href="/login/sign_up" class="link font-bold"
+        <a href="/login?tab=sign_up" class="link font-bold"
           >Upload your paddock boundary files.</a
         >
       </div>
@@ -41,7 +41,7 @@
         your fields.
       </div>
       <div class="mt-6">
-        <a href="/login/sign_up">
+        <a href="/login?tab=sign_up">
           <button class="btn btn-primary btn-wide">See it in Action</button>
         </a>
       </div>

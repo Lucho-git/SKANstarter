@@ -1,10 +1,14 @@
 import { fail, redirect } from "@sveltejs/kit"
+import { toast } from "svelte-sonner"
 
 export const actions = {
   updateEmail: async ({ request, locals: { supabase, getSession } }) => {
     const session = await getSession()
     if (!session) {
-      throw redirect(303, "/login")
+        toast.error("No session found at updateEmail");
+        console.log("No session found at updateEmail");
+      throw redirect(303, "/login/sign_in")
+
     }
 
     const formData = await request.formData()
@@ -46,7 +50,10 @@ export const actions = {
   updatePassword: async ({ request, locals: { supabase, getSession } }) => {
     const session = await getSession()
     if (!session) {
-      throw redirect(303, "/login")
+        toast.error("No session found at updatePassword");
+console.log("No session found at updatePassword");
+      throw redirect(303, "/login/sign_in")
+
     }
 
     const formData = await request.formData()
@@ -124,6 +131,8 @@ export const actions = {
       })
       if (error) {
         // The user was logged out because of bad password. Redirect to error page explaining.
+        toast.error("Incorrect password. Please try again.");
+console.log("Incorrect password. Please try again.");
         throw redirect(303, "/login/current_password_error")
       }
     }
@@ -152,7 +161,9 @@ export const actions = {
   }) => {
     const session = await getSession()
     if (!session) {
-      throw redirect(303, "/login")
+        toast.error("No session found at deleteAccount");
+console.log("No session found at deleteAccount");   
+      throw redirect(303, "/login/sign_in")
     }
 
     const formData = await request.formData()
@@ -174,6 +185,8 @@ export const actions = {
     })
     if (pwError) {
       // The user was logged out because of bad password. Redirect to error page explaining.
+      toast.error("Incorrect password. Please try again.");
+console.log("Incorrect password. Please try again.");
       throw redirect(303, "/login/current_password_error")
     }
 
@@ -195,7 +208,9 @@ export const actions = {
   updateProfile: async ({ request, locals: { supabase, getSession } }) => {
     const session = await getSession();
     if (!session) {
-      throw redirect(303, "/login");
+        toast.error("No session found at updateProfile");
+console.log("No session found at updateProfile");
+      throw redirect(303, "/login/sign_in");
     }
   
     const formData = await request.formData();
@@ -302,7 +317,9 @@ export const actions = {
   uploadFile: async ({ request, locals: { supabase, getSession } }) => {
     const session = await getSession();
     if (!session) {
-      throw redirect(303, "/login");
+        toast.error("No session found at uploadFile");
+console.log("No session found at uploadFile");
+      throw redirect(303, "/login/sign_in");
     }
 
     const contentType = request.headers.get("content-type");
@@ -366,7 +383,9 @@ export const actions = {
   fetchUploadedFiles: async ({ request, locals: { supabase, getSession } }) => {
     const session = await getSession();
     if (!session) {
-      throw redirect(303, "/login");
+        toast.error("No session found at fetchUploadedFiles");
+        console.log("No session found at fetchUploadedFiles");
+      throw redirect(303, "/login/sign_insign_in");
     }
 
     const contentType = request.headers.get("content-type");

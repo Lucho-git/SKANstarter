@@ -41,7 +41,7 @@
             </figure>
             <div class="card-body">
               <div class="card-actions justify-center">
-                <a href="/login/sign_up" class="btn btn-primary">Try it</a>
+                <a href="/login?tab=sign_up" class="btn btn-primary">Try it</a>
               </div>
             </div>
           </div>

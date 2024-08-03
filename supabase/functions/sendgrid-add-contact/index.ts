@@ -31,7 +31,33 @@ serve(async (req) => {
         ],
         list_ids: ["42ec54d4-bb96-4d12-b478-0bf9d0c20c11"]
       };
-      
+      CREATE OR REPLACE FUNCTION update_sendgrid_subscription_status()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'UPDATE' AND OLD.is_subscribed = TRUE AND NEW.is_subscribed = FALSE THEN
+        RAISE LOG 'Subscription status changed to unsubscribed for email: %', NEW.email;
+        
+        PERFORM net.http_post(
+            url := 'https://hmxxqacnzxqpcheoeidn.supabase.co/functions/v1/sendgrid-update-contact-status',
+            headers := jsonb_build_object(
+                'Content-Type', 'application/json',
+                'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHhxYWNuenhxcGNoZW9laWRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDkwMjY1MDgsImV4cCI6MjAyNDYwMjUwOH0.rFOu8vW3QOCgp1VMIPKc7eF-g_8vok-pazjp7R6TJHs'
+            ),
+            body := jsonb_build_object(
+                'email', NEW.email
+            )
+        );
+        RAISE LOG 'SendGrid update contact status function called for email: %', NEW.email;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER update_sendgrid_subscription
+AFTER UPDATE ON email_subscribers
+FOR EACH ROW
+EXECUTE FUNCTION update_sendgrid_subscription_status();
+
     console.log(`Prepared data for SendGrid: ${JSON.stringify(data)}`)
 
     try {
