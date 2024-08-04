@@ -1,20 +1,14 @@
 <script>
   import { onMount } from "svelte"
-  import lottie from "lottie-web"
+  import { browser } from "$app/environment"
+  import MovingTractor from "$lib/animations/MovingTractor.json"
 
-  let animationContainer
+  let LottiePlayer
 
-  onMount(() => {
-    const animation = lottie.loadAnimation({
-      container: animationContainer,
-      renderer: "svg",
-      loop: true,
-      autoplay: true,
-      path: "/animations/MovingTractor.json",
-    })
-
-    return () => {
-      animation.destroy()
+  onMount(async () => {
+    if (browser) {
+      const module = await import("@lottiefiles/svelte-lottie-player")
+      LottiePlayer = module.LottiePlayer
     }
   })
 </script>
@@ -143,12 +137,25 @@
           >
             <div class="card-body">
               <!-- Animation container -->
-              <div class="w-4/5 mx-auto" bind:this={animationContainer}></div>
+              <div class="min-h-4/5 w-4/5 mx-auto">
+                {#if browser && LottiePlayer}
+                  <svelte:component
+                    this={LottiePlayer}
+                    src={MovingTractor}
+                    autoplay={true}
+                    loop={true}
+                    controls={false}
+                    renderer="svg"
+                    background="transparent"
+                  />
+                {/if}
+              </div>
               <div class="card-actions justify-center mt-4">
                 <span
                   class="btn btn-ghost btn-lg text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent mt-4"
-                  >PaddockPath</span
                 >
+                  PaddockPath
+                </span>
               </div>
             </div>
           </a>

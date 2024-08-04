@@ -1,16 +1,17 @@
 <script>
   import { onMount } from "svelte"
   import lottie from "lottie-web"
+  import animationData from "$lib/animations/FileOnBlob.json"
 
   let animationContainer
 
   onMount(() => {
     const animation = lottie.loadAnimation({
       container: animationContainer,
+      animationData,
       renderer: "svg",
       loop: true,
       autoplay: true,
-      path: "/animations/FileOnBlob.json",
     })
 
     return () => {

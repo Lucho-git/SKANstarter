@@ -1,6 +1,16 @@
 <script>
   import { onMount } from "svelte"
-  import lottie from "lottie-web"
+  import { browser } from "$app/environment"
+  import TractorBothWays from "$lib/animations/TractorBothWays.json"
+
+  let LottiePlayer
+
+  onMount(async () => {
+    if (browser) {
+      const module = await import("@lottiefiles/svelte-lottie-player")
+      LottiePlayer = module.LottiePlayer
+    }
+  })
 
   const teamMembers = [
     {
@@ -18,18 +28,6 @@
       linkedInUrl: "https://www.linkedin.com/in/ryan-skamp-a3b41a2b2/",
     },
   ]
-
-  let animationContainer
-
-  onMount(() => {
-    lottie.loadAnimation({
-      container: animationContainer,
-      renderer: "svg",
-      loop: true,
-      autoplay: true,
-      path: "/animations/TractorBothWays.json",
-    })
-  })
 </script>
 
 <div class="container mx-auto px-4 py-8">
@@ -128,10 +126,18 @@
   <div class="mt-12 max-w-3xl mx-auto">
     <!-- Add the Lottie animation container -->
     <div class="mx-auto overflow-hidden">
-      <div
-        bind:this={animationContainer}
-        class="farming-animation w-full h-full transform scale-150"
-      ></div>
+      {#if browser && LottiePlayer}
+        <svelte:component
+          this={LottiePlayer}
+          src={TractorBothWays}
+          autoplay={true}
+          loop={true}
+          controls={false}
+          renderer="svg"
+          background="transparent"
+          class="farming-animation w-full h-full transform scale-150"
+        />
+      {/if}
     </div>
   </div>
 </div>

@@ -41,15 +41,14 @@
       const edgeFunctionData = {
         email: subscriber.email,
         fullName: fullName,
-        subscriptionStatus: "subscribed",
       }
 
       sentCount++
-      console.log("Calling Edge function for:", edgeFunctionData.email)
+      console.log("Calling Resend Edge function for:", edgeFunctionData.email)
 
       try {
         const response = await fetch(
-          "https://hmxxqacnzxqpcheoeidn.supabase.co/functions/v1/sendgrid-add-contact",
+          "https://hmxxqacnzxqpcheoeidn.supabase.co/functions/v1/resend-add-contact",
           {
             method: "POST",
             headers: {
@@ -90,7 +89,7 @@
     const results = await Promise.all(edgeFunctionPromises)
 
     console.log("Edge function results:", results)
-    console.log(`Total emails sent: ${sentCount}`)
+    console.log(`Total emails processed: ${sentCount}`)
     console.log(`Successful: ${successCount}, Failed: ${failCount}`)
 
     toast.success(

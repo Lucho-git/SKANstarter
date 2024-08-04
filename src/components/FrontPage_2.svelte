@@ -1,16 +1,17 @@
 <script>
   import { onMount } from "svelte"
   import lottie from "lottie-web"
-
+  import animationData from "./animations/CoolLineMap.json"
   let animationContainer
 
   onMount(() => {
     const animation = lottie.loadAnimation({
       container: animationContainer,
+      //   path: "/animations/CoolLineMap.json",
+      animationData,
       renderer: "svg",
       loop: true,
       autoplay: true,
-      path: "/animations/CoolLineMap.json",
     })
 
     return () => {

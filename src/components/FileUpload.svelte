@@ -7,6 +7,10 @@
   import { browser } from "$app/environment"
   import { onMount } from "svelte"
 
+  import OneFileMovement from "$lib/animations/OneFileMovement.json"
+  import Error2 from "$lib/animations/Error2.json"
+  import IdleFile from "$lib/animations/IdleFile.json"
+
   let LottiePlayer
 
   onMount(async () => {
@@ -206,7 +210,7 @@
                 {#if browser && LottiePlayer}
                   <svelte:component
                     this={LottiePlayer}
-                    src="/animations/OneFileMovement.json"
+                    src={OneFileMovement}
                     autoplay={true}
                     loop={true}
                     controls={false}
@@ -226,7 +230,7 @@
                 {#if browser && LottiePlayer}
                   <svelte:component
                     this={LottiePlayer}
-                    src="/animations/Error2.json"
+                    src={Error2}
                     autoplay={true}
                     loop={true}
                     controls={false}
@@ -243,7 +247,7 @@
                 {#if browser && LottiePlayer}
                   <svelte:component
                     this={LottiePlayer}
-                    src="/animations/IdleFile.json"
+                    src={IdleFile}
                     autoplay={true}
                     loop={true}
                     controls={false}

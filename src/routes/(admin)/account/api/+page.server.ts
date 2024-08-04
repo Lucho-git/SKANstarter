@@ -264,6 +264,7 @@ console.log("No session found at updateProfile");
   
     if (profileError) {
       console.error("Supabase profile error:", profileError);
+      console.log("Supabase profile error:", profileError);
       return fail(500, {
         errorMessage: "Unknown error 005. If this persists please contact us.",
         fullName,
