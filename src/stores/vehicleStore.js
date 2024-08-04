@@ -1,5 +1,6 @@
 // vehicleStore.js
 import { writable } from 'svelte/store';
+import SVGComponents from '../components/SVG/index.js';
 
 function createUserVehicleStore() {
     const { subscribe, set, update } = writable({
@@ -12,8 +13,8 @@ function createUserVehicleStore() {
         color: 'red',
         size: '25px',
         swath: 30,
-        path: () => import('../components/SVG/SimpleTractor.svelte')
-      },
+        path: SVGComponents.SimpleTractor
+    },
       heading: 0
     });
   
@@ -27,8 +28,8 @@ function createUserVehicleStore() {
           vehicle_marker: {
             ...store.vehicle_marker,
             ...newMarker,
-            path: () => import(`../components/SVG/${newMarker.type}.svelte`)
-          }
+            path: SVGComponents[newMarker.type]
+        }
         }));
       }
     };

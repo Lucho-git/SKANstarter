@@ -4,6 +4,7 @@
   import { page } from "$app/stores"
   import { v4 as uuidv4 } from "uuid"
   import { browser } from "$app/environment"
+  import CoolLineMap from "$lib/animations/CoolLineMap.json"
 
   let LottiePlayer
 
@@ -403,7 +404,7 @@
           {#if browser && LottiePlayer}
             <svelte:component
               this={LottiePlayer}
-              src="/animations/CoolLineMap.json"
+              src={CoolLineMap}
               autoplay={true}
               loop={true}
               controls={false}
@@ -411,10 +412,8 @@
               background="transparent"
               height={40}
               width={40}
-              controlsLayout={false}
             />
           {:else}
-            <!-- Placeholder or alternative content when LottiePlayer is not available -->
             <span>Map Viewer</span>
           {/if}
         </button>

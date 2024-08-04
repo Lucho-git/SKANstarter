@@ -11,7 +11,7 @@ export const GET = async ({ url, locals: { supabase } }) => {
       // If you open in another browser, need to redirect to login.
       // Should not display error
       if (isAuthApiError(error)) {
-        throw redirect(303, "/login/sign_in?verified=true")
+        throw redirect(303, "/login")
       } else {
         throw error
       }

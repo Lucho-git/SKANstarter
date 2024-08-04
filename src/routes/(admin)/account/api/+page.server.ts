@@ -7,7 +7,7 @@ export const actions = {
     if (!session) {
         toast.error("No session found at updateEmail");
         console.log("No session found at updateEmail");
-      throw redirect(303, "/login/sign_in")
+      throw redirect(303, "/login")
 
     }
 
@@ -52,7 +52,7 @@ export const actions = {
     if (!session) {
         toast.error("No session found at updatePassword");
 console.log("No session found at updatePassword");
-      throw redirect(303, "/login/sign_in")
+      throw redirect(303, "/login")
 
     }
 
@@ -163,7 +163,7 @@ console.log("Incorrect password. Please try again.");
     if (!session) {
         toast.error("No session found at deleteAccount");
 console.log("No session found at deleteAccount");   
-      throw redirect(303, "/login/sign_in")
+      throw redirect(303, "/login")
     }
 
     const formData = await request.formData()
@@ -210,7 +210,7 @@ console.log("Incorrect password. Please try again.");
     if (!session) {
         toast.error("No session found at updateProfile");
 console.log("No session found at updateProfile");
-      throw redirect(303, "/login/sign_in");
+      throw redirect(303, "/login");
     }
   
     const formData = await request.formData();
@@ -320,7 +320,7 @@ console.log("No session found at updateProfile");
     if (!session) {
         toast.error("No session found at uploadFile");
 console.log("No session found at uploadFile");
-      throw redirect(303, "/login/sign_in");
+      throw redirect(303, "/login");
     }
 
     const contentType = request.headers.get("content-type");
@@ -386,7 +386,7 @@ console.log("No session found at uploadFile");
     if (!session) {
         toast.error("No session found at fetchUploadedFiles");
         console.log("No session found at fetchUploadedFiles");
-      throw redirect(303, "/login/sign_insign_in");
+      throw redirect(303, "/login");
     }
 
     const contentType = request.headers.get("content-type");
