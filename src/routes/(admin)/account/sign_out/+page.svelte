@@ -5,7 +5,7 @@
 
   let { supabase } = data
   let message = "Signing out...."
-
+console.log("Signout Attempt?)
   supabase.auth.signOut().then(({ error }) => {
     if (error) {
       message = "There was an issue signing out."

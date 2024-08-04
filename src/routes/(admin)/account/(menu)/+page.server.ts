@@ -4,6 +4,7 @@ export const actions = {
     signout: async ({ locals: { supabase, getSession } }) => {
         const session = await getSession()
         try {
+            console.log('Attempting to sign out1...')
           await supabase.auth.signOut()
         } catch (error) {
           console.error("Error during sign-out:", error)
