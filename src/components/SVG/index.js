@@ -8,13 +8,12 @@ import WorkCar from './WorkCar.svelte';
 import Airplane from './Airplane.svelte';
 
 export default {
-    SimpleTractor: () => import('./SimpleTractor.svelte'),
-    Pointer: () => import('./Pointer.svelte'),
-    CombineHarvester: () => import('./CombineHarvester.svelte'),
-    Excavator: () => import('./Excavator.svelte'),
-    Tractor: () => import('./Tractor.svelte'),
-    WheelLoader: () => import('./WheelLoader.svelte'),
-    WorkCar: () => import('./WorkCar.svelte'),
-    Airplane: () => import('./Airplane.svelte'),
-  };
-  
+  SimpleTractor: SimpleTractor,
+  Pointer: Pointer,
+  CombineHarvester: CombineHarvester,
+  Excavator: Excavator,
+  Tractor: Tractor,
+  WheelLoader: WheelLoader,
+  WorkCar: WorkCar,
+  Airplane: Airplane,
+};
