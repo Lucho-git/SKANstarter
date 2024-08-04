@@ -147,7 +147,6 @@
         billingPeriod={$billingPeriod}
         isCurrentPlan={plan.id === currentPlanId}
         callToAction={plan.id === "free" ? "Get Started" : "Upgrade"}
-        isDisabled={plan.id === "enterprise"}
         useFullPrice={$useFullPrice}
         {annualDiscount}
       />

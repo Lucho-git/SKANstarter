@@ -6,7 +6,6 @@
   export let billingPeriod: "monthly" | "yearly"
   export let isCurrentPlan: boolean
   export let callToAction: string
-  export let isDisabled: boolean
   export let useFullPrice: boolean
   export let annualDiscount: number
 

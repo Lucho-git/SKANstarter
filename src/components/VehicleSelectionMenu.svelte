@@ -196,25 +196,31 @@
       <div
         class="flex w-full border-2 border-b-0 border-gray-300 rounded-t-lg overflow-hidden"
       >
-        <a
+        <button
           role="tab"
+          tabindex="0"
           class="flex-1 py-3 text-center transition-colors duration-200 font-semibold text-lg {!isColorSelectionMode
             ? 'bg-white border-b-2 border-transparent'
             : 'bg-blue-200 hover:bg-blue-300'}"
           on:click={() => toggleSelectionMode("vehicle")}
+          on:keydown={(e) =>
+            e.key === "Enter" && toggleSelectionMode("vehicle")}
         >
           Vehicles
-        </a>
-        <a
+        </button>
+        <button
           role="tab"
+          tabindex="0"
           class="flex-1 py-3 text-center transition-colors duration-200 font-semibold text-lg {isColorSelectionMode
             ? 'bg-white border-b-2 border-transparent'
             : 'bg-blue-200 hover:bg-blue-300'}"
           on:click={() => toggleSelectionMode("color")}
+          on:keydown={(e) => e.key === "Enter" && toggleSelectionMode("color")}
         >
           Colors
-        </a>
+        </button>
       </div>
+
       <div
         class="border-2 border-t-0 border-gray-300 rounded-b-lg p-4 h-full flex flex-col overflow-hidden flex-grow bg-white"
       >
