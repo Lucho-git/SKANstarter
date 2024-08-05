@@ -6,6 +6,8 @@
   import { supabase } from "$lib/supabaseClient"
   import CrispChatWidget from "../../../../components/CrispChatWidget.svelte"
   import MasterMapManager from "../(menu)/MasterMapManager.svelte"
+  import MapStats from "../(menu)/MapStats.svelte"
+
   import { page } from "$app/stores"
   import AlertBanner from "../../../../components/AlertBanner.svelte"
 
@@ -65,6 +67,8 @@
     <h2 class="text-2xl font-bold mt-2">Map Manager</h2>
 
     <MasterMapManager />
+
+    <MapStats />
   </div>
 </div>
 
