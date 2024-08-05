@@ -7,6 +7,7 @@
   import CrispChatWidget from "../../../../components/CrispChatWidget.svelte"
   import MasterMapManager from "../(menu)/MasterMapManager.svelte"
   import { page } from "$app/stores"
+  import AlertBanner from "../../../../components/AlertBanner.svelte"
 
   let adminSection: Writable<string> = getContext("adminSection")
   adminSection.set("home")
@@ -54,7 +55,11 @@
 <svelte:head>
   <title>Account</title>
 </svelte:head>
-
+<AlertBanner
+  title="Limited Time Offer: Launch Week Sale!"
+  description="Enjoy special pricing for the next 7 days during our launch week. This is the best price we will ever offer, don't miss out! Deal Ends Tuesday."
+  link="/account/billing"
+/>
 <div class="w-full max-w-4xl mx-auto">
   <div>
     <h2 class="text-2xl font-bold mt-2">Map Manager</h2>

@@ -6,7 +6,7 @@
 
   export let currentPlanId: string | null = null
 
-  const billingPeriod = writable("monthly")
+  const billingPeriod = writable("yearly")
   const useFullPrice = writable(false)
   const discountPriceId = "price_1PdxlUK3At0l0k1Hu6tlYnHe"
   const fullPriceId = "price_1PdxlVK3At0l0k1HoEgkFynm"
@@ -24,7 +24,6 @@
       stripe_price_id: null,
       features: [
         "Join other maps with unlimited resources",
-
         "1 Map Creation",
         "100 active pin drops",
         "100 000 Trail tokens",
@@ -86,20 +85,8 @@
   }
 </script>
 
-<div class="w-full my-8">
-  <!-- <div class="flex justify-center mb-8">
-    <label class="label cursor-pointer">
-      <span class="label-text mr-2">Support the boys at full price</span>
-      <input
-        type="checkbox"
-        class="checkbox checkbox-primary"
-        checked={$useFullPrice}
-        on:change={toggleFullPrice}
-      />
-    </label>
-  </div> -->
-
-  <div class="flex justify-center mb-8">
+<div class="w-full my-8 relative z-0">
+  <div class="flex justify-center mb-8 relative z-0">
     <button
       type="button"
       class="bg-gray-300 p-1 rounded-full flex items-center cursor-pointer relative"
@@ -119,13 +106,13 @@
         ></div>
       {/key}
       <span
-        class="w-32 h-8 text-sm rounded-full flex items-center justify-center relative z-10"
+        class="w-32 h-8 text-sm rounded-full flex items-center justify-center relative z-0"
         class:text-white={$billingPeriod === "monthly"}
       >
         Monthly
       </span>
       <span
-        class="w-32 h-8 text-sm rounded-full flex items-center justify-center relative z-10"
+        class="w-32 h-8 text-sm rounded-full flex items-center justify-center relative z-0"
         class:text-white={$billingPeriod === "yearly"}
       >
         Annually
@@ -138,18 +125,24 @@
     </button>
   </div>
 
-  <div
-    class="mt-12 flex flex-col lg:flex-row gap-10 justify-center items-center flex-wrap"
-  >
-    {#each pricingPlans as plan}
-      <PricePlanBox
-        {plan}
-        billingPeriod={$billingPeriod}
-        isCurrentPlan={plan.id === currentPlanId}
-        callToAction={plan.id === "free" ? "Get Started" : "Upgrade"}
-        useFullPrice={$useFullPrice}
-        {annualDiscount}
-      />
-    {/each}
+  <div class="mt-12 flex justify-center">
+    <div class="flex flex-col lg:flex-row gap-10 items-center max-w-4xl">
+      {#each pricingPlans as plan}
+        <div
+          class="{plan.id === 'pro'
+            ? 'order-first'
+            : 'order-last'} lg:order-none"
+        >
+          <PricePlanBox
+            {plan}
+            billingPeriod={$billingPeriod}
+            isCurrentPlan={plan.id === currentPlanId}
+            callToAction={plan.id === "free" ? "Get Started" : "Upgrade"}
+            useFullPrice={$useFullPrice}
+            {annualDiscount}
+          />
+        </div>
+      {/each}
+    </div>
   </div>
 </div>
