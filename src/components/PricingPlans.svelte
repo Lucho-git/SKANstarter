@@ -34,7 +34,7 @@
     },
     {
       id: "pro",
-      name: "⭐ SKAN Owner",
+      name: "⭐ SKAN Founder",
       description:
         "Invite other users to your map, completely adjustable # of seats",
       price: {
