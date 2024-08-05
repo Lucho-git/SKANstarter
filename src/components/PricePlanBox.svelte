@@ -1,4 +1,3 @@
-<!-- PricePlanBox.svelte -->
 <script lang="ts">
   import { writable } from "svelte/store"
 
@@ -8,6 +7,7 @@
   export let callToAction: string
   export let useFullPrice: boolean
   export let annualDiscount: number
+  export let additionalDiscountActive: boolean
 
   const seats = writable(1)
 
@@ -25,8 +25,15 @@
     typeof plan.price[billingPeriod] === "object" &&
     plan.price[billingPeriod].discounted
 
-  $: totalPrice = Math.round(basePrice * $seats).toString()
-  $: totalOriginalPrice = Math.round(originalPrice * $seats).toString()
+  $: displayPrice =
+    billingPeriod === "yearly" && plan.price.yearly.discounted
+      ? additionalDiscountActive
+        ? (basePrice * 0.5).toFixed(2)
+        : basePrice.toFixed(2)
+      : basePrice.toFixed(2)
+
+  $: totalPrice = (parseFloat(displayPrice) * $seats).toFixed(2)
+  $: totalOriginalPrice = (originalPrice * $seats).toFixed(2)
 
   function incrementSeats() {
     seats.update((n) => n + 1)
@@ -38,7 +45,7 @@
 </script>
 
 <div
-  class="flex-none card card-bordered text-black shadow-xl flex-1 flex-grow min-w-[260px] max-w-[310px] p-6 {plan.style}"
+  class="flex-none card card-bordered text-black shadow-xl flex-1 flex-grow min-w-[280px] max-w-[340px] p-6 {plan.style}"
 >
   <div class="flex flex-col h-full">
     <div class="text-xl font-bold text-center flex items-center justify-center">
@@ -86,6 +93,37 @@
           </div>
         {/if}
       </div>
+    </div>
+
+    <div class="mt-4 mb-2 flex flex-col items-center">
+      {#if plan.id !== "free" && billingPeriod === "yearly" && additionalDiscountActive}
+        <div class="flex justify-center items-center">
+          <div class="badge badge-secondary">Extra 50% OFF</div>
+          <a
+            href="https://safestyle.com.au/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="badge badge-accent ml-2 relative text-black"
+          >
+            $500 SafeStyle raffle
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-3 w-3 absolute top-0 right-0 -mt-1 -mr-1 text-black"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+              />
+            </svg>
+          </a>
+        </div>
+        <div class="badge badge-info mt-2">Founding Member Status</div>
+      {/if}
     </div>
 
     {#if plan.id !== "free"}

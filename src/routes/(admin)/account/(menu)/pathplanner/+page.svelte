@@ -30,7 +30,7 @@
         ></path></svg
       >
       <div>
-        <h3 class="font-bold">Coming Soon: PathPlanner Feature</h3>
+        <h3 class="font-bold">Coming Later: PathPlanner Feature</h3>
         <div class="text-sm">
           We're working on an exciting new PathPlanner feature. Stay tuned for
           updates!

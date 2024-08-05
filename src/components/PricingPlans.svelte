@@ -1,4 +1,3 @@
-<!-- PricingPlans.svelte -->
 <script lang="ts">
   import { writable } from "svelte/store"
   import PricePlanBox from "./PricePlanBox.svelte"
@@ -10,6 +9,8 @@
   const useFullPrice = writable(false)
   const discountPriceId = "price_1PdxlUK3At0l0k1Hu6tlYnHe"
   const fullPriceId = "price_1PdxlVK3At0l0k1HoEgkFynm"
+
+  const additionalDiscountActive = true // Set this to false when the promotion ends
 
   $: stripe_price_id = $useFullPrice ? fullPriceId : discountPriceId
 
@@ -62,13 +63,14 @@
       plan.price.yearly.original,
   )
     ? Math.round(
-        parseFloat(
-          pricingPlans[1].price.yearly.original.replace("$", "") /
+        (1 -
+          (parseFloat(
+            pricingPlans[1].price.yearly.discounted.replace("$", ""),
+          ) *
+            (additionalDiscountActive ? 0.5 : 1)) /
             parseFloat(
-              pricingPlans[1].price.yearly.discounted.replace("$", ""),
-            ),
-        ) *
-          100 -
+              pricingPlans[1].price.yearly.original.replace("$", ""),
+            )) *
           100,
       )
     : 0
@@ -140,6 +142,7 @@
             callToAction={plan.id === "free" ? "Get Started" : "Upgrade"}
             useFullPrice={$useFullPrice}
             {annualDiscount}
+            {additionalDiscountActive}
           />
         </div>
       {/each}
