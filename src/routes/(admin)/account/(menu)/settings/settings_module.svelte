@@ -157,4 +157,4 @@
 </div>
 
 <FloatingChat />
-<EdgeFunction />
+<!-- <EdgeFunction /> -->

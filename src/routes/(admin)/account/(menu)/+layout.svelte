@@ -115,6 +115,30 @@
         </li>
         <li>
           <a
+            href="/account/fieldview"
+            class={adminSection === "fieldview" ? "active" : ""}
+            on:click={closeDrawer}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 3h18v18H3V3zm0 6h18M3 15h18M9 3v18M15 3v18"
+              />
+            </svg>
+            FieldView
+          </a>
+        </li>
+
+        <li>
+          <a
             href="/account/pathplanner"
             class={adminSection === "pathplanner" ? "active" : ""}
             on:click={closeDrawer}
