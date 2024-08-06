@@ -39,7 +39,7 @@
         "Invite other users to your map, completely adjustable # of seats",
       price: {
         monthly: "$45",
-        yearly: { original: "$45", discounted: "$29" },
+        yearly: { original: "$45", discounted: "$30.4" },
       },
       priceIntervalName: { monthly: "per month", yearly: "per year" },
       stripe_price_id: "price_1PdxlVK3At0l0k1HoEgkFynm",
