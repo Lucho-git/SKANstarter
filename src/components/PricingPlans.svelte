@@ -9,10 +9,16 @@
   const useFullPrice = writable(false)
   const discountPriceId = "price_1PdxlUK3At0l0k1Hu6tlYnHe"
   const fullPriceId = "price_1PdxlVK3At0l0k1HoEgkFynm"
+  const monthlyPriceId = "price_1PkkO8K3At0l0k1HqvxEEBw2"
 
   const additionalDiscountActive = true // Set this to false when the promotion ends
 
-  $: stripe_price_id = $useFullPrice ? fullPriceId : discountPriceId
+  $: stripe_price_id =
+    $billingPeriod === "monthly"
+      ? monthlyPriceId
+      : $useFullPrice
+        ? fullPriceId
+        : discountPriceId
 
   const pricingPlans = [
     {
@@ -20,9 +26,15 @@
       name: "🚜SKAN Member",
       description:
         "Join an existing map as an operator, or test out our features free",
-      price: { monthly: "Free", yearly: "Free" },
-      priceIntervalName: "no credit card required",
-      stripe_price_id: null,
+      price: {
+        monthly: { original: "Free", discounted: "Free" },
+        yearly: { original: "Free", discounted: "Free" },
+      },
+      priceIntervalName: {
+        monthly: "no credit card required",
+        yearly: "no credit card required",
+      },
+      stripe_price_id: { monthly: null, yearly: null },
       features: [
         "Join other maps with unlimited resources",
         "1 Map Creation",
@@ -38,11 +50,14 @@
       description:
         "Invite other users to your map, completely adjustable # of seats",
       price: {
-        monthly: "$45",
+        monthly: { original: "$45", discounted: "$45" },
         yearly: { original: "$45", discounted: "$30.4" },
       },
       priceIntervalName: { monthly: "per month", yearly: "per year" },
-      stripe_price_id: "price_1PdxlVK3At0l0k1HoEgkFynm",
+      stripe_price_id: {
+        monthly: monthlyPriceId,
+        yearly: "price_1PdxlVK3At0l0k1HoEgkFynm",
+      },
       stripe_product_id: "prod_QUxgzq6c3meKyZ",
       features: [
         "Invite others to share your map",
@@ -136,7 +151,13 @@
             : 'order-last'} lg:order-none"
         >
           <PricePlanBox
-            {plan}
+            plan={{
+              ...plan,
+              stripe_price_id:
+                typeof plan.stripe_price_id === "object"
+                  ? plan.stripe_price_id[$billingPeriod]
+                  : plan.stripe_price_id,
+            }}
             billingPeriod={$billingPeriod}
             isCurrentPlan={plan.id === currentPlanId}
             callToAction={plan.id === "free" ? "Get Started" : "Upgrade"}
