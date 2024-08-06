@@ -68,7 +68,7 @@
 
     <MasterMapManager />
 
-    <!-- <MapStats /> -->
+    <MapStats />
   </div>
 </div>
 

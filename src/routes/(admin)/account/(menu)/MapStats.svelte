@@ -7,6 +7,15 @@
   let vehicles = 0
   let trailCoordinates = 0
 
+  function formatNumber(num: number): string {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + "M"
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(1) + "K"
+    } else {
+      return num.toString()
+    }
+  }
   onMount(async () => {
     const session = $page.data.session
     if (session) {
@@ -56,22 +65,28 @@
   })
 </script>
 
-<div class="stats shadow w-full">
-  <div class="stat place-items-center">
-    <div class="stat-title">Map Markers</div>
-    <div class="stat-value">{mapMarkers}</div>
-    <div class="stat-desc">Total markers on the map</div>
+<div class="stats shadow w-full text-xs sm:text-sm md:text-base">
+  <div class="stat place-items-center p-2 sm:p-4">
+    <div class="stat-title">Pin Drops</div>
+    <div class="stat-value text-info text-3xl sm:text-3xl md:text-4xl">
+      {mapMarkers}
+    </div>
+    <div class="stat-desc">Total markers</div>
   </div>
 
-  <div class="stat place-items-center">
+  <div class="stat place-items-center p-2 sm:p-4">
     <div class="stat-title">Vehicles</div>
-    <div class="stat-value text-secondary">{vehicles}</div>
+    <div class="stat-value text-secondary text-3xl sm:text-3xl md:text-4xl">
+      {vehicles}
+    </div>
     <div class="stat-desc">Active vehicles</div>
   </div>
 
-  <div class="stat place-items-center">
+  <div class="stat place-items-center p-2 sm:p-4">
     <div class="stat-title">Trail Coordinates</div>
-    <div class="stat-value">{trailCoordinates}</div>
-    <div class="stat-desc">Total recorded coordinates</div>
+    <div class="stat-value text-3xl sm:text-3xl md:text-4xl">
+      {formatNumber(trailCoordinates)}
+    </div>
+    <div class="stat-desc">Recorded coordinates</div>
   </div>
 </div>
