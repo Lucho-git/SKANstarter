@@ -19,6 +19,22 @@
   </div>
   <div class="text-lg font-bold text-center">Current Features</div>
 
+  <!-- features Post 3 -->
+  <a href="/features/agskan">
+    <div class="card my-6 bg-white shadow-xl flex-row overflow-hidden">
+      <div class="flex-none w-6 md:w-32 bg-info"></div>
+      <div class="py-6 px-6">
+        <div class="text-xl">AgSKAN</div>
+        <div class="text-slate-500">
+          Live Interactive map to mark features, visualise completed work and
+          see everything happening on your farm at a glance
+        </div>
+      </div>
+    </div></a
+  >
+  <!-- Add any elements between posts here -->
+  <div class="text-lg font-bold text-center">Future Projects</div>
+
   <!-- features Post 1 -->
   <a href="/features/paddock_path">
     <div class="card my-6 bg-white shadow-xl flex-row overflow-hidden">
@@ -29,9 +45,6 @@
       </div>
     </div>
   </a>
-
-  <!-- Add any elements between posts here -->
-  <div class="text-lg font-bold text-center">Future Projects</div>
 
   <!-- features Post 2 -->
   <a href="/features/pipeline">

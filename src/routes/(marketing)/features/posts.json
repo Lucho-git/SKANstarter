@@ -5,6 +5,12 @@
   },
   "postList": [
     {
+        "title": "AgSKAN",
+        "description": "Live Interactive map to mark features, visualise completed work and see everything happening on your farm at a glance",
+        "link": "/features/agskan",
+        "date": "2024-01-05"
+      },
+    {
         "title": "PaddockPath",
         "description": "Optimise your farming routes",
         "link": "/features/paddock_path",
