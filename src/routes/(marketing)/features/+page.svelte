@@ -26,8 +26,8 @@
       <div class="py-6 px-6">
         <div class="text-xl">AgSKAN</div>
         <div class="text-slate-500">
-          Live Interactive map to mark features, visualise completed work and
-          see everything happening on your farm at a glance
+          Live Interactive map to mark features, track operators and visualise
+          completed work
         </div>
       </div>
     </div></a

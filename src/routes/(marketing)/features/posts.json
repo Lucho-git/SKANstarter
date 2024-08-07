@@ -6,9 +6,9 @@
   "postList": [
     {
         "title": "AgSKAN",
-        "description": "Live Interactive map to mark features, visualise completed work and see everything happening on your farm at a glance",
+        "description": "Live Interactive map to mark features, track operators and visualise completed work",
         "link": "/features/agskan",
-        "date": "2024-01-05"
+        "date": "2024-08-07"
       },
     {
         "title": "PaddockPath",

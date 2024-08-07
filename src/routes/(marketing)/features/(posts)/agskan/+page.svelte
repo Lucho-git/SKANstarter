@@ -1,15 +1,14 @@
 <div class="space-y-8">
-  <div class="bg-red-200 p-6 rounded-lg shadow-md">
-    <h2 class="text-3xl font-bold mb-4 text-red-600 mt-0">AgSKAN</h2>
+  <div class="bg-blue-100 p-6 rounded-lg shadow-md">
+    <h2 class="text-3xl font-bold mb-4 text-blue-800 mt-0">AgSKAN</h2>
     <p class="text-lg text-gray-700 mb-4">
       AgSKAN is a live interactive mapping tool that connects managers and
       operators. This farm visualization tool, digitally represents everything
       happening on your farm at a glance.
     </p>
   </div>
-
-  <div class="bg-blue-100 p-6 rounded-lg shadow-md">
-    <h2 class="text-3xl font-bold mb-4 text-blue-800 mt-0">
+  <div class="bg-yellow-100 p-6 rounded-lg shadow-md">
+    <h2 class="text-3xl font-bold mb-4 text-yellow-700 mt-0">
       Real-time Operator Tracking
     </h2>
     <p class="text-lg text-gray-700 mb-4">
@@ -29,8 +28,8 @@
     </p>
   </div>
 
-  <div class="bg-yellow-100 p-6 rounded-lg shadow-md">
-    <h2 class="text-3xl font-bold mb-4 text-yellow-700 mt-0">Trail Tracking</h2>
+  <div class="bg-red-200 p-6 rounded-lg shadow-md">
+    <h2 class="text-3xl font-bold mb-4 text-red-600 mt-0">Trail Tracking</h2>
     <p class="text-lg text-gray-700 mb-4">
       See completed work as it happens. Operators can turn on trail tracking to
       show where they've been. This info updates for everyone using the map. Get

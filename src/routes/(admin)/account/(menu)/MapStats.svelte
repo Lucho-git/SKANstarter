@@ -6,6 +6,7 @@
   let mapMarkers = 0
   let vehicles = 0
   let trailCoordinates = 0
+  let loading = true
 
   function formatNumber(num: number): string {
     if (num >= 1000000) {
@@ -16,7 +17,8 @@
       return num.toString()
     }
   }
-  onMount(async () => {
+
+  async function fetchData() {
     const session = $page.data.session
     if (session) {
       const { data: profile } = await supabase
@@ -25,11 +27,7 @@
         .eq("id", session.user.id)
         .single()
 
-      console.log("Profile:", profile)
-
       if (profile?.master_map_id) {
-        console.log("Master Map ID:", profile.master_map_id)
-
         const [markersResult, vehiclesResult, trailResult] = await Promise.all([
           supabase
             .from("map_markers")
@@ -45,48 +43,70 @@
             .eq("master_map_id", profile.master_map_id),
         ])
 
-        console.log("Markers Result:", markersResult)
-        console.log("Vehicles Result:", vehiclesResult)
-        console.log("Trail Result:", trailResult)
-
         mapMarkers = markersResult.count || 0
         vehicles = vehiclesResult.count || 0
-        trailCoordinates =
-          trailResult.data?.reduce(
-            (acc, trail) => acc + trail.coordinates.length,
-            0,
-          ) || 0
 
-        console.log("Map Markers:", mapMarkers)
-        console.log("Vehicles:", vehicles)
-        console.log("Trail Coordinates:", trailCoordinates)
+        trailCoordinates =
+          trailResult.data?.reduce((acc, trail) => {
+            return (
+              acc +
+              (typeof trail.coordinates === "string"
+                ? 1
+                : trail.coordinates.length)
+            )
+          }, 0) || 0
       }
     }
+    loading = false
+  }
+
+  onMount(() => {
+    fetchData()
   })
 </script>
 
-<div class="stats shadow w-full text-xs sm:text-sm md:text-base">
-  <div class="stat place-items-center p-2 sm:p-4">
-    <div class="stat-title">Pin Drops</div>
-    <div class="stat-value text-info text-3xl sm:text-3xl md:text-4xl">
-      {mapMarkers}
+{#if loading}
+  <div class="stats shadow w-full text-xs sm:text-sm md:text-base">
+    <div class="stat place-items-center p-2 sm:p-4">
+      <div class="skeleton h-4 w-20 mb-2"></div>
+      <div class="skeleton h-10 w-16"></div>
+      <div class="skeleton h-3 w-24 mt-2"></div>
     </div>
-    <div class="stat-desc">Total markers</div>
+    <div class="stat place-items-center p-2 sm:p-4">
+      <div class="skeleton h-4 w-20 mb-2"></div>
+      <div class="skeleton h-10 w-16"></div>
+      <div class="skeleton h-3 w-24 mt-2"></div>
+    </div>
+    <div class="stat place-items-center p-2 sm:p-4">
+      <div class="skeleton h-4 w-20 mb-2"></div>
+      <div class="skeleton h-10 w-16"></div>
+      <div class="skeleton h-3 w-24 mt-2"></div>
+    </div>
   </div>
+{:else}
+  <div class="stats shadow w-full text-xs sm:text-sm md:text-base">
+    <div class="stat place-items-center p-2 sm:p-4">
+      <div class="stat-title">Pin Drops</div>
+      <div class="stat-value text-info text-3xl sm:text-3xl md:text-4xl">
+        {mapMarkers}
+      </div>
+      <div class="stat-desc">Total markers</div>
+    </div>
 
-  <div class="stat place-items-center p-2 sm:p-4">
-    <div class="stat-title">Vehicles</div>
-    <div class="stat-value text-secondary text-3xl sm:text-3xl md:text-4xl">
-      {vehicles}
+    <div class="stat place-items-center p-2 sm:p-4">
+      <div class="stat-title">Vehicles</div>
+      <div class="stat-value text-secondary text-3xl sm:text-3xl md:text-4xl">
+        {vehicles}
+      </div>
+      <div class="stat-desc">Active vehicles</div>
     </div>
-    <div class="stat-desc">Active vehicles</div>
-  </div>
 
-  <div class="stat place-items-center p-2 sm:p-4">
-    <div class="stat-title">Trail Coordinates</div>
-    <div class="stat-value text-3xl sm:text-3xl md:text-4xl">
-      {formatNumber(trailCoordinates)}
+    <div class="stat place-items-center p-2 sm:p-4">
+      <div class="stat-title">Trail Coordinates</div>
+      <div class="stat-value text-3xl sm:text-3xl md:text-4xl">
+        {formatNumber(trailCoordinates)}
+      </div>
+      <div class="stat-desc">Recorded coordinates</div>
     </div>
-    <div class="stat-desc">Recorded coordinates</div>
   </div>
-</div>
+{/if}

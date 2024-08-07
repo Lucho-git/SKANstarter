@@ -11,6 +11,8 @@
   import { page } from "$app/stores"
   import AlertBanner from "../../../../components/AlertBanner.svelte"
 
+  //   import { Skeleton } from "$lib/components/ui/skeleton/index.js"
+
   let adminSection: Writable<string> = getContext("adminSection")
   adminSection.set("home")
 
@@ -67,7 +69,9 @@
     <h2 class="text-2xl font-bold mt-2">Map Manager</h2>
 
     <MasterMapManager />
-
+    <div class="flex items-center space-x-4">
+      <div class="space-y-2"></div>
+    </div>
     <MapStats />
   </div>
 </div>

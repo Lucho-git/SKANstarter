@@ -1,8 +1,8 @@
 <div class="space-y-6">
   <p class="text-xl">
-    PaddockPath is our first product, an introduction to what we strive to
-    achieve as a company. It is a stationary tool that empowers you to optimize
-    your paddock operations with ease.
+    PaddockPath path optimization tool that empowers you to get the most our of
+    your paddock operations. It will find you the most efficient path to work
+    your fields and overlay them onto a live satellite map.
   </p>
   <div class="bg-blue-100 border-l-4 border-blue-500 p-4 text-gray-600">
     <p class="font-semibold mb-2">Key Features:</p>
@@ -13,7 +13,6 @@
       </li>
       <li>Perfect training tool for inexperienced operators</li>
       <li>Guides experienced operators in maximizing productivity</li>
-      <li>Visualize potential gains by removing obstacles</li>
     </ul>
   </div>
   <p class="text-lg">
