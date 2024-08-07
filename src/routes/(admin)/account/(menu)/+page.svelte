@@ -11,7 +11,7 @@
   import { page } from "$app/stores"
   import AlertBanner from "../../../../components/AlertBanner.svelte"
 
-  //   import { Skeleton } from "$lib/components/ui/skeleton/index.js"
+  import { Skeleton } from "$lib/components/ui/skeleton/index.js"
 
   let adminSection: Writable<string> = getContext("adminSection")
   adminSection.set("home")

@@ -2,6 +2,7 @@
   import { onMount } from "svelte"
   import { supabase } from "$lib/supabaseClient"
   import { page } from "$app/stores"
+  import { Skeleton } from "$lib/components/ui/skeleton"
 
   let mapMarkers = 0
   let vehicles = 0
@@ -68,19 +69,19 @@
 {#if loading}
   <div class="stats shadow w-full text-xs sm:text-sm md:text-base">
     <div class="stat place-items-center p-2 sm:p-4">
-      <div class="skeleton h-4 w-20 mb-2"></div>
-      <div class="skeleton h-10 w-16"></div>
-      <div class="skeleton h-3 w-24 mt-2"></div>
+      <Skeleton class="h-[20px] w-[100px] rounded-full mb-2" />
+      <Skeleton class="h-[20px] w-[100px] rounded-full" />
+      <Skeleton class="h-[20px] w-[100px] rounded-full mt-2" />
     </div>
     <div class="stat place-items-center p-2 sm:p-4">
-      <div class="skeleton h-4 w-20 mb-2"></div>
-      <div class="skeleton h-10 w-16"></div>
-      <div class="skeleton h-3 w-24 mt-2"></div>
+      <Skeleton class="h-[20px] w-[100px] rounded-full mb-2" />
+      <Skeleton class="h-[20px] w-[100px] rounded-full" />
+      <Skeleton class="h-[20px] w-[100px] rounded-full mt-2" />
     </div>
     <div class="stat place-items-center p-2 sm:p-4">
-      <div class="skeleton h-4 w-20 mb-2"></div>
-      <div class="skeleton h-10 w-16"></div>
-      <div class="skeleton h-3 w-24 mt-2"></div>
+      <Skeleton class="h-[20px] w-[100px] rounded-full mb-2" />
+      <Skeleton class="h-[20px] w-[100px] rounded-full" />
+      <Skeleton class="h-[20px] w-[100px] rounded-full mt-2" />
     </div>
   </div>
 {:else}

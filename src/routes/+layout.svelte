@@ -15,6 +15,7 @@
 
   import { onMount } from "svelte"
   import { getAuthState } from "../stores/user"
+  import "../app.pcss"
 
   onMount(async () => {
     await getAuthState()
