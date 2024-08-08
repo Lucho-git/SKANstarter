@@ -33,7 +33,7 @@
   <title>Billing</title>
 </svelte:head>
 
-<h1 class="text-2xl font-bold mb-6 text-center">
+<h1 class="mb-6 text-center text-2xl font-bold">
   {data.isActiveCustomer ? "Billing" : "Select a Plan"}
 </h1>
 
@@ -57,12 +57,50 @@
     editable={false}
     fields={[
       {
-        id: "plan",
+        id: "planName",
         label: "Current Plan",
-        initialValue: currentPlanName || "",
+        initialValue:
+          data.subscriptionData?.appSubscription?.name ?? "Free Plan",
+      },
+      {
+        id: "planStatus",
+        label: "Status",
+        initialValue:
+          data.subscriptionData?.stripeSubscription?.status ?? "N/A",
+      },
+      {
+        id: "quantity",
+        label: "Quantity",
+        initialValue:
+          data.subscriptionData?.stripeSubscription?.quantity?.toString() ??
+          "1",
+      },
+      ...(data.subscriptionData?.stripeSubscription?.plan?.interval
+        ? [
+            {
+              id: "interval",
+              label: "Billing Interval",
+              initialValue:
+                data.subscriptionData.stripeSubscription.plan.interval ===
+                "year"
+                  ? "Annually"
+                  : "Monthly",
+            },
+          ]
+        : []),
+      {
+        id: "nextBilling",
+        label: "Next Billing Date",
+        initialValue: data.subscriptionData?.stripeSubscription
+          ?.current_period_end
+          ? new Date(
+              data.subscriptionData.stripeSubscription.current_period_end *
+                1000,
+            ).toLocaleDateString()
+          : "N/A",
       },
     ]}
-    editButtonTitle="Manage Subscripton"
+    editButtonTitle="Manage Subscription"
     editLink="/account/billing/manage"
   />
 {/if}

@@ -1,12 +1,12 @@
 import { redirect, error } from "@sveltejs/kit"
-import { getOrCreateCustomerId } from "../../../subscription_helpers.server"
+import { getOrCreateCustomerId, fetchSubscription } from "../../../subscription_helpers.server"
 import type { PageServerLoad } from "./$types"
 import { PRIVATE_STRIPE_API_KEY } from "$env/static/private"
 import Stripe from "stripe"
+
 const stripe = new Stripe(PRIVATE_STRIPE_API_KEY, { apiVersion: "2023-08-16" })
 
 export const load: PageServerLoad = async ({
-  url,
   locals: { getSession, supabaseServiceRole },
 }) => {
   const session = await getSession()
@@ -24,19 +24,96 @@ export const load: PageServerLoad = async ({
     })
   }
 
-  let portalLink
-  try {
-    const portalSession = await stripe.billingPortal.sessions.create({
-      customer: customerId,
-      return_url: `${url.origin}/account/billing`,
+  const { primarySubscription, error: subError } = await fetchSubscription({ customerId })
+
+  if (subError) {
+    throw error(500, {
+      message: "Error fetching subscription. If issue persists, please contact us.",
     })
-    portalLink = portalSession?.url
-  } catch (e) {
-    throw error(
-      500,
-      "Unknown error (PSE). If issue persists, please contact us.",
-    )
   }
 
-  throw redirect(303, portalLink ?? "/account/billing")
+  if (!primarySubscription) {
+    throw redirect(303, "/account/billing")
+  }
+
+  return {
+    subscriptionData: primarySubscription,
+  }
+}
+
+export const actions = {
+  updateSeats: async ({ request, locals: { getSession, supabaseServiceRole } }) => {
+    const session = await getSession()
+    if (!session) {
+      throw error(401, "Unauthorized")
+    }
+
+    const formData = await request.formData()
+    const newQuantity = parseInt(formData.get('quantity') as string)
+
+    const { customerId } = await getOrCreateCustomerId({ supabaseServiceRole, session })
+    const { primarySubscription } = await fetchSubscription({ customerId })
+
+    if (!primarySubscription) {
+      throw error(400, "No active subscription found")
+    }
+
+    try {
+      await stripe.subscriptions.update(primarySubscription.stripeSubscription.id, {
+        quantity: newQuantity,
+      })
+      return { success: true }
+    } catch (e) {
+      throw error(500, "Failed to update subscription")
+    }
+  },
+
+  changePlan: async ({ request, locals: { getSession, supabaseServiceRole } }) => {
+    const session = await getSession()
+    if (!session) {
+      throw error(401, "Unauthorized")
+    }
+
+    const formData = await request.formData()
+    const newInterval = formData.get('interval') as string
+
+    const { customerId } = await getOrCreateCustomerId({ supabaseServiceRole, session })
+    const { primarySubscription } = await fetchSubscription({ customerId })
+
+    if (!primarySubscription) {
+      throw error(400, "No active subscription found")
+    }
+
+    const newPriceId = primarySubscription.appSubscription.stripe_price_id[newInterval]
+
+    try {
+      await stripe.subscriptions.update(primarySubscription.stripeSubscription.id, {
+        items: [{ id: primarySubscription.stripeSubscription.items.data[0].id, price: newPriceId }],
+      })
+      return { success: true }
+    } catch (e) {
+      throw error(500, "Failed to update subscription")
+    }
+  },
+
+  cancelSubscription: async ({ locals: { getSession, supabaseServiceRole } }) => {
+    const session = await getSession()
+    if (!session) {
+      throw error(401, "Unauthorized")
+    }
+
+    const { customerId } = await getOrCreateCustomerId({ supabaseServiceRole, session })
+    const { primarySubscription } = await fetchSubscription({ customerId })
+
+    if (!primarySubscription) {
+      throw error(400, "No active subscription found")
+    }
+
+    try {
+      await stripe.subscriptions.del(primarySubscription.stripeSubscription.id)
+      return { success: true }
+    } catch (e) {
+      throw error(500, "Failed to cancel subscription")
+    }
+  },
 }

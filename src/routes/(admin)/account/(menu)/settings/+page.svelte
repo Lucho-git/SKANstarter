@@ -8,7 +8,7 @@
   adminSection.set("settings")
 
   export let data
-  let { session, profile } = data
+  let { session, profile, subscriptionData } = data
   const APP_VERSION = PUBLIC_APP_VERSION || "unknown"
 </script>
 
@@ -16,7 +16,7 @@
   <title>Settings</title>
 </svelte:head>
 
-<h1 class="text-2xl font-bold mb-6">Settings</h1>
+<h1 class="mb-6 text-2xl font-bold">Settings</h1>
 
 <SettingsModule
   title="Profile"
@@ -52,6 +52,53 @@
   fields={[{ id: "password", initialValue: "••••••••••••••••" }]}
   editButtonTitle="Change Password"
   editLink="/account/settings/change_password"
+/>
+
+<SettingsModule
+  title="Subscription"
+  editable={false}
+  fields={[
+    {
+      id: "planName",
+      label: "Current Plan",
+      initialValue: data.subscriptionData?.appSubscription?.name ?? "Free Plan",
+    },
+    {
+      id: "planStatus",
+      label: "Status",
+      initialValue: data.subscriptionData?.stripeSubscription?.status ?? "N/A",
+    },
+    {
+      id: "quantity",
+      label: "Quantity",
+      initialValue:
+        data.subscriptionData?.stripeSubscription?.quantity?.toString() ?? "1",
+    },
+    ...(data.subscriptionData?.stripeSubscription?.plan?.interval
+      ? [
+          {
+            id: "interval",
+            label: "Billing Interval",
+            initialValue:
+              data.subscriptionData.stripeSubscription.plan.interval === "year"
+                ? "Annually"
+                : "Monthly",
+          },
+        ]
+      : []),
+    {
+      id: "nextBilling",
+      label: "Next Billing Date",
+      initialValue: data.subscriptionData?.stripeSubscription
+        ?.current_period_end
+        ? new Date(
+            data.subscriptionData.stripeSubscription.current_period_end * 1000,
+          ).toLocaleDateString()
+        : "N/A",
+    },
+  ]}
+  editButtonTitle="Manage Subscription"
+  editLink="/account/billing/manage"
 />
 
 <SettingsModule

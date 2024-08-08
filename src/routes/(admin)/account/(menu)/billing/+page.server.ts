@@ -23,6 +23,7 @@ export const load: PageServerLoad = async ({
       isActiveCustomer: false,
       hasEverHadSubscription: false,
       currentPlanId: null,
+      subscriptionData: null,
     }
   }
 
@@ -39,6 +40,7 @@ export const load: PageServerLoad = async ({
       isActiveCustomer: false,
       hasEverHadSubscription: false,
       currentPlanId: null,
+      subscriptionData: null,
     }
   }
 
@@ -50,5 +52,6 @@ export const load: PageServerLoad = async ({
     isActiveCustomer: !!primarySubscription,
     hasEverHadSubscription,
     currentPlanId: primarySubscription?.appSubscription?.id,
+    subscriptionData: primarySubscription,
   }
 }

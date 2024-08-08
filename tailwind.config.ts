@@ -31,15 +31,14 @@ const config: Config = {
           DEFAULT: "hsl(var(--destructive) / <alpha-value>)",
           foreground: "hsl(var(--destructive-foreground) / <alpha-value>)",
         },
-
-        muted: {
-            DEFAULT: "hsl(var(--muted) / <alpha-value>)",
-            foreground: "hsl(var(--muted-foreground) / <alpha-value>)",
-          },
           accent: {
             DEFAULT: "#D95D39",
             foreground: "#fefbf6",
   
+          },
+          muted: {
+            DEFAULT: "hsl(var(--muted) / <alpha-value>)",
+            foreground: "hsl(var(--muted-foreground) / <alpha-value>)",
           },
           popover: {
             DEFAULT:  "#D95D39",

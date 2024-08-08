@@ -7,72 +7,91 @@ import Stripe from "stripe"
 const stripe = new Stripe(PRIVATE_STRIPE_API_KEY, { apiVersion: "2023-08-16" })
 
 export const getOrCreateCustomerId = async ({
-  supabaseServiceRole,
-  session,
-}: {
-  supabaseServiceRole: SupabaseClient<Database>
-  session: Session
-}) => {
-  const { data: dbCustomer, error } = await supabaseServiceRole
-    .from("stripe_customers")
-    .select("stripe_customer_id")
-    .eq("user_id", session.user.id)
-    .single()
-
-  if (error && error.code != "PGRST116") {
-    // PGRST116 == no rows
-    return { error: error }
-  }
-
-  if (dbCustomer?.stripe_customer_id) {
-    return { customerId: dbCustomer.stripe_customer_id }
-  }
-
-  // Fetch data needed to create customer
-  const { data: profile, error: profileError } = await supabaseServiceRole
-    .from("profiles")
-    .select(`full_name, website, company_name`)
-    .eq("id", session.user.id)
-    .single()
-  if (profileError) {
-    return { error: profileError }
-  }
-
-  // Create a stripe customer
-  let customer
-  try {
-    customer = await stripe.customers.create({
-      email: session.user.email,
-      name: profile.full_name ?? "",
-      metadata: {
+    supabaseServiceRole,
+    session,
+  }: {
+    supabaseServiceRole: SupabaseClient<Database>
+    session: Session
+  }) => {
+    console.log("Attempting to retrieve customer ID for user:", session.user.id);
+  
+    const { data: dbCustomer, error } = await supabaseServiceRole
+      .from("stripe_customers")
+      .select("stripe_customer_id")
+      .eq("user_id", session.user.id)
+      .single()
+  
+    console.log("Database query result:", { dbCustomer, error });
+  
+    if (error && error.code != "PGRST116") {
+      console.error("Error retrieving customer ID:", error);
+      return { error: error }
+    }
+  
+    if (dbCustomer?.stripe_customer_id) {
+      console.log("Existing customer ID found:", dbCustomer.stripe_customer_id);
+      return { customerId: dbCustomer.stripe_customer_id }
+    }
+  
+    console.log("No existing customer ID found. Creating new customer.");
+  
+    // Fetch data needed to create customer
+    const { data: profile, error: profileError } = await supabaseServiceRole
+      .from("profiles")
+      .select(`full_name, website, company_name`)
+      .eq("id", session.user.id)
+      .single()
+  
+    console.log("Profile data:", { profile, profileError });
+  
+    if (profileError) {
+      console.error("Error fetching profile:", profileError);
+      return { error: profileError }
+    }
+  
+    // Create a stripe customer
+    let customer
+    try {
+      customer = await stripe.customers.create({
+        email: session.user.email,
+        name: profile.full_name ?? "",
+        metadata: {
+          user_id: session.user.id,
+          company_name: profile.company_name ?? "",
+          website: profile.website ?? "",
+        },
+      })
+      console.log("New Stripe customer created:", customer.id);
+    } catch (e) {
+      console.error("Error creating Stripe customer:", e);
+      return { error: e }
+    }
+  
+    if (!customer.id) {
+      console.error("Unknown stripe user creation error");
+      return { error: "Unknown stripe user creation error" }
+    }
+  
+    // insert instead of upsert so we never over-write. PK ensures later attempts error.
+    const { error: insertError } = await supabaseServiceRole
+      .from("stripe_customers")
+      .insert({
         user_id: session.user.id,
-        company_name: profile.company_name ?? "",
-        website: profile.website ?? "",
-      },
-    })
-  } catch (e) {
-    return { error: e }
+        stripe_customer_id: customer.id,
+        updated_at: new Date(),
+      })
+  
+    console.log("Inserting new customer ID result:", { insertError });
+  
+    if (insertError) {
+      console.error("Error inserting new customer ID:", insertError);
+      return { error: insertError }
+    }
+  
+    console.log("Successfully created and stored new customer ID:", customer.id);
+    return { customerId: customer.id }
   }
-
-  if (!customer.id) {
-    return { error: "Unknown stripe user creation error" }
-  }
-
-  // insert instead of upsert so we never over-write. PK ensures later attempts error.
-  const { error: insertError } = await supabaseServiceRole
-    .from("stripe_customers")
-    .insert({
-      user_id: session.user.id,
-      stripe_customer_id: customer.id,
-      updated_at: new Date(),
-    })
-
-  if (insertError) {
-    return { error: insertError }
-  }
-
-  return { customerId: customer.id }
-}
+  
 
 export const fetchSubscription = async ({
   customerId,
