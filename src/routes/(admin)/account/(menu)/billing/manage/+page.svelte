@@ -69,8 +69,28 @@
   editButtonTitle="Home"
   editLink="/account"
 />
-
-<div class="card mt-8 max-w-xl p-6 shadow">
+<div class="alert alert-info mb-4 mt-2 w-full">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    class="h-6 w-6 shrink-0 stroke-current"
+    ><path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+    ></path></svg
+  >
+  <div>
+    <h3 class="font-bold">Coming Very Soon: Billing adjustments</h3>
+    <div class="text-sm">
+      Change number of seats, update payment method, switch between monthly and
+      annual billing. Cancel subscription.
+    </div>
+  </div>
+</div>
+<!-- <div class="card mt-8 max-w-xl p-6 shadow">
   <h2 class="mb-4 text-xl font-bold">Manage Seats</h2>
   <div class="mb-4 flex items-center justify-center">
     <button
@@ -191,4 +211,4 @@
       </div>
     </div>
   </div>
-{/if}
+{/if} -->

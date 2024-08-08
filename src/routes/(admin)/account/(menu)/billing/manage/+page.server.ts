@@ -7,39 +7,64 @@ import Stripe from "stripe"
 const stripe = new Stripe(PRIVATE_STRIPE_API_KEY, { apiVersion: "2023-08-16" })
 
 export const load: PageServerLoad = async ({
-  locals: { getSession, supabaseServiceRole },
-}) => {
-  const session = await getSession()
-  if (!session) {
-    throw redirect(303, "/login")
-  }
-
-  const { error: idError, customerId } = await getOrCreateCustomerId({
-    supabaseServiceRole,
-    session,
-  })
-  if (idError || !customerId) {
-    throw error(500, {
-      message: "Unknown error (PCID). If issue persists, please contact us.",
+    locals: { getSession, supabaseServiceRole },
+  }) => {
+    const session = await getSession()
+    if (!session) {
+      throw redirect(303, "/login")
+    }
+  
+    const { error: idError, customerId } = await getOrCreateCustomerId({
+      supabaseServiceRole,
+      session,
     })
+    if (idError || !customerId) {
+      throw error(500, {
+        message: "Unknown error (PCID). If issue persists, please contact us.",
+      })
+    }
+  
+    const { primarySubscription, error: subError } = await fetchSubscription({ customerId })
+  
+    if (subError) {
+      throw error(500, {
+        message: "Error fetching subscription. If issue persists, please contact us.",
+      })
+    }
+  
+    if (!primarySubscription) {
+      throw redirect(303, "/account/billing")
+    }
+  
+    // Fetch additional information for seat management
+    const subscription = await stripe.subscriptions.retrieve(primarySubscription.stripeSubscription.id, {
+        expand: ['items.data.price']
+      });
+      
+    //   console.log('Full Subscription Object:', JSON.stringify(subscription, null, 2));
+      
+      const priceId = subscription.items.data[0].price.id;
+      const priceWithTiers = await stripe.prices.retrieve(priceId, {
+        expand: ['tiers']
+      });
+      
+      console.log('Price with Tiers:', JSON.stringify(priceWithTiers, null, 2));
+      
+      const currentQuantity = subscription.items.data[0].quantity;
+      const currency = subscription.currency;
+      const currentPeriodEnd = new Date(subscription.current_period_end * 1000);
+      
+      return {
+        subscriptionData: primarySubscription,
+        seatManagementInfo: {
+          currentQuantity,
+          currency,
+          currentPeriodEnd,
+          priceWithTiers
+        }
+      };
+      
   }
-
-  const { primarySubscription, error: subError } = await fetchSubscription({ customerId })
-
-  if (subError) {
-    throw error(500, {
-      message: "Error fetching subscription. If issue persists, please contact us.",
-    })
-  }
-
-  if (!primarySubscription) {
-    throw redirect(303, "/account/billing")
-  }
-
-  return {
-    subscriptionData: primarySubscription,
-  }
-}
 
 export const actions = {
   updateSeats: async ({ request, locals: { getSession, supabaseServiceRole } }) => {
