@@ -67,28 +67,28 @@
 </script>
 
 {#if loading}
-  <div class="stats shadow w-full text-xs sm:text-sm md:text-base">
+  <div class="stats w-full text-xs shadow sm:text-sm md:text-base">
     <div class="stat place-items-center p-2 sm:p-4">
-      <Skeleton class="h-[20px] w-[100px] rounded-full mb-2" />
+      <Skeleton class="mb-2 h-[20px] w-[100px] rounded-full" />
       <Skeleton class="h-[20px] w-[100px] rounded-full" />
-      <Skeleton class="h-[20px] w-[100px] rounded-full mt-2" />
+      <Skeleton class="mt-2 h-[20px] w-[100px] rounded-full" />
     </div>
     <div class="stat place-items-center p-2 sm:p-4">
-      <Skeleton class="h-[20px] w-[100px] rounded-full mb-2" />
+      <Skeleton class="mb-2 h-[20px] w-[100px] rounded-full" />
       <Skeleton class="h-[20px] w-[100px] rounded-full" />
-      <Skeleton class="h-[20px] w-[100px] rounded-full mt-2" />
+      <Skeleton class="mt-2 h-[20px] w-[100px] rounded-full" />
     </div>
     <div class="stat place-items-center p-2 sm:p-4">
-      <Skeleton class="h-[20px] w-[100px] rounded-full mb-2" />
+      <Skeleton class="mb-2 h-[20px] w-[100px] rounded-full" />
       <Skeleton class="h-[20px] w-[100px] rounded-full" />
-      <Skeleton class="h-[20px] w-[100px] rounded-full mt-2" />
+      <Skeleton class="mt-2 h-[20px] w-[100px] rounded-full" />
     </div>
   </div>
 {:else}
-  <div class="stats shadow w-full text-xs sm:text-sm md:text-base">
+  <div class="stats w-full text-xs shadow sm:text-sm md:text-base">
     <div class="stat place-items-center p-2 sm:p-4">
       <div class="stat-title">Pin Drops</div>
-      <div class="stat-value text-info text-3xl sm:text-3xl md:text-4xl">
+      <div class="stat-value text-3xl text-info sm:text-3xl md:text-4xl">
         {mapMarkers}
       </div>
       <div class="stat-desc">Total markers</div>
@@ -96,7 +96,7 @@
 
     <div class="stat place-items-center p-2 sm:p-4">
       <div class="stat-title">Vehicles</div>
-      <div class="stat-value text-secondary text-3xl sm:text-3xl md:text-4xl">
+      <div class="stat-value text-3xl text-secondary sm:text-3xl md:text-4xl">
         {vehicles}
       </div>
       <div class="stat-desc">Active vehicles</div>

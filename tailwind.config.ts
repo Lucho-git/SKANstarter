@@ -17,48 +17,50 @@ const config: Config = {
         border: "hsl(var(--border) / <alpha-value>)",
         input: "hsl(var(--input) / <alpha-value>)",
         ring: "hsl(var(--ring) / <alpha-value>)",
-        background: "#DEE3E7",
-        foreground: "hsl(var(--foreground) / <alpha-value>)",
+        background: "var(--base-100)",
+        foreground: "var(--base-content)",
         primary: {
-            DEFAULT: "#63A375", // Your daisyUI primary color
-            foreground: "#fefbf6", // Your daisyUI primary-content color
-          },
-          secondary: {
-            DEFAULT: "#F7DB5C", // Your daisyUI secondary color
-            foreground: "#232322", // Your daisyUI secondary-content color
-          },tructive: {
+          DEFAULT: "#63A375",
+          foreground: "#fefbf6",
+        },
+        secondary: {
+          DEFAULT: "#F7DB5C",
+          foreground: "#232322",
+        },
+                  destructive: {
           DEFAULT: "hsl(var(--destructive) / <alpha-value>)",
           foreground: "hsl(var(--destructive-foreground) / <alpha-value>)",
         },
-        muted: {
-          DEFAULT: "hsl(var(--muted) / <alpha-value>)",
-          foreground: "hsl(var(--muted-foreground) / <alpha-value>)",
-        },
-        accent: {
-          DEFAULT: "#D95D39",
-          foreground: "#fefbf6",
 
+        muted: {
+            DEFAULT: "hsl(var(--muted) / <alpha-value>)",
+            foreground: "hsl(var(--muted-foreground) / <alpha-value>)",
+          },
+          accent: {
+            DEFAULT: "#D95D39",
+            foreground: "#fefbf6",
+  
+          },
+          popover: {
+            DEFAULT:  "#D95D39",
+            foreground: "hsl(var(--popover-foreground) / <alpha-value>)",
+          },
+          card: {
+            DEFAULT: "hsl(var(--card) / <alpha-value>)",
+            foreground: "hsl(var(--card-foreground) / <alpha-value>)",
+          },
         },
-        popover: {
-          DEFAULT:  "#D95D39",
-          foreground: "hsl(var(--popover-foreground) / <alpha-value>)",
+        borderRadius: {
+          lg: "var(--radius)",
+          md: "calc(var(--radius) - 2px)",
+          sm: "calc(var(--radius) - 4px)",
         },
-        card: {
-          DEFAULT: "hsl(var(--card) / <alpha-value>)",
-          foreground: "hsl(var(--card-foreground) / <alpha-value>)",
+        fontFamily: {
+          sans: ["Inter", ...fontFamily.sans],
+          archivo: ['Roboto', 'Archivo', 'sans'],
         },
-      },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-      },
-      fontFamily: {
-        sans: ["Inter", ...fontFamily.sans],
-        archivo: ['Roboto', 'Archivo', 'sans'],
       },
     },
-  },
   plugins: [
     require('@tailwindcss/typography'),
     require("daisyui")
