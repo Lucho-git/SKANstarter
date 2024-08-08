@@ -20,9 +20,19 @@
     if (quantity > 1) quantity -= 1
   }
 
-  function confirmUpdateSeats() {
-    showUpdateSeatsModal = true
-  }
+  async function confirmUpdateSeats() {
+  showUpdateSeatsModal = true
+  const formData = new FormData();
+  formData.append('quantity', quantity.toString());
+  formData.append('appliedDate', 'later'); // or 'later' as needed
+  const response = await fetch('?/getProratedChangePreview', {
+    method: 'POST',
+    body: formData
+  });
+  const result = await response.json();
+  console.log('Proration Preview:', result);
+}
+
 
   function confirmChangePlan() {
     showChangePlanModal = true
@@ -69,6 +79,7 @@
   editButtonTitle="Home"
   editLink="/account"
 />
+
 <div class="alert alert-info mb-4 mt-2 w-full">
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -90,7 +101,8 @@
     </div>
   </div>
 </div>
-<!-- <div class="card mt-8 max-w-xl p-6 shadow">
+
+<div class="card mt-8 max-w-xl p-6 shadow">
   <h2 class="mb-4 text-xl font-bold">Manage Seats</h2>
   <div class="mb-4 flex items-center justify-center">
     <button
@@ -211,4 +223,4 @@
       </div>
     </div>
   </div>
-{/if} -->
+{/if}

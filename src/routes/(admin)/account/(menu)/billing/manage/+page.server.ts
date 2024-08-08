@@ -7,64 +7,58 @@ import Stripe from "stripe"
 const stripe = new Stripe(PRIVATE_STRIPE_API_KEY, { apiVersion: "2023-08-16" })
 
 export const load: PageServerLoad = async ({
-    locals: { getSession, supabaseServiceRole },
-  }) => {
-    const session = await getSession()
-    if (!session) {
-      throw redirect(303, "/login")
-    }
-  
-    const { error: idError, customerId } = await getOrCreateCustomerId({
-      supabaseServiceRole,
-      session,
-    })
-    if (idError || !customerId) {
-      throw error(500, {
-        message: "Unknown error (PCID). If issue persists, please contact us.",
-      })
-    }
-  
-    const { primarySubscription, error: subError } = await fetchSubscription({ customerId })
-  
-    if (subError) {
-      throw error(500, {
-        message: "Error fetching subscription. If issue persists, please contact us.",
-      })
-    }
-  
-    if (!primarySubscription) {
-      throw redirect(303, "/account/billing")
-    }
-  
-    // Fetch additional information for seat management
-    const subscription = await stripe.subscriptions.retrieve(primarySubscription.stripeSubscription.id, {
-        expand: ['items.data.price']
-      });
-      
-    //   console.log('Full Subscription Object:', JSON.stringify(subscription, null, 2));
-      
-      const priceId = subscription.items.data[0].price.id;
-      const priceWithTiers = await stripe.prices.retrieve(priceId, {
-        expand: ['tiers']
-      });
-      
-      console.log('Price with Tiers:', JSON.stringify(priceWithTiers, null, 2));
-      
-      const currentQuantity = subscription.items.data[0].quantity;
-      const currency = subscription.currency;
-      const currentPeriodEnd = new Date(subscription.current_period_end * 1000);
-      
-      return {
-        subscriptionData: primarySubscription,
-        seatManagementInfo: {
-          currentQuantity,
-          currency,
-          currentPeriodEnd,
-          priceWithTiers
-        }
-      };
-      
+  locals: { getSession, supabaseServiceRole },
+}) => {
+  const session = await getSession()
+  if (!session) {
+    throw redirect(303, "/login")
   }
+
+  const { error: idError, customerId } = await getOrCreateCustomerId({
+    supabaseServiceRole,
+    session,
+  })
+  if (idError || !customerId) {
+    throw error(500, {
+      message: "Unknown error (PCID). If issue persists, please contact us.",
+    })
+  }
+
+  const { primarySubscription, error: subError } = await fetchSubscription({ customerId })
+
+  if (subError) {
+    throw error(500, {
+      message: "Error fetching subscription. If issue persists, please contact us.",
+    })
+  }
+
+  if (!primarySubscription) {
+    throw redirect(303, "/account/billing")
+  }
+
+  const subscription = await stripe.subscriptions.retrieve(primarySubscription.stripeSubscription.id, {
+    expand: ['items.data.price']
+  });
+
+  const priceId = subscription.items.data[0].price.id;
+  const priceWithTiers = await stripe.prices.retrieve(priceId, {
+    expand: ['tiers']
+  });
+
+  const currentQuantity = subscription.items.data[0].quantity;
+  const currency = subscription.currency;
+  const currentPeriodEnd = new Date(subscription.current_period_end * 1000);
+
+  return {
+    subscriptionData: primarySubscription,
+    seatManagementInfo: {
+      currentQuantity,
+      currency,
+      currentPeriodEnd,
+      priceWithTiers,
+    }
+  };
+}
 
 export const actions = {
   updateSeats: async ({ request, locals: { getSession, supabaseServiceRole } }) => {
@@ -141,4 +135,69 @@ export const actions = {
       throw error(500, "Failed to cancel subscription")
     }
   },
+
+  getProratedChangePreview: async ({ request, locals: { getSession, supabaseServiceRole } }) => {
+    console.log("Starting getProratedChangePreview");
+
+    const session = await getSession()
+    if (!session) {
+        console.log("No session found");
+        throw error(401, "Unauthorized")
+    }
+
+    const formData = await request.formData()
+    const newQuantity = parseInt(formData.get('quantity') as string)
+    const appliedDate = formData.get('appliedDate') as string
+    console.log(`New quantity: ${newQuantity}, Applied Date: ${appliedDate}`);
+
+    const { customerId, error: customerError } = await getOrCreateCustomerId({ supabaseServiceRole, session })
+    if (customerError) {
+        console.log(`Error getting customer ID: ${customerError}`);
+        throw error(500, "Failed to get customer ID")
+    }
+    console.log(`Customer ID: ${customerId}`);
+
+    const { primarySubscription, error: subscriptionError } = await fetchSubscription({ customerId })
+    if (subscriptionError) {
+        console.log(`Error fetching subscription: ${subscriptionError}`);
+        throw error(500, "Failed to fetch subscription")
+    }
+
+    if (!primarySubscription) {
+        console.log("No active subscription found");
+        throw error(400, "No active subscription found")
+    }
+
+    try {
+        console.log(`Retrieving subscription: ${primarySubscription.stripeSubscription.id}`);
+        const subscription = await stripe.subscriptions.retrieve(primarySubscription.stripeSubscription.id, {
+            expand: ['items.data.price']
+        });
+        console.log(`Subscription retrieved: ${JSON.stringify(subscription)}`);
+
+        console.log("Retrieving upcoming invoice");
+        const prorationPreview = await stripe.invoices.retrieveUpcoming({
+            customer: subscription.customer,
+            subscription: subscription.id,
+            subscription_items: [
+                {
+                    id: subscription.items.data[0].id,
+                    quantity: newQuantity,
+                },
+            ],
+            subscription_proration_behavior: appliedDate === 'now' ? 'always_invoice' : 'create_prorations',
+        });
+        console.log(`Proration preview: ${JSON.stringify(prorationPreview)}`);
+
+        return {
+            success: true,
+            prorationPreview
+        }
+    } catch (e) {
+        console.error(`Error in getProratedChangePreview: ${e}`);
+        throw error(500, "Failed to get proration preview")
+    }
+},
+
+
 }
