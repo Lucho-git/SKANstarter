@@ -1,13 +1,16 @@
 <script lang="ts">
   import { enhance } from "$app/forms"
   import SettingsModule from "../../settings/settings_module.svelte"
+  import { Skeleton } from "$lib/components/ui/skeleton"
 
   export let data
   let { subscriptionData } = data
   let quantity = subscriptionData.stripeSubscription.quantity || 1
-  let showUpdateSeatsModal = false
-  let showChangePlanModal = false
+  let showSeatsModal = false
+  let showBillingCycleModal = false
   let showCancelModal = false
+  let loading = false
+  let modalContent = null
 
   $: interval = subscriptionData.stripeSubscription.plan.interval
   $: isYearly = interval === "year"
@@ -20,25 +23,29 @@
     if (quantity > 1) quantity -= 1
   }
 
-  async function confirmUpdateSeats() {
-  showUpdateSeatsModal = true
-  const formData = new FormData();
-  formData.append('quantity', quantity.toString());
-  formData.append('appliedDate', 'later'); // or 'later' as needed
-  const response = await fetch('?/getProratedChangePreview', {
-    method: 'POST',
-    body: formData
-  });
-  const result = await response.json();
-  console.log('Proration Preview:', result);
-}
+  async function openSeatsModal() {
+    showSeatsModal = true
+    loading = true
+    modalContent = null
 
+    let formData = new FormData()
+    formData.append("quantity", quantity.toString())
+    formData.append("appliedDate", "later")
 
-  function confirmChangePlan() {
-    showChangePlanModal = true
+    const response = await fetch("?/getProratedChangePreview", {
+      method: "POST",
+      body: formData,
+    })
+    const result = await response.json()
+    loading = false
+    modalContent = result.data
   }
 
-  function confirmCancel() {
+  function openBillingCycleModal() {
+    showBillingCycleModal = true
+  }
+
+  function openCancelModal() {
     showCancelModal = true
   }
 </script>
@@ -80,36 +87,11 @@
   editLink="/account"
 />
 
-<div class="alert alert-info mb-4 mt-2 w-full">
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    class="h-6 w-6 shrink-0 stroke-current"
-    ><path
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      stroke-width="2"
-      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-    ></path></svg
-  >
-  <div>
-    <h3 class="font-bold">Coming Very Soon: Billing adjustments</h3>
-    <div class="text-sm">
-      Change number of seats, update payment method, switch between monthly and
-      annual billing. Cancel subscription.
-    </div>
-  </div>
-</div>
-
 <div class="card mt-8 max-w-xl p-6 shadow">
   <h2 class="mb-4 text-xl font-bold">Manage Seats</h2>
   <div class="mb-4 flex items-center justify-center">
     <button
-      class="btn btn-outline btn-sm {quantity <
-      subscriptionData.stripeSubscription.quantity
-        ? 'text-red-500'
-        : ''}"
+      class="btn btn-outline btn-sm"
       on:click={decrementSeats}
       disabled={quantity === 1}
     >
@@ -119,59 +101,53 @@
       {quantity}
       {quantity === 1 ? "seat" : "seats"}
     </span>
-    <button
-      class="btn btn-outline btn-sm bg-gradient-to-r from-secondary to-accent text-secondary-content hover:from-secondary-focus hover:to-accent-focus"
-      on:click={incrementSeats}
-    >
+    <button class="btn btn-outline btn-sm" on:click={incrementSeats}>
       +
     </button>
   </div>
   <button
-    on:click={confirmUpdateSeats}
-    class="btn w-full {quantity === subscriptionData.stripeSubscription.quantity
-      ? 'btn-disabled'
-      : quantity < subscriptionData.stripeSubscription.quantity
-        ? 'btn-warning btn-outline'
-        : 'bg-gradient-to-r from-secondary to-accent text-secondary-content hover:from-secondary-focus hover:to-accent-focus'}"
+    on:click={openSeatsModal}
+    class="btn w-full"
     disabled={quantity === subscriptionData.stripeSubscription.quantity}
   >
-    {#if quantity < subscriptionData.stripeSubscription.quantity}
-      Reduce {subscriptionData.stripeSubscription.quantity - quantity} seats
-    {:else if quantity > subscriptionData.stripeSubscription.quantity}
-      Add {quantity - subscriptionData.stripeSubscription.quantity} seats
-    {:else}
-      Modify number of seats
-    {/if}
+    Update Seats
   </button>
 </div>
 
 <div class="card mt-8 max-w-xl p-6 shadow">
   <h2 class="mb-4 text-xl font-bold">Change Billing Interval</h2>
-  <button on:click={confirmChangePlan} class="btn btn-secondary w-full">
+  <button on:click={openBillingCycleModal} class="btn btn-secondary w-full">
     Switch to {isYearly ? "Monthly" : "Yearly"} Billing
   </button>
 </div>
 
 <div class="card mt-8 max-w-xl p-6 shadow">
   <h2 class="mb-4 text-xl font-bold">Cancel Subscription</h2>
-  <button on:click={confirmCancel} class="btn btn-error w-full"
-    >Cancel Subscription</button
-  >
+  <button on:click={openCancelModal} class="btn btn-error w-full">
+    Cancel Subscription
+  </button>
 </div>
 
-{#if showUpdateSeatsModal}
+{#if showSeatsModal}
   <div class="modal modal-open">
     <div class="modal-box">
       <h3 class="text-lg font-bold">Confirm Seat Update</h3>
-      <p class="py-4">
-        Are you sure you want to change your seat count to {quantity}?
-      </p>
+      {#if loading}
+        <div class="py-4">
+          <Skeleton class="mb-2 h-[20px] w-full rounded-full" />
+          <Skeleton class="h-[20px] w-3/4 rounded-full" />
+        </div>
+      {:else if modalContent}
+        <p class="py-4">{JSON.stringify(modalContent)}</p>
+      {/if}
       <div class="modal-action">
         <form method="POST" action="?/updateSeats" use:enhance>
           <input type="hidden" name="quantity" value={quantity} />
-          <button type="submit" class="btn btn-primary">Confirm</button>
+          <button type="submit" class="btn btn-primary" disabled={loading}
+            >Confirm</button
+          >
         </form>
-        <button class="btn" on:click={() => (showUpdateSeatsModal = false)}
+        <button class="btn" on:click={() => (showSeatsModal = false)}
           >Cancel</button
         >
       </div>
@@ -179,24 +155,17 @@
   </div>
 {/if}
 
-{#if showChangePlanModal}
+{#if showBillingCycleModal}
   <div class="modal modal-open">
     <div class="modal-box">
-      <h3 class="text-lg font-bold">Confirm Billing Interval Change</h3>
-      <p class="py-4">
-        Are you sure you want to switch to {isYearly ? "Monthly" : "Yearly"} billing?
-      </p>
+      <h3 class="text-lg font-bold">Change Billing Cycle</h3>
+      <div class="py-4">
+        <Skeleton class="mb-2 h-[20px] w-full rounded-full" />
+        <Skeleton class="h-[20px] w-3/4 rounded-full" />
+      </div>
       <div class="modal-action">
-        <form method="POST" action="?/changePlan" use:enhance>
-          <input
-            type="hidden"
-            name="interval"
-            value={isYearly ? "monthly" : "yearly"}
-          />
-          <button type="submit" class="btn btn-primary">Confirm</button>
-        </form>
-        <button class="btn" on:click={() => (showChangePlanModal = false)}
-          >Cancel</button
+        <button class="btn" on:click={() => (showBillingCycleModal = false)}
+          >Close</button
         >
       </div>
     </div>
@@ -206,19 +175,14 @@
 {#if showCancelModal}
   <div class="modal modal-open">
     <div class="modal-box">
-      <h3 class="text-lg font-bold">Confirm Subscription Cancellation</h3>
-      <p class="py-4">
-        Are you sure you want to cancel your subscription? This action cannot be
-        undone.
-      </p>
+      <h3 class="text-lg font-bold">Cancel Subscription</h3>
+      <div class="py-4">
+        <Skeleton class="mb-2 h-[20px] w-full rounded-full" />
+        <Skeleton class="h-[20px] w-3/4 rounded-full" />
+      </div>
       <div class="modal-action">
-        <form method="POST" action="?/cancelSubscription" use:enhance>
-          <button type="submit" class="btn btn-error"
-            >Confirm Cancellation</button
-          >
-        </form>
         <button class="btn" on:click={() => (showCancelModal = false)}
-          >Cancel</button
+          >Close</button
         >
       </div>
     </div>
