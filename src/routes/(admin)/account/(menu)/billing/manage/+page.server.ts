@@ -138,66 +138,68 @@ export const actions = {
 
   getProratedChangePreview: async ({ request, locals: { getSession, supabaseServiceRole } }) => {
     console.log("Starting getProratedChangePreview");
-
+  
     const session = await getSession()
     if (!session) {
-        console.log("No session found");
-        throw error(401, "Unauthorized")
+      console.log("No session found");
+      throw error(401, "Unauthorized")
     }
-
+  
     const formData = await request.formData()
     const newQuantity = parseInt(formData.get('quantity') as string)
     const appliedDate = formData.get('appliedDate') as string
     console.log(`New quantity: ${newQuantity}, Applied Date: ${appliedDate}`);
-
+  
     const { customerId, error: customerError } = await getOrCreateCustomerId({ supabaseServiceRole, session })
     if (customerError) {
-        console.log(`Error getting customer ID: ${customerError}`);
-        throw error(500, "Failed to get customer ID")
+      console.log(`Error getting customer ID: ${customerError}`);
+      throw error(500, "Failed to get customer ID")
     }
-    console.log(`Customer ID: ${customerId}`);
-
+  
     const { primarySubscription, error: subscriptionError } = await fetchSubscription({ customerId })
-    if (subscriptionError) {
-        console.log(`Error fetching subscription: ${subscriptionError}`);
-        throw error(500, "Failed to fetch subscription")
+    if (subscriptionError || !primarySubscription) {
+      console.log(`Error fetching subscription: ${subscriptionError}`);
+      throw error(400, "No active subscription found")
     }
-
-    if (!primarySubscription) {
-        console.log("No active subscription found");
-        throw error(400, "No active subscription found")
-    }
-
+  
     try {
-        console.log(`Retrieving subscription: ${primarySubscription.stripeSubscription.id}`);
-        const subscription = await stripe.subscriptions.retrieve(primarySubscription.stripeSubscription.id, {
-            expand: ['items.data.price']
-        });
-        console.log(`Subscription retrieved: ${JSON.stringify(subscription)}`);
-
-        console.log("Retrieving upcoming invoice");
-        const prorationPreview = await stripe.invoices.retrieveUpcoming({
-            customer: subscription.customer,
-            subscription: subscription.id,
-            subscription_items: [
-                {
-                    id: subscription.items.data[0].id,
-                    quantity: newQuantity,
-                },
-            ],
-            subscription_proration_behavior: appliedDate === 'now' ? 'always_invoice' : 'create_prorations',
-        });
-        console.log(`Proration preview: ${JSON.stringify(prorationPreview)}`);
-
-        return {
-            success: true,
-            prorationPreview
-        }
+      const subscription = await stripe.subscriptions.retrieve(primarySubscription.stripeSubscription.id, {
+        expand: ['items.data.price']
+      });
+  
+      const prorationPreview = await stripe.invoices.retrieveUpcoming({
+        customer: subscription.customer,
+        subscription: subscription.id,
+        subscription_items: [
+          {
+            id: subscription.items.data[0].id,
+            quantity: newQuantity,
+          },
+        ],
+        subscription_proration_behavior: appliedDate === 'now' ? 'create_prorations' : 'create_prorations',
+      });
+  
+      const dataArray = [
+        { success: true, prorationPreview: true },
+        true,
+        prorationPreview
+      ];
+  
+      return {
+        type: 'success',
+        status: 200,
+        data: JSON.stringify(dataArray)
+      };
     } catch (e) {
-        console.error(`Error in getProratedChangePreview: ${e}`);
-        throw error(500, "Failed to get proration preview")
+      console.error(`Error in getProratedChangePreview: ${e}`);
+      return {
+        type: 'error',
+        status: 500,
+        error: e.message
+      };
     }
-},
-
+  },
+  
+  
 
 }
