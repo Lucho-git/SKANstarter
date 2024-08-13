@@ -56,6 +56,6 @@
   editLink="/account"
 />
 
-<ManageSeats {data} />
+<!-- <ManageSeats {data} />
 <ChangeBillingInterval {subscriptionData} />
-<CancelSubscription {subscriptionData} />
+<CancelSubscription {subscriptionData} /> -->

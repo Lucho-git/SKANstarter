@@ -123,9 +123,7 @@ export const POST: RequestHandler = async ({ request, locals: { getSession } }) 
           ...subscriptionData 
         });
       }
-
   }
-
 
 
   // I'm unsure how specifically this is getting called, I think it's when none of the action parameters match it default to the file upload behaviour which might be problematic
