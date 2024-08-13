@@ -2,6 +2,7 @@
   import "../../../../app.css"
   import { enhance, applyAction } from "$app/forms"
   import type { SubmitFunction } from "@sveltejs/kit"
+  import { goto } from "$app/navigation"
 
   export let data
   export let form: FormAccountUpdateResult
@@ -18,6 +19,7 @@
     return errors.includes(name)
   }
 
+  //Creates the profile and then creates the subscription right afterwards
   const handleSubmit: SubmitFunction = () => {
     loading = true
     return async ({ update, result }) => {
@@ -26,6 +28,30 @@
       console.log("Form updated")
       await applyAction(result)
       console.log("Action applied")
+
+      if (result.type === "success") {
+        console.log("Form submission successful, creating user subscription")
+        try {
+          const response = await fetch("/account/api?/updateUserSubscription", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ action: "updateUserSubscription" }),
+          })
+
+          console.log("response", response)
+          if (!response.ok) {
+            throw new Error("Failed to update user subscription")
+          }
+
+          console.log("User subscription updated successfully")
+          goto("/account/user_survey")
+        } catch (error) {
+          console.error("Error updating user subscription:", error)
+        }
+      }
+
       loading = false
       console.log("handleSubmit completed")
     }
@@ -43,11 +69,11 @@
 </svelte:head>
 
 <div
-  class="text-center content-center max-w-lg mx-auto min-h-[100vh] mb-12 flex items-center place-content-center"
+  class="mx-auto mb-12 flex min-h-[100vh] max-w-lg place-content-center content-center items-center text-center"
 >
-  <div class="flex flex-col w-64 lg:w-80">
+  <div class="flex w-64 flex-col lg:w-80">
     <div>
-      <h1 class="text-2xl font-bold mb-6">Create Profile</h1>
+      <h1 class="mb-6 text-2xl font-bold">Create Profile</h1>
       <form
         class="form-widget"
         method="POST"
@@ -65,7 +91,7 @@
             placeholder="Your full name"
             class="{fieldError(form, 'fullName')
               ? 'input-error'
-              : ''} mt-1 input input-bordered w-full max-w-xs border-2 border-primary"
+              : ''} input input-bordered mt-1 w-full max-w-xs border-2 border-primary"
             value={form?.fullName ?? fullName}
             required
           />
@@ -82,7 +108,7 @@
             placeholder="Homewood Farms"
             class="{fieldError(form, 'companyName')
               ? 'input-error'
-              : ''} mt-1 input input-bordered w-full max-w-xs"
+              : ''} input input-bordered mt-1 w-full max-w-xs"
             value={form?.companyName ?? companyName}
           />
         </div>
@@ -98,28 +124,28 @@
             placeholder="Company.com"
             class="{fieldError(form, 'website')
               ? 'input-error'
-              : ''} mt-1 input input-bordered w-full max-w-xs"
+              : ''} input input-bordered mt-1 w-full max-w-xs"
             value={form?.website ?? website}
           />
         </div>
 
         {#if form?.errorMessage}
           <div class="mt-4"></div>
-          <p class="text-red-700 text-sm font-bold text-center mt-3">
+          <p class="mt-3 text-center text-sm font-bold text-red-700">
             {form?.errorMessage}
           </p>
         {/if}
         <div class="mt-4">
           <input
             type="submit"
-            class="btn btn-primary mt-3 btn-wide"
+            class="btn btn-primary btn-wide mt-3"
             value={loading ? "..." : "Create Profile"}
             disabled={loading}
           />
         </div>
       </form>
 
-      <div class="text-sm text-slate-800 mt-14">
+      <div class="mt-14 text-sm text-slate-800">
         You are logged in as {session?.user?.email}.
         <br />
         <a class="underline" href="/features/"> Sign out </a>

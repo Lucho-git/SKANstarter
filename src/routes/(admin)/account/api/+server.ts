@@ -4,6 +4,9 @@ import type { RequestHandler } from './$types';
 import { supabase } from '$lib/supabaseClient';
 
 export const POST: RequestHandler = async ({ request, locals: { getSession } }) => {
+    console.log('Received POST request');
+    console.log('Content-Type:', request.headers.get('content-type'));
+
   const session = await getSession();
   if (!session) {
     throw error(401, { message: 'Unauthorized' });
@@ -88,57 +91,93 @@ export const POST: RequestHandler = async ({ request, locals: { getSession } }) 
         return json({ message: 'File deleted successfully' });
       }
 
-      
-    if (action === 'updateProfile') {
-      const { surveyCompleted } = rest;
-  
-      const profileData = {
-        id: session?.user.id,
-        survey_completed: surveyCompleted,
-        updated_at: new Date(),
-      };
+      // updating profile with survey response info
+      if (action === 'updateProfile') {
+        console.log('Updating profile in server.ts file')
+        const { surveyCompleted } = rest;
     
-      const { error } = await supabase.from("profiles").upsert(profileData);
+        const profileData = {
+            id: session?.user.id,
+            survey_completed: surveyCompleted,
+            updated_at: new Date(),
+        };
     
-      if (error) {
-        console.error("Supabase error:", error);
-        
-        if (error.code === '42501') {
-          return new Response(JSON.stringify({
-            message: "Unauthorized: You don't have permission to update this profile.",
-            error: error,
-            profileData: profileData,
-            session: {
-              userId: session?.user.id,
-              userEmail: session?.user.email,
-            },
-          }), {
-            status: 403,
-            headers: { 'Content-Type': 'application/json' },
-          });
+        const { error } = await supabase.from("profiles").upsert(profileData);
+    
+        if (error) {
+            console.error("Supabase error:", error);
+    
+            if (error.code === '42501') {
+                return json({
+                    success: false,
+                    message: "Unauthorized: You don't have permission to update this profile.",
+                    error: error,
+                    profileData: profileData,
+                    session: {
+                        userId: session?.user.id,
+                        userEmail: session?.user.email,
+                    },
+                }, { status: 403 });
+            }
+    
+            return json({
+                success: false,
+                message: "Unknown error 001 Server. If this persists please contact us.",
+            }, { status: 500 });
         }
-        
-        return new Response(JSON.stringify({
-          message: "Unknown error 001 Server. If this persists please contact us.",
-        }), {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
+    
+        return json({ success: true });
+    }
+    
+
+
+    if (action === 'updateUserSubscription') {
+        console.log('Updating user subscription in server.ts');
+  
+        const subscriptionData = {
+          user_id: session.user.id,
+          subscription: rest.subscription || 'FREE',
+          current_seats: rest.current_seats || 1,
+          future_seats: rest.future_seats || null,
+          marker_limit: rest.marker_limit || 100,
+          trail_limit: rest.trail_limit || 100000,
+          founder: rest.founder || false,
+          updated_at: new Date(),
+        };
+  
+        console.log("Subscription data:", subscriptionData);
+  
+        const { error: subscriptionError } = await supabase.from("user_subscriptions").upsert(subscriptionData);
+  
+        if (subscriptionError) {
+          console.error("Supabase subscription error:", subscriptionError);
+          return json({ 
+            success: false, 
+            message: "Unknown error. If this persists please contact us." 
+          }, { status: 500 });
+        }
+  
+        return json({ 
+          success: true, 
+          ...subscriptionData 
         });
       }
-  
-      return new Response(JSON.stringify({ success: true }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
+
   }
 
+
+
+  // I'm unsure how specifically this is getting called, I think it's when none of the action parameters match it default to the file upload behaviour which might be problematic
   const form = await request.formData();
   const file = form.get('file') as File;
 
   if (!file) {
     throw error(400, { message: 'No file selected' });
   }
+
+
+
+
 
   //Upload User Files to bucket
   const { data: uploadData, error: uploadError } = await supabase.storage

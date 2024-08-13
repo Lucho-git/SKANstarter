@@ -60,32 +60,80 @@ export const load: PageServerLoad = async ({
   };
 }
 
+//Actual seat update function, applies real money changes to a users plan, takes in the number of seats and now or later date to decide the proration behaviours
+//Now proration immediately charges the user for increasing their seats, later modifies the number of seats which will only be applied at the next billing cycle to stop abuse of the system
 export const actions = {
-  updateSeats: async ({ request, locals: { getSession, supabaseServiceRole } }) => {
-    const session = await getSession()
-    if (!session) {
-      throw error(401, "Unauthorized")
-    }
-
-    const formData = await request.formData()
-    const newQuantity = parseInt(formData.get('quantity') as string)
-
-    const { customerId } = await getOrCreateCustomerId({ supabaseServiceRole, session })
-    const { primarySubscription } = await fetchSubscription({ customerId })
-
-    if (!primarySubscription) {
-      throw error(400, "No active subscription found")
-    }
-
-    try {
-      await stripe.subscriptions.update(primarySubscription.stripeSubscription.id, {
-        quantity: newQuantity,
-      })
-      return { success: true }
-    } catch (e) {
-      throw error(500, "Failed to update subscription")
-    }
-  },
+    updateSeats: async ({ request, locals: { getSession, supabaseServiceRole } }) => {
+        const session = await getSession()
+        if (!session) {
+          throw error(401, "Unauthorized")
+        }
+      
+        const formData = await request.formData()
+        const newQuantity = parseInt(formData.get('quantity') as string)
+        const appliedDate = formData.get('appliedDate') as string
+        const promotionCode = 'promo_1PmvAuK3At0l0k1H32XUkuL5'
+      
+        const { customerId } = await getOrCreateCustomerId({ supabaseServiceRole, session })
+        const { primarySubscription } = await fetchSubscription({ customerId })
+      
+        if (!primarySubscription) {
+          throw error(400, "No active subscription found")
+        }
+      
+        try {
+          const isIncrease = appliedDate === 'now'
+          const updateParams: Stripe.SubscriptionUpdateParams = {
+            items: [{
+              id: primarySubscription.stripeSubscription.items.data[0].id,
+              quantity: newQuantity,
+            }],
+            proration_behavior: isIncrease ? 'always_invoice' : 'none',
+          }
+      
+          if (!isIncrease) {
+            updateParams.billing_cycle_anchor = 'unchanged'
+          }
+      
+          if (promotionCode) {
+            const promotion = await stripe.promotionCodes.retrieve(promotionCode)
+            if (promotion.coupon) {
+              updateParams.coupon = promotion.coupon.id
+            }
+          }
+      
+          const updatedSubscription = await stripe.subscriptions.update(
+            primarySubscription.stripeSubscription.id,
+            updateParams
+          )
+      
+          if (isIncrease) {
+            await stripe.invoices.pay(updatedSubscription.latest_invoice as string)
+          }
+      
+          return {
+            success: true,
+            subscription: updatedSubscription,
+            message: "Subscription updated successfully",
+            newQuantity: newQuantity,
+            appliedDate: appliedDate,
+            discountApplied: !!updateParams.coupon
+          }
+        } catch (e) {
+          if (e instanceof Stripe.errors.StripeError) {
+            return {
+              success: false,
+              error: e.message,
+              code: e.code,
+              type: e.type
+            }
+          }
+          throw error(500, "Failed to update subscription")
+        }
+      }
+      
+      
+      ,
 
   changePlan: async ({ request, locals: { getSession, supabaseServiceRole } }) => {
     const session = await getSession()

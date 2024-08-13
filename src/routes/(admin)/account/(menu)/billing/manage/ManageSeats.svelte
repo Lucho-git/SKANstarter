@@ -10,6 +10,7 @@
   let loading = false
   let modalContent = null
   let importantInfo = null
+  let updateResult = null
 
   $: seatDifference = selectedSeats - currentSeats
   $: isIncreasing = seatDifference > 0
@@ -144,82 +145,125 @@
 {#if showSeatsModal}
   <div class="modal modal-open">
     <div class="modal-box">
-      <h3 class="mb-4 text-xl font-bold">Confirm Seat Update</h3>
-      {#if loading}
-        <div class="py-4">
-          <Skeleton class="mb-2 h-[20px] w-full rounded-full" />
-          <Skeleton class="h-[20px] w-3/4 rounded-full" />
-        </div>
-      {:else if importantInfo}
-        <div class="space-y-4">
-          <p>
-            You are updating your subscription from <span class="font-semibold"
-              >{importantInfo.currentSeats}</span
-            >
-            to
-            <span class="text-lg font-semibold"
-              >{importantInfo.newSeats} seat{importantInfo.newSeats > 1
-                ? "s"
-                : ""}</span
-            >.
-          </p>
-          <div class="rounded-lg bg-base-200 p-4">
-            <h4 class="mb-2 font-semibold">Immediate Changes:</h4>
-            {#if importantInfo.isIncreasing}
-              <p>
-                You will be upgraded to {importantInfo.newSeats} seats and be charged
-                <span class="font-bold text-primary"
-                  >${Math.ceil(importantInfo.immediateCharge)}
-                  {importantInfo.currency}</span
-                >
-              </p>
-              <p class="text-sm text-base-content/70">
-                This fee covers the additional seat{importantInfo.newSeats -
-                  importantInfo.currentSeats >
-                1
-                  ? "s"
-                  : ""} for {importantInfo.daysUntilAnchor} days.
-              </p>
-            {:else}
-              <p class="text-lg">
-                Continued access to your <span class="font-bold"
-                  >{importantInfo.currentSeats}</span
-                >
-                seats for {importantInfo.daysUntilAnchor} more days
-              </p>
-              <p class="text-sm text-base-content/70">
-                No charges will be applied for reducing seats.
+      {#if updateResult}
+        {#if updateResult.success}
+          <h3 class="mb-4 text-xl font-bold text-success">
+            Subscription Updated Successfully
+          </h3>
+          <div class="space-y-4">
+            {#if updateResult.discountApplied}
+              <p class="text-info">
+                A discount has been applied to your subscription.
               </p>
             {/if}
           </div>
-          <div class="rounded-lg bg-base-200 p-4">
-            <h4 class="mb-2 font-semibold">Future Billing:</h4>
+        {:else}
+          <h3 class="mb-4 text-xl font-bold text-error">Update Failed</h3>
+          <p class="text-error">{updateResult.error}</p>
+          {#if updateResult.code === "card_declined"}
             <p>
-              On <span class="font-semibold">{importantInfo.anchorDate}</span>,
-              your new {importantInfo.billingCycle} subscription cost will be
-              <span class="font-bold text-primary"
-                >${Math.ceil(importantInfo.futureCost)}
-                {importantInfo.currency}</span
+              Your card was declined. Please update your payment method and try
+              again.
+            </p>
+          {:else if updateResult.code === "insufficient_funds"}
+            <p>
+              Your card has insufficient funds. Please use a different payment
+              method.
+            </p>
+          {/if}
+        {/if}
+      {:else}
+        <h3 class="mb-4 text-xl font-bold">Confirm Seat Update</h3>
+        {#if loading}
+          <div class="py-4">
+            <Skeleton class="mb-2 h-[20px] w-full rounded-full" />
+            <Skeleton class="h-[20px] w-3/4 rounded-full" />
+          </div>
+        {:else if importantInfo}
+          <div class="space-y-4">
+            <p>
+              You are updating your subscription from <span
+                class="font-semibold">{importantInfo.currentSeats}</span
+              >
+              to
+              <span class="text-lg font-semibold"
+                >{importantInfo.newSeats} seat{importantInfo.newSeats > 1
+                  ? "s"
+                  : ""}</span
               >.
             </p>
-            <p class="text-sm text-base-content/70">
-              This will be your new {importantInfo.billingCycle} rate unless further
-              changes are made.
-            </p>
+            <div class="rounded-lg bg-base-200 p-4">
+              <h4 class="mb-2 font-semibold">Immediate Changes:</h4>
+              {#if importantInfo.isIncreasing}
+                <p>
+                  You will be upgraded to {importantInfo.newSeats} seats and be charged
+                  <span class="font-bold text-primary"
+                    >${Math.ceil(importantInfo.immediateCharge)}
+                    {importantInfo.currency}</span
+                  >
+                </p>
+                <p class="text-sm text-base-content/70">
+                  This fee covers the additional seat{importantInfo.newSeats -
+                    importantInfo.currentSeats >
+                  1
+                    ? "s"
+                    : ""} for {importantInfo.daysUntilAnchor} days.
+                </p>
+              {:else}
+                <p class="text-lg">
+                  Continued access to your <span class="font-bold"
+                    >{importantInfo.currentSeats}</span
+                  >
+                  seats for {importantInfo.daysUntilAnchor} more days
+                </p>
+                <p class="text-sm text-base-content/70">
+                  No charges will be applied for reducing seats.
+                </p>
+              {/if}
+            </div>
+            <div class="rounded-lg bg-base-200 p-4">
+              <h4 class="mb-2 font-semibold">Future Billing:</h4>
+              <p>
+                On <span class="font-semibold">{importantInfo.anchorDate}</span
+                >, your new {importantInfo.billingCycle} subscription cost will be
+                <span class="font-bold text-primary"
+                  >${Math.ceil(importantInfo.futureCost)}
+                  {importantInfo.currency}</span
+                >.
+              </p>
+              <p class="text-sm text-base-content/70">
+                This will be your new {importantInfo.billingCycle} rate unless further
+                changes are made.
+              </p>
+            </div>
           </div>
-        </div>
-      {:else}
-        <p class="py-4 text-error">
-          Unable to load preview information. Please try again.
-        </p>
+        {:else}
+          <p class="py-4 text-error">
+            Unable to load preview information. Please try again.
+          </p>
+        {/if}
       {/if}
       <div class="modal-action mt-6">
-        {#if importantInfo}
-          <form method="POST" action="?/updateSeats" use:enhance>
+        {#if !updateResult && importantInfo}
+          <form
+            method="POST"
+            action="?/updateSeats"
+            use:enhance={({ form, data, action, cancel }) => {
+              return async ({ result, update }) => {
+                updateResult = result.data
+                await update()
+              }
+            }}
+          >
             <input
               type="hidden"
               name="quantity"
               value={importantInfo.newSeats}
+            />
+            <input
+              type="hidden"
+              name="appliedDate"
+              value={importantInfo.isIncreasing ? "now" : "later"}
             />
             <button type="submit" class="btn btn-primary" disabled={loading}
               >Confirm Update</button
@@ -228,8 +272,17 @@
         {/if}
         <button
           class="btn btn-outline"
-          on:click={() => (showSeatsModal = false)}>Cancel</button
+          on:click={() => {
+            if (updateResult && updateResult.success) {
+              window.location.reload()
+            } else {
+              showSeatsModal = false
+              updateResult = null
+            }
+          }}
         >
+          {updateResult && updateResult.success ? "Refresh Page" : "Close"}
+        </button>
       </div>
     </div>
   </div>

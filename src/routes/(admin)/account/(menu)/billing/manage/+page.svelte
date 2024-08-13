@@ -34,6 +34,12 @@
       initialValue: subscriptionData.stripeSubscription.status,
     },
     {
+      id: "quantity",
+      label: "Quantity",
+      initialValue:
+        data.subscriptionData?.stripeSubscription?.quantity?.toString() ?? "1",
+    },
+    {
       id: "interval",
       label: "Billing Interval",
       initialValue: isYearly ? "Yearly" : "Monthly",

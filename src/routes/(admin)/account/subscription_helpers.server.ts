@@ -68,29 +68,44 @@ export const getOrCreateCustomerId = async ({
     }
   
     if (!customer.id) {
-      console.error("Unknown stripe user creation error");
-      return { error: "Unknown stripe user creation error" }
+        console.error("Unknown stripe user creation error");
+        return { error: "Unknown stripe user creation error" }
+      }
+    
+      // Insert the new Stripe customer
+      const { error: stripeCustomerError } = await supabaseServiceRole
+        .from("stripe_customers")
+        .insert({
+          user_id: session.user.id,
+          stripe_customer_id: customer.id,
+          updated_at: new Date(),
+        })
+    
+      if (stripeCustomerError) {
+        console.error("Error inserting new customer ID:", stripeCustomerError);
+        return { error: stripeCustomerError }
+      }
+    
+    //   // Create or update the user_subscription entry
+    //   const { error: userSubscriptionError } = await supabaseServiceRole
+    //     .from("user_subscriptions")
+    //     .upsert({
+    //       user_id: session.user.id,
+    //       subscription: 'FREE',
+    //       current_seats: 1,
+    //       updated_at: new Date()
+    //     }, {
+    //       onConflict: 'user_id'
+    //     })
+    
+    //   if (userSubscriptionError) {
+    //     console.error("Error upserting user subscription:", userSubscriptionError);
+    //     return { error: userSubscriptionError }
+    //   }
+    
+    //   console.log("Successfully created and stored new customer ID and user subscription:", customer.id);
+    //   return { customerId: customer.id }
     }
-  
-    // insert instead of upsert so we never over-write. PK ensures later attempts error.
-    const { error: insertError } = await supabaseServiceRole
-      .from("stripe_customers")
-      .insert({
-        user_id: session.user.id,
-        stripe_customer_id: customer.id,
-        updated_at: new Date(),
-      })
-  
-    console.log("Inserting new customer ID result:", { insertError });
-  
-    if (insertError) {
-      console.error("Error inserting new customer ID:", insertError);
-      return { error: insertError }
-    }
-  
-    console.log("Successfully created and stored new customer ID:", customer.id);
-    return { customerId: customer.id }
-  }
   
 
 export const fetchSubscription = async ({

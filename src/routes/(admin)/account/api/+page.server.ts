@@ -205,106 +205,111 @@ console.log("Incorrect password. Please try again.");
     throw redirect(303, "/")
   },
   
-  updateProfile: async ({ request, locals: { supabase, getSession } }) => {
-    const session = await getSession();
-    if (!session) {
-        toast.error("No session found at updateProfile");
-console.log("No session found at updateProfile");
-      throw redirect(303, "/login");
-    }
+  //Original creation of the entry in profiles
+//   updateProfile: async ({ request, locals: { supabase, getSession } }) => {
+//     console.log('Updating profilefrom page.server.ts')
+//     const session = await getSession();
+//     if (!session) {
+//         toast.error("No session found at updateProfile");
+// console.log("No session found at updateProfile");
+//       throw redirect(303, "/login");
+//     }
   
-    const formData = await request.formData();
-    const fullName = formData.get("fullName") as string;
-    const companyName = formData.get("companyName") as string;
-    const website = formData.get("website") as string;
-    const surveyCompleted = formData.get("surveyCompleted") as string;
+//     const formData = await request.formData();
+//     const fullName = formData.get("fullName") as string;
+//     const companyName = formData.get("companyName") as string;
+//     const website = formData.get("website") as string;
+//     const surveyCompleted = formData.get("surveyCompleted") as string;
   
-    console.log("Form data:", { fullName, companyName, website });
+//     console.log("Form data:", { fullName, companyName, website });
   
-    let validationError;
-    const errorFields = [];
-    if (!fullName) {
-      validationError = "Name is required";
-      errorFields.push("fullName");
-    }
+//     let validationError;
+//     const errorFields = [];
+//     if (!fullName) {
+//       validationError = "Name is required";
+//       errorFields.push("fullName");
+//     }
   
-    if (validationError) {
-      console.log("Validation error:", validationError);
-      return fail(400, {
-        errorMessage: validationError,
-        errorFields,
-        fullName,
-        companyName,
-        website,
-      });
-    }
+//     if (validationError) {
+//       console.log("Validation error:", validationError);
+//       return fail(400, {
+//         errorMessage: validationError,
+//         errorFields,
+//         fullName,
+//         companyName,
+//         website,
+//       });
+//     }
   
-    const profileData = {
-      id: session?.user.id,
-      full_name: fullName,
-      updated_at: new Date(),
-    };
+//     const profileData = {
+//       id: session?.user.id,
+//       full_name: fullName,
+//       updated_at: new Date(),
+//     };
   
-    if (companyName) {
-      profileData.company_name = companyName;
-    }
+//     if (companyName) {
+//       profileData.company_name = companyName;
+//     }
   
-    if (website) {
-      profileData.website = website;
-    }
+//     if (website) {
+//       profileData.website = website;
+//     }
   
-    if (surveyCompleted !== undefined) {
-      profileData.survey_completed = surveyCompleted === "true";
-    }
+//     if (surveyCompleted !== undefined) {
+//       profileData.survey_completed = surveyCompleted === "true";
+//     }
   
-    console.log("Profile data:", profileData);
+//     console.log("Profile data:", profileData);
   
-    // Update the user's profile in your database
-    const { error: profileError } = await supabase.from("profiles").upsert(profileData);
+//     // Update the user's profile in your database
+//     const { error: profileError } = await supabase.from("profiles").upsert(profileData);
   
-    if (profileError) {
-      console.error("Supabase profile error:", profileError);
-      console.log("Supabase profile error:", profileError);
-      return fail(500, {
-        errorMessage: "Unknown error 005. If this persists please contact us.",
-        fullName,
-        companyName,
-        website,
-        surveyCompleted,
-      });
-    }
+//     if (profileError) {
+//       console.error("Supabase profile error:", profileError);
+//       console.log("Supabase profile error:", profileError);
+//       return fail(500, {
+//         errorMessage: "Unknown error 005. If this persists please contact us.",
+//         fullName,
+//         companyName,
+//         website,
+//         surveyCompleted,
+//       });
+//     }
   
-    // Update the user's metadata in Supabase
-    const { data: userData, error: metadataError } = await supabase.auth.updateUser({
-      data: { name: fullName }
-    });
+//     // Update the user's metadata in Supabase
+//     const { data: userData, error: metadataError } = await supabase.auth.updateUser({
+//       data: { name: fullName }
+//     });
   
-    if (metadataError) {
-      console.error("Supabase metadata error:", metadataError);
-      return fail(500, {
-        errorMessage: "Unknown error 003. If this persists please contact us.",
-        fullName,
-        companyName,
-        website,
-        surveyCompleted,
-      });
-    }
+//     if (metadataError) {
+//       console.error("Supabase metadata error:", metadataError);
+//       return fail(500, {
+//         errorMessage: "Unknown error 003. If this persists please contact us.",
+//         fullName,
+//         companyName,
+//         website,
+//         surveyCompleted,
+//       });
+//     }
   
-    console.log("User metadata updated successfully:", userData);
-    // Refresh the session to reflect the updated metadata
-    const { data: sessionData, error: sessionError } = await supabase.auth.refreshSession();
+//     console.log("User metadata updated successfully:", userData);
+//     // Refresh the session to reflect the updated metadata
+//     const { data: sessionData, error: sessionError } = await supabase.auth.refreshSession();
 
-    const successResponse = {
-      success: true,
-      fullName,
-      companyName: companyName || "",
-      website: website || "",
-      surveyCompleted: profileData.survey_completed,
-    };
+//     const successResponse = {
+//       success: true,
+//       fullName,
+//       companyName: companyName || "",
+//       website: website || "",
+//       surveyCompleted: profileData.survey_completed,
+//     };
   
-    console.log("Success response:", successResponse);
-    return successResponse;
-  },
+//     console.log("Success response:", successResponse);
+//     return successResponse;
+//   },
+
+  
+
 
   signout: async ({ locals: { supabase, getSession } }) => {
     const session = await getSession()
@@ -315,6 +320,7 @@ console.log("No session found at updateProfile");
       throw redirect(303, "/")
     }
   },
+  
   uploadFile: async ({ request, locals: { supabase, getSession } }) => {
     const session = await getSession();
     if (!session) {
@@ -380,6 +386,10 @@ console.log("No session found at uploadFile");
       errorMessage: "Invalid request format",
     });
   },
+
+
+
+
 
   fetchUploadedFiles: async ({ request, locals: { supabase, getSession } }) => {
     const session = await getSession();
