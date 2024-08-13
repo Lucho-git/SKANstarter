@@ -6,6 +6,7 @@
   let loading = false
 
   const updateSurveyStatus = async (completed: boolean) => {
+    console.log("Completed the survey")
     const response = await fetch("/account/api", {
       method: "POST",
       headers: {
@@ -60,11 +61,11 @@
 </svelte:head>
 
 <div
-  class="text-center content-center min-h-[100vh] mb-12 mt-4 flex items-center place-content-center"
+  class="mb-12 mt-4 flex min-h-[100vh] place-content-center content-center items-center text-center"
 >
-  <div class="flex flex-col w-full px-6">
+  <div class="flex w-full flex-col px-6">
     <div>
-      <h1 class="text-2xl font-bold mb-6">User Survey</h1>
+      <h1 class="mb-6 text-2xl font-bold">User Survey</h1>
       {#if !surveyCompleted}
         <FeatheryForm on:complete={handleSurveyCompletion} />
         <button class="btn btn-secondary mt-4" on:click={handleSkipSurvey}>

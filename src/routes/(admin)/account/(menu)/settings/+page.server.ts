@@ -10,37 +10,37 @@ export const load: PageServerLoad = async ({
     throw redirect(303, "/login")
   }
 
-  const { data: profile, error: profileError } = await supabaseServiceRole
-    .from("profiles")
-    .select(`full_name, website, company_name`)
-    .eq("id", session.user.id)
-    .single()
+//   const { data: profile, error: profileError } = await supabaseServiceRole
+//     .from("profiles")
+//     .select(`full_name, website, company_name`)
+//     .eq("id", session.user.id)
+//     .single()
 
-  if (profileError) {
-    throw error(500, "Error fetching profile")
-  }
+//   if (profileError) {
+//     throw error(500, "Error fetching profile")
+//   }
 
-  const { error: idError, customerId } = await getOrCreateCustomerId({
-    supabaseServiceRole,
-    session,
-  })
+//   const { error: idError, customerId } = await getOrCreateCustomerId({
+//     supabaseServiceRole,
+//     session,
+//   })
 
-  if (idError || !customerId) {
-    console.error("Error getting customer ID:", idError)
-    return { session, profile, subscriptionData: null }
-  }
+//   if (idError || !customerId) {
+//     console.error("Error getting customer ID:", idError)
+//     return { session, profile, subscriptionData: null }
+//   }
 
-  const { primarySubscription, error: subError } = await fetchSubscription({ customerId })
+//   const { primarySubscription, error: subError } = await fetchSubscription({ customerId })
 
-  if (subError) {
-    console.error("Error fetching subscription:", subError)
-  }
+//   if (subError) {
+//     console.error("Error fetching subscription:", subError)
+//   }
 
-  console.log("Subscription Data:", JSON.stringify(primarySubscription, null, 2))
+//   console.log("Subscription Data:", JSON.stringify(primarySubscription, null, 2))
 
-  return {
-    session,
-    profile,
-    subscriptionData: primarySubscription
-  }
+//   return {
+//     session,
+//     profile,
+//     subscriptionData: primarySubscription
+//   }
 }

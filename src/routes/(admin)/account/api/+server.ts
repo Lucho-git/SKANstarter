@@ -91,16 +91,22 @@ export const POST: RequestHandler = async ({ request, locals: { getSession } }) 
         return json({ message: 'File deleted successfully' });
       }
 
-      // updating profile with survey response info
-      if (action === 'updateProfile') {
-        console.log('Updating profile in server.ts file')
-        const { surveyCompleted } = rest;
+    // updating profile with survey response info
+    if (action === 'updateProfile') {
+        console.log('Updating profile in server.ts file');
+        const { fullName, companyName, website, surveyCompleted } = rest;
     
-        const profileData = {
+        const profileData: any = {
             id: session?.user.id,
-            survey_completed: surveyCompleted,
             updated_at: new Date(),
         };
+    
+        if (fullName !== undefined) profileData.full_name = fullName;
+        if (companyName !== undefined) profileData.company_name = companyName;
+        if (website !== undefined) profileData.website = website;
+        if (surveyCompleted !== undefined) profileData.survey_completed = surveyCompleted;
+    
+        console.log("Profile data to update:", profileData);
     
         const { error } = await supabase.from("profiles").upsert(profileData);
     
@@ -126,7 +132,26 @@ export const POST: RequestHandler = async ({ request, locals: { getSession } }) 
             }, { status: 500 });
         }
     
-        return json({ success: true });
+        // Update user metadata
+        const metadataToUpdate = {};
+        if (fullName !== undefined) metadataToUpdate.name = fullName;
+        if (companyName !== undefined) metadataToUpdate.company = companyName;
+        if (website !== undefined) metadataToUpdate.website = website;
+    
+        if (Object.keys(metadataToUpdate).length > 0) {
+            const { error: metadataError } = await supabase.auth.updateUser({
+                data: metadataToUpdate
+            });
+    
+            if (metadataError) {
+                console.error("Error updating user metadata:", metadataError);
+            }
+        }
+    
+        return json({ 
+            success: true,
+            updatedFields: Object.keys(profileData).filter(key => key !== 'id' && key !== 'updated_at')
+        });
     }
     
 

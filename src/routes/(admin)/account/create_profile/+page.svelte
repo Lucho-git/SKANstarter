@@ -77,7 +77,7 @@
       <form
         class="form-widget"
         method="POST"
-        action="/account/api?/updateProfile"
+        action="/account/api?/createProfile"
         use:enhance={handleSubmit}
       >
         <div class="mt-4">

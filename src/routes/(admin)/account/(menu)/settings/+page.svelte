@@ -4,6 +4,9 @@
   import SettingsModule from "./settings_module.svelte"
   import { PUBLIC_APP_VERSION } from "$env/static/public"
 
+  import FloatingChat from "../../../../../components/FloatingChat.svelte"
+  import EdgeFunction from "../../../../../components/EdgeFunction.svelte"
+
   let adminSection: Writable<string> = getContext("adminSection")
   adminSection.set("settings")
 
@@ -109,3 +112,6 @@
   editButtonTitle="Delete Account"
   editLink="/account/settings/delete_account"
 />
+
+<FloatingChat />
+<!-- <EdgeFunction /> -->
