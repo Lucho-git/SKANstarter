@@ -1,28 +1,10 @@
 <script lang="ts">
   import FeatheryForm from "../../../../components/FeatheryForm.svelte"
   import { goto } from "$app/navigation"
+  import { enhance } from "$app/forms"
 
   let surveyCompleted = false
   let loading = false
-
-  const updateSurveyStatus = async (completed: boolean) => {
-    console.log("Completed the survey")
-    const response = await fetch("/account/api", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        action: "updateProfile",
-        surveyCompleted: completed,
-      }),
-    })
-
-    if (!response.ok) {
-      console.error("Error updating survey status")
-      throw new Error("Failed to update survey status")
-    }
-  }
 
   const handleSurveyCompletion = async () => {
     surveyCompleted = true
@@ -67,10 +49,29 @@
     <div>
       <h1 class="mb-6 text-2xl font-bold">User Survey</h1>
       {#if !surveyCompleted}
-        <FeatheryForm on:complete={handleSurveyCompletion} />
-        <button class="btn btn-secondary mt-4" on:click={handleSkipSurvey}>
-          Skip Survey
-        </button>
+        <form
+          id="surveyForm"
+          method="POST"
+          action="/account/api?/updateProfile"
+          use:enhance={() => {
+            return async ({ result }) => {
+              loading = false
+              if (result.type === "success") {
+                window.location.reload()
+              }
+            }
+          }}
+        >
+          <input type="hidden" name="surveyCompleted" value="true" />
+          <FeatheryForm on:complete={handleSurveyCompletion} />
+          <button
+            type="submit"
+            class="btn btn-secondary mt-4"
+            on:click={handleSkipSurvey}
+          >
+            Skip Survey
+          </button>
+        </form>
       {/if}
     </div>
   </div>
