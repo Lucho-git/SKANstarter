@@ -24,7 +24,7 @@
   onMount(() => {
     // Log messages to the browser's console
     data.logMessages.forEach((message) => {
-      console.log(message)
+      //   console.log(message)
     })
   })
 </script>

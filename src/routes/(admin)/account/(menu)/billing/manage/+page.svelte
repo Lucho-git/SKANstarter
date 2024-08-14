@@ -7,7 +7,7 @@
 
   export let data
   let { subscriptionData } = data
-  console.log(data)
+  //   console.log(data)
 
   $: interval = subscriptionData.stripeSubscription.plan.interval
   $: isYearly = interval === "year"
@@ -56,6 +56,6 @@
   editLink="/account"
 />
 
-<!-- <ManageSeats {data} />
+<ManageSeats {data} />
 <ChangeBillingInterval {subscriptionData} />
-<CancelSubscription {subscriptionData} /> -->
+<CancelSubscription {subscriptionData} />

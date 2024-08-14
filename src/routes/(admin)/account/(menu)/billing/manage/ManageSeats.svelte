@@ -35,7 +35,7 @@
     formData.append("appliedDate", isIncreasing ? "now" : "later")
     console.log("applieddate", isIncreasing ? "now" : "later")
     try {
-      const response = await fetch("?/getProratedChangePreview", {
+      const response = await fetch("?/getProratedSeatsPreview", {
         method: "POST",
         body: formData,
       })

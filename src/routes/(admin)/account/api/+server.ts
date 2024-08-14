@@ -99,7 +99,7 @@ export const POST: RequestHandler = async ({ request, locals: { getSession } }) 
           user_id: session.user.id,
           subscription: rest.subscription || 'FREE',
           current_seats: rest.current_seats || 1,
-          future_seats: rest.future_seats || null,
+          lingering_seats: rest.lingering_seats || null,
           marker_limit: rest.marker_limit || 100,
           trail_limit: rest.trail_limit || 100000,
           founder: rest.founder || false,

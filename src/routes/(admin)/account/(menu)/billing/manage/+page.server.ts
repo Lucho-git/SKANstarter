@@ -64,23 +64,24 @@ export const load: PageServerLoad = async ({
 //Now proration immediately charges the user for increasing their seats, later modifies the number of seats which will only be applied at the next billing cycle to stop abuse of the system
 export const actions = {
     updateSeats: async ({ request, locals: { getSession, supabaseServiceRole } }) => {
+        console.log("Updating seats...");
         const session = await getSession()
         if (!session) {
           throw error(401, "Unauthorized")
         }
-      
+    
         const formData = await request.formData()
         const newQuantity = parseInt(formData.get('quantity') as string)
         const appliedDate = formData.get('appliedDate') as string
         const promotionCode = 'promo_1PmvAuK3At0l0k1H32XUkuL5'
-      
+    
         const { customerId } = await getOrCreateCustomerId({ supabaseServiceRole, session })
         const { primarySubscription } = await fetchSubscription({ customerId })
-      
+    
         if (!primarySubscription) {
           throw error(400, "No active subscription found")
         }
-      
+    
         try {
           const isIncrease = appliedDate === 'now'
           const updateParams: Stripe.SubscriptionUpdateParams = {
@@ -90,27 +91,41 @@ export const actions = {
             }],
             proration_behavior: isIncrease ? 'always_invoice' : 'none',
           }
-      
+    
           if (!isIncrease) {
             updateParams.billing_cycle_anchor = 'unchanged'
           }
-      
+    
           if (promotionCode) {
             const promotion = await stripe.promotionCodes.retrieve(promotionCode)
             if (promotion.coupon) {
               updateParams.coupon = promotion.coupon.id
             }
           }
-      
+    
           const updatedSubscription = await stripe.subscriptions.update(
             primarySubscription.stripeSubscription.id,
             updateParams
           )
-      
-          if (isIncrease) {
-            await stripe.invoices.pay(updatedSubscription.latest_invoice as string)
+    
+          console.log('Updated subscription:', updatedSubscription)
+    
+          // Update user_subscriptions table
+          const { data, error: updateError } = await supabaseServiceRole
+            .from('user_subscriptions')
+            .update({
+              current_seats: newQuantity,
+              lingering_seats: isIncrease ? null : primarySubscription.stripeSubscription.quantity - newQuantity,
+              next_billing_date: new Date(updatedSubscription.current_period_end * 1000).toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .eq('user_id', session.user.id)
+    
+          if (updateError) {
+            console.error('Error updating user_subscriptions:', updateError)
+            throw error(500, "Failed to update user subscription data")
           }
-      
+    
           return {
             success: true,
             subscription: updatedSubscription,
@@ -131,8 +146,6 @@ export const actions = {
           throw error(500, "Failed to update subscription")
         }
       }
-      
-      
       ,
 
   changePlan: async ({ request, locals: { getSession, supabaseServiceRole } }) => {
@@ -184,8 +197,8 @@ export const actions = {
     }
   },
 
-  getProratedChangePreview: async ({ request, locals: { getSession, supabaseServiceRole } }) => {
-    console.log("Starting getProratedChangePreview");
+  getProratedSeatsPreview: async ({ request, locals: { getSession, supabaseServiceRole } }) => {
+    console.log("Starting getProratedSeatsPreview");
   
     const session = await getSession()
     if (!session) {
@@ -239,7 +252,101 @@ export const actions = {
         data: JSON.stringify(dataArray)
       };
     } catch (e) {
-      console.error(`Error in getProratedChangePreview: ${e}`);
+      console.error(`Error in getProratedSeatsPreview: ${e}`);
+      return {
+        type: 'error',
+        status: 500,
+        error: e.message
+      };
+    }
+  },
+  
+  getIntervalChangePreview: async ({ request, locals: { getSession, supabaseServiceRole } }) => {
+    console.log("Starting getIntervalChangePreview");
+  
+    const session = await getSession()
+    if (!session) {
+      console.log("No session found");
+      throw error(401, "Unauthorized")
+    }
+  
+    const formData = await request.formData()
+    const newInterval = formData.get('interval') as 'month' | 'year'
+    console.log(`New interval: ${newInterval}`);
+  
+    const { customerId } = await getOrCreateCustomerId({ supabaseServiceRole, session })
+    const { primarySubscription } = await fetchSubscription({ customerId })
+  
+    if (!primarySubscription) {
+      console.log("No active subscription found");
+      throw error(400, "No active subscription found")
+    }
+  
+    const productId = primarySubscription.stripeSubscription.plan.product
+    console.log(`Product ID: ${productId}`);
+    const currentAnchorDate = new Date(primarySubscription.stripeSubscription.current_period_end * 1000);
+  
+    try {
+      const prices = await stripe.prices.list({
+        product: productId,
+        active: true,
+        expand: ['data.tiers']
+      });
+  
+      console.log(`Fetched ${JSON.stringify(prices.data)} prices`);
+      console.log('New interval:', newInterval);
+
+      const currentPrice = prices.data.find(price => price.recurring.interval === primarySubscription.stripeSubscription.plan.interval);
+      console.log('Current price:', currentPrice);
+      const newPrice = prices.data.find(price => price.recurring.interval === newInterval);
+      console.log('New price:', newPrice);
+      if (!currentPrice || !newPrice) {
+        throw error(400, "Unable to find valid prices for the current or new billing cycle");
+      }
+  
+      const prorationPreview = await stripe.invoices.retrieveUpcoming({
+        customer: primarySubscription.stripeSubscription.customer,
+        subscription: primarySubscription.stripeSubscription.id,
+        subscription_items: [
+          {
+            id: primarySubscription.stripeSubscription.items.data[0].id,
+            price: newPrice.id,
+          },
+        ],
+        subscription_proration_behavior: 'none',
+        subscription_trial_end: Math.floor(currentAnchorDate.getTime() / 1000),
+      });
+  
+      const quantity = primarySubscription.stripeSubscription.quantity;
+  
+      const getCurrentPriceAmount = (price) => price.tiers[0].unit_amount;
+      const currentPriceAmount = getCurrentPriceAmount(currentPrice);
+      const newPriceAmount = getCurrentPriceAmount(newPrice);
+  
+      const currentMonthlyPrice = currentPrice.recurring.interval === 'year' ? currentPriceAmount / 12 : currentPriceAmount;
+      const newMonthlyPrice = newPrice.recurring.interval === 'year' ? newPriceAmount / 12 : newPriceAmount;
+  
+      const previewData = {
+        currentBillingCycle: currentPrice.recurring.interval,
+        newBillingCycle: newPrice.recurring.interval,
+        currentAnchorDate,
+        nextBillingDate: new Date(prorationPreview.lines.data[0].period.start * 1000),
+        currentPricePerMonth: (currentMonthlyPrice * quantity) / 100,
+        newPricePerMonth: (newMonthlyPrice * quantity) / 100,
+        currentPriceWithoutDiscount: (currentPriceAmount * quantity) / 100,
+        newPriceWithoutDiscount: (newPriceAmount * quantity) / 100,
+        currency: currentPrice.currency,
+        quantity,
+
+      };
+  
+      return {
+        type: 'success',
+        status: 200,
+        data: JSON.stringify(previewData)
+      };
+    } catch (e) {
+      console.error(`Error in getIntervalChangePreview: ${e}`);
       return {
         type: 'error',
         status: 500,
@@ -249,5 +356,8 @@ export const actions = {
   },
   
   
+  
+  
+
 
 }

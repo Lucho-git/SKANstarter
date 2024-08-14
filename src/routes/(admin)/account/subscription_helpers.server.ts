@@ -21,7 +21,7 @@ export const getOrCreateCustomerId = async ({
       .eq("user_id", session.user.id)
       .single()
   
-    console.log("Database query result:", { dbCustomer, error });
+    // console.log("Database query result:", { dbCustomer, error });
   
     if (error && error.code != "PGRST116") {
       console.error("Error retrieving customer ID:", error);
@@ -42,7 +42,7 @@ export const getOrCreateCustomerId = async ({
       .eq("id", session.user.id)
       .single()
   
-    console.log("Profile data:", { profile, profileError });
+    // console.log("Profile data:", { profile, profileError });
   
     if (profileError) {
       console.error("Error fetching profile:", profileError);
