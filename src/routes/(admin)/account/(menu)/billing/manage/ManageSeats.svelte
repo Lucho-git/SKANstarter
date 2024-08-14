@@ -144,76 +144,87 @@
 
 {#if showSeatsModal}
   <div class="modal modal-open">
-    <div class="modal-box">
+    <div class="modal-box max-w-2xl">
       {#if updateResult}
         {#if updateResult.success}
-          <h3 class="mb-4 text-xl font-bold text-success">
+          <h3 class="mb-6 text-2xl font-bold text-success">
             Subscription Updated Successfully
           </h3>
           <div class="space-y-4">
             {#if updateResult.discountApplied}
-              <p class="text-info">
+              <p class="rounded-lg bg-info/20 p-4 text-info">
                 A discount has been applied to your subscription.
               </p>
             {/if}
           </div>
         {:else}
-          <h3 class="mb-4 text-xl font-bold text-error">Update Failed</h3>
-          <p class="text-error">{updateResult.error}</p>
+          <h3 class="mb-6 text-2xl font-bold text-error">Update Failed</h3>
+          <p class="mb-4 rounded-lg bg-error/20 p-4 text-error">
+            {updateResult.error}
+          </p>
           {#if updateResult.code === "card_declined"}
-            <p>
+            <p class="rounded-lg bg-base-200 p-4">
               Your card was declined. Please update your payment method and try
               again.
             </p>
           {:else if updateResult.code === "insufficient_funds"}
-            <p>
+            <p class="rounded-lg bg-base-200 p-4">
               Your card has insufficient funds. Please use a different payment
               method.
             </p>
           {/if}
         {/if}
       {:else}
-        <h3 class="mb-4 text-xl font-bold">Confirm Seat Update</h3>
+        <h3 class="mb-6 text-2xl font-bold">Confirm Seat Update</h3>
         {#if loading}
           <div class="py-4">
             <Skeleton class="mb-2 h-[20px] w-full rounded-full" />
             <Skeleton class="h-[20px] w-3/4 rounded-full" />
           </div>
         {:else if importantInfo}
-          <div class="space-y-4">
-            <p>
-              You are updating your subscription from <span
-                class="font-semibold">{importantInfo.currentSeats}</span
+          <div class="space-y-6">
+            <p class="text-lg">
+              You are updating your subscription from
+              <span
+                class="inline-block rounded bg-base-300 px-2 py-1 font-semibold"
+                >{importantInfo.currentSeats}</span
               >
               to
-              <span class="text-lg font-semibold"
-                >{importantInfo.newSeats} seat{importantInfo.newSeats > 1
-                  ? "s"
-                  : ""}</span
-              >.
+              <span
+                class="inline-block rounded bg-base-300 px-2 py-1 font-semibold"
+                >{importantInfo.newSeats}
+              </span>
+              seat{importantInfo.newSeats > 1 ? "s" : ""}
             </p>
-            <div class="rounded-lg bg-base-200 p-4">
-              <h4 class="mb-2 font-semibold">Immediate Changes:</h4>
+
+            <div class="rounded-lg bg-base-200 p-6">
+              <h4 class="mb-3 text-lg font-semibold">Immediate Changes:</h4>
               {#if importantInfo.isIncreasing}
-                <p>
+                <p class="mb-2">
                   You will be upgraded to {importantInfo.newSeats} seats and be charged
-                  <span class="font-bold text-primary"
-                    >${Math.ceil(importantInfo.immediateCharge)}
-                    {importantInfo.currency}</span
+                  <span
+                    class="inline-block rounded bg-base-300 px-2 py-1 font-bold text-primary"
                   >
+                    ${Math.ceil(importantInfo.immediateCharge)}
+                    {importantInfo.currency}
+                  </span>
                 </p>
                 <p class="text-sm text-base-content/70">
                   This fee covers the additional seat{importantInfo.newSeats -
                     importantInfo.currentSeats >
                   1
                     ? "s"
-                    : ""} for {importantInfo.daysUntilAnchor} days.
+                    : ""}
+                  for {importantInfo.daysUntilAnchor} days.
                 </p>
               {:else}
-                <p class="text-lg">
-                  Continued access to your <span class="font-bold"
-                    >{importantInfo.currentSeats}</span
+                <p class="mb-2 text-lg">
+                  Continued access to your
+                  <span
+                    class="inline-block rounded bg-base-300 px-2 py-1 font-bold"
                   >
+                    {importantInfo.currentSeats}
+                  </span>
                   seats for {importantInfo.daysUntilAnchor} more days
                 </p>
                 <p class="text-sm text-base-content/70">
@@ -221,15 +232,18 @@
                 </p>
               {/if}
             </div>
-            <div class="rounded-lg bg-base-200 p-4">
-              <h4 class="mb-2 font-semibold">Future Billing:</h4>
-              <p>
+
+            <div class="rounded-lg bg-base-200 p-6">
+              <h4 class="mb-3 text-lg font-semibold">Future Billing:</h4>
+              <p class="mb-2">
                 On <span class="font-semibold">{importantInfo.anchorDate}</span
                 >, your new {importantInfo.billingCycle} subscription cost will be
-                <span class="font-bold text-primary"
-                  >${Math.ceil(importantInfo.futureCost)}
-                  {importantInfo.currency}</span
-                >.
+                <span
+                  class="inline-block rounded bg-base-300 px-2 py-1 font-bold text-primary"
+                >
+                  ${Math.ceil(importantInfo.futureCost)}
+                  {importantInfo.currency}
+                </span>
               </p>
               <p class="text-sm text-base-content/70">
                 This will be your new {importantInfo.billingCycle} rate unless further
@@ -238,7 +252,7 @@
             </div>
           </div>
         {:else}
-          <p class="py-4 text-error">
+          <p class="rounded-lg bg-error/20 py-4 text-error">
             Unable to load preview information. Please try again.
           </p>
         {/if}
