@@ -11,7 +11,7 @@
   const fullPriceId = "price_1PdxlVK3At0l0k1HoEgkFynm"
   const monthlyPriceId = "price_1PkkO8K3At0l0k1HqvxEEBw2"
 
-  const additionalDiscountActive = true // Set this to false when the promotion ends
+  const additionalDiscountActive = false // Set this to false when the promotion ends
 
   $: stripe_price_id =
     $billingPeriod === "monthly"
@@ -102,11 +102,11 @@
   }
 </script>
 
-<div class="w-full my-8 relative z-0">
-  <div class="flex justify-center mb-8 relative z-0">
+<div class="relative z-0 my-8 w-full">
+  <div class="relative z-0 mb-8 flex justify-center">
     <button
       type="button"
-      class="bg-gray-300 p-1 rounded-full flex items-center cursor-pointer relative"
+      class="relative flex cursor-pointer items-center rounded-full bg-gray-300 p-1"
       on:click={toggleBillingPeriod}
       on:keydown={(e) => e.key === "Enter" && toggleBillingPeriod()}
       aria-label="Toggle billing period"
@@ -115,7 +115,7 @@
     >
       {#key $billingPeriod}
         <div
-          class="absolute bg-primary w-32 h-8 rounded-full"
+          class="absolute h-8 w-32 rounded-full bg-primary"
           style="transform: translateX({$billingPeriod === 'yearly'
             ? '100%'
             : '0'});"
@@ -123,18 +123,18 @@
         ></div>
       {/key}
       <span
-        class="w-32 h-8 text-sm rounded-full flex items-center justify-center relative z-0"
+        class="relative z-0 flex h-8 w-32 items-center justify-center rounded-full text-sm"
         class:text-white={$billingPeriod === "monthly"}
       >
         Monthly
       </span>
       <span
-        class="w-32 h-8 text-sm rounded-full flex items-center justify-center relative z-0"
+        class="relative z-0 flex h-8 w-32 items-center justify-center rounded-full text-sm"
         class:text-white={$billingPeriod === "yearly"}
       >
         Annually
         {#if annualDiscount > 0}
-          <span class="badge badge-secondary absolute -top-3 -right-4 text-xs">
+          <span class="badge badge-secondary absolute -right-4 -top-3 text-xs">
             Save {annualDiscount}%
           </span>
         {/if}
@@ -143,7 +143,7 @@
   </div>
 
   <div class="mt-12 flex justify-center">
-    <div class="flex flex-col lg:flex-row gap-10 items-center max-w-4xl">
+    <div class="flex max-w-4xl flex-col items-center gap-10 lg:flex-row">
       {#each pricingPlans as plan}
         <div
           class="{plan.id === 'pro'
