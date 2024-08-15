@@ -151,24 +151,109 @@ export const actions = {
 
 
 
-  cancelSubscription: async ({ locals: { getSession, supabaseServiceRole } }) => {
-    const session = await getSession()
+      cancelSubscription: async ({ locals: { getSession, supabaseServiceRole } }) => {
+        const session = await getSession();
+        if (!session) {
+          throw error(401, "Unauthorized");
+        }
+    
+        const { customerId } = await getOrCreateCustomerId({ supabaseServiceRole, session });
+        const { primarySubscription } = await fetchSubscription({ customerId });
+    
+        if (!primarySubscription) {
+          throw error(400, "No active subscription found");
+        }
+    
+        try {
+          const updatedSubscription = await stripe.subscriptions.update(
+            primarySubscription.stripeSubscription.id,
+            {
+              cancel_at_period_end: true,
+            }
+          );
+    
+          return { 
+            success: true, 
+            message: "Subscription scheduled for cancellation at the end of the billing period.",
+            cancelAtPeriodEnd: updatedSubscription.cancel_at_period_end
+          };
+        } catch (e) {
+          console.error("Error cancelling subscription:", e);
+          return { 
+            success: false, 
+            message: "Failed to cancel subscription. Please try again or contact support."
+          };
+        }
+      },
+
+
+  reverseSubscriptionCancellation: async ({ locals: { getSession, supabaseServiceRole } }) => {
+    const session = await getSession();
     if (!session) {
-      throw error(401, "Unauthorized")
+      throw error(401, "Unauthorized");
     }
 
-    const { customerId } = await getOrCreateCustomerId({ supabaseServiceRole, session })
-    const { primarySubscription } = await fetchSubscription({ customerId })
+    const { customerId } = await getOrCreateCustomerId({ supabaseServiceRole, session });
+    const { primarySubscription } = await fetchSubscription({ customerId });
 
     if (!primarySubscription) {
-      throw error(400, "No active subscription found")
+      throw error(400, "No active subscription found");
     }
 
     try {
-      await stripe.subscriptions.del(primarySubscription.stripeSubscription.id)
-      return { success: true }
+      const updatedSubscription = await stripe.subscriptions.update(
+        primarySubscription.stripeSubscription.id,
+        {
+          cancel_at_period_end: false,
+        }
+      );
+
+      return { 
+        success: true, 
+        message: "Subscription cancellation reversed. Your subscription will continue.",
+        cancelAtPeriodEnd: updatedSubscription.cancel_at_period_end
+      };
     } catch (e) {
-      throw error(500, "Failed to cancel subscription")
+      console.error("Error reversing subscription cancellation:", e);
+      return { 
+        success: false, 
+        message: "Failed to reverse subscription cancellation. Please try again or contact support."
+      };
+    }
+  },
+
+  reverseSubscriptionCancellation: async ({ locals: { getSession, supabaseServiceRole } }) => {
+    const session = await getSession();
+    if (!session) {
+      throw error(401, "Unauthorized");
+    }
+
+    const { customerId } = await getOrCreateCustomerId({ supabaseServiceRole, session });
+    const { primarySubscription } = await fetchSubscription({ customerId });
+
+    if (!primarySubscription) {
+      throw error(400, "No active subscription found");
+    }
+
+    try {
+      const updatedSubscription = await stripe.subscriptions.update(
+        primarySubscription.stripeSubscription.id,
+        {
+          cancel_at_period_end: false,
+        }
+      );
+
+      return { 
+        success: true, 
+        message: "Subscription cancellation reversed. Your subscription will continue.",
+        cancelAtPeriodEnd: updatedSubscription.cancel_at_period_end
+      };
+    } catch (e) {
+      console.error("Error reversing subscription cancellation:", e);
+      return { 
+        success: false, 
+        message: "Failed to reverse subscription cancellation. Please try again or contact support."
+      };
     }
   },
 
