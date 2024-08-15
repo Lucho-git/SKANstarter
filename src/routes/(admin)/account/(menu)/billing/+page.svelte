@@ -44,6 +44,7 @@
     title="Limited Time Offer: Launch Week Sale!"
     description="Enjoy special pricing for the next 7 days during our launch week. This is the best price we will ever offer, don't miss out! Deal Ends Tuesday."
   /> -->
+
   <!-- <PricingFAQ /> -->
 
   {#if data.hasEverHadSubscription}

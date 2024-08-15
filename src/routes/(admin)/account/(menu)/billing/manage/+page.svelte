@@ -18,7 +18,18 @@
 </svelte:head>
 
 <h1 class="mb-6 text-2xl font-bold">Manage Billing</h1>
-
+<div class="alert alert-info mb-4 mt-2 w-4/5">
+  <div>
+    <h3 class="font-bold">
+      Pricing Section is new, Contact us to handle it directly
+    </h3>
+    <div class="text-sm">
+      If their are any issues or the pricing details seems wrong, please contact
+      us at 0439405248, or send a message in the chat. We'll be happy to assist
+      you.
+    </div>
+  </div>
+</div>
 <SettingsModule
   title="Current Subscription"
   editable={false}
@@ -57,5 +68,5 @@
 />
 
 <ManageSeats {data} />
-<ChangeBillingInterval {subscriptionData} />
+<!-- <ChangeBillingInterval {subscriptionData} /> -->
 <CancelSubscription {subscriptionData} />

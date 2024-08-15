@@ -74,7 +74,8 @@ export const actions = {
         const newQuantity = parseInt(formData.get('quantity') as string)
         const appliedDate = formData.get('appliedDate') as string
         const promotionCode = 'promo_1PmvAuK3At0l0k1H32XUkuL5'
-    
+        // const promotionCode = ''
+
         const { customerId } = await getOrCreateCustomerId({ supabaseServiceRole, session })
         const { primarySubscription } = await fetchSubscription({ customerId })
     
@@ -148,33 +149,7 @@ export const actions = {
       }
       ,
 
-  changePlan: async ({ request, locals: { getSession, supabaseServiceRole } }) => {
-    const session = await getSession()
-    if (!session) {
-      throw error(401, "Unauthorized")
-    }
 
-    const formData = await request.formData()
-    const newInterval = formData.get('interval') as string
-
-    const { customerId } = await getOrCreateCustomerId({ supabaseServiceRole, session })
-    const { primarySubscription } = await fetchSubscription({ customerId })
-
-    if (!primarySubscription) {
-      throw error(400, "No active subscription found")
-    }
-
-    const newPriceId = primarySubscription.appSubscription.stripe_price_id[newInterval]
-
-    try {
-      await stripe.subscriptions.update(primarySubscription.stripeSubscription.id, {
-        items: [{ id: primarySubscription.stripeSubscription.items.data[0].id, price: newPriceId }],
-      })
-      return { success: true }
-    } catch (e) {
-      throw error(500, "Failed to update subscription")
-    }
-  },
 
   cancelSubscription: async ({ locals: { getSession, supabaseServiceRole } }) => {
     const session = await getSession()
@@ -355,6 +330,82 @@ export const actions = {
     }
   },
   
+  
+  changeInterval: async ({ request, locals: { getSession, supabaseServiceRole } }) => {
+    const session = await getSession()
+    if (!session) {
+      throw error(401, "Unauthorized")
+    }
+  
+    const formData = await request.formData()
+    const newInterval = formData.get('interval') as string
+    const trialEndTimestamp = parseInt(formData.get('trialEnd') as string)
+    const promotionCode = 'promo_1PmvAuK3At0l0k1H32XUkuL5'
+  
+    const { customerId } = await getOrCreateCustomerId({ supabaseServiceRole, session })
+    const { primarySubscription } = await fetchSubscription({ customerId })
+  
+    if (!primarySubscription) {
+      throw error(400, "No active subscription found")
+    }
+  
+    const newPriceId = primarySubscription.appSubscription.stripe_price_id[newInterval]
+  
+    try {
+      const updateParams: Stripe.SubscriptionUpdateParams = {
+        items: [{ id: primarySubscription.stripeSubscription.items.data[0].id, price: newPriceId }],
+        trial_end: trialEndTimestamp,
+        proration_behavior: 'none',
+      }
+  
+      if (promotionCode) {
+        const promotion = await stripe.promotionCodes.retrieve(promotionCode)
+        if (promotion.coupon) {
+          updateParams.coupon = promotion.coupon.id
+        }
+      }
+  
+      const updatedSubscription = await stripe.subscriptions.update(
+        primarySubscription.stripeSubscription.id,
+        updateParams
+      )
+  
+      console.log('Updated subscription:', updatedSubscription)
+  
+      // Update user_subscriptions table
+      const { data, error: updateError } = await supabaseServiceRole
+        .from('user_subscriptions')
+        .update({
+          payment_interval: newInterval,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', session.user.id)
+  
+      if (updateError) {
+        console.error('Error updating user_subscriptions:', updateError)
+        throw error(500, "Failed to update user subscription data")
+      }
+  
+      return {
+        success: true,
+        subscription: updatedSubscription,
+        message: "Subscription updated successfully",
+        newInterval: newInterval,
+        discountApplied: !!updateParams.coupon
+      }
+    } catch (e) {
+      if (e instanceof Stripe.errors.StripeError) {
+        return {
+          success: false,
+          error: e.message,
+          code: e.code,
+          type: e.type
+        }
+      }
+      console.error("Error updating subscription:", e)
+      throw error(500, "Failed to update subscription")
+    }
+  },
   
   
   

@@ -34,6 +34,7 @@
     formData.append("quantity", selectedSeats.toString())
     formData.append("appliedDate", isIncreasing ? "now" : "later")
     console.log("applieddate", isIncreasing ? "now" : "later")
+
     try {
       const response = await fetch("?/getProratedSeatsPreview", {
         method: "POST",
@@ -43,6 +44,7 @@
       const result = await response.json()
       console.log("Proration Preview:", result)
       console.log("Price info", seatManagementInfo)
+
       if (result.type === "success") {
         console.log("Parsing Data:", result.type)
         const parsedData = JSON.parse(result.data)
@@ -79,6 +81,14 @@
     const nextPaymentDate = isIncreasing ? anchorDate : new Date()
     const currency = lines[0].currency
 
+    // Calculate monthly costs
+    const baseRatePerSeat = futureCost / newSeats
+    const monthlyCost =
+      billingCycle === "year" ? baseRatePerSeat / 12 : baseRatePerSeat
+    const oldMonthly = currentSeats * monthlyCost
+    const newMonthly = newSeats * monthlyCost
+    const monthlyDifference = newMonthly - oldMonthly
+
     return {
       currentSeats,
       newSeats,
@@ -96,6 +106,10 @@
         amount: item.amount / 100,
         proration: item.proration,
       })),
+      oldMonthly,
+      newMonthly,
+      monthlyDifference,
+      monthlyCost,
     }
   }
 </script>
@@ -147,21 +161,19 @@
     <div class="modal-box max-w-2xl">
       {#if updateResult}
         {#if updateResult.success}
-          <h3 class="mb-6 text-2xl font-bold text-success">
+          <h3 class="mb-6 text-2xl font-bold">
             Subscription Updated Successfully
           </h3>
           <div class="space-y-4">
             {#if updateResult.discountApplied}
-              <p class="rounded-lg bg-info/20 p-4 text-info">
+              <p class="rounded-lg bg-info/20 p-4">
                 A discount has been applied to your subscription.
               </p>
             {/if}
           </div>
         {:else}
-          <h3 class="mb-6 text-2xl font-bold text-error">Update Failed</h3>
-          <p class="mb-4 rounded-lg bg-error/20 p-4 text-error">
-            {updateResult.error}
-          </p>
+          <h3 class="mb-6 text-2xl font-bold">Update Failed</h3>
+          <p class="mb-4 rounded-lg bg-error/20 p-4">{updateResult.error}</p>
           {#if updateResult.code === "card_declined"}
             <p class="rounded-lg bg-base-200 p-4">
               Your card was declined. Please update your payment method and try
@@ -184,7 +196,8 @@
         {:else if importantInfo}
           <div class="space-y-6">
             <p class="text-lg">
-              You are updating your subscription from
+              You are {importantInfo.isIncreasing ? "Increasing" : "Decreasing"}
+              your subscription from
               <span
                 class="inline-block rounded bg-base-300 px-2 py-1 font-semibold"
                 >{importantInfo.currentSeats}</span
@@ -192,8 +205,8 @@
               to
               <span
                 class="inline-block rounded bg-base-300 px-2 py-1 font-semibold"
-                >{importantInfo.newSeats}
-              </span>
+                >{importantInfo.newSeats}</span
+              >
               seat{importantInfo.newSeats > 1 ? "s" : ""}
             </p>
 
@@ -203,7 +216,7 @@
                 <p class="mb-2">
                   You will be upgraded to {importantInfo.newSeats} seats and be charged
                   <span
-                    class="inline-block rounded bg-base-300 px-2 py-1 font-bold text-primary"
+                    class="inline-block rounded bg-base-300 px-2 py-1 font-bold"
                   >
                     ${Math.ceil(importantInfo.immediateCharge)}
                     {importantInfo.currency}
@@ -225,7 +238,15 @@
                   >
                     {importantInfo.currentSeats}
                   </span>
-                  seats for {importantInfo.daysUntilAnchor} more days
+                  seats for
+
+                  <span
+                    class="inline-block rounded bg-base-300 px-2 py-1 font-bold"
+                  >
+                    {importantInfo.daysUntilAnchor}
+                  </span>
+
+                  more days
                 </p>
                 <p class="text-sm text-base-content/70">
                   No charges will be applied for reducing seats.
@@ -239,20 +260,53 @@
                 On <span class="font-semibold">{importantInfo.anchorDate}</span
                 >, your new {importantInfo.billingCycle} subscription cost will be
                 <span
-                  class="inline-block rounded bg-base-300 px-2 py-1 font-bold text-primary"
+                  class="inline-block rounded bg-base-300 px-2 py-1 font-bold"
                 >
                   ${Math.ceil(importantInfo.futureCost)}
                   {importantInfo.currency}
                 </span>
               </p>
-              <p class="text-sm text-base-content/70">
+              <p class="mb-4 text-sm text-base-content/70">
                 This will be your new {importantInfo.billingCycle} rate unless further
                 changes are made.
               </p>
+
+              <div class="border-t pt-4">
+                <p class="mb-2 text-center font-semibold">
+                  Monthly Cost Comparison
+                </p>
+                <div class="mb-2 flex items-center justify-between">
+                  <span>Current monthly rate:</span>
+                  <span class="font-bold">
+                    <span class="inline-block rounded bg-base-300 px-2 py-1">
+                      ${importantInfo.oldMonthly.toFixed(2)}
+                    </span>
+                  </span>
+                </div>
+                <div class="mb-2 flex items-center justify-between">
+                  <span>New monthly rate:</span>
+                  <span class="font-bold">
+                    <span class="inline-block rounded bg-base-300 px-2 py-1">
+                      ${importantInfo.newMonthly.toFixed(2)}
+                    </span>
+                  </span>
+                </div>
+                <p class="text-md mt-2 text-center">
+                  {importantInfo.monthlyDifference > 0 ? "Increase" : "Savings"}
+                  of
+                  <span
+                    class="inline-block rounded bg-base-300 px-2 py-1 font-bold"
+                    class:text-primary={importantInfo.monthlyDifference < 0}
+                  >
+                    ${Math.abs(importantInfo.monthlyDifference).toFixed(2)}
+                  </span>
+                  {importantInfo.currency} per month
+                </p>
+              </div>
             </div>
           </div>
         {:else}
-          <p class="rounded-lg bg-error/20 py-4 text-error">
+          <p class="rounded-lg bg-error/20 py-4">
             Unable to load preview information. Please try again.
           </p>
         {/if}
