@@ -7,11 +7,15 @@
   import CrispChatWidget from "../../../../components/CrispChatWidget.svelte"
   import MasterMapManager from "../(menu)/MasterMapManager.svelte"
   import MapStats from "../(menu)/MapStats.svelte"
+  import VehicleList from "./VehicleList.svelte"
 
   import { page } from "$app/stores"
   import AlertBanner from "../../../../components/AlertBanner.svelte"
 
   import { Skeleton } from "$lib/components/ui/skeleton/index.js"
+
+  export let data
+  $: ({ subscription, vehicles } = data)
 
   let adminSection: Writable<string> = getContext("adminSection")
   adminSection.set("home")
@@ -72,7 +76,8 @@
     <div class="flex items-center space-x-4">
       <div class="space-y-2"></div>
     </div>
-    <MapStats />
+    <MapStats {subscription} />
+    <VehicleList {vehicles} />
   </div>
 </div>
 

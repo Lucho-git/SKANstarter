@@ -4,6 +4,8 @@
   import { page } from "$app/stores"
   import { Skeleton } from "$lib/components/ui/skeleton"
 
+  export let subscription
+
   let mapMarkers = 0
   let vehicles = 0
   let trailCoordinates = 0
@@ -66,7 +68,7 @@
   })
 </script>
 
-{#if loading}
+{#if loading || !subscription}
   <div class="stats w-full text-xs shadow sm:text-sm md:text-base">
     <div class="stat place-items-center p-2 sm:p-4">
       <Skeleton class="mb-2 h-[20px] w-[100px] rounded-full" />
@@ -89,7 +91,7 @@
     <div class="stat place-items-center p-2 sm:p-4">
       <div class="stat-title">Pin Drops</div>
       <div class="stat-value text-3xl text-info sm:text-3xl md:text-4xl">
-        {mapMarkers}
+        {mapMarkers}/{subscription.marker_limit}
       </div>
       <div class="stat-desc">Total markers</div>
     </div>
@@ -97,15 +99,17 @@
     <div class="stat place-items-center p-2 sm:p-4">
       <div class="stat-title">Vehicles</div>
       <div class="stat-value text-3xl text-secondary sm:text-3xl md:text-4xl">
-        {vehicles}
+        {vehicles}/{subscription.current_seats}
       </div>
-      <div class="stat-desc">Active vehicles</div>
+      <div class="stat-desc">Active Vehicles</div>
     </div>
 
     <div class="stat place-items-center p-2 sm:p-4">
       <div class="stat-title">Trail Coordinates</div>
       <div class="stat-value text-3xl sm:text-3xl md:text-4xl">
-        {formatNumber(trailCoordinates)}
+        {formatNumber(trailCoordinates)}/{formatNumber(
+          subscription.trail_limit,
+        )}
       </div>
       <div class="stat-desc">Recorded coordinates</div>
     </div>
