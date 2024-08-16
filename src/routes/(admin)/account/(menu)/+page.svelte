@@ -15,7 +15,7 @@
   import { Skeleton } from "$lib/components/ui/skeleton/index.js"
 
   export let data
-  $: ({ subscription, vehicles } = data)
+  $: ({ subscription, vehicles, isOwner } = data)
 
   let adminSection: Writable<string> = getContext("adminSection")
   adminSection.set("home")
@@ -77,7 +77,7 @@
       <div class="space-y-2"></div>
     </div>
     <MapStats {subscription} />
-    <VehicleList {vehicles} />
+    <VehicleList {vehicles} {isOwner} />
   </div>
 </div>
 

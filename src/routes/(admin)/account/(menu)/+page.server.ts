@@ -77,8 +77,15 @@ export const load: PageServerLoad = async ({ locals: { supabase, getSession } })
       }
     })
   console.log('vehicles:', vehicles)
-    return { subscription: subscriptionData, vehicles: vehicles }
-  }
+
+  const isOwner = session.user.id === masterMap.master_user_id
+
+
+  return { 
+    subscription: subscriptionData, 
+    vehicles: vehicles,
+    isOwner: isOwner
+  }  }
   
 
 export const actions = {
