@@ -2,6 +2,7 @@
   import { onMount } from "svelte"
   import * as Avatar from "$lib/components/ui/avatar"
   import { Skeleton } from "$lib/components/ui/skeleton"
+  import { toast } from "svelte-sonner"
   import VehicleIcons from "../../../../components/SVG/index.js"
   import * as Tabs from "$lib/components/ui/tabs"
 
@@ -45,6 +46,12 @@
 
   function getVehicleIcon(type: string) {
     return VehicleIcons[type] || VehicleIcons.SimpleTractor
+  }
+
+  function handleButtonClick() {
+    toast.info("Coming soon", {
+      description: "This feature is not yet implemented.",
+    })
   }
 </script>
 
@@ -93,6 +100,7 @@
         <button
           class="btn {buttonClass} btn-sm ml-auto"
           disabled={activeTab === "manage" && !isOwner}
+          on:click={handleButtonClick}
         >
           {buttonText}
         </button>

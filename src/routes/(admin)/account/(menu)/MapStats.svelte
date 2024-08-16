@@ -107,11 +107,13 @@
     <div class="stat place-items-center p-2 sm:p-4">
       <div class="stat-title">Trail Coordinates</div>
       <div class="stat-value text-3xl sm:text-3xl md:text-4xl">
-        {formatNumber(trailCoordinates)}/{formatNumber(
-          subscription.trail_limit,
-        )}
+        {formatNumber(trailCoordinates)}
       </div>
       <div class="stat-desc">Recorded coordinates</div>
     </div>
   </div>
 {/if}
+
+<!-- /{formatNumber(
+    subscription.trail_limit,
+  )} -->
