@@ -6,7 +6,7 @@
   export let currentPlanId: string | null = null
 
   const billingPeriod = writable("yearly")
-  const useFullPrice = writable(false)
+  const useFullPrice = writable(true)
   const discountPriceId = "price_1PdxlUK3At0l0k1Hu6tlYnHe"
   const fullPriceId = "price_1PdxlVK3At0l0k1HoEgkFynm"
   const monthlyPriceId = "price_1PkkO8K3At0l0k1HqvxEEBw2"
@@ -18,7 +18,7 @@
       ? monthlyPriceId
       : $useFullPrice
         ? fullPriceId
-        : discountPriceId
+        : fullPriceId
 
   const pricingPlans = [
     {

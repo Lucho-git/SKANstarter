@@ -43,6 +43,8 @@ export const load: PageServerLoad = async ({
     })
   }
 
+  console.log('Got customer id:', customerId);
+
   const { primarySubscription } = await fetchSubscription({
     customerId,
   })
@@ -53,9 +55,13 @@ export const load: PageServerLoad = async ({
   const quantity = parseInt(url.searchParams.get('seats') || '1', 10);
 
   let checkoutUrl
+
+  console.log('Trying payment')
+
   try {
     const isOneTimePayment = params.slug === "price_1Oy7FOK3At0l0k1HrMFJ1gcc";
     const isDiscount = url.searchParams.get('discount') === 'true';
+    console.log('IdDiscount', isDiscount);
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       line_items: [

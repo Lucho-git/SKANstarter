@@ -122,6 +122,8 @@
             </svg>
           </a>
         </div>
+      {/if}
+      {#if plan.id !== "free"}
         <div class="badge badge-info mt-2">Founding Member Status</div>
       {/if}
     </div>
