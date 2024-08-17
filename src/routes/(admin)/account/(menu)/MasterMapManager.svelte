@@ -333,30 +333,30 @@
   })
 </script>
 
-<div class="alert alert-info w-full mt-2">
+<div class="alert alert-info mt-2 w-full">
   <div class="px-4 py-2">
-    <div class="font-bold text-center mb-4">Selected Map</div>
+    <div class="mb-4 text-center font-bold">Selected Map</div>
     {#if masterMapId}
       <div class="my-2 text-left">
         <p class="mt-2"><strong>Map Name:</strong> {masterMapName}</p>
         <p class="mt-2"><strong>Owner:</strong> {masterMapOwner}</p>
-        <div class="flex flex-col sm:flex-row sm:items-center mt-2">
+        <div class="mt-2 flex flex-col sm:flex-row sm:items-center">
           <strong class="mr-2">Share Map:</strong>
           <div
             class="tooltip text-sm"
             data-tip={copied ? "Copied!" : "Click to copy"}
           >
             <button
-              class="btn btn-sm btn-outline btn-accent text-xs mt-2 sm:mt-0"
+              class="btn btn-accent btn-outline btn-sm mt-2 text-xs sm:mt-0"
               on:click={() => {
                 navigator.clipboard.writeText(masterMapId)
                 copied = true
                 setTimeout(() => (copied = false), 2000)
               }}
             >
-              <div class="flex items-center w-full">
-                <span class="break-all flex-grow">{masterMapId}</span>
-                <div class="border-l border-accent mx-2 h-4"></div>
+              <div class="flex w-full items-center">
+                <span class="flex-grow break-all">{masterMapId}</span>
+                <div class="mx-2 h-4 border-l border-accent"></div>
                 {#if copied}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -394,7 +394,7 @@
         </div>
       </div>
 
-      <div class="flex flex-col sm:flex-row sm:justify-center mt-8">
+      <div class="mt-8 flex flex-col sm:flex-row sm:justify-center">
         <button
           class="btn btn-primary mb-2 sm:mb-0 sm:mr-2"
           on:click={() => {
@@ -429,7 +429,7 @@
       <div class="my-2 text-center">
         <p>No map assigned.</p>
       </div>
-      <div class="flex flex-col sm:flex-row sm:justify-center mt-4">
+      <div class="mt-4 flex flex-col sm:flex-row sm:justify-center">
         <button
           class="btn btn-primary mb-2 sm:mb-0 sm:mr-2"
           on:click={openGenerateModal}
@@ -446,21 +446,21 @@
 
 {#if showGenerateModal}
   <div class="modal modal-open z-50">
-    <div class="modal-box px-4 py-2 w-11/12 max-w-md mx-auto">
-      <h3 class="font-bold text-lg text-center mb-4">Generate New Map</h3>
-      <div class="flex justify-center mb-4">
-        <h3 class="font-bold text-xs badge badge-lg badge-info">
+    <div class="modal-box mx-auto w-11/12 max-w-md px-4 py-2">
+      <h3 class="mb-4 text-center text-lg font-bold">Generate New Map</h3>
+      <div class="mb-4 flex justify-center">
+        <h3 class="badge badge-info badge-lg text-xs font-bold">
           {generatedMapId}
         </h3>
       </div>
       <input
         type="text"
         placeholder="Enter map name"
-        class="input input-bordered w-full mb-4"
+        class="input input-bordered mb-4 w-full"
         bind:value={newMapName}
       />
       <div
-        class="modal-action flex flex-col sm:flex-row sm:justify-center mb-6"
+        class="modal-action mb-6 flex flex-col sm:flex-row sm:justify-center"
       >
         <button
           class="btn btn-primary mb-2 sm:mb-0 sm:mr-2"
@@ -477,9 +477,9 @@
 {/if}
 
 {#if showDeleteConfirmation}
-  <div class="modal modal-open z-100">
-    <div class="modal-box px-4 py-2 w-11/12 max-w-md mx-auto">
-      <h3 class="font-bold text-lg text-center mb-4">Confirm Map Deletion</h3>
+  <div class="z-100 modal modal-open">
+    <div class="modal-box mx-auto w-11/12 max-w-md px-4 py-2">
+      <h3 class="mb-4 text-center text-lg font-bold">Confirm Map Deletion</h3>
       <p class="mb-4">Are you sure you want to permanently delete this map?</p>
       <p class="mb-4">
         Please type the first 8 letters of the master map ID to confirm:
@@ -491,12 +491,12 @@
       </p>
       <input
         type="text"
-        class="input input-bordered w-full mb-4"
+        class="input input-bordered mb-4 w-full"
         bind:value={confirmationInput}
         placeholder="Type the first 8 letters of the map ID"
       />
       <div
-        class="modal-action flex flex-col sm:flex-row sm:justify-center mb-6"
+        class="modal-action mb-6 flex flex-col sm:flex-row sm:justify-center"
       >
         <button
           class="btn btn-error mb-2 sm:mb-0 sm:mr-2"
@@ -516,8 +516,8 @@
 
 {#if showConnectModal}
   <div class="modal modal-open">
-    <div class="modal-box px-4 py-2 w-11/12 max-w-md mx-auto">
-      <h3 class="font-bold text-lg text-center mb-4">Connect to Master Map</h3>
+    <div class="modal-box mx-auto w-11/12 max-w-md px-4 py-2">
+      <h3 class="mb-4 text-center text-lg font-bold">Connect to Master Map</h3>
       <div class="form-control mb-4">
         <label class="label" for="enteredMapId">
           <span class="label-text">Enter Master Map ID:</span>
@@ -532,7 +532,7 @@
             on:input={checkMapIdValidity}
           />
           <button
-            class="btn btn-primary absolute top-0 right-0 rounded-l-none"
+            class="btn btn-primary absolute right-0 top-0 rounded-l-none"
             class:btn-success={isValidMapId}
             disabled={!isValidMapId}
             on:click={() => connectToMap(enteredMapId)}
@@ -542,19 +542,19 @@
         </div>
       </div>
       {#if userMaps.length > 0}
-        <ul class="menu bg-base-100 w-full p-2 rounded-box mb-4">
+        <ul class="menu rounded-box mb-4 w-full bg-base-100 p-2">
           {#each userMaps as map}
             <li>
-              <label class="flex items-center justify-between cursor-pointer">
+              <label class="flex cursor-pointer items-center justify-between">
                 <input
                   type="radio"
                   name="map-selection"
                   class="hidden"
                   on:change={() => connectToMap(map.id)}
                 />
-                <span class="text-center flex-grow">{map.map_name}</span>
+                <span class="flex-grow text-center">{map.map_name}</span>
                 <button
-                  class="btn btn-sm btn-primary ml-4"
+                  class="btn btn-primary btn-sm ml-4"
                   on:click={() => connectToMap(map.id)}
                 >
                   Connect
@@ -567,7 +567,7 @@
         <p class="mb-4">No master maps found.</p>
       {/if}
       <div
-        class="modal-action flex flex-col sm:flex-row sm:justify-center mb-6"
+        class="modal-action mb-6 flex flex-col sm:flex-row sm:justify-center"
       >
         <button class="btn mb-2 sm:mb-0" on:click={cancelConnectMap}>
           Cancel
@@ -579,32 +579,32 @@
 
 {#if showSettingsModal}
   <div class="modal modal-open z-10">
-    <div class="modal-box px-4 py-2 w-11/12 max-w-md mx-auto">
-      <h3 class="font-bold text-lg text-center mb-4">Map Settings</h3>
+    <div class="modal-box mx-auto w-11/12 max-w-md px-4 py-2">
+      <h3 class="mb-4 text-center text-lg font-bold">Map Settings</h3>
       {#if masterMapId}
-        <div class="bg-info border border-blue-500 rounded-lg p-4 mb-4">
+        <div class="mb-4 rounded-lg border bg-base-200 bg-info p-4 text-black">
           <div>
             <span class="font-bold">Selected Map:</span>
             {masterMapName}
           </div>
           <div class="my-2 text-left">
             <p class="mt-2"><strong>Owner:</strong> {masterMapOwner}</p>
-            <div class="flex flex-col sm:flex-row sm:items-center mt-2">
+            <div class="mt-2 flex flex-col sm:flex-row sm:items-center">
               <div
                 class="tooltip text-sm"
                 data-tip={copied ? "Copied!" : "Click to copy"}
               >
                 <button
-                  class="btn btn-sm btn-outline btn-accent text-xs mt-2 sm:mt-0"
+                  class="btn btn-accent btn-outline btn-sm mt-2 text-xs sm:mt-0"
                   on:click={() => {
                     navigator.clipboard.writeText(masterMapId)
                     copied = true
                     setTimeout(() => (copied = false), 2000)
                   }}
                 >
-                  <div class="flex items-center w-full">
-                    <span class="break-all flex-grow">{masterMapId}</span>
-                    <div class="border-l border-accent mx-2 h-4"></div>
+                  <div class="flex w-full items-center">
+                    <span class="flex-grow break-all">{masterMapId}</span>
+                    <div class="mx-2 h-4 border-l border-accent"></div>
                     {#if copied}
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -663,7 +663,7 @@
             <button class="btn btn-info" on:click={openRenameModal}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5 mr-2"
+                class="mr-2 h-5 w-5"
                 viewBox="0 0 20 20"
                 fill="currentColor"
               >
@@ -706,12 +706,12 @@
         </div>
       {:else}
         <div
-          class="flex flex-col sm:flex-row sm:justify-center space-y-4 sm:space-y-0 sm:space-x-4"
+          class="flex flex-col space-y-4 sm:flex-row sm:justify-center sm:space-x-4 sm:space-y-0"
         >
           <button class="btn btn-primary" on:click={openGenerateModal}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5 mr-2"
+              class="mr-2 h-5 w-5"
               viewBox="0 0 20 20"
               fill="currentColor"
             >
@@ -726,7 +726,7 @@
           <button class="btn btn-secondary" on:click={openConnectModal}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5 mr-2"
+              class="mr-2 h-5 w-5"
               viewBox="0 0 20 20"
               fill="currentColor"
             >
@@ -740,7 +740,7 @@
           </button>
         </div>
       {/if}
-      <div class="modal-action flex flex-col flex-row justify-center mt-6">
+      <div class="modal-action mt-6 flex flex-row flex-col justify-center">
         <button class="btn mb-2 sm:mb-0" on:click={cancelSettingsModal}>
           Close
         </button>
