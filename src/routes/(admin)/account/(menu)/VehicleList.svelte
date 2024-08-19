@@ -6,10 +6,11 @@
   import VehicleIcons from "../../../../components/SVG/index.js"
   import * as Tabs from "$lib/components/ui/tabs"
   import { page } from "$app/stores"
-  import { enhance } from "$app/forms"
+  import { enhance, applyAction } from "$app/forms"
   import { profileStore } from "../../../../stores/profileStore"
   import { connectedMapStore } from "../../../../stores/connectedMapStore"
   import { mapActivityStore } from "../../../../stores/mapActivityStore"
+  import { goto } from "$app/navigation"
 
   let loading = true
   let activeTab = "navigate"
@@ -73,10 +74,6 @@
         message = "Locating vehicle"
         description = `Attempting to locate ${profileName}`
         break
-      case "Leave":
-        message = "Leaving map"
-        description = "Preparing to disconnect from the current map"
-        break
       case "Kick":
         message = "Kicking user"
         description = `Attempting to remove ${profileName} from the map`
@@ -97,6 +94,12 @@
       currentUserId,
       $mapActivityStore,
     )
+  }
+
+  function updateStores() {
+    profileStore.update((profile) => ({ ...profile, master_map_id: null }))
+    connectedMapStore.set(null)
+    mapActivityStore.set(null)
   }
 </script>
 
@@ -155,27 +158,49 @@
               Last update: {getTimeSinceLastUpdate(vehicle.last_update)}
             </p>
           {:else}
-            <p class="text-sm opacity-70">No vehicle connected</p>
+            <p class="text-sm opacity-70">Hasn't selected vehicle</p>
           {/if}
         </div>
         {#if activeTab === "manage"}
-          <button
-            class="btn {profile.id === currentUserId
-              ? 'btn-warning'
-              : buttonClass} btn-sm ml-auto"
-            disabled={!isOwner && profile.id !== currentUserId}
-            on:click={() =>
-              handleButtonClick(
-                profile.id === currentUserId ? "Leave" : "Kick",
-                profile.full_name,
-              )}
-          >
-            {profile.id === currentUserId ? "Leave" : buttonText}
-          </button>
+          {#if profile.id === currentUserId}
+            <form
+              method="POST"
+              action="?/disconnectFromMap"
+              use:enhance={() => {
+                return async ({ result }) => {
+                  if (result.type === "success") {
+                    updateStores()
+                    toast.success("Disconnected from map", {
+                      description: "You have successfully left the map",
+                    })
+                    goto("/account")
+                  } else if (result.type === "failure") {
+                    toast.error("Failed to disconnect", {
+                      description: result.data?.message || "An error occurred",
+                    })
+                  }
+                  await applyAction(result)
+                }
+              }}
+            >
+              <button class="btn btn-warning btn-sm ml-auto" type="submit">
+                Leave
+              </button>
+            </form>
+          {:else}
+            <button
+              class="btn {buttonClass} btn-sm ml-auto"
+              disabled={!isOwner}
+              on:click={() => handleButtonClick("Kick", profile.full_name)}
+            >
+              {buttonText}
+            </button>
+          {/if}
         {:else}
           <button
             class="btn {buttonClass} btn-sm ml-auto"
             class:btn-info={!vehicle}
+            disabled={!vehicle && profile.id !== currentUserId}
             on:click={() =>
               handleButtonClick(
                 vehicle ? "Locate" : "Connect",

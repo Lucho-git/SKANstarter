@@ -8,11 +8,10 @@
   import MasterMapManager from "../(menu)/MasterMapManager.svelte"
   import MapStats from "../(menu)/MapStats.svelte"
   import VehicleList from "./VehicleList.svelte"
-
   import { page } from "$app/stores"
   import AlertBanner from "../../../../components/AlertBanner.svelte"
-
   import { Skeleton } from "$lib/components/ui/skeleton/index.js"
+  import { profileStore } from "../../../../stores/profileStore"
 
   export let data
   $: ({ subscription, vehicles, isOwner } = data)
@@ -78,8 +77,10 @@
     <div class="flex items-center space-x-4">
       <div class="space-y-2"></div>
     </div>
-    <MapStats {subscription} />
-    <VehicleList {vehicles} {isOwner} />
+    {#if $profileStore.master_map_id}
+      <MapStats {subscription} />
+      <VehicleList {vehicles} {isOwner} />
+    {/if}
   </div>
 </div>
 
