@@ -84,13 +84,18 @@ export const load: PageServerLoad = async ({ locals: { supabase, getSession } })
         { count: markerCount, error: markerError },
         { count: trailCount, error: trailError },
         { data: connectedProfiles, error: profilesError },
-        { data: vehicleStates, error: vehicleError }
     ] = await Promise.all([
         supabase.from("map_markers").select("id", { count: "exact" }).eq("master_map_id", profile.master_map_id),
         supabase.from("trail_data").select("id", { count: "exact" }).eq("master_map_id", profile.master_map_id),
         supabase.from("profiles").select("id, full_name").eq("master_map_id", profile.master_map_id),
-        supabase.from("vehicle_state").select("*").eq("master_map_id", profile.master_map_id)
     ])
+
+    // Now use the connectedProfiles to filter vehicle_state
+    const { data: vehicleStates, error: vehicleError } = await supabase
+        .from("vehicle_state")
+        .select("*")
+        .eq("master_map_id", profile.master_map_id)
+        .in("vehicle_id", connectedProfiles.map(profile => profile.id))
 
     if (markerError) console.error("Error fetching marker count:", markerError)
     if (trailError) console.error("Error fetching trail count:", trailError)

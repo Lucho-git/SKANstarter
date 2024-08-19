@@ -20,15 +20,29 @@
   $: buttonClass = activeTab === "manage" ? "btn-error" : "btn-primary"
   $: buttonText = activeTab === "manage" ? "Kick" : "Locate"
 
-  $: sortedVehicles = $mapActivityStore.vehicle_states.sort((a, b) => {
-    if (a.vehicle_id === currentUserId) return -1
-    if (b.vehicle_id === currentUserId) return 1
-    return new Date(b.last_update).getTime() - new Date(a.last_update).getTime()
+  $: sortedProfiles = $mapActivityStore.connected_profiles.sort((a, b) => {
+    if (a.id === currentUserId) return -1
+    if (b.id === currentUserId) return 1
+    const aVehicle = $mapActivityStore.vehicle_states.find(
+      (v) => v.vehicle_id === a.id,
+    )
+    const bVehicle = $mapActivityStore.vehicle_states.find(
+      (v) => v.vehicle_id === b.id,
+    )
+    if (aVehicle && !bVehicle) return -1
+    if (!aVehicle && bVehicle) return 1
+    if (aVehicle && bVehicle) {
+      return (
+        new Date(bVehicle.last_update).getTime() -
+        new Date(aVehicle.last_update).getTime()
+      )
+    }
+    return 0
   })
 
   onMount(() => {
     loading = false
-    console.log("vehicles", $mapActivityStore)
+    console.log("mapActivityStore", $mapActivityStore)
   })
 
   function getTimeSinceLastUpdate(lastUpdate: string) {
@@ -50,22 +64,26 @@
     return VehicleIcons[type] || VehicleIcons.SimpleTractor
   }
 
-  function handleButtonClick(action: string, vehicleName: string) {
+  function handleButtonClick(action: string, profileName: string) {
     let message = ""
     let description = ""
 
     switch (action) {
       case "Locate":
         message = "Locating vehicle"
-        description = `Attempting to locate ${vehicleName}`
+        description = `Attempting to locate ${profileName}`
         break
       case "Leave":
         message = "Leaving map"
         description = "Preparing to disconnect from the current map"
         break
       case "Kick":
-        message = "Kicking vehicle"
-        description = `Attempting to remove ${vehicleName} from the map`
+        message = "Kicking user"
+        description = `Attempting to remove ${profileName} from the map`
+        break
+      case "Connect":
+        message = "Connecting vehicle"
+        description = `Attempting to connect vehicle for ${profileName}`
         break
     }
 
@@ -75,16 +93,16 @@
     console.log(
       "Button clicked",
       action,
-      vehicleName,
+      profileName,
       currentUserId,
-      $mapActivityStore.vehicle_states,
+      $mapActivityStore,
     )
   }
 </script>
 
 <div class="mt-4 rounded-lg bg-base-200 p-4 shadow-lg" style="z-index: 0;">
   <div class="mb-4 flex items-center justify-between">
-    <h3 class="text-2xl font-bold">Active Vehicles</h3>
+    <h3 class="text-2xl font-bold">Active Users</h3>
     <Tabs.Root
       value={activeTab}
       onValueChange={(value) => (activeTab = value)}
@@ -107,9 +125,12 @@
     </Tabs.Root>
   </div>
   <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-    {#each sortedVehicles as vehicle}
+    {#each sortedProfiles as profile}
+      {@const vehicle = $mapActivityStore.vehicle_states.find(
+        (v) => v.vehicle_id === profile.id,
+      )}
       <div
-        class="flex items-center rounded-lg bg-base-100 p-4 shadow-md {vehicle.vehicle_id ===
+        class="flex items-center rounded-lg bg-base-100 p-4 shadow-md {profile.id ===
         currentUserId
           ? 'border-2 border-primary'
           : ''}"
@@ -117,39 +138,51 @@
         <div
           class="mr-4 flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-muted"
         >
-          <svelte:component
-            this={getVehicleIcon(vehicle.vehicle_marker.type)}
-            color={vehicle.vehicle_marker.color}
-            size="80%"
-          />
+          {#if vehicle}
+            <svelte:component
+              this={getVehicleIcon(vehicle.vehicle_marker.type)}
+              color={vehicle.vehicle_marker.color}
+              size="80%"
+            />
+          {:else}
+            <ion-icon name="add-circle" style="font-size: 2rem;"></ion-icon>
+          {/if}
         </div>
         <div>
-          <h4 class="font-bold">{vehicle.full_name || "Unknown"}</h4>
-          <p class="text-sm opacity-70">
-            Last update: {getTimeSinceLastUpdate(vehicle.last_update)}
-          </p>
+          <h4 class="font-bold">{profile.full_name}</h4>
+          {#if vehicle}
+            <p class="text-sm opacity-70">
+              Last update: {getTimeSinceLastUpdate(vehicle.last_update)}
+            </p>
+          {:else}
+            <p class="text-sm opacity-70">No vehicle connected</p>
+          {/if}
         </div>
         {#if activeTab === "manage"}
           <button
-            class="btn {vehicle.vehicle_id === currentUserId
+            class="btn {profile.id === currentUserId
               ? 'btn-warning'
               : buttonClass} btn-sm ml-auto"
-            disabled={!isOwner && vehicle.vehicle_id !== currentUserId}
+            disabled={!isOwner && profile.id !== currentUserId}
             on:click={() =>
               handleButtonClick(
-                vehicle.vehicle_id === currentUserId ? "Leave" : "Kick",
-                vehicle.full_name || "Unknown",
+                profile.id === currentUserId ? "Leave" : "Kick",
+                profile.full_name,
               )}
           >
-            {vehicle.vehicle_id === currentUserId ? "Leave" : buttonText}
+            {profile.id === currentUserId ? "Leave" : buttonText}
           </button>
         {:else}
           <button
             class="btn {buttonClass} btn-sm ml-auto"
+            class:btn-info={!vehicle}
             on:click={() =>
-              handleButtonClick("Locate", vehicle.full_name || "Unknown")}
+              handleButtonClick(
+                vehicle ? "Locate" : "Connect",
+                profile.full_name,
+              )}
           >
-            {buttonText}
+            {vehicle ? "Locate" : "Connect"}
           </button>
         {/if}
       </div>
