@@ -6,39 +6,29 @@
   import VehicleIcons from "../../../../components/SVG/index.js"
   import * as Tabs from "$lib/components/ui/tabs"
   import { page } from "$app/stores"
-
-  export let vehicles: Array<{
-    full_name: string
-    user_id: string
-    last_update: string
-    vehicle_marker: {
-      type: string
-      color: string
-      size: string
-    }
-  }> | null = null
-
-  export let isOwner: boolean
+  import { enhance } from "$app/forms"
+  import { profileStore } from "../../../../stores/profileStore"
+  import { connectedMapStore } from "../../../../stores/connectedMapStore"
+  import { mapActivityStore } from "../../../../stores/mapActivityStore"
 
   let loading = true
   let activeTab = "navigate"
 
-  $: currentUserId = $page.data.session?.user.id
+  $: currentUserId = $profileStore.id
+  $: isOwner = $connectedMapStore.is_current_user_owner
 
   $: buttonClass = activeTab === "manage" ? "btn-error" : "btn-primary"
-  $: buttonText = activeTab === "manage" ? "Kick" : "Go to"
+  $: buttonText = activeTab === "manage" ? "Kick" : "Locate"
 
-  $: sortedVehicles =
-    vehicles?.sort((a, b) => {
-      if (a.user_id === currentUserId) return -1
-      if (b.user_id === currentUserId) return 1
-      return (
-        new Date(b.last_update).getTime() - new Date(a.last_update).getTime()
-      )
-    }) || []
+  $: sortedVehicles = $mapActivityStore.vehicle_states.sort((a, b) => {
+    if (a.vehicle_id === currentUserId) return -1
+    if (b.vehicle_id === currentUserId) return 1
+    return new Date(b.last_update).getTime() - new Date(a.last_update).getTime()
+  })
 
   onMount(() => {
     loading = false
+    console.log("vehicles", $mapActivityStore)
   })
 
   function getTimeSinceLastUpdate(lastUpdate: string) {
@@ -60,11 +50,35 @@
     return VehicleIcons[type] || VehicleIcons.SimpleTractor
   }
 
-  function handleButtonClick() {
-    toast.info("Coming soon", {
-      description: "This feature is not yet implemented.",
+  function handleButtonClick(action: string, vehicleName: string) {
+    let message = ""
+    let description = ""
+
+    switch (action) {
+      case "Locate":
+        message = "Locating vehicle"
+        description = `Attempting to locate ${vehicleName}`
+        break
+      case "Leave":
+        message = "Leaving map"
+        description = "Preparing to disconnect from the current map"
+        break
+      case "Kick":
+        message = "Kicking vehicle"
+        description = `Attempting to remove ${vehicleName} from the map`
+        break
+    }
+
+    toast.info(message, {
+      description: description + " (Feature not yet implemented)",
     })
-    console.log("Button clicked", currentUserId, vehicles)
+    console.log(
+      "Button clicked",
+      action,
+      vehicleName,
+      currentUserId,
+      $mapActivityStore.vehicle_states,
+    )
   }
 </script>
 
@@ -95,7 +109,7 @@
   <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
     {#each sortedVehicles as vehicle}
       <div
-        class="flex items-center rounded-lg bg-base-100 p-4 shadow-md {vehicle.user_id ===
+        class="flex items-center rounded-lg bg-base-100 p-4 shadow-md {vehicle.vehicle_id ===
         currentUserId
           ? 'border-2 border-primary'
           : ''}"
@@ -110,25 +124,30 @@
           />
         </div>
         <div>
-          <h4 class="font-bold">{vehicle.full_name}</h4>
+          <h4 class="font-bold">{vehicle.full_name || "Unknown"}</h4>
           <p class="text-sm opacity-70">
             Last update: {getTimeSinceLastUpdate(vehicle.last_update)}
           </p>
         </div>
         {#if activeTab === "manage"}
           <button
-            class="btn {vehicle.user_id === currentUserId
+            class="btn {vehicle.vehicle_id === currentUserId
               ? 'btn-warning'
               : buttonClass} btn-sm ml-auto"
-            disabled={!isOwner && vehicle.user_id !== currentUserId}
-            on:click={handleButtonClick}
+            disabled={!isOwner && vehicle.vehicle_id !== currentUserId}
+            on:click={() =>
+              handleButtonClick(
+                vehicle.vehicle_id === currentUserId ? "Leave" : "Kick",
+                vehicle.full_name || "Unknown",
+              )}
           >
-            {vehicle.user_id === currentUserId ? "Leave" : buttonText}
+            {vehicle.vehicle_id === currentUserId ? "Leave" : buttonText}
           </button>
         {:else}
           <button
             class="btn {buttonClass} btn-sm ml-auto"
-            on:click={handleButtonClick}
+            on:click={() =>
+              handleButtonClick("Locate", vehicle.full_name || "Unknown")}
           >
             {buttonText}
           </button>

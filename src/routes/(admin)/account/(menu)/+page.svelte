@@ -17,6 +17,8 @@
   export let data
   $: ({ subscription, vehicles, isOwner } = data)
 
+  console.log("Load Data", data)
+
   let adminSection: Writable<string> = getContext("adminSection")
   adminSection.set("home")
 
