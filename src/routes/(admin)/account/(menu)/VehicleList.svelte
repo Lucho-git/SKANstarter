@@ -67,14 +67,19 @@
   }
 
   function updateStores() {
-    profileStore.update((profile) => ({ ...profile, master_map_id: null }))
-    connectedMapStore.set(null)
-    mapActivityStore.set({
-      marker_count: 0,
-      trail_count: 0,
-      connected_profiles: [],
-      vehicle_states: [],
+    console.log("updating stores")
+    connectedMapStore.set({
+      id: null,
+      map_name: null,
+      master_user_id: null,
+      owner: null,
+      is_owner: false,
+      masterSubscription: null,
+      is_connected: false,
     })
+    console.log($connectedMapStore)
+    console.log($mapActivityStore)
+    console.log($profileStore)
   }
 
   function kickUser(id: string) {

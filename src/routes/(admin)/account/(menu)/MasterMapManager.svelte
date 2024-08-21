@@ -25,10 +25,10 @@
   let copied = false
   let showSettingsModal = false
 
-  $: masterMapId = $connectedMapStore.id
-  $: masterMapName = $connectedMapStore.map_name
-  $: masterMapOwner = $connectedMapStore.owner
-  $: isMasterUser = $connectedMapStore.is_owner
+  $: masterMapId = $connectedMapStore?.id
+  $: masterMapName = $connectedMapStore?.map_name
+  $: masterMapOwner = $connectedMapStore?.owner
+  $: isMasterUser = $connectedMapStore?.is_owner
 
   const icons = {
     copy: `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>`,
@@ -283,7 +283,7 @@
 <div class="alert alert-info mt-2 w-full">
   <div class="px-4 py-2">
     <div class="mb-4 text-center font-bold">Selected Map</div>
-    {#if $connectedMapStore.id}
+    {#if $connectedMapStore?.id}
       <div class="my-2 text-left">
         <p class="mt-2">
           <strong>Map Name:</strong>
