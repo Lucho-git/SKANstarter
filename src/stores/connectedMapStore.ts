@@ -6,5 +6,7 @@ export const connectedMapStore = writable({
     map_name: null,
     master_user_id: null,
     owner: null,
-    isOwner: false
+    is_owner: false,
+    masterSubscription: null,
+    is_connected: false,
 });

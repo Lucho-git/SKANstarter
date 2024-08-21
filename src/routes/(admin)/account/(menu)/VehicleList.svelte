@@ -16,7 +16,8 @@
   let activeTab = "navigate"
 
   $: currentUserId = $profileStore.id
-  $: isOwner = $connectedMapStore.is_current_user_owner
+  $: is_owner = $connectedMapStore.is_owner
+  $: is_user = (profileId) => profileId === currentUserId
 
   $: buttonClass = activeTab === "manage" ? "btn-error" : "btn-primary"
   $: buttonText = activeTab === "manage" ? "Kick" : "Locate"
@@ -119,8 +120,9 @@
         (v) => v.vehicle_id === profile.id,
       )}
       <div
-        class="flex items-center rounded-lg bg-base-100 p-4 shadow-md {profile.id ===
-        currentUserId
+        class="flex items-center rounded-lg bg-base-100 p-4 shadow-md {is_user(
+          profile.id,
+        )
           ? 'border-2 border-primary'
           : ''}"
       >
@@ -148,7 +150,7 @@
           {/if}
         </div>
         {#if activeTab === "manage"}
-          {#if profile.id === currentUserId}
+          {#if is_user(profile.id)}
             <form
               method="POST"
               action="?/disconnectFromMap"
@@ -178,7 +180,7 @@
             <form
               method="POST"
               action="?/kickUser"
-              class="ml-auto"
+              class="m-auto"
               use:enhance={() => {
                 return async ({ result }) => {
                   if (result.type === "success") {
@@ -199,7 +201,7 @@
               <button
                 class="btn {buttonClass} btn-sm"
                 type="submit"
-                disabled={profile.id !== currentUserId}
+                disabled={!is_owner}
               >
                 {buttonText}
               </button>
@@ -213,8 +215,8 @@
             use:enhance={() => {
               return async ({ result }) => {
                 if (result.type === "success") {
-                  toast.success("Vehicle located", {
-                    description: `${profile.full_name}'s vehicle has been located`,
+                  toast.info("Locating Vehicle", {
+                    description: `${profile.full_name}'s vehicle locating feature is imminent`,
                   })
                 } else if (result.type === "failure") {
                   toast.error("Failed to locate vehicle", {
@@ -230,7 +232,7 @@
               class="btn {buttonClass} btn-sm"
               class:btn-info={!vehicle}
               type="submit"
-              disabled={!vehicle && profile.id !== currentUserId}
+              disabled={!vehicle && !is_user(profile.id)}
             >
               {vehicle ? "Locate" : "Connect"}
             </button>

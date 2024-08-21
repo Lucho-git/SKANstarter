@@ -34,7 +34,7 @@ export const load = async ({ data }) => {
             map_name: data.connectedMap.map_name,
             master_user_id: data.connectedMap.master_user_id,
             owner: data.connectedMap.owner,
-            is_current_user_owner: data.connectedMap.is_current_user_owner,
+            is_owner: data.connectedMap.is_owner,
             masterSubscription: {
                 subscription: data.masterSubscription?.subscription,
                 marker_limit: data.masterSubscription?.marker_limit,
@@ -42,7 +42,8 @@ export const load = async ({ data }) => {
                 lingering_seats: data.masterSubscription?.lingering_seats,
                 current_seats: data.masterSubscription?.current_seats,
                 next_billing_date: data.masterSubscription?.next_billing_date
-            }
+            },
+            isConnected: true
         });
 
         // Load map activity data
@@ -59,8 +60,9 @@ export const load = async ({ data }) => {
             map_name: null,
             master_user_id: null,
             owner: null,
-            is_current_user_owner: false,
-            masterSubscription: null
+            is_owner: false,
+            masterSubscription: null,
+            is_connected: false,
         });
         mapActivityStore.set({
             marker_count: 0,
