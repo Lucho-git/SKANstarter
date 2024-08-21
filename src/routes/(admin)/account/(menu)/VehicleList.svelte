@@ -65,41 +65,27 @@
     return VehicleIcons[type] || VehicleIcons.SimpleTractor
   }
 
-  function handleButtonClick(action: string, profileName: string) {
-    let message = ""
-    let description = ""
-
-    switch (action) {
-      case "Locate":
-        message = "Locating vehicle"
-        description = `Attempting to locate ${profileName}`
-        break
-      case "Kick":
-        message = "Kicking user"
-        description = `Attempting to remove ${profileName} from the map`
-        break
-      case "Connect":
-        message = "Connecting vehicle"
-        description = `Attempting to connect vehicle for ${profileName}`
-        break
-    }
-
-    toast.info(message, {
-      description: description + " (Feature not yet implemented)",
-    })
-    console.log(
-      "Button clicked",
-      action,
-      profileName,
-      currentUserId,
-      $mapActivityStore,
-    )
-  }
-
   function updateStores() {
     profileStore.update((profile) => ({ ...profile, master_map_id: null }))
     connectedMapStore.set(null)
-    mapActivityStore.set(null)
+    mapActivityStore.set({
+      marker_count: 0,
+      trail_count: 0,
+      connected_profiles: [],
+      vehicle_states: [],
+    })
+  }
+
+  function kickUser(id: string) {
+    mapActivityStore.update((store) => ({
+      ...store,
+      connected_profiles: store.connected_profiles.filter(
+        (profile) => profile.id !== id,
+      ),
+      vehicle_states: store.vehicle_states.filter(
+        (vehicle) => vehicle.vehicle_id !== id,
+      ),
+    }))
   }
 </script>
 
@@ -151,7 +137,7 @@
             <ion-icon name="add-circle" style="font-size: 2rem;"></ion-icon>
           {/if}
         </div>
-        <div>
+        <div class="flex-grow">
           <h4 class="font-bold">{profile.full_name}</h4>
           {#if vehicle}
             <p class="text-sm opacity-70">
@@ -166,6 +152,7 @@
             <form
               method="POST"
               action="?/disconnectFromMap"
+              class="m-auto"
               use:enhance={() => {
                 return async ({ result }) => {
                   if (result.type === "success") {
@@ -183,32 +170,67 @@
                 }
               }}
             >
-              <button class="btn btn-warning btn-sm ml-auto" type="submit">
+              <button class="btn btn-warning btn-sm" type="submit">
                 Leave
               </button>
             </form>
           {:else}
-            <button
-              class="btn {buttonClass} btn-sm ml-auto"
-              disabled={!isOwner}
-              on:click={() => handleButtonClick("Kick", profile.full_name)}
+            <form
+              method="POST"
+              action="?/kickUser"
+              class="ml-auto"
+              use:enhance={() => {
+                return async ({ result }) => {
+                  if (result.type === "success") {
+                    kickUser(profile.id)
+                    toast.success("User kicked", {
+                      description: `${profile.full_name} has been removed from the map`,
+                    })
+                  } else if (result.type === "failure") {
+                    toast.error("Failed to kick user", {
+                      description: result.data?.message || "An error occurred",
+                    })
+                  }
+                  await applyAction(result)
+                }
+              }}
             >
-              {buttonText}
-            </button>
+              <input type="hidden" name="userId" value={profile.id} />
+              <button class="btn {buttonClass} btn-sm" type="submit">
+                {buttonText}
+              </button>
+            </form>
           {/if}
         {:else}
-          <button
-            class="btn {buttonClass} btn-sm ml-auto"
-            class:btn-info={!vehicle}
-            disabled={!vehicle && profile.id !== currentUserId}
-            on:click={() =>
-              handleButtonClick(
-                vehicle ? "Locate" : "Connect",
-                profile.full_name,
-              )}
+          <form
+            method="POST"
+            action="?/locateVehicle"
+            class="m-auto"
+            use:enhance={() => {
+              return async ({ result }) => {
+                if (result.type === "success") {
+                  toast.success("Vehicle located", {
+                    description: `${profile.full_name}'s vehicle has been located`,
+                  })
+                } else if (result.type === "failure") {
+                  toast.error("Failed to locate vehicle", {
+                    description: result.data?.message || "An error occurred",
+                  })
+                }
+                await applyAction(result)
+              }
+            }}
           >
-            {vehicle ? "Locate" : "Connect"}
-          </button>
+            <input type="hidden" name="userId" value={profile.id} />
+            <button
+              class="btn {buttonClass} btn-sm"
+              class:btn-info={!vehicle}
+              type="submit"
+              disabled={!vehicle && profile.id !== currentUserId}
+            >
+              {vehicle ? "Locate" : "Connect"}
+            </button>
+          </form>
         {/if}
       </div>
     {/each}

@@ -1,15 +1,8 @@
 <script lang="ts">
-  import { onMount } from "svelte"
-  import { supabase } from "$lib/supabaseClient"
-  import { page } from "$app/stores"
   import { Skeleton } from "$lib/components/ui/skeleton"
-
-  export let subscription
-
-  let mapMarkers = 0
-  let vehicles = 0
-  let trailCoordinates = 0
-  let loading = true
+  import { profileStore } from "../../../../stores/profileStore"
+  import { connectedMapStore } from "../../../../stores/connectedMapStore"
+  import { mapActivityStore } from "../../../../stores/mapActivityStore"
 
   function formatNumber(num: number): string {
     if (num >= 1000000) {
@@ -21,54 +14,14 @@
     }
   }
 
-  async function fetchData() {
-    const session = $page.data.session
-    if (session) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("master_map_id")
-        .eq("id", session.user.id)
-        .single()
-
-      if (profile?.master_map_id) {
-        const [markersResult, vehiclesResult, trailResult] = await Promise.all([
-          supabase
-            .from("map_markers")
-            .select("id", { count: "exact" })
-            .eq("master_map_id", profile.master_map_id),
-          supabase
-            .from("vehicle_state")
-            .select("vehicle_id", { count: "exact" })
-            .eq("master_map_id", profile.master_map_id),
-          supabase
-            .from("trail_data")
-            .select("coordinates")
-            .eq("master_map_id", profile.master_map_id),
-        ])
-
-        mapMarkers = markersResult.count || 0
-        vehicles = vehiclesResult.count || 0
-
-        trailCoordinates =
-          trailResult.data?.reduce((acc, trail) => {
-            return (
-              acc +
-              (typeof trail.coordinates === "string"
-                ? 1
-                : trail.coordinates.length)
-            )
-          }, 0) || 0
-      }
-    }
-    loading = false
-  }
-
-  onMount(() => {
-    fetchData()
-  })
+  $: mapMarkers = $mapActivityStore.marker_count
+  $: vehicles = $mapActivityStore.connected_profiles.length
+  $: trailCoordinates = $mapActivityStore.trail_count
+  $: masterSubscription = $connectedMapStore.masterSubscription
+  $: loading = !$connectedMapStore || !masterSubscription
 </script>
 
-{#if loading || !subscription}
+{#if loading}
   <div class="stats w-full text-xs shadow sm:text-sm md:text-base">
     <div class="stat place-items-center p-2 sm:p-4">
       <Skeleton class="mb-2 h-[20px] w-[100px] rounded-full" />
@@ -91,7 +44,7 @@
     <div class="stat place-items-center p-2 sm:p-4">
       <div class="stat-title">Pin Drops</div>
       <div class="stat-value text-3xl text-info sm:text-3xl md:text-4xl">
-        {mapMarkers}/{subscription.marker_limit}
+        {mapMarkers}/{masterSubscription.marker_limit}
       </div>
       <div class="stat-desc">Total markers</div>
     </div>
@@ -99,7 +52,7 @@
     <div class="stat place-items-center p-2 sm:p-4">
       <div class="stat-title">Vehicles</div>
       <div class="stat-value text-3xl text-secondary sm:text-3xl md:text-4xl">
-        {vehicles}/{subscription.current_seats}
+        {vehicles}/{masterSubscription.current_seats}
       </div>
       <div class="stat-desc">Active Vehicles</div>
     </div>
@@ -113,7 +66,3 @@
     </div>
   </div>
 {/if}
-
-<!-- /{formatNumber(
-    subscription.trail_limit,
-  )} -->

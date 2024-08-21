@@ -7,7 +7,6 @@ import { mapActivityStore } from '../../../../stores/mapActivityStore';
 export const load = async ({ data }) => {
     console.log("Loading data into stores:", data);
 
-
     // Load profile data
     profileStore.set({
         id: data.profile.id,
@@ -18,7 +17,7 @@ export const load = async ({ data }) => {
         master_map_id: data.profile.master_map_id
     });
 
-    // Load subscription data
+    // Load user's subscription data
     subscriptionStore.set({
         subscription: data.subscription?.subscription,
         marker_limit: data.subscription?.marker_limit,
@@ -35,7 +34,15 @@ export const load = async ({ data }) => {
             map_name: data.connectedMap.map_name,
             master_user_id: data.connectedMap.master_user_id,
             owner: data.connectedMap.owner,
-            is_current_user_owner: data.connectedMap.is_current_user_owner
+            is_current_user_owner: data.connectedMap.is_current_user_owner,
+            masterSubscription: {
+                subscription: data.masterSubscription?.subscription,
+                marker_limit: data.masterSubscription?.marker_limit,
+                trail_limit: data.masterSubscription?.trail_limit,
+                lingering_seats: data.masterSubscription?.lingering_seats,
+                current_seats: data.masterSubscription?.current_seats,
+                next_billing_date: data.masterSubscription?.next_billing_date
+            }
         });
 
         // Load map activity data
@@ -52,7 +59,8 @@ export const load = async ({ data }) => {
             map_name: null,
             master_user_id: null,
             owner: null,
-            is_current_user_owner: false
+            is_current_user_owner: false,
+            masterSubscription: null
         });
         mapActivityStore.set({
             marker_count: 0,
@@ -62,7 +70,6 @@ export const load = async ({ data }) => {
         });
     }
 
-    // Return the original data in case it's needed elsewhere
     console.log("Loaded data:", data);
     return data;
 };

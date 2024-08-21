@@ -23,7 +23,7 @@ export const load: PageServerLoad = async ({ locals: { supabase, getSession } })
 
     console.log("Profile loaded:", profile)
 
-    // Step 2: Get subscription data
+    // Step 2: Get user's subscription data
     const { data: subscriptionData, error: subscriptionError } = await supabase
         .from('user_subscriptions')
         .select('*')
@@ -43,7 +43,8 @@ export const load: PageServerLoad = async ({ locals: { supabase, getSession } })
             profile,
             subscription: subscriptionData || null,
             connectedMap: null,
-            mapActivity: null
+            mapActivity: null,
+            masterSubscription: null
         }
     }
 
@@ -60,7 +61,8 @@ export const load: PageServerLoad = async ({ locals: { supabase, getSession } })
             profile,
             subscription: subscriptionData || null,
             connectedMap: null,
-            mapActivity: null
+            mapActivity: null,
+            masterSubscription: null
         }
     }
 
@@ -79,7 +81,20 @@ export const load: PageServerLoad = async ({ locals: { supabase, getSession } })
 
     console.log("Owner profile loaded:", ownerProfile)
 
-    // Step 5: Get map activity data
+    // Step 5: Get master user's subscription data
+    const { data: masterSubscriptionData, error: masterSubscriptionError } = await supabase
+        .from('user_subscriptions')
+        .select('*')
+        .eq('user_id', masterMap.master_user_id)
+        .single()
+
+    if (masterSubscriptionError) {
+        console.error("Error fetching master subscription data:", masterSubscriptionError)
+    }
+
+    console.log("Master subscription data loaded:", masterSubscriptionData)
+
+    // Step 6: Get map activity data
     const [
         { count: markerCount, error: markerError },
         { count: trailCount, error: trailError },
@@ -119,7 +134,8 @@ export const load: PageServerLoad = async ({ locals: { supabase, getSession } })
             trail_count: trailCount || 0,
             connected_profiles: connectedProfiles || [],
             vehicle_states: vehicleStates || []
-        }
+        },
+        masterSubscription: masterSubscriptionData || null
     }
 }
 
@@ -165,6 +181,21 @@ export const actions = {
         }
 
         return { success: true, message: 'Successfully kicked user from map' };
+    },
+
+
+    locateVehicle: async ({ locals, request }) => {
+        const session = await locals.getSession();
+        if (!session) {
+            return fail(401, { message: 'Unauthorized' });
+        }
+
+        const formData = await request.formData();
+        // const userIdToKick = formData.get('userId');
+
+        // Add logic to check if the current user has permission to kick
+
+        return { success: true, message: 'Locating user on the map' };
     },
 
     signout: async ({ locals: { supabase, getSession } }) => {
