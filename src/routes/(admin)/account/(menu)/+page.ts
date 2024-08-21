@@ -43,7 +43,7 @@ export const load = async ({ data }) => {
                 current_seats: data.masterSubscription?.current_seats,
                 next_billing_date: data.masterSubscription?.next_billing_date
             },
-            isConnected: true
+            is_connected: true
         });
 
         // Load map activity data

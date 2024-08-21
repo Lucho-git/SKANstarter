@@ -5,14 +5,14 @@
   import { v4 as uuidv4 } from "uuid"
   import { browser } from "$app/environment"
   import CoolLineMap from "$lib/animations/CoolLineMap.json"
+  import { connectedMapStore } from "../../../../stores/connectedMapStore"
+  import { profileStore } from "../../../../stores/profileStore"
+  import { enhance, applyAction } from "$app/forms"
+  import { toast } from "svelte-sonner"
 
   let LottiePlayer
 
-  let masterMapId = ""
-  let masterMapName = ""
   let confirmationInput = ""
-
-  let masterMapOwner = ""
   let showGenerateModal = false
   let showConnectModal = false
   let newMapName = ""
@@ -21,11 +21,14 @@
   let enteredMapId = ""
   let isValidMapId = false
 
-  let isMasterUser = false
   let showDeleteConfirmation = false
   let copied = false
-
   let showSettingsModal = false
+
+  $: masterMapId = $connectedMapStore.id
+  $: masterMapName = $connectedMapStore.map_name
+  $: masterMapOwner = $connectedMapStore.owner
+  $: isMasterUser = $connectedMapStore.is_owner
 
   const icons = {
     copy: `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>`,
@@ -64,80 +67,26 @@
     showSettingsModal = false
   }
 
-  async function fetchMasterMapDetails() {
-    const session = $page.data.session
-
-    if (!session) {
-      console.error("User not authenticated")
-      return
-    }
-
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("master_map_id")
-      .eq("id", session.user.id)
-      .single()
-
-    if (profileError) {
-      console.error("Error retrieving user profile:", profileError)
-      return
-    }
-
-    masterMapId = profile.master_map_id
-
-    if (masterMapId) {
-      const { data: masterMap, error: masterMapError } = await supabase
-        .from("master_maps")
-        .select("map_name, master_user_id")
-        .eq("id", masterMapId)
-        .single()
-
-      if (masterMapError) {
-        console.error("Error retrieving master map details:", masterMapError)
-        return
-      }
-
-      masterMapName = masterMap.map_name
-
-      const { data: owner, error: ownerError } = await supabase
-        .from("profiles")
-        .select("full_name, company_name")
-        .eq("id", masterMap.master_user_id)
-        .single()
-
-      if (ownerError) {
-        console.error("Error retrieving master map owner details:", ownerError)
-        return
-      }
-
-      masterMapOwner = `${owner.full_name} (${owner.company_name})`
-
-      isMasterUser = masterMap.master_user_id === session.user.id
-    }
-  }
-
   async function disconnectFromMap() {
-    const session = $page.data.session
-
-    if (!session) {
-      console.error("User not authenticated")
-      return
-    }
-
     const { error } = await supabase
       .from("profiles")
       .update({ master_map_id: null })
-      .eq("id", session.user.id)
+      .eq("id", $profileStore.id)
 
     if (error) {
       console.error("Error disconnecting from master map:", error)
       return
     }
 
-    masterMapId = ""
-    masterMapName = ""
-    masterMapOwner = ""
-    isMasterUser = false
+    connectedMapStore.set({
+      id: null,
+      map_name: null,
+      master_user_id: null,
+      owner: null,
+      is_owner: false,
+      masterSubscription: null,
+      is_connected: false,
+    })
   }
 
   function openDeleteConfirmation() {
@@ -145,13 +94,6 @@
   }
 
   async function confirmDeleteMap() {
-    const session = $page.data.session
-
-    if (!session) {
-      console.error("User not authenticated")
-      return
-    }
-
     // Update profiles to set master_map_id to null for the map being deleted
     const { error: updateError } = await supabase
       .from("profiles")
@@ -189,18 +131,11 @@
   }
 
   async function confirmGenerateMap() {
-    const session = $page.data.session
-
-    if (!session) {
-      console.error("User not authenticated")
-      return
-    }
-
     const { data: masterMap, error: insertError } = await supabase
       .from("master_maps")
       .insert({
         id: generatedMapId,
-        master_user_id: session.user.id,
+        master_user_id: $profileStore.id,
         map_name: newMapName,
       })
       .single()
@@ -213,16 +148,22 @@
     const { error: updateError } = await supabase
       .from("profiles")
       .update({ master_map_id: generatedMapId })
-      .eq("id", session.user.id)
+      .eq("id", $profileStore.id)
 
     if (updateError) {
       console.error("Error updating user profile:", updateError)
       return
     }
 
-    masterMapId = generatedMapId
-    masterMapName = newMapName
-    masterMapOwner = `${session.user.email}`
+    connectedMapStore.set({
+      id: generatedMapId,
+      map_name: newMapName,
+      master_user_id: $profileStore.id,
+      owner: $profileStore.full_name,
+      is_owner: true,
+      masterSubscription: null,
+      is_connected: true,
+    })
 
     showGenerateModal = false
   }
@@ -232,17 +173,10 @@
   }
 
   async function openConnectModal() {
-    const session = $page.data.session
-
-    if (!session) {
-      console.error("User not authenticated")
-      return
-    }
-
     const { data: maps, error } = await supabase
       .from("master_maps")
       .select("id, map_name")
-      .eq("master_user_id", session.user.id)
+      .eq("master_user_id", $profileStore.id)
 
     if (error) {
       console.error("Error fetching user maps:", error)
@@ -254,24 +188,41 @@
   }
 
   async function connectToMap(mapId: string) {
-    const session = $page.data.session
-
-    if (!session) {
-      console.error("User not authenticated")
-      return
-    }
-
     const { error: updateError } = await supabase
       .from("profiles")
       .update({ master_map_id: mapId })
-      .eq("id", session.user.id)
+      .eq("id", $profileStore.id)
 
     if (updateError) {
       console.error("Error updating user profile:", updateError)
       return
     }
 
-    await fetchMasterMapDetails()
+    // Fetch and update connectedMapStore
+    const { data: masterMap, error: masterMapError } = await supabase
+      .from("master_maps")
+      .select("*")
+      .eq("id", mapId)
+      .single()
+
+    if (masterMapError) {
+      console.error("Error fetching master map details:", masterMapError)
+      return
+    }
+
+    connectedMapStore.set({
+      id: masterMap.id,
+      map_name: masterMap.map_name,
+      master_user_id: masterMap.master_user_id,
+      owner:
+        masterMap.master_user_id === $profileStore.id
+          ? $profileStore.full_name
+          : null,
+      is_owner: masterMap.master_user_id === $profileStore.id,
+      masterSubscription: null,
+      is_connected: true,
+    })
+
     showConnectModal = false
   }
 
@@ -280,6 +231,7 @@
   }
 
   async function checkMapIdValidity() {
+    console.log("Checking map ID validity for:", enteredMapId)
     const { data: map, error } = await supabase
       .from("master_maps")
       .select("id")
@@ -298,13 +250,6 @@
   }
 
   async function renameMap() {
-    const session = $page.data.session
-
-    if (!session) {
-      console.error("User not authenticated")
-      return
-    }
-
     const { error: updateError } = await supabase
       .from("master_maps")
       .update({ map_name: newMapNameInput })
@@ -315,7 +260,11 @@
       return
     }
 
-    masterMapName = newMapNameInput
+    connectedMapStore.update((store) => ({
+      ...store,
+      map_name: newMapNameInput,
+    }))
+
     isRenaming = false
   }
 
@@ -328,18 +277,19 @@
       const module = await import("@lottiefiles/svelte-lottie-player")
       LottiePlayer = module.LottiePlayer
     }
-
-    await fetchMasterMapDetails()
   })
 </script>
 
 <div class="alert alert-info mt-2 w-full">
   <div class="px-4 py-2">
     <div class="mb-4 text-center font-bold">Selected Map</div>
-    {#if masterMapId}
+    {#if $connectedMapStore.id}
       <div class="my-2 text-left">
-        <p class="mt-2"><strong>Map Name:</strong> {masterMapName}</p>
-        <p class="mt-2"><strong>Owner:</strong> {masterMapOwner}</p>
+        <p class="mt-2">
+          <strong>Map Name:</strong>
+          {$connectedMapStore.map_name}
+        </p>
+        <p class="mt-2"><strong>Owner:</strong> {$connectedMapStore.owner}</p>
         <div class="mt-2 flex flex-col sm:flex-row sm:items-center">
           <strong class="mr-2">Share Map:</strong>
           <div
@@ -349,13 +299,13 @@
             <button
               class="btn btn-accent btn-outline btn-sm mt-2 text-xs sm:mt-0"
               on:click={() => {
-                navigator.clipboard.writeText(masterMapId)
+                navigator.clipboard.writeText($connectedMapStore.id)
                 copied = true
                 setTimeout(() => (copied = false), 2000)
               }}
             >
               <div class="flex w-full items-center">
-                <span class="flex-grow break-all">{masterMapId}</span>
+                <span class="flex-grow break-all">{$connectedMapStore.id}</span>
                 <div class="mx-2 h-4 border-l border-accent"></div>
                 {#if copied}
                   <svg
@@ -417,7 +367,6 @@
             <span>Map Viewer</span>
           {/if}
         </button>
-        <!-- Replace the "Disconnect from Map" button with a settings button -->
         <button
           class="btn btn-secondary mb-2 sm:mb-0 sm:mr-2"
           on:click={openSettingsModal}
@@ -485,9 +434,9 @@
         Please type the first 8 letters of the master map ID to confirm:
       </p>
       <p class="mb-4">
-        <span class="font-bold text-error">{masterMapId.slice(0, 8)}</span><span
-          >{masterMapId.slice(8)}</span
-        >
+        <span class="font-bold text-error"
+          >{$connectedMapStore.id.slice(0, 8)}</span
+        ><span>{$connectedMapStore.id.slice(8)}</span>
       </p>
       <input
         type="text"
@@ -501,7 +450,7 @@
         <button
           class="btn btn-error mb-2 sm:mb-0 sm:mr-2"
           disabled={confirmationInput.toLowerCase() !==
-            masterMapId.slice(0, 8).toLowerCase()}
+            $connectedMapStore.id.slice(0, 8).toLowerCase()}
           on:click={confirmDeleteMap}
         >
           Confirm Deletion
@@ -518,54 +467,76 @@
   <div class="modal modal-open">
     <div class="modal-box mx-auto w-11/12 max-w-md px-4 py-2">
       <h3 class="mb-4 text-center text-lg font-bold">Connect to Master Map</h3>
-      <div class="form-control mb-4">
-        <label class="label" for="enteredMapId">
-          <span class="label-text">Enter Master Map ID:</span>
-        </label>
-        <div class="relative">
-          <input
-            type="text"
-            id="enteredMapId"
-            placeholder="Master Map ID"
-            class="input input-bordered w-full pr-16"
-            bind:value={enteredMapId}
-            on:input={checkMapIdValidity}
-          />
-          <button
-            class="btn btn-primary absolute right-0 top-0 rounded-l-none"
-            class:btn-success={isValidMapId}
-            disabled={!isValidMapId}
-            on:click={() => connectToMap(enteredMapId)}
-          >
-            Connect
-          </button>
+      <form
+        method="POST"
+        action="?/connectToMap"
+        use:enhance={({ formElement, formData, action, cancel }) => {
+          return async ({ result, update }) => {
+            if (result.type === "success") {
+              showConnectModal = false
+              showSettingsModal = false
+              toast.promise(
+                update().then(() => "You have successfully joined the map"),
+                {
+                  loading: "Connecting to map...",
+                  success: (data) => data,
+                  error: (error) => `Error: ${error.message}`,
+                },
+              )
+            } else {
+              toast.error("Failed to connect to map", {
+                description: result.data?.message || "An error occurred",
+              })
+            }
+          }
+        }}
+      >
+        <div class="form-control mb-4">
+          <label class="label" for="enteredMapId">
+            <span class="label-text">Enter Master Map ID:</span>
+          </label>
+          <div class="relative">
+            <input
+              type="text"
+              id="enteredMapId"
+              name="mapId"
+              placeholder="Master Map ID"
+              class="input input-bordered w-full pr-16"
+              bind:value={enteredMapId}
+              on:input={checkMapIdValidity}
+            />
+            <button
+              type="submit"
+              class="btn btn-primary absolute right-0 top-0 rounded-l-none"
+              class:btn-success={isValidMapId}
+              disabled={!isValidMapId}
+            >
+              Connect
+            </button>
+          </div>
         </div>
-      </div>
+      </form>
+
       {#if userMaps.length > 0}
         <ul class="menu rounded-box mb-4 w-full bg-base-100 p-2">
           {#each userMaps as map}
             <li>
-              <label class="flex cursor-pointer items-center justify-between">
-                <input
-                  type="radio"
-                  name="map-selection"
-                  class="hidden"
-                  on:change={() => connectToMap(map.id)}
-                />
-                <span class="flex-grow text-center">{map.map_name}</span>
-                <button
-                  class="btn btn-primary btn-sm ml-4"
-                  on:click={() => connectToMap(map.id)}
-                >
-                  Connect
-                </button>
-              </label>
+              <form method="POST" action="?/connectToMap" use:enhance>
+                <input type="hidden" name="mapId" value={map.id} />
+                <label class="flex cursor-pointer items-center justify-between">
+                  <span class="flex-grow text-center">{map.map_name}</span>
+                  <button type="submit" class="btn btn-primary btn-sm ml-4">
+                    Connect
+                  </button>
+                </label>
+              </form>
             </li>
           {/each}
         </ul>
       {:else}
         <p class="mb-4">No master maps found.</p>
       {/if}
+
       <div
         class="modal-action mb-6 flex flex-col sm:flex-row sm:justify-center"
       >
@@ -581,14 +552,17 @@
   <div class="modal modal-open z-10">
     <div class="modal-box mx-auto w-11/12 max-w-md px-4 py-2">
       <h3 class="mb-4 text-center text-lg font-bold">Map Settings</h3>
-      {#if masterMapId}
+      {#if $connectedMapStore.id}
         <div class="mb-4 rounded-lg border bg-base-200 bg-info p-4 text-black">
           <div>
             <span class="font-bold">Selected Map:</span>
-            {masterMapName}
+            {$connectedMapStore.map_name}
           </div>
           <div class="my-2 text-left">
-            <p class="mt-2"><strong>Owner:</strong> {masterMapOwner}</p>
+            <p class="mt-2">
+              <strong>Owner:</strong>
+              {$connectedMapStore.owner}
+            </p>
             <div class="mt-2 flex flex-col sm:flex-row sm:items-center">
               <div
                 class="tooltip text-sm"
@@ -597,13 +571,15 @@
                 <button
                   class="btn btn-accent btn-outline btn-sm mt-2 text-xs sm:mt-0"
                   on:click={() => {
-                    navigator.clipboard.writeText(masterMapId)
+                    navigator.clipboard.writeText($connectedMapStore.id)
                     copied = true
                     setTimeout(() => (copied = false), 2000)
                   }}
                 >
                   <div class="flex w-full items-center">
-                    <span class="flex-grow break-all">{masterMapId}</span>
+                    <span class="flex-grow break-all"
+                      >{$connectedMapStore.id}</span
+                    >
                     <div class="mx-2 h-4 border-l border-accent"></div>
                     {#if copied}
                       <svg
@@ -694,9 +670,9 @@
               </button>
               <button
                 class="btn btn-error w-1/2 text-xs"
-                class:btn-disabled={!isMasterUser}
+                class:btn-disabled={!$connectedMapStore.is_owner}
                 on:click={openDeleteConfirmation}
-                disabled={!isMasterUser}
+                disabled={!$connectedMapStore.is_owner}
               >
                 <i class="at-trash mr-2"></i>
                 Delete

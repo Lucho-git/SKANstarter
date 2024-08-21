@@ -12,6 +12,7 @@
   import AlertBanner from "../../../../components/AlertBanner.svelte"
   import { Skeleton } from "$lib/components/ui/skeleton/index.js"
   import { profileStore } from "../../../../stores/profileStore"
+  import { connectedMapStore } from "../../../../stores/connectedMapStore"
 
   export let data
   $: ({ subscription, vehicles, isOwner } = data)
@@ -77,7 +78,7 @@
     <div class="flex items-center space-x-4">
       <div class="space-y-2"></div>
     </div>
-    {#if $profileStore.master_map_id}
+    {#if $connectedMapStore.is_connected}
       <MapStats {subscription} />
       <VehicleList {vehicles} {isOwner} />
     {/if}

@@ -127,7 +127,7 @@ export const load: PageServerLoad = async ({ locals: { supabase, getSession } })
             map_name: masterMap.map_name,
             master_user_id: masterMap.master_user_id,
             owner: ownerProfile?.full_name || 'Unknown',
-            is_current_user_owner: session.user.id === masterMap.master_user_id
+            is_owner: session.user.id === masterMap.master_user_id
         },
         mapActivity: {
             marker_count: markerCount || 0,
@@ -141,6 +141,43 @@ export const load: PageServerLoad = async ({ locals: { supabase, getSession } })
 
 
 export const actions = {
+
+    connectToMap: async ({ locals, request }) => {
+        const session = await locals.getSession();
+        if (!session) {
+            return fail(401, { message: 'Unauthorized' });
+        }
+
+        const formData = await request.formData();
+        const mapIdToJoin = formData.get('mapId');
+
+        if (!mapIdToJoin) {
+            return fail(400, { message: 'Map ID is required' });
+        }
+
+        // Check if the map exists
+        const { data: mapData, error: mapError } = await locals.supabase
+            .from("master_maps")
+            .select("id")
+            .eq("id", mapIdToJoin)
+            .single();
+
+        if (mapError || !mapData) {
+            return fail(404, { message: 'Map not found' });
+        }
+
+        // Update the user's profile with the new master_map_id
+        const { error: updateError } = await locals.supabase
+            .from("profiles")
+            .update({ master_map_id: mapIdToJoin })
+            .eq("id", session.user.id);
+
+        if (updateError) {
+            return fail(500, { message: 'Failed to connect to map' });
+        }
+
+        return { success: true, message: 'Successfully connected to map' };
+    },
 
     disconnectFromMap: async ({ locals }) => {
         const session = await locals.getSession();
