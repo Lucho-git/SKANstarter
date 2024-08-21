@@ -19,6 +19,7 @@
   $: trailCoordinates = $mapActivityStore.trail_count
   $: masterSubscription = $connectedMapStore.masterSubscription
   $: loading = !$connectedMapStore || !masterSubscription
+  $: isPaidSubscription = masterSubscription?.subscription !== "FREE"
 </script>
 
 {#if loading}
@@ -44,9 +45,15 @@
     <div class="stat place-items-center p-2 sm:p-4">
       <div class="stat-title">Pin Drops</div>
       <div class="stat-value text-3xl text-info sm:text-3xl md:text-4xl">
-        {mapMarkers}/{masterSubscription.marker_limit}
+        {mapMarkers}{#if !isPaidSubscription}/{masterSubscription.marker_limit}{/if}
       </div>
-      <div class="stat-desc">Total markers</div>
+      <div class="stat-desc">
+        {#if isPaidSubscription}
+          Unlimited Drops
+        {:else}
+          Total markers
+        {/if}
+      </div>
     </div>
 
     <div class="stat place-items-center p-2 sm:p-4">
@@ -62,7 +69,13 @@
       <div class="stat-value text-3xl sm:text-3xl md:text-4xl">
         {formatNumber(trailCoordinates)}
       </div>
-      <div class="stat-desc">Recorded coordinates</div>
+      <div class="stat-desc">
+        {#if isPaidSubscription}
+          Unlimited Trails
+        {:else}
+          Limit: 100K coordinates
+        {/if}
+      </div>
     </div>
   </div>
 {/if}

@@ -89,7 +89,7 @@
   }
 </script>
 
-<div class="mt-4 rounded-lg bg-base-200 p-4 shadow-lg" style="z-index: 0;">
+<div class="mt-0 rounded-lg bg-base-200 p-4 shadow-lg" style="z-index: 0;">
   <div class="mb-4 flex items-center justify-between">
     <h3 class="text-2xl font-bold">Active Users</h3>
     <Tabs.Root
@@ -196,7 +196,11 @@
               }}
             >
               <input type="hidden" name="userId" value={profile.id} />
-              <button class="btn {buttonClass} btn-sm" type="submit">
+              <button
+                class="btn {buttonClass} btn-sm"
+                type="submit"
+                disabled={profile.id !== currentUserId}
+              >
                 {buttonText}
               </button>
             </form>
