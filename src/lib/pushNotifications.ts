@@ -1,4 +1,4 @@
-import { PUBLIC_VAPID_APPLICATION_SERVER_KEY,PUBLIC_SUPABASE_ANON_KEY } from "$env/static/public";
+import { PUBLIC_VAPID_APPLICATION_SERVER_KEY, PUBLIC_SUPABASE_ANON_KEY } from "$env/static/public";
 import { supabase } from './supabaseClient';
 
 function getDeviceType() {
@@ -7,68 +7,68 @@ function getDeviceType() {
     const screenHeight = window.screen.height;
 
     if (/Android/i.test(ua)) {
-      return screenWidth < 600 ? 'Android Phone' : 'Android Tablet';
+        return screenWidth < 600 ? 'Android Phone' : 'Android Tablet';
     }
     if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
-      return /iPad/.test(ua) || Math.max(screenWidth, screenHeight) > 1000 ? 'iOS Tablet' : 'iPhone';
+        return /iPad/.test(ua) || Math.max(screenWidth, screenHeight) > 1000 ? 'iOS Tablet' : 'iPhone';
     }
     if (/Windows|Macintosh|Linux/.test(ua)) {
-      return 'Desktop';
+        return 'Desktop';
     }
     return 'Unknown';
 }
 
 export async function getOrCreateDeviceId() {
     return new Promise((resolve, reject) => {
-      console.log("Starting getOrCreateDeviceId...");
-      const dbName = 'SKANStarterDB';
-      const storeName = 'deviceInfo';
-      const request = indexedDB.open(dbName, 1);
+        console.log("Starting getOrCreateDeviceId...");
+        const dbName = 'SKANStarterDB';
+        const storeName = 'deviceInfo';
+        const request = indexedDB.open(dbName, 1);
 
-      request.onerror = (event) => {
-        console.error("IndexedDB error:", event);
-        reject('IndexedDB error');
-      };
-
-      request.onsuccess = (event) => {
-        console.log("IndexedDB opened successfully");
-        const db = event.target.result;
-        const transaction = db.transaction([storeName], 'readwrite');
-        const store = transaction.objectStore(storeName);
-
-        const getRequest = store.get('deviceId');
-
-        getRequest.onsuccess = () => {
-            let deviceInfo;
-            if (getRequest.result) {
-              console.log("Existing deviceId found:", getRequest.result);
-              if (typeof getRequest.result === 'object' && getRequest.result.id && getRequest.result.type) {
-                deviceInfo = getRequest.result;
-              } else {
-                const existingId = typeof getRequest.result === 'object' ? getRequest.result.id : getRequest.result;
-                deviceInfo = { id: existingId, type: getDeviceType() };
-                store.put(deviceInfo, 'deviceId');
-              }
-            } else {
-              console.log("No existing deviceId, creating new one");
-              deviceInfo = { id: crypto.randomUUID(), type: getDeviceType() };
-              store.put(deviceInfo, 'deviceId');
-            }
-            console.log("DeviceInfo:", deviceInfo);
-            resolve(deviceInfo);
+        request.onerror = (event) => {
+            console.error("IndexedDB error:", event);
+            reject('IndexedDB error');
         };
 
-        getRequest.onerror = (event) => {
-          console.error("Error getting deviceId:", event);
-          reject('Error getting deviceId');
-        };
-      };
+        request.onsuccess = (event) => {
+            console.log("IndexedDB opened successfully");
+            const db = event.target.result;
+            const transaction = db.transaction([storeName], 'readwrite');
+            const store = transaction.objectStore(storeName);
 
-      request.onupgradeneeded = (event) => {
-        console.log("Upgrading or creating IndexedDB");
-        const db = event.target.result;
-        db.createObjectStore(storeName);
-      };
+            const getRequest = store.get('deviceId');
+
+            getRequest.onsuccess = () => {
+                let deviceInfo;
+                if (getRequest.result) {
+                    console.log("Existing deviceId found:", getRequest.result);
+                    if (typeof getRequest.result === 'object' && getRequest.result.id && getRequest.result.type) {
+                        deviceInfo = getRequest.result;
+                    } else {
+                        const existingId = typeof getRequest.result === 'object' ? getRequest.result.id : getRequest.result;
+                        deviceInfo = { id: existingId, type: getDeviceType() };
+                        store.put(deviceInfo, 'deviceId');
+                    }
+                } else {
+                    console.log("No existing deviceId, creating new one");
+                    deviceInfo = { id: crypto.randomUUID(), type: getDeviceType() };
+                    store.put(deviceInfo, 'deviceId');
+                }
+                console.log("DeviceInfo:", deviceInfo);
+                resolve(deviceInfo);
+            };
+
+            getRequest.onerror = (event) => {
+                console.error("Error getting deviceId:", event);
+                reject('Error getting deviceId');
+            };
+        };
+
+        request.onupgradeneeded = (event) => {
+            console.log("Upgrading or creating IndexedDB");
+            const db = event.target.result;
+            db.createObjectStore(storeName);
+        };
     });
 }
 
@@ -76,22 +76,22 @@ async function generateVapidKeys() {
     const response = await fetch('https://hmxxqacnzxqpcheoeidn.supabase.co/functions/v1/generate-vapid', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHhxYWNuenhxcGNoZW9laWRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDkwMjY1MDgsImV4cCI6MjAyNDYwMjUwOH0.rFOu8vW3QOCgp1VMIPKc7eF-g_8vok-pazjp7R6TJHs'
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHhxYWNuenhxcGNoZW9laWRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQ1MDg1OTcsImV4cCI6MjA0MDA4NDU5N30.qvxhdJBSRY14wOBbOM9blJgmmfNYvRXY1nJFvmZCZIs'
         }
     });
-  
+
     if (!response.ok) {
-      throw new Error('Failed to generate VAPID keys');
+        throw new Error('Failed to generate VAPID keys');
     }
-  
+
     return await response.json();
-  }
-  
+}
 
 
 
-  export async function subscribeToPushNotifications(userId) {
+
+export async function subscribeToPushNotifications(userId) {
     console.log('Starting subscribeToPushNotifications for user:', userId);
 
     if ('serviceWorker' in navigator && 'PushManager' in window) {

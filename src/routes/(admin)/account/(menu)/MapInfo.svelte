@@ -2,6 +2,8 @@
   import { onMount } from "svelte"
   import { browser } from "$app/environment"
   import { connectedMapStore } from "../../../../stores/connectedMapStore"
+  import { menuStore } from "../../../../stores/menuStore"
+
   import * as Card from "$lib/components/ui/card"
   import { MapIcon, Copy, Check } from "lucide-svelte"
   import CoolLineMap from "$lib/animations/CoolLineMap.json"
@@ -44,8 +46,7 @@
   }
 
   function createMap() {
-    console.log("Create map function triggered")
-    // Stub function for creating a map
+    menuStore.update((store) => ({ ...store, showGenerateModal: true }))
   }
 
   function joinMap() {
@@ -72,7 +73,7 @@
           ? `Owned by ${$connectedMapStore.owner}`
           : "Connect to a map to view details"}
       </Card.Description>
-      <div class="mt-4 flex justify-center space-x-4">
+      <div class="mt-4 flex justify-center space-x-8">
         <button
           class="flex h-32 w-32 items-center justify-center rounded-full bg-info/30 shadow-lg transition-all duration-300 hover:scale-105 hover:bg-info/40 dark:bg-info/50 dark:hover:bg-info/60"
           on:click={goToMapViewer}
@@ -113,7 +114,7 @@
         </div>
       </div>
     {:else}
-      <div class="mt-4 flex justify-center space-x-4">
+      <div class="mt-4 flex justify-center space-x-8">
         <div class="flex flex-col items-center">
           <button
             class="flex h-32 w-32 items-center justify-center rounded-full bg-info/30 shadow-lg transition-all duration-300 hover:scale-105 hover:bg-info/40 dark:bg-info/50 dark:hover:bg-info/60"
