@@ -50,8 +50,7 @@
   }
 
   function joinMap() {
-    console.log("Join map function triggered")
-    // Stub function for joining a map
+    menuStore.update(store => ({ ...store, showConnectModal: true }))
   }
 </script>
 

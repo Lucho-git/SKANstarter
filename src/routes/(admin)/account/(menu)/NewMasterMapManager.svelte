@@ -1,6 +1,8 @@
 <script lang="ts">
   import MapInfo from "./MapInfo.svelte"
   import GenerateMapModal from "./GenerateMapModal.svelte"
+  import ConnectToMapModal from "./ConnectToMapModal.svelte"
+
   import { menuStore } from "../../../../stores/menuStore"
 </script>
 
@@ -11,4 +13,8 @@
 
 {#if $menuStore.showGenerateModal}
   <GenerateMapModal />
+{/if}
+
+{#if $menuStore.showConnectModal}
+  <ConnectToMapModal />
 {/if}
