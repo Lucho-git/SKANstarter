@@ -1,52 +1,14 @@
 <script lang="ts">
   import { v4 as uuidv4 } from "uuid"
   import { menuStore } from "../../../../stores/menuStore"
-  import { connectedMapStore } from "../../../../stores/connectedMapStore"
   import { profileStore } from "../../../../stores/profileStore"
-  import { supabase } from "$lib/supabaseClient"
+  import { enhance } from "$app/forms"
+  import { toast } from "svelte-sonner"
 
   let newMapName = ""
   let generatedMapId = uuidv4()
 
   function cancelGenerateMap() {
-    menuStore.update((store) => ({ ...store, showGenerateModal: false }))
-  }
-
-  async function confirmGenerateMap() {
-    const { data: masterMap, error: insertError } = await supabase
-      .from("master_maps")
-      .insert({
-        id: generatedMapId,
-        master_user_id: $profileStore.id,
-        map_name: newMapName,
-      })
-      .single()
-
-    if (insertError) {
-      console.error("Error generating master map:", insertError)
-      return
-    }
-
-    const { error: updateError } = await supabase
-      .from("profiles")
-      .update({ master_map_id: generatedMapId })
-      .eq("id", $profileStore.id)
-
-    if (updateError) {
-      console.error("Error updating user profile:", updateError)
-      return
-    }
-
-    connectedMapStore.set({
-      id: generatedMapId,
-      map_name: newMapName,
-      master_user_id: $profileStore.id,
-      owner: $profileStore.full_name,
-      is_owner: true,
-      masterSubscription: null,
-      is_connected: true,
-    })
-
     menuStore.update((store) => ({ ...store, showGenerateModal: false }))
   }
 </script>
@@ -59,22 +21,56 @@
         {generatedMapId}
       </h3>
     </div>
-    <input
-      type="text"
-      placeholder="Enter map name"
-      class="input input-bordered mb-4 w-full"
-      bind:value={newMapName}
-    />
-    <div class="modal-action mb-6 flex flex-col sm:flex-row sm:justify-center">
-      <button
-        class="btn btn-primary mb-2 sm:mb-0 sm:mr-2"
-        on:click={confirmGenerateMap}
+    <form
+      method="POST"
+      action="?/createAndJoinMap"
+      use:enhance={({ formElement, formData, action, cancel }) => {
+        return async ({ result, update }) => {
+          if (result.type === "success") {
+            toast.promise(
+              update().then(() => {
+                menuStore.update((store) => ({
+                  ...store,
+                  showGenerateModal: false,
+                }))
+                return "You have successfully created and joined the new map"
+              }),
+              {
+                loading: "Creating and joining new map...",
+                success: (data) => data,
+                error: (error) => `Error: ${error.message}`,
+              },
+            )
+          } else {
+            toast.error("Failed to create and join map", {
+              description: result.data?.message || "An error occurred",
+            })
+          }
+        }
+      }}
+    >
+      <input
+        type="text"
+        name="mapName"
+        placeholder="Enter map name"
+        class="input input-bordered mb-4 w-full"
+        bind:value={newMapName}
+      />
+      <input type="hidden" name="mapId" value={generatedMapId} />
+      <div
+        class="modal-action mb-6 flex flex-col sm:flex-row sm:justify-center"
       >
-        Confirm
-      </button>
-      <button class="btn mb-2 sm:mb-0" on:click={cancelGenerateMap}>
-        Cancel
-      </button>
-    </div>
+        <button type="submit" class="btn btn-primary mb-2 sm:mb-0 sm:mr-2">
+          Confirm
+        </button>
+        <button
+          type="button"
+          class="btn mb-2 sm:mb-0"
+          on:click={cancelGenerateMap}
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
   </div>
 </div>

@@ -179,6 +179,48 @@ export const actions = {
         return { success: true, message: 'Successfully connected to map' };
     },
 
+    createAndJoinMap: async ({ locals, request }) => {
+        const session = await locals.getSession();
+        if (!session) {
+            return fail(401, { message: 'Unauthorized' });
+        }
+
+        const formData = await request.formData();
+        const mapName = formData.get('mapName');
+        const mapId = formData.get('mapId');
+
+        if (!mapName || !mapId) {
+            return fail(400, { message: 'Map name and ID are required' });
+        }
+
+        // Create the new map
+        const { data: masterMap, error: insertError } = await locals.supabase
+            .from("master_maps")
+            .insert({
+                id: mapId,
+                master_user_id: session.user.id,
+                map_name: mapName,
+            })
+            .single();
+
+        if (insertError) {
+            return fail(500, { message: 'Failed to create map' });
+        }
+
+        // Now connect to the newly created map
+        const { error: updateError } = await locals.supabase
+            .from("profiles")
+            .update({ master_map_id: mapId })
+            .eq("id", session.user.id);
+
+        if (updateError) {
+            return fail(500, { message: 'Failed to connect to map' });
+        }
+
+        return { success: true, message: 'Successfully created and joined map' };
+    },
+
+
     disconnectFromMap: async ({ locals }) => {
         const session = await locals.getSession();
         if (!session) {
