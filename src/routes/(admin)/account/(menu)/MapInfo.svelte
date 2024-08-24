@@ -20,6 +20,13 @@
   import Settings_gears from "$lib/animations/Settings_gears.json"
   import spinning_globe_location from "$lib/animations/spinning_globe_location.json"
   import spinning_globe from "$lib/animations/spinning_globe.json"
+  import farm_house from "$lib/animations/farm_house.json"
+  import searching_area from "$lib/animations/searching_area.json"
+  import searching_idle from "$lib/animations/searching_idle.json"
+  import searching_magnify from "$lib/animations/searching_magnify.json"
+  import searching_map from "$lib/animations/searching_map.json"
+  import searching_tablet from "$lib/animations/searching_tablet.json"
+
   import { LottiePlayer } from "@lottiefiles/svelte-lottie-player"
 
   let copied = false
@@ -128,7 +135,7 @@
               <MapIcon class="h-16 w-16" />
             {/if}
           </button>
-          <p class="mt-2 text-center text-sm">Create</p>
+          <p class="text-bold mt-2 text-center text-sm font-bold">Create</p>
         </div>
         <div class="flex flex-col items-center">
           <button
@@ -137,20 +144,20 @@
           >
             {#if browser && LottiePlayer}
               <LottiePlayer
-                src={CoolLineMap}
+                src={searching_map}
                 autoplay={true}
                 loop={true}
                 controls={false}
                 renderer="svg"
                 background="transparent"
-                height={80}
-                width={100}
+                height={40}
+                width={120}
               />
             {:else}
               <MapIcon class="h-16 w-16" />
             {/if}
           </button>
-          <p class="mt-2 text-center text-sm">Join</p>
+          <p class="mt-2 text-center text-sm font-bold">Join</p>
         </div>
       </div>
     {/if}
