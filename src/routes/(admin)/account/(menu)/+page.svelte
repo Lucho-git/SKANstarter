@@ -73,7 +73,7 @@
 /> -->
 <div class="mx-auto w-full max-w-4xl">
   <div>
-    <h2 class="mt-2 text-2xl font-bold">Map Manager</h2>
+    <!-- <h2 class="mt-2 text-2xl font-bold">Map Manager</h2> -->
 
     <!-- <MasterMapManager /> -->
     <NewMasterMapManager />
