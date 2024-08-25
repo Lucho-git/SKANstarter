@@ -9,7 +9,7 @@
 </script>
 
 <div class=" py-2">
-  <div class="mb-4 text-center font-bold">Selected Map</div>
+  <!-- <div class="mb-4 text-center font-bold">Selected Map</div> -->
   <MapInfo />
 </div>
 
