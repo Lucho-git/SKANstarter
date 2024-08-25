@@ -263,6 +263,59 @@ export const actions = {
     },
 
 
+    deleteMap: async ({ locals, request }) => {
+        const session = await locals.getSession();
+        if (!session) {
+            return fail(401, { message: 'Unauthorized' });
+        }
+
+        const formData = await request.formData();
+        const mapIdToDelete = formData.get('mapId');
+
+        if (!mapIdToDelete) {
+            return fail(400, { message: 'Map ID is required' });
+        }
+
+        // Check if the user is the owner of the map
+        const { data: mapData, error: mapError } = await locals.supabase
+            .from("master_maps")
+            .select("master_user_id")
+            .eq("id", mapIdToDelete)
+            .single();
+
+        if (mapError || !mapData) {
+            return fail(404, { message: 'Map not found' });
+        }
+
+        if (mapData.master_user_id !== session.user.id) {
+            return fail(403, { message: 'You do not have permission to delete this map' });
+        }
+
+        // Disconnect all users from the map
+        const { error: disconnectError } = await locals.supabase
+            .from("profiles")
+            .update({ master_map_id: null })
+            .eq("master_map_id", mapIdToDelete);
+
+        if (disconnectError) {
+            console.error("Error disconnecting users:", disconnectError);
+            return fail(500, { message: 'Failed to disconnect users from the map' });
+        }
+
+        // Delete the map
+        const { error: deleteError } = await locals.supabase
+            .from("master_maps")
+            .delete()
+            .eq("id", mapIdToDelete);
+
+        if (deleteError) {
+            return fail(500, { message: 'Failed to delete map' });
+        }
+
+        return { success: true, message: 'Successfully deleted map' };
+    },
+
+
     locateVehicle: async ({ locals, request }) => {
         const session = await locals.getSession();
         if (!session) {

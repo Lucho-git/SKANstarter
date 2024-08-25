@@ -50,7 +50,11 @@
   }
 
   function joinMap() {
-    menuStore.update(store => ({ ...store, showConnectModal: true }))
+    menuStore.update((store) => ({ ...store, showConnectModal: true }))
+  }
+
+  function openSettingsModal() {
+    menuStore.update((store) => ({ ...store, showSettingsModal: true }))
   }
 </script>
 
@@ -92,8 +96,9 @@
             <MapIcon class="h-16 w-16" />
           {/if}
         </button>
-        <div
+        <button
           class="flex h-32 w-32 items-center justify-center rounded-full bg-info/30 shadow-lg transition-all duration-300 hover:scale-105 hover:bg-info/40 dark:bg-info/50 dark:hover:bg-info/60"
+          on:click={openSettingsModal}
         >
           {#if browser && LottiePlayer}
             <LottiePlayer
@@ -110,7 +115,7 @@
           {:else}
             <MapIcon class="h-16 w-16" />
           {/if}
-        </div>
+        </button>
       </div>
     {:else}
       <div class="mt-4 flex justify-center space-x-8">
