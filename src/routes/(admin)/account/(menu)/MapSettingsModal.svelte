@@ -109,12 +109,9 @@
             </div>
           </form>
         {:else}
-          <button
-            class="btn btn-primary btn-outline w-full"
-            on:click={openRenameModal}
-          >
+          <button class="btn btn-info w-full" on:click={openRenameModal}>
             <Edit class="mr-2 h-4 w-4" />
-            Rename Map
+            Rename
           </button>
           <div class="flex space-x-2">
             <form
@@ -144,7 +141,7 @@
             >
               <button type="submit" class="btn btn-warning w-full">
                 <LogOut class="mr-2 h-4 w-4" />
-                Join New Map
+                Different Map
               </button>
             </form>
             <button
