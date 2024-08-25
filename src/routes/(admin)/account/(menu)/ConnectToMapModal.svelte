@@ -5,6 +5,7 @@
   import { supabase } from "$lib/supabaseClient"
   import { enhance } from "$app/forms"
   import { toast } from "svelte-sonner"
+  import { Link2, Map } from "lucide-svelte"
 
   let enteredMapId = ""
   let isValidMapId = false
@@ -42,8 +43,15 @@
 </script>
 
 <div class="modal modal-open">
-  <div class="modal-box mx-auto w-11/12 max-w-md px-4 py-2">
-    <h3 class="mb-4 text-center text-lg font-bold">Connect to Master Map</h3>
+  <div class="modal-box mx-auto w-11/12 max-w-xl px-6 py-6">
+    <h3 class="mb-6 text-center text-2xl font-bold text-primary">
+      Connect to Map
+    </h3>
+
+    <!-- <div class="mb-4 flex items-center justify-center">
+      <Link2 class="h-8 w-8 text-primary" />
+    </div> -->
+
     <form
       method="POST"
       action="?/connectToMap"
@@ -74,21 +82,21 @@
     >
       <div class="form-control mb-4">
         <label class="label" for="enteredMapId">
-          <span class="label-text">Enter Master Map ID:</span>
+          <span class="label-text">Enter Map ID:</span>
         </label>
-        <div class="relative">
+        <div class="flex">
           <input
             type="text"
             id="enteredMapId"
             name="mapId"
-            placeholder="Master Map ID"
-            class="input input-bordered w-full pr-16"
+            placeholder="Map ID"
+            class="input input-bordered flex-grow"
             bind:value={enteredMapId}
             on:input={checkMapIdValidity}
           />
           <button
             type="submit"
-            class="btn btn-primary absolute right-0 top-0 rounded-l-none"
+            class="btn btn-primary ml-2"
             class:btn-success={isValidMapId}
             disabled={!isValidMapId}
           >
@@ -99,9 +107,13 @@
     </form>
 
     {#if userMaps.length > 0}
-      <ul class="menu rounded-box mb-4 w-full bg-base-100 p-2">
-        {#each userMaps as map}
-          <li>
+      <div class="divider my-4">OR</div>
+      <h4 class="mb-2 text-lg font-semibold">Your Maps</h4>
+      <ul class="space-y-2">
+        {#each userMaps as map, index}
+          <li
+            class={`rounded-xl ${index % 2 === 0 ? "bg-base-200" : "bg-base-300"}`}
+          >
             <form
               method="POST"
               action="?/connectToMap"
@@ -131,22 +143,26 @@
               }}
             >
               <input type="hidden" name="mapId" value={map.id} />
-              <label class="flex cursor-pointer items-center justify-between">
-                <span class="flex-grow text-center">{map.map_name}</span>
-                <button type="submit" class="btn btn-primary btn-sm ml-4">
-                  Connect
-                </button>
-              </label>
+              <button
+                type="submit"
+                class="flex w-full items-center justify-between p-4 transition-colors hover:bg-base-100"
+              >
+                <span class="flex items-center font-medium">
+                  <Map class="mr-2 h-4 w-4" />
+                  {map.map_name}
+                </span>
+                <Link2 class="h-8 w-8 text-primary" />
+              </button>
             </form>
           </li>
         {/each}
       </ul>
     {:else}
-      <p class="mb-4">No master maps found.</p>
+      <p class="mt-4 text-center text-gray-600">No master maps found.</p>
     {/if}
 
-    <div class="modal-action mb-6 flex flex-col sm:flex-row sm:justify-center">
-      <button class="btn mb-2 sm:mb-0" on:click={cancelConnectMap}>
+    <div class="mt-6 flex justify-center">
+      <button class="btn btn-ghost" on:click={cancelConnectMap}>
         Cancel
       </button>
     </div>

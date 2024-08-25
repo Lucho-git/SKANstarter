@@ -67,6 +67,7 @@
   <Card.Header class="relative z-10 flex flex-col items-center">
     <Card.Title class="text-center text-2xl font-bold">
       {$connectedMapStore?.map_name || "No Map Connected"}
+      {#if !$connectedMapStore?.map_name}<div class="mt-4" />{/if}
     </Card.Title>
     {#if $connectedMapStore?.id}
       <Card.Description
@@ -193,11 +194,15 @@
         </button>
       </div>
     {:else}
-      <p
-        class="mt-4 text-center text-sm text-info-content/70 dark:text-info-content/90"
-      >
-        No map information available
-      </p>
+      <div class="flex items-center justify-center">
+        <div
+          class="badge badge-info badge-lg mt-4 flex items-center justify-between"
+        >
+          <p class="text-center text-sm font-medium dark:text-info-content/90">
+            No map information available
+          </p>
+        </div>
+      </div>
     {/if}
   </Card.Content>
 </Card.Root>
