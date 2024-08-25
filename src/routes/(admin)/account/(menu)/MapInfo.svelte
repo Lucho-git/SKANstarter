@@ -6,7 +6,7 @@
 
   import * as Card from "$lib/components/ui/card"
   import { MapIcon, Copy, Check } from "lucide-svelte"
-  import CoolLineMap from "$lib/animations/CoolLineMap.json"
+  import cool_line_map from "$lib/animations/cool_line_map.json"
   import CoolIdleEdit from "$lib/animations/cool_idle_edit.json"
   import idle_edit_green from "$lib/animations/idle_edit_green.json"
   import idle_edit_muted from "$lib/animations/idle_edit_muted.json"
@@ -15,11 +15,11 @@
   import draw_edit_green_map from "$lib/animations/draw_edit_green_map.json"
   import draw_edit_blue_map from "$lib/animations/draw_edit_blue_map.json"
   import draw_edit_big_map from "$lib/animations/draw_edit_big_map.json"
-  import Draw_Edit_Map from "$lib/animations/Draw_Edit_Map.json"
+  import draw_edit_map from "$lib/animations/draw_edit_map.json"
   import photo_swap from "$lib/animations/photo_swap.json"
-  import AddButton from "$lib/animations/AddButton.json"
+  import add_button from "$lib/animations/add_button.json"
   import rocket_blast from "$lib/animations/rocket_blast.json"
-  import Settings_gears from "$lib/animations/Settings_gears.json"
+  import settings_gears from "$lib/animations/settings_gears.json"
   import spinning_globe_location from "$lib/animations/spinning_globe_location.json"
   import spinning_globe from "$lib/animations/spinning_globe.json"
   import farm_house from "$lib/animations/farm_house.json"
@@ -126,7 +126,7 @@
           >
             {#if browser && LottiePlayer}
               <LottiePlayer
-                src={AddButton}
+                src={add_button}
                 autoplay={true}
                 loop={true}
                 controls={false}

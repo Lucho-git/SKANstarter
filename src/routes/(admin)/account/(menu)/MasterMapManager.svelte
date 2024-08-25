@@ -4,7 +4,7 @@
   import { page } from "$app/stores"
   import { v4 as uuidv4 } from "uuid"
   import { browser } from "$app/environment"
-  import CoolLineMap from "$lib/animations/CoolLineMap.json"
+  import cool_line_map from "$lib/animations/cool_line_map.json"
   import { connectedMapStore } from "../../../../stores/connectedMapStore"
   import { profileStore } from "../../../../stores/profileStore"
   import { enhance, applyAction } from "$app/forms"
@@ -354,7 +354,7 @@
           {#if browser && LottiePlayer}
             <svelte:component
               this={LottiePlayer}
-              src={CoolLineMap}
+              src={cool_line_map}
               autoplay={true}
               loop={true}
               controls={false}
