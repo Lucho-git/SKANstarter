@@ -2,6 +2,7 @@
   import { userStore } from "../stores/userStore"
   import { supabase } from "$lib/supabaseClient"
   import { toast } from "svelte-sonner"
+  import { PUBLIC_SUPABASE_ANON_KEY } from "$env/static/public"
 
   async function triggerEdgeFunction() {
     let sentCount = 0
@@ -52,8 +53,7 @@
           {
             method: "POST",
             headers: {
-              Authorization:
-                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHhxYWNuenhxcGNoZW9laWRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQ1MDg1OTcsImV4cCI6MjA0MDA4NDU5N30.qvxhdJBSRY14wOBbOM9blJgmmfNYvRXY1nJFvmZCZIs",
+              Authorization: "Bearer" + PUBLIC_SUPABASE_ANON_KEY,
               "Content-Type": "application/json",
             },
             body: JSON.stringify(edgeFunctionData),

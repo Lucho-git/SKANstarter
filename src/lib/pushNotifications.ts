@@ -1,4 +1,6 @@
 import { PUBLIC_VAPID_APPLICATION_SERVER_KEY, PUBLIC_SUPABASE_ANON_KEY } from "$env/static/public";
+
+
 import { supabase } from './supabaseClient';
 
 function getDeviceType() {
@@ -77,7 +79,7 @@ async function generateVapidKeys() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHhxYWNuenhxcGNoZW9laWRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQ1MDg1OTcsImV4cCI6MjA0MDA4NDU5N30.qvxhdJBSRY14wOBbOM9blJgmmfNYvRXY1nJFvmZCZIs'
+            'Authorization': 'Bearer ' + PUBLIC_SUPABASE_ANON_KEY
         }
     });
 
