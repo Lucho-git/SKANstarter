@@ -193,16 +193,6 @@
           </div>
         </button>
       </div>
-    {:else}
-      <div class="flex items-center justify-center">
-        <div
-          class="badge badge-info badge-lg mt-4 flex items-center justify-between"
-        >
-          <p class="text-center text-sm font-medium dark:text-info-content/90">
-            No map information available
-          </p>
-        </div>
-      </div>
     {/if}
   </Card.Content>
 </Card.Root>
