@@ -19,7 +19,7 @@
   import photo_swap from "$lib/animations/photo_swap.json"
   import add_button from "$lib/animations/add_button.json"
   import rocket_blast from "$lib/animations/rocket_blast.json"
-  import settings_gears from "$lib/animations/settings_gears.json"
+  //   import settings_gears from "$lib/animations/settings_gears.json"
   import spinning_globe_location from "$lib/animations/spinning_globe_location.json"
   import spinning_globe from "$lib/animations/spinning_globe.json"
   import farm_house from "$lib/animations/farm_house.json"
