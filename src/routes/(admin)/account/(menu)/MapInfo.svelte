@@ -11,7 +11,7 @@
   import idle_edit_green from "$lib/animations/idle_edit_green.json"
   import idle_edit_muted from "$lib/animations/idle_edit_muted.json"
   import idle_edit from "$lib/animations/idle_edit.json"
-  import draw_edit_map_color from "$lib/animations/draw_edit_map_color.json"
+  //   import draw_edit_map_color from "$lib/animations/draw_edit_map_color.json"
   import draw_edit_green_map from "$lib/animations/draw_edit_green_map.json"
   import draw_edit_blue_map from "$lib/animations/draw_edit_blue_map.json"
   import draw_edit_big_map from "$lib/animations/draw_edit_big_map.json"
