@@ -141,7 +141,7 @@
             >
               <button type="submit" class="btn btn-warning w-full">
                 <LogOut class="mr-2 h-4 w-4" />
-                Different Map
+                New Map
               </button>
             </form>
             <button
