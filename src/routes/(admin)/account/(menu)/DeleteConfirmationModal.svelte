@@ -36,7 +36,7 @@
 <div
   class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
 >
-  <div class="w-full max-w-md rounded-lg bg-base-100 p-6 shadow-xl">
+  <div class="modal-box w-full max-w-md rounded-lg bg-base-100 p-6 shadow-xl">
     <h3 class="mb-4 text-center text-2xl font-bold text-red-600">
       Confirm Map Deletion
     </h3>

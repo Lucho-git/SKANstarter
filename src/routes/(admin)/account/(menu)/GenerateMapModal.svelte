@@ -4,6 +4,7 @@
   import { profileStore } from "../../../../stores/profileStore"
   import { enhance } from "$app/forms"
   import { toast } from "svelte-sonner"
+  import { Map } from "lucide-svelte"
 
   let newMapName = ""
   let generatedMapId = uuidv4()
@@ -14,13 +15,27 @@
 </script>
 
 <div class="modal modal-open z-50">
-  <div class="modal-box mx-auto w-11/12 max-w-md px-4 py-2">
-    <h3 class="mb-4 text-center text-lg font-bold">Generate New Map</h3>
-    <div class="mb-4 flex justify-center">
-      <h3 class="badge badge-info badge-lg text-xs font-bold">
-        {generatedMapId}
-      </h3>
+  <div class="modal-box mx-auto w-11/12 max-w-xl px-6 py-4">
+    <h3 class="mb-6 text-center text-2xl font-bold text-primary">
+      Generate New Map
+    </h3>
+
+    <div
+      class="mb-6 rounded-lg bg-info/20 p-4 text-base-content shadow-inner dark:bg-info/40"
+    >
+      <div class="mb-4 flex items-center justify-center">
+        <Map class="h-12 w-12 text-primary" />
+      </div>
+      <div class="text-center">
+        <p class="text-lg font-semibold">{newMapName || "New Map"}</p>
+        <div class="mt-2 flex justify-center">
+          <span class="badge badge-info badge-lg text-xs font-bold">
+            {generatedMapId}
+          </span>
+        </div>
+      </div>
     </div>
+
     <form
       method="POST"
       action="?/createAndJoinMap"
@@ -49,23 +64,25 @@
         }
       }}
     >
-      <input
-        type="text"
-        name="mapName"
-        placeholder="Enter map name"
-        class="input input-bordered mb-4 w-full"
-        bind:value={newMapName}
-      />
+      <div class="form-control">
+        <label for="mapName" class="label">
+          <span class="label-text">Map Name</span>
+        </label>
+        <input
+          id="mapName"
+          type="text"
+          name="mapName"
+          placeholder="Enter map name"
+          class="input input-bordered w-full"
+          bind:value={newMapName}
+        />
+      </div>
       <input type="hidden" name="mapId" value={generatedMapId} />
-      <div
-        class="modal-action mb-6 flex flex-col sm:flex-row sm:justify-center"
-      >
-        <button type="submit" class="btn btn-primary mb-2 sm:mb-0 sm:mr-2">
-          Confirm
-        </button>
+      <div class="mt-6 flex justify-center space-x-4">
+        <button type="submit" class="btn btn-primary"> Create Map </button>
         <button
           type="button"
-          class="btn mb-2 sm:mb-0"
+          class="btn btn-ghost"
           on:click={cancelGenerateMap}
         >
           Cancel
