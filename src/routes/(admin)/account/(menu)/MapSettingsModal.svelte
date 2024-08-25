@@ -6,6 +6,7 @@
   import { enhance, applyAction } from "$app/forms"
   import { toast } from "svelte-sonner"
   import { goto } from "$app/navigation"
+  import { Edit, Save, X, LogOut, Trash2, X as Close } from "lucide-svelte"
 
   let isRenaming = false
   let newMapNameInput = $connectedMapStore.map_name
@@ -47,23 +48,25 @@
   }
 </script>
 
-<div class="modal modal-open z-10">
-  <div class="modal-box mx-auto w-11/12 max-w-md px-4 py-2">
-    <h3 class="mb-4 text-center text-lg font-bold">Map Settings</h3>
+<div
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+>
+  <div class="w-full max-w-md rounded-lg bg-base-100 p-6 shadow-xl">
+    <h3 class="mb-6 text-center text-2xl font-bold text-primary">
+      Map Settings
+    </h3>
     {#if $connectedMapStore.id}
-      <div class="mb-4 rounded-lg border bg-base-200 bg-info p-4 text-black">
-        <div>
-          <span class="font-bold">Selected Map:</span>
+      <div
+        class="mb-6 rounded-lg bg-info/20 p-4 text-base-content shadow-inner dark:bg-info/40"
+      >
+        <div class="mb-2 text-lg font-semibold text-primary">
           {$connectedMapStore.map_name}
         </div>
-        <div class="my-2 text-left">
-          <p class="mt-2">
-            <strong>Owner:</strong>
-            {$connectedMapStore.owner}
-          </p>
+        <div class="text-sm text-base-content/70 dark:text-base-content/90">
+          Owned by <span class="font-medium">{$connectedMapStore.owner}</span>
         </div>
       </div>
-      <div class="flex flex-col space-y-4">
+      <div class="space-y-4">
         {#if isRenaming}
           <form
             method="POST"
@@ -72,6 +75,10 @@
               return async ({ result }) => {
                 if (result.type === "success") {
                   isRenaming = false
+                  connectedMapStore.update((store) => ({
+                    ...store,
+                    map_name: newMapNameInput,
+                  }))
                   toast.success("Map renamed successfully")
                 } else {
                   toast.error("Failed to rename map")
@@ -87,24 +94,33 @@
               class="input input-bordered w-full"
               bind:value={newMapNameInput}
             />
-            <div class="mt-2 flex space-x-2">
-              <button type="submit" class="btn btn-success w-1/2">Save</button>
+            <div class="mt-4 flex space-x-2">
+              <button type="submit" class="btn btn-primary flex-1">
+                <Save class="mr-2 h-4 w-4" />
+                Save
+              </button>
               <button
                 type="button"
-                class="btn btn-error w-1/2"
-                on:click={cancelRenameMap}>Cancel</button
+                class="btn btn-ghost flex-1"
+                on:click={cancelRenameMap}
               >
+                Cancel
+              </button>
             </div>
           </form>
         {:else}
-          <button class="btn btn-info" on:click={openRenameModal}>
-            Rename
+          <button
+            class="btn btn-primary btn-outline w-full"
+            on:click={openRenameModal}
+          >
+            <Edit class="mr-2 h-4 w-4" />
+            Rename Map
           </button>
           <div class="flex space-x-2">
             <form
               method="POST"
               action="?/disconnectFromMap"
-              class="w-full"
+              class="w-1/2"
               use:enhance={() => {
                 return async ({ result }) => {
                   if (result.type === "success") {
@@ -126,26 +142,28 @@
                 }
               }}
             >
-              <button type="submit" class="btn btn-warning w-full text-xs">
-                Disconnect
+              <button type="submit" class="btn btn-warning w-full">
+                <LogOut class="mr-2 h-4 w-4" />
+                Join New Map
               </button>
             </form>
             <button
               type="button"
-              class="btn btn-error w-full text-xs"
+              class="btn btn-error w-1/2"
               disabled={!$connectedMapStore.is_owner}
               on:click={openDeleteConfirmationModal}
             >
+              <Trash2 class="mr-2 h-4 w-4" />
               Delete
             </button>
           </div>
         {/if}
       </div>
     {:else}
-      <p>No map connected</p>
+      <p class="text-center text-gray-600">No map connected</p>
     {/if}
-    <div class="modal-action mt-6 flex flex-row flex-col justify-center">
-      <button class="btn mb-2 sm:mb-0" on:click={cancelSettingsModal}>
+    <div class="mt-6 text-center">
+      <button class="btn btn-ghost" on:click={cancelSettingsModal}>
         Close
       </button>
     </div>

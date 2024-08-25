@@ -36,11 +36,11 @@
 <div
   class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
 >
-  <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+  <div class="w-full max-w-md rounded-lg bg-base-100 p-6 shadow-xl">
     <h3 class="mb-4 text-center text-2xl font-bold text-red-600">
       Confirm Map Deletion
     </h3>
-    <p class="mb-4 text-center text-gray-700">
+    <p class="mb-4 text-center text-base-content/70 dark:text-base-content/90">
       Are you sure you want to permanently delete the map:
       <span class="font-semibold">{mapName}</span>?
     </p>

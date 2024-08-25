@@ -262,7 +262,47 @@ export const actions = {
         return { success: true, message: 'Successfully kicked user from map' };
     },
 
+    renameMap: async ({ locals, request }) => {
+        const session = await locals.getSession();
+        if (!session) {
+            return fail(401, { message: 'Unauthorized' });
+        }
 
+        const formData = await request.formData();
+        const mapId = formData.get('mapId');
+        const newMapName = formData.get('newMapName');
+
+        if (!mapId || !newMapName) {
+            return fail(400, { message: 'Map ID and new map name are required' });
+        }
+
+        // Check if the user is the owner of the map
+        const { data: mapData, error: mapError } = await locals.supabase
+            .from("master_maps")
+            .select("master_user_id")
+            .eq("id", mapId)
+            .single();
+
+        if (mapError || !mapData) {
+            return fail(404, { message: 'Map not found' });
+        }
+
+        if (mapData.master_user_id !== session.user.id) {
+            return fail(403, { message: 'You do not have permission to rename this map' });
+        }
+
+        // Rename the map
+        const { error: updateError } = await locals.supabase
+            .from("master_maps")
+            .update({ map_name: newMapName })
+            .eq("id", mapId);
+
+        if (updateError) {
+            return fail(500, { message: 'Failed to rename map' });
+        }
+
+        return { success: true, message: 'Successfully renamed map' };
+    },
     deleteMap: async ({ locals, request }) => {
         const session = await locals.getSession();
         if (!session) {
