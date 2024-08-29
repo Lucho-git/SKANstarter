@@ -32,7 +32,7 @@
   let syncIntervalId = null
 
   const TRAIL_SYNC_INTERVAL_MIN = 30000 // 30 seconds
-  const TRAIL_DATA_RETENTION_DAYS = 28
+  const TRAIL_DATA_RETENTION_DAYS = 90
 
   onMount(async () => {
     console.log("Initializing TrailStateSynchronizer")
