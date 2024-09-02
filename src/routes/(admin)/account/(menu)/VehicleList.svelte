@@ -93,6 +93,16 @@
       ),
     }))
   }
+
+  function handleLocate(profileId: string) {
+    console.log("Locate button pressed for profile:", profileId)
+    goto(`/account/mapviewer?userId=${profileId}`)
+  }
+
+  function handleConnect(profileId: string) {
+    console.log("Connect button pressed for profile:", profileId)
+    goto(`/account/mapviewer?userId=${profileId}`)
+  }
 </script>
 
 <div class="mt-0 rounded-lg bg-base-200 p-4 shadow-lg" style="z-index: 0;">
@@ -213,35 +223,15 @@
             </form>
           {/if}
         {:else}
-          <form
-            method="POST"
-            action="?/locateVehicle"
-            class="m-auto"
-            use:enhance={() => {
-              return async ({ result }) => {
-                if (result.type === "success") {
-                  toast.info("Locating Vehicle", {
-                    description: `${profile.full_name}'s vehicle locating feature is imminent`,
-                  })
-                } else if (result.type === "failure") {
-                  toast.error("Failed to locate vehicle", {
-                    description: result.data?.message || "An error occurred",
-                  })
-                }
-                await applyAction(result)
-              }
-            }}
+          <button
+            class="btn {buttonClass} btn-sm m-auto"
+            class:btn-info={!vehicle}
+            on:click={() =>
+              vehicle ? handleLocate(profile.id) : handleConnect(profile.id)}
+            disabled={!vehicle && !is_user(profile.id)}
           >
-            <input type="hidden" name="userId" value={profile.id} />
-            <button
-              class="btn {buttonClass} btn-sm"
-              class:btn-info={!vehicle}
-              type="submit"
-              disabled={!vehicle && !is_user(profile.id)}
-            >
-              {vehicle ? "Locate" : "Connect"}
-            </button>
-          </form>
+            {vehicle ? "Locate" : "Connect"}
+          </button>
         {/if}
       </div>
     {/each}
