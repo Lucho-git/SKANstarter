@@ -12,7 +12,7 @@ function createUserVehicleStore() {
         color: 'red',
         size: '25px',
         swath: 30,
-        path: () => import('../components/SVG/SimpleTractor.svelte')
+        path: () => import('$lib/vehicles/SimpleTractor.svelte')
       },
       heading: 0
     });

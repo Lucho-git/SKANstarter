@@ -1,7 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte"
   import { controlStore } from "../stores/controlStore"
-  import SVGComponents from "../components/SVG/index.js"
+  import SVGComponents from "$lib/vehicles/index.js"
   import { onMount } from "svelte"
   import { toast } from "svelte-sonner"
 
@@ -34,6 +34,8 @@
     { type: "WheelLoader", color: "yellow", size: "medium" },
     { type: "WorkCar", color: "red", size: "medium" },
     { type: "Airplane", color: "blue", size: "large" },
+    { type: "FourWheelDriveTractor", color: "green", size: "large" },
+    { type: "TowBetweenSeeder", color: "red", size: "medium" },
   ]
 
   $: initialVehicle =
@@ -183,23 +185,23 @@
 </script>
 
 <div
-  class="fixed left-0 right-0 bottom-0 bg-white shadow-lg rounded-t-lg p-4 sm:p-6 z-20 transform transition-transform duration-300 flex flex-col"
+  class="fixed bottom-0 left-0 right-0 z-20 flex transform flex-col rounded-t-lg bg-white p-4 shadow-lg transition-transform duration-300 sm:p-6"
   class:translate-y-full={!showMenu}
   class:translate-y-0={showMenu}
   style={isMobile ? "height: 100%;" : "height: 45vh;"}
 >
-  <div class="flex flex-col sm:flex-row flex-grow overflow-hidden">
+  <div class="flex flex-grow flex-col overflow-hidden sm:flex-row">
     <!-- Vehicle/Color selection (scrollable) -->
     <div
-      class="w-full sm:w-1/2 sm:pr-3 flex-grow overflow-hidden flex flex-col"
+      class="flex w-full flex-grow flex-col overflow-hidden sm:w-1/2 sm:pr-3"
     >
       <div
-        class="flex w-full border-2 border-b-0 border-gray-300 rounded-t-lg overflow-hidden"
+        class="flex w-full overflow-hidden rounded-t-lg border-2 border-b-0 border-gray-300"
       >
         <a
           role="tab"
-          class="flex-1 py-3 text-center transition-colors duration-200 font-semibold text-lg {!isColorSelectionMode
-            ? 'bg-white border-b-2 border-transparent'
+          class="flex-1 py-3 text-center text-lg font-semibold transition-colors duration-200 {!isColorSelectionMode
+            ? 'border-b-2 border-transparent bg-white'
             : 'bg-blue-200 hover:bg-blue-300'}"
           on:click={() => toggleSelectionMode("vehicle")}
         >
@@ -207,8 +209,8 @@
         </a>
         <a
           role="tab"
-          class="flex-1 py-3 text-center transition-colors duration-200 font-semibold text-lg {isColorSelectionMode
-            ? 'bg-white border-b-2 border-transparent'
+          class="flex-1 py-3 text-center text-lg font-semibold transition-colors duration-200 {isColorSelectionMode
+            ? 'border-b-2 border-transparent bg-white'
             : 'bg-blue-200 hover:bg-blue-300'}"
           on:click={() => toggleSelectionMode("color")}
         >
@@ -216,12 +218,12 @@
         </a>
       </div>
       <div
-        class="border-2 border-t-0 border-gray-300 rounded-b-lg p-4 h-full flex flex-col overflow-hidden flex-grow bg-white"
+        class="flex h-full flex-grow flex-col overflow-hidden rounded-b-lg border-2 border-t-0 border-gray-300 bg-white p-4"
       >
-        <div class="overflow-y-auto flex-grow">
+        <div class="flex-grow overflow-y-auto">
           {#if isColorSelectionMode}
             <div
-              class="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3 justify-items-center content-start"
+              class="grid grid-cols-4 content-start justify-items-center gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6"
             >
               {#each colors as color}
                 <button
@@ -236,7 +238,7 @@
             </div>
           {:else}
             <div
-              class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3 justify-items-center content-start"
+              class="grid grid-cols-3 content-start justify-items-center gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6"
             >
               {#each vehicles as vehicle}
                 <button
@@ -259,10 +261,10 @@
     </div>
 
     <!-- Vehicle display box -->
-    <div class="w-full sm:w-1/2 sm:pl-3 flex flex-col mt-4 sm:mt-0">
-      <h2 class="text-2xl font-bold mb-4 text-center">Selected Vehicle</h2>
+    <div class="mt-4 flex w-full flex-col sm:mt-0 sm:w-1/2 sm:pl-3">
+      <h2 class="mb-4 text-center text-2xl font-bold">Selected Vehicle</h2>
       <button
-        class="flex-grow border-2 border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center transition-all duration-300 hover:bg-gray-100 active:bg-gray-200"
+        class="flex flex-grow flex-col items-center justify-center rounded-lg border-2 border-gray-300 p-4 transition-all duration-300 hover:bg-gray-100 active:bg-gray-200"
         on:click={() => cycleSize(1)}
         on:touchstart={handleTouchStart}
         on:touchend={handleTouchEnd}
@@ -274,19 +276,19 @@
           color={selectedVehicle.color}
           size={getSizeInPixels(selectedVehicle.size)}
         />
-        <p class="mt-2 sm:mt-4 text-center font-semibold">
+        <p class="mt-2 text-center font-semibold sm:mt-4">
           {selectedVehicle.type}
         </p>
-        <p class="text-center text-xs sm:text-sm text-gray-500">
+        <p class="text-center text-xs text-gray-500 sm:text-sm">
           Color: {selectedVehicle.color}
         </p>
-        <p class="text-center text-xs sm:text-sm text-gray-500">
+        <p class="text-center text-xs text-gray-500 sm:text-sm">
           Size: {selectedVehicle.size}
         </p>
-        <div class="flex mt-2 space-x-3 items-center">
+        <div class="mt-2 flex items-center space-x-3">
           {#each sizeOptions as size, index}
             <div
-              class="rounded-full transition-all duration-200 border-2"
+              class="rounded-full border-2 transition-all duration-200"
               class:bg-blue-500={index === currentSizeIndex}
               class:border-blue-500={index === currentSizeIndex}
               class:bg-gray-300={index !== currentSizeIndex}
@@ -300,10 +302,10 @@
   </div>
 
   <!-- Underneath section: Cancel and Confirm buttons -->
-  <div class="flex mt-4">
-    <button class="btn flex-1 mr-2" on:click={cancelSelection}>Cancel</button>
+  <div class="mt-4 flex">
+    <button class="btn mr-2 flex-1" on:click={cancelSelection}>Cancel</button>
     <button
-      class="btn btn-primary flex-1 ml-2"
+      class="btn btn-primary ml-2 flex-1"
       on:click={confirmSelection}
       disabled={!hasChanged}
     >

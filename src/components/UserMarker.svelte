@@ -1,7 +1,7 @@
 <!-- src/components/UserMarker.svelte -->
 <script>
   import { userVehicleStore } from "../stores/vehicleStore"
-  import SVGComponents from "../components/SVG/index.js"
+  import SVGComponents from "$lib/vehicles/index.js"
 
   export let pulseColor = "rgba(172, 172, 230, 0.8)"
   export let pulseSize = "40px"

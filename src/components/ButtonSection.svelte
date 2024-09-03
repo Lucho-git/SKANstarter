@@ -10,7 +10,7 @@
   import { browser } from "$app/environment"
   import { onMount } from "svelte"
   import VehicleSelectionMenu from "./VehicleSelectionMenu.svelte"
-  import SVGComponents from "../components/SVG/index.js"
+  import SVGComponents from "$lib/vehicles/index.js"
   import Icons from "$lib/icons"
   let isCircular = true
   let currentStyle = "skan"
@@ -171,7 +171,7 @@
   <button
     class="top-button {currentStyle} btn {isCircular
       ? 'btn-circle'
-      : 'btn-square'} btn-lg bg-white bg-opacity-50 hover:bg-opacity-100 absolute top-4 left-4 z-10"
+      : 'btn-square'} btn-lg absolute left-4 top-4 z-10 bg-white bg-opacity-50 hover:bg-opacity-100"
     on:click={handleBackToDashboard}
   >
     <svg
@@ -225,12 +225,12 @@
   </button> -->
 
   <!-- Floating button container -->
-  <div class="fixed top-4 right-4 z-20 flex flex-col items-end">
+  <div class="fixed right-4 top-4 z-20 flex flex-col items-end">
     <!-- Toggle expand/collapse button -->
     <button
       class="top-button {currentStyle} btn {isCircular
         ? 'btn-circle'
-        : 'btn-square'} btn-lg bg-white hover:bg-opacity-90 mb-3"
+        : 'btn-square'} btn-lg mb-3 bg-white hover:bg-opacity-90"
       on:click={toggleExpanded}
     >
       <svg
@@ -253,9 +253,9 @@
 
     <!-- Button list container -->
     <div
-      class="flex flex-col space-y-3 transition-all duration-700 ease-in-out origin-top {isExpanded
+      class="flex origin-top flex-col space-y-3 transition-all duration-700 ease-in-out {isExpanded
         ? 'scale-100 opacity-90'
-        : 'scale-0 opacity-0 h-50 overflow-hidden'}"
+        : 'h-50 scale-0 overflow-hidden opacity-0'}"
     >
       <!--Sync Button-->
       <button
@@ -265,7 +265,7 @@
         on:click={handleSync}
       >
         <svg
-          class="w-8 h-8 {$syncStore.spinning ? 'animate-spin' : ''}"
+          class="h-8 w-8 {$syncStore.spinning ? 'animate-spin' : ''}"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
@@ -294,7 +294,7 @@
       <button
         class="menu-button {currentStyle} btn {isCircular
           ? 'btn-circle'
-          : 'btn-square'} btn-lg bg-white hover:bg-opacity-90 text-sm"
+          : 'btn-square'} btn-lg bg-white text-sm hover:bg-opacity-90"
         on:click={handleLocationClick}
       >
         <Icons.location_drop width="48" height="48" fill="currentColor" />
@@ -346,7 +346,7 @@
           : 'btn-square'} btn-lg bg-white hover:bg-opacity-90"
         on:click={toggleVehicleMenu}
       >
-        <div class="flex items-center justify-center w-full h-full">
+        <div class="flex h-full w-full items-center justify-center">
           {#if VehicleIcon}
             <svelte:component
               this={VehicleIcon}

@@ -6,6 +6,8 @@ import Tractor from './Tractor.svelte';
 import WheelLoader from './WheelLoader.svelte';
 import WorkCar from './WorkCar.svelte';
 import Airplane from './Airplane.svelte';
+import FourWheelDriveTractor from './FourWheelDriveTractor.svelte';
+import TowBetweenSeeder from './TowBetweenSeeder.svelte';
 
 export default {
   SimpleTractor: SimpleTractor,
@@ -16,4 +18,6 @@ export default {
   WheelLoader: WheelLoader,
   WorkCar: WorkCar,
   Airplane: Airplane,
+  FourWheelDriveTractor: FourWheelDriveTractor,
+  TowBetweenSeeder: TowBetweenSeeder,
 };

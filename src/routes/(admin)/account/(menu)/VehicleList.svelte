@@ -3,7 +3,7 @@
   import * as Avatar from "$lib/components/ui/avatar"
   import { Skeleton } from "$lib/components/ui/skeleton"
   import { toast } from "svelte-sonner"
-  import VehicleIcons from "../../../../components/SVG/index.js"
+  import VehicleIcons from "$lib/vehicles/index.js"
   import * as Tabs from "$lib/components/ui/tabs"
   import { page } from "$app/stores"
   import { enhance, applyAction } from "$app/forms"
@@ -96,11 +96,15 @@
 
   function handleLocate(profileId: string) {
     console.log("Locate button pressed for profile:", profileId)
+    toast.info("Connecting to user", {
+      description: "Location feature is not implemented yet",
+    })
     goto(`/account/mapviewer?userId=${profileId}`)
   }
 
   function handleConnect(profileId: string) {
     console.log("Connect button pressed for profile:", profileId)
+
     goto(`/account/mapviewer?userId=${profileId}`)
   }
 </script>
