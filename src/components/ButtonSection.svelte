@@ -350,7 +350,7 @@
           {#if VehicleIcon}
             <svelte:component
               this={VehicleIcon}
-              color={$userVehicleStore.vehicle_marker.color}
+              bodyColor={$userVehicleStore.vehicle_marker.bodyColor}
               size={$userVehicleStore.vehicle_marker.size}
             />
           {:else}
@@ -368,7 +368,7 @@
       showMenu={$controlStore.showVehicleMenu}
       currentVehicleType={$userVehicleStore.vehicle_marker.type}
       currentVehicleSize={$userVehicleStore.vehicle_marker.size}
-      currentVehicleColor={$userVehicleStore.vehicle_marker.color}
+      currentVehicleColor={$userVehicleStore.vehicle_marker.bodyColor}
       on:closeMenu={() => {
         controlStore.update((store) => ({ ...store, showVehicleMenu: false }))
       }}

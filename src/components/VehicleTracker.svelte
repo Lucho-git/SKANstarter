@@ -292,7 +292,7 @@
       // Compare the current vehicle marker with the previous one
       if (
         vehicleMarker.type === previousVehicleMarker.type &&
-        vehicleMarker.color === previousVehicleMarker.color &&
+        vehicleMarker.bodyColor === previousVehicleMarker.bodyColor &&
         vehicleMarker.size === previousVehicleMarker.size
       ) {
         // Vehicle marker hasn't changed, no need to update the marker
@@ -335,7 +335,7 @@
         pulseSize: "40px",
         vehicleSize: vehicleMarker.size,
         userVehicle: vehicleMarker.type,
-        vehicleColor: vehicleMarker.color,
+        vehicleColor: vehicleMarker.bodyColor,
         vehicleSwath: vehicleMarker.swath,
         showPulse: isUserVehicle,
       },

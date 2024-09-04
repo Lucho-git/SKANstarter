@@ -151,7 +151,7 @@
           {#if vehicle}
             <svelte:component
               this={getVehicleIcon(vehicle.vehicle_marker.type)}
-              color={vehicle.vehicle_marker.color}
+              bodyColor={vehicle.vehicle_marker.bodyColor}
               size="80%"
             />
           {:else}

@@ -246,14 +246,14 @@
             <div
               class="grid grid-cols-4 content-start justify-items-center gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6"
             >
-              {#each colors as color}
+              {#each colors as bodyColor}
                 <button
                   class="btn btn-circle border-8 transition-all duration-200"
-                  style="background-color: {color}; border-color: {selectedVehicle.color ===
-                  color
+                  style="background-color: {bodyColor}; border-color: {selectedVehicle.bodyColor ===
+                  bodyColor
                     ? 'black'
-                    : color};"
-                  on:click={() => selectColor(color)}
+                    : bodyColor};"
+                  on:click={() => selectColor(bodyColor)}
                 ></button>
               {/each}
             </div>

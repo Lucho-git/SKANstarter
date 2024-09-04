@@ -7,7 +7,7 @@
   export let pulseSize = "40px"
   export let vehicleSize = "60px"
   export let userVehicle = "tractor"
-  export let vehicleColor = "red"
+  export let vehicleColor = "yellow"
   export let vehicleSwath = 30
   export let showPulse = true
 
@@ -17,7 +17,7 @@
 <div class="user-marker" style="position: relative; display: inline-block;">
   <svelte:component
     this={vehicle}
-    color={vehicleColor}
+    bodyColor={vehicleColor}
     size={vehicleSize}
     swath={vehicleSwath}
   />
