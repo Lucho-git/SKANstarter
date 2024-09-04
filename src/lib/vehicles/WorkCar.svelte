@@ -1,6 +1,9 @@
 <!-- WorkCar.svelte -->
 <script>
-  export let color = "red"
+  export let bodyColor = "gray"
+  export let outlineColor = "white"
+  export let wheelColor = "black"
+  export let loadColor = "green"
   export let size = "60px"
 </script>
 
@@ -10,7 +13,7 @@
   width={size}
   height={size}
   viewBox="0 0 23.9 56.3"
-  fill={color}
+  fill={bodyColor}
   style="position: relative; z-index: 1; transform-origin: center; transition: transform 0.2s ease-in-out;"
   stroke="black"
   stroke-width=".6"

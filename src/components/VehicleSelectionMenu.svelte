@@ -26,16 +26,37 @@
   )
 
   $: vehicles = [
-    { type: "SimpleTractor", color: "red", size: "small" },
-    { type: "Pointer", color: "green", size: "medium" },
-    { type: "CombineHarvester", color: "yellow", size: "large" },
-    { type: "Excavator", color: "orange", size: "medium" },
-    { type: "Tractor", color: "green", size: "large" },
-    { type: "WheelLoader", color: "yellow", size: "medium" },
-    { type: "WorkCar", color: "red", size: "medium" },
-    { type: "Airplane", color: "blue", size: "large" },
-    { type: "FourWheelDriveTractor", color: "green", size: "large" },
-    { type: "TowBetweenSeeder", color: "red", size: "medium" },
+    { type: "SimpleTractor", bodyColor: "red", size: "small" },
+    { type: "Pointer", bodyColor: "green", size: "medium" },
+    { type: "CombineHarvester", bodyColor: "yellow", size: "large" },
+    { type: "Excavator", bodyColor: "orange", size: "medium" },
+    { type: "Tractor", bodyColor: "green", size: "large" },
+    { type: "WheelLoader", bodyColor: "yellow", size: "medium" },
+    { type: "WorkCar", bodyColor: "red", size: "medium" },
+    { type: "Airplane", bodyColor: "blue", size: "large" },
+    { type: "FourWheelDriveTractor", bodyColor: "green", size: "large" },
+    { type: "TowBetweenSeeder", bodyColor: "red", size: "medium" },
+    { type: "TowBehindSeeder", bodyColor: "red", size: "medium" },
+    { type: "TowBehindSeederTracks", bodyColor: "red", size: "medium" },
+    { type: "TowBehindBoomspray", bodyColor: "red", size: "medium" },
+    { type: "SelfPropelledBoomspray", bodyColor: "red", size: "medium" },
+    { type: "FarmUte", bodyColor: "red", size: "medium" },
+    { type: "FrontWheelChaserBin", bodyColor: "red", size: "medium" },
+    { type: "FourWheelDriveChaserBin", bodyColor: "red", size: "medium" },
+    { type: "HeaderDuals", bodyColor: "red", size: "medium" },
+    { type: "HeaderSingles", bodyColor: "red", size: "medium" },
+    { type: "HeaderTracks", bodyColor: "red", size: "medium" },
+    { type: "SelfPropelledSwather", bodyColor: "red", size: "medium" },
+    { type: "Spreader", bodyColor: "red", size: "medium" },
+    { type: "Truck", bodyColor: "red", size: "medium" },
+    { type: "CabOverTruck", bodyColor: "red", size: "medium" },
+    { type: "CabOverRoadTrain", bodyColor: "red", size: "medium" },
+    { type: "Baler", bodyColor: "red", size: "medium" },
+    { type: "Mower", bodyColor: "red", size: "medium" },
+    { type: "SelfPropelledMower", bodyColor: "red", size: "medium" },
+    { type: "Telehandler", bodyColor: "red", size: "medium" },
+    { type: "ThreePointBoomspray", bodyColor: "red", size: "medium" },
+    { type: "Loader", bodyColor: "red", size: "medium" },
   ]
 
   $: initialVehicle =
@@ -68,12 +89,12 @@
         return {
           ...vehicle,
           size: reverseSizeMappings[currentVehicleSize] || "medium",
-          color: currentVehicleColor,
+          bodyColor: currentVehicleColor,
         }
       }
       return {
         ...vehicle,
-        color: cycleRandomItems(colors, usedColors),
+        bodyColor: cycleRandomItems(colors, usedColors),
         size: cycleRandomItems(sizeOptions, usedSizes),
       }
     })
@@ -89,7 +110,7 @@
 
   function confirmSelection() {
     toast.success(
-      `Selected Vehicle: [${selectedVehicle.color} ${selectedVehicle.type}]`,
+      `Selected Vehicle: [${selectedVehicle.bodyColor} ${selectedVehicle.type}]`,
     )
 
     dispatch("vehicleSelected", {
@@ -108,8 +129,8 @@
     isColorSelectionMode = mode === "color"
   }
 
-  function selectColor(color) {
-    selectedVehicle = { ...selectedVehicle, color }
+  function selectColor(bodyColor) {
+    selectedVehicle = { ...selectedVehicle, bodyColor }
   }
 
   function cycleSize(direction = 1) {
@@ -180,7 +201,7 @@
 
   $: hasChanged =
     selectedVehicle.type !== initialVehicle.type ||
-    selectedVehicle.color !== initialVehicle.color ||
+    selectedVehicle.bodyColor !== initialVehicle.bodyColor ||
     selectedVehicle.size !== initialVehicle.size
 </script>
 
@@ -249,7 +270,7 @@
                 >
                   <svelte:component
                     this={SVGComponents[vehicle.type]}
-                    color={vehicle.color}
+                    bodyColor={vehicle.bodyColor}
                     size={sizeMappings[vehicle.size]}
                   />
                 </button>
@@ -273,14 +294,14 @@
       >
         <svelte:component
           this={SVGComponents[selectedVehicle.type]}
-          color={selectedVehicle.color}
+          bodyColor={selectedVehicle.bodyColor}
           size={getSizeInPixels(selectedVehicle.size)}
         />
         <p class="mt-2 text-center font-semibold sm:mt-4">
           {selectedVehicle.type}
         </p>
         <p class="text-center text-xs text-gray-500 sm:text-sm">
-          Color: {selectedVehicle.color}
+          Color: {selectedVehicle.bodyColor}
         </p>
         <p class="text-center text-xs text-gray-500 sm:text-sm">
           Size: {selectedVehicle.size}

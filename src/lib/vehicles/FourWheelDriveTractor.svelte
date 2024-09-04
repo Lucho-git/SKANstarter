@@ -1,11 +1,13 @@
 <script>
-  export let color = "white"
-  export let borderColor = "white"
+  export let bodyColor = "gray"
+  export let outlineColor = "white"
+  export let wheelColor = "black"
+  export let loadColor = "green"
   export let size = "60px"
 </script>
 
 <svg
-  class="vehicle-svg"
+  class="vehicle-svg1"
   version="1.1"
   id="Layer_1"
   xmlns="http://www.w3.org/2000/svg"
@@ -13,27 +15,13 @@
   width={size}
   height={size}
   viewBox="0 0 19.47 23.297"
-  style="--color: {color}; --border-color: {borderColor}; position: relative; z-index: 1; transform-origin: center; transition: transform 0.2s ease-in-out;"
+  style="--body-color: {bodyColor}; --outline-color: {outlineColor}; --wheel-color: {wheelColor}; --load-color: {loadColor}; position: relative; z-index: 1; transform-origin: center; transition: transform 0.2s ease-in-out;"
   xml:space="preserve"
 >
-  <style type="text/css">
-    .st0 {
-      fill: var(--border-color);
-    }
-    .st1 {
-      fill-rule: evenodd;
-      clip-rule: evenodd;
-    }
-    .st2 {
-      fill-rule: evenodd;
-      clip-rule: evenodd;
-    }
-  </style>
-
   <g id="Layer_x0020_1">
     <g id="_562558936">
       <path
-        class="st0"
+        class="customOutline"
         d="M14.194,15.308v5.272v0.255v0.595V21.8h1.02V19.39v-0.595h0.595h0.567h0.624v0.595V21.8h1.02v-6.491h-1.02
               v2.409v0.595h-0.624H15.81h-0.595v-0.595v-2.409H14.194z M12.976,20.24v-5.386v-0.028v-0.482v-0.595h0.369V11v-0.595h0.595h1.871
               h0.567h1.644V3.913h-1.644H15.81h-1.616V7.4v0.595h-0.624h-0.624h-0.51l-0.085-0.51L11.36,1.503H8.128L7.136,7.485l-0.085,0.51
@@ -52,61 +40,61 @@
       />
       <g>
         <path
-          class="st1"
+          class="customWheel"
           d="M0.872,22.253v-7.398c0-0.078,0.063-0.142,0.142-0.142h4.762c0.078,0,0.142,0.063,0.142,0.142v7.398
                   c0,0.078-0.063,0.142-0.142,0.142H1.013C0.935,22.395,0.872,22.331,0.872,22.253z"
         />
         <polygon
-          class="st0"
+          class="customOutline"
           points="3.111,22.395 3.111,19.39 3.678,19.39 3.678,22.395             "
         />
         <polygon
-          class="st0"
+          class="customOutline"
           points="3.111,17.718 3.111,14.713 3.678,14.713 3.678,17.718           "
         />
       </g>
       <g>
         <path
-          class="st1"
+          class="customWheel"
           d="M13.571,22.253v-7.398c0-0.078,0.063-0.142,0.142-0.142h4.762c0.078,0,0.142,0.063,0.142,0.142v7.398
                   c0,0.078-0.063,0.142-0.142,0.142h-4.762C13.634,22.395,13.571,22.331,13.571,22.253z"
         />
         <polygon
-          class="st0"
+          class="customOutline"
           points="15.81,22.395 15.81,19.39 16.377,19.39 16.377,22.395           "
         />
         <polygon
-          class="st0"
+          class="customOutline"
           points="15.81,17.718 15.81,14.713 16.377,14.713 16.377,17.718             "
         />
       </g>
       <g>
         <path
-          class="st1"
+          class="customWheel"
           d="M0.872,10.858V3.459c0-0.078,0.063-0.142,0.142-0.142h4.762c0.078,0,0.142,0.063,0.142,0.142v7.398
                   C5.917,10.936,5.854,11,5.776,11H1.013C0.935,11,0.872,10.936,0.872,10.858z"
         />
         <polygon
-          class="st0"
+          class="customOutline"
           points="3.111,11 3.111,7.995 3.678,7.995 3.678,11             "
         />
         <polygon
-          class="st0"
+          class="customOutline"
           points="3.111,6.322 3.111,3.318 3.678,3.318 3.678,6.322           "
         />
       </g>
       <g>
         <path
-          class="st1"
+          class="customWheel"
           d="M13.571,10.858V3.459c0-0.078,0.063-0.142,0.142-0.142h4.762c0.078,0,0.142,0.063,0.142,0.142v7.398
                   c0,0.078-0.063,0.142-0.142,0.142h-4.762C13.634,11,13.571,10.936,13.571,10.858z"
         />
         <polygon
-          class="st0"
+          class="customOutline"
           points="15.81,11 15.81,7.995 16.377,7.995 16.377,11           "
         />
         <polygon
-          class="st0"
+          class="customOutline"
           points="15.81,6.322 15.81,3.318 16.377,3.318 16.377,6.322             "
         />
       </g>
@@ -127,17 +115,17 @@
               H7.817z M11.473,1.39H8.015L7.023,7.4h5.443L11.473,1.39z"
       />
       <path
-        class="st2"
+        class="customBody"
         d="M13.117,14.344H6.371v1.276c0.028,0.113,0.057,0.227,0.057,0.369v4.365h6.633v-4.365
               c0-0.142,0.028-0.255,0.057-0.369V14.344z"
       />
       <path
-        class="st2"
+        class="customBody"
         d="M6.144,13.863h7.2h0.113V7.881h-0.425H6.456H6.031v5.981H6.144z M10.935,13.04V8.732h0.567v4.309H10.935z
                M8.582,8.732v4.309H8.015V8.732H8.582z"
       />
       <polygon
-        class="st2"
+        class="customBody"
         points="7.023,7.4 12.465,7.4 11.473,1.39 8.015,1.39         "
       />
     </g>
@@ -145,10 +133,16 @@
 </svg>
 
 <style>
-  .vehicle-svg :global(.st0) {
-    fill: var(--border-color);
+  .vehicle-svg1 :global(.customOutline) {
+    fill: var(--outline-color);
   }
-  .vehicle-svg :global(.st2) {
-    fill: var(--color);
+  .vehicle-svg1 :global(.customBody) {
+    fill: var(--body-color);
+  }
+  .vehicle-svg1 :global(.customWheel) {
+    fill: var(--wheel-color);
+  }
+  .vehicle-svg1 :global(.customLoad) {
+    fill: var(--load-color);
   }
 </style>
