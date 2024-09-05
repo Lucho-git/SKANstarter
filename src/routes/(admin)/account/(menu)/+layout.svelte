@@ -1,196 +1,160 @@
 <script lang="ts">
   import { page } from "$app/stores"
   import "../../../../app.css"
-  import { writable } from "svelte/store"
+  import { writable, derived } from "svelte/store"
   import { setContext } from "svelte"
-  import icons from "$lib/icons"
   import Icon from "@iconify/svelte"
 
   const adminSectionStore = writable("")
   setContext("adminSection", adminSectionStore)
-  let adminSection: string
-  adminSectionStore.subscribe((value) => {
-    adminSection = value
-  })
 
-  function closeDrawer(): void {
-    const adminDrawer = document.getElementById(
-      "admin-drawer",
-    ) as HTMLInputElement
-    adminDrawer.checked = false
+  let isExpanded = true
+
+  const shouldShowDrawer = derived(
+    page,
+    ($page) => !$page.url.pathname.includes("/account/mapviewer"),
+  )
+
+  function toggleSidebar() {
+    isExpanded = !isExpanded
   }
 
   const selectedColor = "bg-neutral"
   const activeColor = "bg-neutral-content bg-opacity-10 text-neutral-content"
   const hoverColor = "hover:bg-neutral-content hover:text-neutral group"
+
+  const menuItems = [
+    { href: "/account", icon: "solar:home-bold-duotone", label: "Home" },
+    {
+      href: "/account/mapviewer",
+      icon: "solar:map-point-wave-bold-duotone",
+      label: "Map",
+    },
+    {
+      href: "/account/fieldview",
+      icon: "solar:map-bold-duotone",
+      label: "Fields",
+    },
+    {
+      href: "/account/pathplanner",
+      icon: "solar:routing-2-bold-duotone",
+      label: "Paths",
+    },
+    {
+      href: "/account/billing",
+      icon: "solar:wallet-money-bold-duotone",
+      label: "Billing",
+    },
+    {
+      href: "/account/settings",
+      icon: "solar:settings-bold-duotone",
+      label: "Settings",
+    },
+  ]
 </script>
 
 <div class="drawer lg:drawer-open">
   <input id="admin-drawer" type="checkbox" class="drawer-toggle" />
-  <div class="drawer-content">
-    <div class="navbar bg-base-100 lg:hidden">
-      <div class="flex-1">
-        <a class="content-black btn btn-ghost text-xl normal-case" href="/">
-          SKAN Farming
-        </a>
-      </div>
-      <div class="flex-none">
-        <div class="dropdown dropdown-end">
-          <label for="admin-drawer" class="btn btn-circle btn-ghost">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 6h16M4 12h16M4 18h7"
-              />
-            </svg>
-          </label>
-        </div>
+
+  <div class="drawer-content flex min-h-screen flex-col">
+    <div class="flex-grow overflow-auto">
+      <div class="container px-6 py-3 lg:px-12 lg:py-6">
+        <slot />
       </div>
     </div>
-    <div class="container px-6 py-3 lg:px-12 lg:py-6">
-      <slot />
-    </div>
+
+    {#if $shouldShowDrawer}
+      <!-- Mobile Bottom Navbar -->
+      <nav
+        class="fixed bottom-0 left-0 right-0 z-50 bg-neutral text-neutral-content lg:hidden"
+      >
+        <ul class="flex h-16 items-stretch">
+          {#each menuItems as item}
+            <li class="flex-1">
+              <a
+                href={item.href}
+                class="flex h-full flex-col items-center justify-center p-1 {$adminSectionStore ===
+                item.label.toLowerCase()
+                  ? 'bg-neutral-content text-neutral'
+                  : ''} transition-colors duration-200 hover:bg-neutral-content hover:text-neutral"
+              >
+                <Icon icon={item.icon} width="24" height="24" />
+                <span class="mt-1 text-xs">{item.label}</span>
+              </a>
+            </li>
+          {/each}
+        </ul>
+      </nav>
+    {/if}
   </div>
 
-  {#if !$page.url.pathname.includes("/account/mapviewer")}
-    <div class="drawer-side" style="z-index: 30;">
-      <label for="admin-drawer" class="drawer-overlay" />
+  {#if $shouldShowDrawer}
+    <!-- Desktop Sidebar -->
+    <div class="drawer-side">
+      <label for="admin-drawer" class="drawer-overlay"></label>
       <ul
-        class="menu menu-lg min-h-full w-80 {selectedColor} p-4 text-neutral-content lg:border-r"
+        class="menu menu-lg min-h-full w-80 p-4 {selectedColor} text-neutral-content lg:border-r"
+        class:w-80={isExpanded}
+        class:w-35={!isExpanded}
       >
-        <li>
-          <div
-            class="menu-title flex flex-row px-4 py-2 text-xl font-bold normal-case text-neutral-content"
-          >
-            <a href="/" class="grow">SKAN Farming</a>
-            <label for="admin-drawer" class="ml-3 lg:hidden"> &#x2715; </label>
-          </div>
-        </li>
         <li class="my-1">
-          <a
-            href="/account"
-            class="{adminSection === 'home'
-              ? activeColor
-              : ''} {hoverColor} flex items-center rounded-lg px-4"
-            on:click={closeDrawer}
+          <button
+            on:click={toggleSidebar}
+            class="toggle-sidebar-btn focus:bg-focus focus:text-focus-content flex w-full items-center rounded-lg bg-neutral px-3 hover:bg-neutral-content hover:text-neutral"
           >
             <Icon
-              icon="solar:home-bold-duotone"
+              icon={isExpanded
+                ? "solar:alt-arrow-left-bold-duotone"
+                : "solar:alt-arrow-right-bold-duotone"}
               width="28"
               height="28"
-              class="mr-2 group-hover:text-neutral"
+              class="group-hover:text-neutral"
             />
-            <span>Home</span>
-          </a>
+            {#if isExpanded}<span class="ml-2">Collapse Menu</span>{/if}
+          </button>
         </li>
-        <li class="my-1">
-          <a
-            href="/account/mapviewer"
-            class="{adminSection === 'mapviewer'
-              ? activeColor
-              : ''} {hoverColor} flex items-center rounded-lg px-4"
-            on:click={closeDrawer}
-          >
-            <Icon
-              icon="solar:map-point-wave-bold-duotone"
-              width="28"
-              height="28"
-              class="mr-2 group-hover:text-neutral"
-            />
-            <span>MapViewer</span>
-          </a>
-        </li>
-        <li class="my-1">
-          <a
-            href="/account/fieldview"
-            class="{adminSection === 'fieldview'
-              ? activeColor
-              : ''} {hoverColor} flex items-center rounded-lg px-4"
-            on:click={closeDrawer}
-          >
-            <Icon
-              icon="solar:map-bold-duotone"
-              width="28"
-              height="28"
-              class="mr-2 group-hover:text-neutral"
-            />
-            <span>FieldView</span>
-          </a>
-        </li>
-        <li class="my-1">
-          <a
-            href="/account/pathplanner"
-            class="{adminSection === 'pathplanner'
-              ? activeColor
-              : ''} {hoverColor} flex items-center rounded-lg px-4"
-            on:click={closeDrawer}
-          >
-            <Icon
-              icon="solar:routing-2-bold-duotone"
-              width="28"
-              height="28"
-              class="mr-2 group-hover:text-neutral"
-            />
-            <span>PathPlanner</span>
-          </a>
-        </li>
-        <li class="my-1">
-          <a
-            href="/account/billing"
-            class="{adminSection === 'billing'
-              ? activeColor
-              : ''} {hoverColor} flex items-center rounded-lg px-4"
-            on:click={closeDrawer}
-          >
-            <Icon
-              icon="solar:wallet-money-bold-duotone"
-              width="28"
-              height="28"
-              class="mr-2 group-hover:text-neutral"
-            />
-            <span>Billing</span>
-          </a>
-        </li>
-        <li class="my-1">
-          <a
-            href="/account/settings"
-            class="{adminSection === 'settings'
-              ? activeColor
-              : ''} {hoverColor} flex items-center rounded-lg px-4"
-            on:click={closeDrawer}
-          >
-            <Icon
-              icon="solar:settings-bold-duotone"
-              width="28"
-              height="28"
-              class="mr-2 group-hover:text-neutral"
-            />
-            <span>Settings</span>
-          </a>
-        </li>
+
+        {#each menuItems as item}
+          <li class="my-1">
+            <a
+              href={item.href}
+              class="{$adminSectionStore === item.label.toLowerCase()
+                ? activeColor
+                : ''} {hoverColor} flex items-center rounded-lg px-3"
+            >
+              <Icon
+                icon={item.icon}
+                width="28"
+                height="28"
+                class="group-hover:text-neutral"
+              />
+              {#if isExpanded}<span class="ml-2">{item.label}</span>{/if}
+            </a>
+          </li>
+        {/each}
+
         <li class="my-1 mt-auto">
           <a
             href="/account/sign_out"
-            class="{hoverColor} flex items-center rounded-lg px-4 text-base"
+            class="{hoverColor} flex items-center rounded-lg px-3 text-base"
           >
             <Icon
               icon="solar:logout-3-bold-duotone"
               width="28"
               height="28"
-              class="mr-2 group-hover:text-neutral"
+              class="group-hover:text-neutral"
             />
-            <span>Sign Out</span>
+            {#if isExpanded}<span class="ml-2">Sign Out</span>{/if}
           </a>
         </li>
       </ul>
     </div>
   {/if}
 </div>
+
+<style>
+  .menu :focus {
+    background-color: theme("colors.neutral-content");
+    color: theme("colors.neutral");
+  }
+</style>

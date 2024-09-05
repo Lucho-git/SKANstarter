@@ -70,14 +70,19 @@ const config: Config = {
                 skantheme: {
                     "primary": "#63A375",
                     "primary-content": "#fefbf6",
-                    "neutral-content": "#fefbf6",
                     "secondary": "#F7DB5C",
                     "secondary-content": "#232322",
-                    "accent": "#D95D39",
+                    "accent": "#fde68a",
                     "accent-content": "#fefbf6",
                     "neutral": "#102030",
+                    "neutral-content": "#fefbf6",
+
                     "base-content": "#232322",
                     "base-100": "#DEE3E7",
+
+                    "focus": "#FF00FF", // Bright magenta
+                    "focus-content": "#FFFFFF", // White text for contrast
+
                 },
             },
             {
@@ -88,7 +93,7 @@ const config: Config = {
                     "secondary-content": "#232322",
                     "accent": "#D95D39",
                     "accent-content": "#fefbf6",
-                    "neutral": "#F7DB5C",
+                    "neutral": "#f9e58a",
                     "neutral-content": "#232322",
                     "base-100": "#1f2937",
                     "base-200": "#374151",
