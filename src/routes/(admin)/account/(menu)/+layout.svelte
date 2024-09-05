@@ -110,7 +110,7 @@
         </div>
         <button on:click={handleChatClick} class="p-1">
           <Icon
-            icon="solar:chat-round-dots-bold-duotone"
+            icon="solar:chat-round-line-bold-duotone"
             width="24"
             height="24"
           />
