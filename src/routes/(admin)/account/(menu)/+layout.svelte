@@ -108,7 +108,10 @@
             )?.topBarLabel || menuItems[0].topBarLabel}</span
           >
         </div>
-        <button on:click={handleChatClick} class="p-1">
+        <button
+          on:click={handleChatClick}
+          class="rounded-full bg-neutral-focus p-1 transition-colors duration-200"
+        >
           <Icon
             icon="solar:chat-round-line-bold-duotone"
             width="24"
