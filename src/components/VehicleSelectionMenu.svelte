@@ -16,8 +16,8 @@
   let usedSizes = []
 
   const sizeMappings = {
-    Small: "30px",
-    Medium: "45px",
+    Small: "60px",
+    Medium: "60px",
     Large: "60px",
   }
 
@@ -26,14 +26,6 @@
   )
 
   $: vehicles = [
-    { type: "SimpleTractor", bodyColor: "red", size: "small" },
-    { type: "Pointer", bodyColor: "green", size: "medium" },
-    { type: "CombineHarvester", bodyColor: "yellow", size: "large" },
-    { type: "Excavator", bodyColor: "orange", size: "medium" },
-    { type: "Tractor", bodyColor: "green", size: "large" },
-    { type: "WheelLoader", bodyColor: "yellow", size: "medium" },
-    { type: "WorkCar", bodyColor: "red", size: "medium" },
-    { type: "Airplane", bodyColor: "blue", size: "large" },
     { type: "FourWheelDriveTractor", bodyColor: "green", size: "large" },
     { type: "TowBetweenSeeder", bodyColor: "red", size: "medium" },
     { type: "TowBehindSeeder", bodyColor: "red", size: "medium" },
@@ -57,6 +49,14 @@
     { type: "Telehandler", bodyColor: "red", size: "medium" },
     { type: "ThreePointBoomspray", bodyColor: "red", size: "medium" },
     { type: "Loader", bodyColor: "red", size: "medium" },
+    { type: "SimpleTractor", bodyColor: "red", size: "small" },
+    { type: "Pointer", bodyColor: "green", size: "medium" },
+    { type: "CombineHarvester", bodyColor: "yellow", size: "large" },
+    { type: "Excavator", bodyColor: "orange", size: "medium" },
+    { type: "Tractor", bodyColor: "green", size: "large" },
+    { type: "WheelLoader", bodyColor: "yellow", size: "medium" },
+    { type: "WorkCar", bodyColor: "red", size: "medium" },
+    { type: "Airplane", bodyColor: "blue", size: "large" },
   ]
 
   $: initialVehicle =
@@ -145,11 +145,11 @@
   function getSizeInPixels(size) {
     switch (size) {
       case "Small":
-        return "60px"
+        return "80px"
       case "Medium":
         return "80px"
       case "Large":
-        return "100px"
+        return "80px"
     }
   }
 
@@ -211,7 +211,7 @@
   class:translate-y-0={showMenu}
   style={isMobile ? "height: 100%;" : "height: 45vh;"}
 >
-  <div class="flex flex-grow flex-col overflow-hidden sm:flex-row">
+  <div class="flex flex-grow flex-col overflow-hidden text-black sm:flex-row">
     <!-- Vehicle/Color selection (scrollable) -->
     <div
       class="flex w-full flex-grow flex-col overflow-hidden sm:w-1/2 sm:pr-3"
@@ -285,7 +285,7 @@
     <div class="mt-4 flex w-full flex-col sm:mt-0 sm:w-1/2 sm:pl-3">
       <h2 class="mb-4 text-center text-2xl font-bold">Selected Vehicle</h2>
       <button
-        class="flex flex-grow flex-col items-center justify-center rounded-lg border-2 border-gray-300 p-4 transition-all duration-300 hover:bg-gray-100 active:bg-gray-200"
+        class="flex flex-grow flex-col items-center justify-center rounded-lg border-2 border-gray-300 bg-blue-100 p-4 transition-all duration-300 hover:bg-blue-200 active:bg-blue-300"
         on:click={() => cycleSize(1)}
         on:touchstart={handleTouchStart}
         on:touchend={handleTouchEnd}
