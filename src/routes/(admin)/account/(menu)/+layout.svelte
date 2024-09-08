@@ -99,7 +99,7 @@
     {#if $shouldShowDrawer}
       <!-- Mobile Top Bar -->
       <div
-        class="flex items-center justify-between bg-neutral p-2 text-neutral-content lg:hidden"
+        class="fixed left-0 right-0 top-0 z-50 flex items-center justify-between bg-neutral p-1 text-neutral-content lg:hidden"
       >
         <div class="flex items-center">
           <Icon
@@ -128,7 +128,7 @@
       </div>
     {/if}
 
-    <div class="flex-grow overflow-auto">
+    <div class="flex-grow overflow-auto pt-14">
       <div class="container px-6 py-3 lg:px-12 lg:py-6">
         <slot />
       </div>
