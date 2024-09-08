@@ -2,7 +2,7 @@
     "name": "Skan Farming",
     "short_name": "AgSKAN",
     "description": "",
-    "theme_color": "#f7db5c",
+    "theme_color": "#f9e58a",
     "background_color": "#d4fea9",
     "display": "standalone",
     "orientation": "any",
