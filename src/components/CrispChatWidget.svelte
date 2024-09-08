@@ -2,6 +2,16 @@
   import { onMount, onDestroy } from "svelte"
   import { userStore } from "../stores/userStore"
   import { Crisp } from "crisp-sdk-web"
+  import { screenSize } from "../stores/screenSizeStore"
+  import { crispVisibility } from "../stores/crispVisibilityStore"
+
+  let previousScreenSize: string
+
+  $: if ($crispVisibility !== visible) {
+    setVisibility($crispVisibility)
+    visible = $crispVisibility
+    console.log("Updating Crisp Chat", visible)
+  }
 
   export let visible = true
 
@@ -25,7 +35,12 @@
       }, 100)
     }
 
-    setVisibility(visible)
+    if (isInitialized) {
+      setVisibility($crispVisibility)
+      console.log("Display Crisp Chat?", $crispVisibility)
+      Crisp.chat.show()
+    }
+
     setUserInfo()
   }
 
@@ -49,22 +64,9 @@
 
   function setVisibility(isVisible: boolean) {
     if (isInitialized) {
-      setZIndex(isVisible)
-      if (isVisible) {
-        console.log("Showing Crisp Chat")
-        Crisp.chat.show()
-      } else {
-        console.log("Hiding Crisp Chat")
-        Crisp.chat.hide()
-      }
-    }
-  }
-
-  function setZIndex(isVisible: boolean) {
-    if (isInitialized) {
       const crispElement = document.querySelector(".crisp-client")
       if (crispElement) {
-        crispElement.style.zIndex = isVisible ? "1000" : "-1"
+        crispElement.style.display = isVisible ? "block" : "none"
       }
     }
   }
@@ -95,13 +97,6 @@
       Crisp.chat.hide()
     }
   })
-
-  $: {
-    if (isInitialized) {
-      console.log("Visibility changed:", visible)
-      setVisibility(visible)
-    }
-  }
 
   $: {
     if (isInitialized && $userStore.id) {

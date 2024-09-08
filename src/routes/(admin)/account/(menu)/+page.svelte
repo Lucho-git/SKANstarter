@@ -2,9 +2,7 @@
   import { getContext, onMount, onDestroy } from "svelte"
   import type { Writable } from "svelte/store"
   import { userStore } from "../../../../stores/userStore"
-  import { crispVisibility } from "../../../../stores/controlStore"
   import { supabase } from "$lib/supabaseClient"
-  import CrispChatWidget from "../../../../components/CrispChatWidget.svelte"
   import MasterMapManager from "../(menu)/MasterMapManager.svelte"
   import MapStats from "../(menu)/MapStats.svelte"
   import VehicleList from "./VehicleList.svelte"
@@ -48,19 +46,9 @@
     }
   })
 
-  $: {
-    const currentPath = $page.url.pathname
-    $crispVisibility = currentPath === "/account"
-  }
-
   onDestroy(() => {
     showTawkTo = false
   })
-
-  $: {
-    const currentPath = $page.url.pathname
-    showTawkTo = currentPath.includes("/account")
-  }
 </script>
 
 <svelte:head>
@@ -86,5 +74,3 @@
     {/if}
   </div>
 </div>
-
-<CrispChatWidget />
