@@ -239,5 +239,29 @@
         {/if}
       </div>
     {/each}
+    <!-- New invite box -->
+    <div class="flex items-center rounded-lg bg-base-100 p-4 shadow-md">
+      <div
+        class="mr-4 flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-muted"
+      >
+        <ion-icon name="people" style="font-size: 2rem;"></ion-icon>
+      </div>
+      <div class="flex-grow">
+        <h4 class="font-bold">New User</h4>
+        <p class="text-sm opacity-70">Invite to map</p>
+      </div>
+      <button
+        class="btn btn-primary btn-sm m-auto"
+        on:click={() => {
+          // Add invite functionality here
+          console.log("Invite button clicked")
+          toast.info("Invite feature", {
+            description: "Invite functionality not implemented yet",
+          })
+        }}
+      >
+        Invite
+      </button>
+    </div>
   </div>
 </div>
