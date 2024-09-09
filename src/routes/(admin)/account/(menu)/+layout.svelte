@@ -128,7 +128,7 @@
       </div>
     {/if}
 
-    <div class="flex-grow overflow-auto pt-14">
+    <div class="flex-grow overflow-auto pb-16 pt-14 lg:pb-0 lg:pt-0">
       <div class="container px-6 py-3 lg:px-12 lg:py-6">
         <slot />
       </div>
