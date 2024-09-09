@@ -367,7 +367,7 @@
     // Check if the time interval condition is met
     if (currentTime - lastRecordedTime >= LOCATION_TRACKING_INTERVAL_MIN) {
       const { coordinates } = vehicleData
-      const { color, swath } = vehicleData.vehicle_marker
+      const { bodyColor, swath } = vehicleData.vehicle_marker
       const { latitude, longitude } = coordinates
 
       //TODO move this function after checking if it's a unique marker, ie. different coordinates or heading
@@ -376,7 +376,7 @@
         const locationData = {
           coordinates: { latitude, longitude },
           timestamp: currentTime,
-          color: color,
+          bodyColor: bodyColor,
         }
         unsavedTrailStore.update((markers) => [...markers, locationData])
       }
