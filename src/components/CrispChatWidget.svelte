@@ -62,11 +62,39 @@
     ])
   }
 
+  let crispObserver: MutationObserver | null = null
+
+  //Changes the visibility of crisp component by making the component visible or invisible, and uses a dom watcher to ensure the the component is avaliable before applying it on load
+  //This keeps the crisp chat in the background even when not visible to allow for tracking and message sounds
   function setVisibility(isVisible: boolean) {
+    console.log("Setting Crisp Chat visibility", isVisible)
+
     if (isInitialized) {
-      const crispElement = document.querySelector(".crisp-client")
-      if (crispElement) {
-        crispElement.style.display = isVisible ? "block" : "none"
+      const applyVisibility = () => {
+        const crispElement = document.querySelector(".crisp-client")
+        if (crispElement) {
+          console.log("Actually changing Crisp Chat visibility", isVisible)
+          crispElement.style.display = isVisible ? "block" : "none"
+          if (crispObserver) {
+            crispObserver.disconnect()
+            crispObserver = null
+          }
+        }
+      }
+
+      applyVisibility()
+
+      if (!document.querySelector(".crisp-client")) {
+        crispObserver = new MutationObserver((mutations, observer) => {
+          if (document.querySelector(".crisp-client")) {
+            applyVisibility()
+          }
+        })
+
+        crispObserver.observe(document.body, {
+          childList: true,
+          subtree: true,
+        })
       }
     }
   }
@@ -95,6 +123,10 @@
     if (isInitialized) {
       console.log("Hiding Crisp Chat on component destroy")
       Crisp.chat.hide()
+    }
+
+    if (crispObserver) {
+      crispObserver.disconnect()
     }
   })
 
