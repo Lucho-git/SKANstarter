@@ -3,6 +3,7 @@
   import "../../../../app.css"
   import { writable, derived } from "svelte/store"
   import { setContext } from "svelte"
+  import icons from "$lib/icons"
   import Icon from "@iconify/svelte"
   import { toast } from "svelte-sonner"
 
