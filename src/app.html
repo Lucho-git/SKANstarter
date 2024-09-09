@@ -1,4 +1,3 @@
-
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -7,17 +6,15 @@
     <meta name="facebook-domain-verification" content="336vfi1l9zfva9cxs7h2nd0304eqam" />
     <link rel="stylesheet" href="/atlas-icons/style.css">
     <link rel="stylesheet" href="/css/native-like-experience.css" />
-
     
     %sveltekit.head%
     <link rel="manifest" href="%sveltekit.assets%/manifest.json">
 
     <title>AgSkan</title>
     <meta name="description" content="Live vehicle tracking. Auto-Path for your Paddocks." />
-    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0" /> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
-    <meta name="theme-color" content="#f9e58a" />
+    <meta name="theme-color" content="#f9e58a" id="theme-color" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="google" content="notranslate" />
 
@@ -45,7 +42,6 @@
 
     <link rel="icon" href="%sveltekit.assets%/icon.svg" />
 
-
   </head>
   <body
     data-sveltekit-preload-data="hover"
@@ -61,5 +57,21 @@
         <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     </div>
 
+    <script>
+      function updateThemeColor() {
+        const themeColorMeta = document.getElementById('theme-color');
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          themeColorMeta.setAttribute('content', '#f9e58a'); // Dark mode color
+        } else {
+          themeColorMeta.setAttribute('content', '#102030'); // Light mode color
+        }
+      }
+
+      // Initial update
+      updateThemeColor();
+
+      // Listen for changes in color scheme preference
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(updateThemeColor);
+    </script>
   </body>
 </html>
