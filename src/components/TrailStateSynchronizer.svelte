@@ -95,18 +95,13 @@
           // Handle the real-time updates for other vehicles' trails
           if (payload.new.vehicle_id !== userId) {
             // Update was made by another vehicle
-            const { vehicle_id, coordinates, timestamp, bodyColor, swath } =
+            const { vehicle_id, coordinates, timestamp, color, swath } =
               payload.new
             newOtherTrail.update((trails) => {
               if (!trails[vehicle_id]) {
                 trails[vehicle_id] = []
               }
-              trails[vehicle_id].push({
-                coordinates,
-                timestamp,
-                bodyColor,
-                swath,
-              })
+              trails[vehicle_id].push({ coordinates, timestamp, color, swath })
               return trails
             })
           }
@@ -158,7 +153,7 @@
         vehicle_id: vehicleId,
         coordinates: `(${marker.coordinates.longitude},${marker.coordinates.latitude})`,
         master_map_id: masterMapId,
-        bodyColor: marker.bodyColor || "black",
+        color: marker.color || "black",
         // swath: marker.swath, add swath here, rn not working because no swath in current vehiclemarkers / being set in vehicleselectionmenu
       }))
 

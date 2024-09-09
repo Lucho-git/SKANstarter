@@ -376,7 +376,7 @@
         const locationData = {
           coordinates: { latitude, longitude },
           timestamp: currentTime,
-          bodyColor: bodyColor,
+          color: bodyColor,
         }
         unsavedTrailStore.update((markers) => [...markers, locationData])
       }

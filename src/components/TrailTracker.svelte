@@ -161,7 +161,7 @@
     }
 
     console.log("Layer properties set:", {
-      bodyColor: map.getPaintProperty(layerId, "line-color"),
+      color: map.getPaintProperty(layerId, "line-color"),
       width: map.getPaintProperty(layerId, "line-width"),
       opacity: map.getPaintProperty(layerId, "line-opacity"),
       dashArray: map.getPaintProperty(layerId, "line-dasharray"),
@@ -215,7 +215,7 @@
 
     const features = []
     let currentLine = []
-    let startTimestamp, endTimestamp, bodyColor
+    let startTimestamp, endTimestamp, color
 
     for (let i = 0; i < coordinates.length; i++) {
       const currentPoint = coordinates[i].coordinates
@@ -223,7 +223,7 @@
         .split(",")
         .map(parseFloat)
       const currentTimestamp = coordinates[i].timestamp
-      bodyColor = coordinates[i].bodyColor || bodyColor
+      color = coordinates[i].color || color
 
       if (currentLine.length === 0) {
         startTimestamp = currentTimestamp
@@ -255,7 +255,7 @@
           properties: {
             startTimestamp,
             endTimestamp,
-            bodyColor,
+            color,
           },
         })
         currentLine = []
@@ -281,7 +281,7 @@
         ...lastSegment.geometry.coordinates.map((coord) => ({
           coordinates: `(${coord[0]},${coord[1]})`,
           timestamp: lastSegment.properties.endTimestamp,
-          bodyColor: lastSegment.properties.bodyColor,
+          color: lastSegment.properties.color,
         })),
         ...trailArray,
       ]
