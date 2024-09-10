@@ -246,7 +246,7 @@
       </div>
     {/each}
     <!-- New invite box -->
-    <div class="flex items-center rounded-lg bg-base-100 p-4 shadow-md">
+    <div class="flex items-center rounded-lg p-4 shadow-md">
       <div
         class="mr-4 flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-muted"
       >
@@ -259,7 +259,6 @@
       </div>
       <div class="flex-grow">
         <h4 class="font-bold">New User</h4>
-        <p class="text-sm opacity-70">Invite to map</p>
       </div>
       <button
         class="btn btn-outline btn-sm m-auto opacity-50"
@@ -272,7 +271,7 @@
           })
         }}
       >
-        Invite
+        <Icon icon="gravity-ui:plus" width="20" height="20" />
       </button>
     </div>
   </div>
