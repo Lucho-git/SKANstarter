@@ -11,6 +11,7 @@
   import { connectedMapStore } from "../../../../stores/connectedMapStore"
   import { mapActivityStore } from "../../../../stores/mapActivityStore"
   import { goto } from "$app/navigation"
+  import Icon from "@iconify/svelte"
 
   let loading = true
   let activeTab = "navigate"
@@ -155,7 +156,12 @@
               size="80%"
             />
           {:else}
-            <ion-icon name="add-circle" style="font-size: 2rem;"></ion-icon>
+            <Icon
+              icon="solar:chair-bold"
+              width="40"
+              height="40"
+              style="color: black"
+            />
           {/if}
         </div>
         <div class="flex-grow">
@@ -244,19 +250,25 @@
       <div
         class="mr-4 flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-muted"
       >
-        <ion-icon name="people" style="font-size: 2rem;"></ion-icon>
+        <Icon
+          icon="solar:user-plus-rounded-bold"
+          width="40"
+          height="40"
+          style="color: black"
+        />
       </div>
       <div class="flex-grow">
         <h4 class="font-bold">New User</h4>
         <p class="text-sm opacity-70">Invite to map</p>
       </div>
       <button
-        class="btn btn-primary btn-sm m-auto"
+        class="btn btn-outline btn-sm m-auto opacity-50"
         on:click={() => {
           // Add invite functionality here
           console.log("Invite button clicked")
           toast.info("Invite feature", {
-            description: "Invite functionality not implemented yet",
+            description:
+              "Invite functionality not implemented yet, send users your Map Id for immediate connection",
           })
         }}
       >

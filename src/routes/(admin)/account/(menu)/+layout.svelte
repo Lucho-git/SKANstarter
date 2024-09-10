@@ -28,6 +28,16 @@
     mobileChat.set(!$mobileChat)
   }
 
+  // Stub variables
+  let seatsUsed = 1
+  let totalSeats = 1
+  let trailLaid = 100000
+  let totalTrail = 100000
+
+  // Calculate percentages
+  $: seatsPercentage = (seatsUsed / totalSeats) * 100
+  $: trailPercentage = (trailLaid / totalTrail) * 100
+
   const selectedColor = "bg-neutral"
   const activeColor = "bg-neutral-content bg-opacity-10 text-neutral-content"
   const hoverColor = "hover:bg-neutral-content hover:text-neutral group"
@@ -172,7 +182,7 @@
         <li class="my-1">
           <button
             on:click={toggleSidebar}
-            class="toggle-sidebar-btn focus:bg-focus focus:text-focus-content flex w-full items-center rounded-lg bg-neutral px-3 hover:bg-neutral-content hover:text-neutral"
+            class="toggle-sidebar-btn focus:bg-focus focus:text-focus-content flex w-full items-center rounded-lg bg-neutral px-5 hover:bg-neutral-content hover:text-neutral"
           >
             <Icon
               icon={isExpanded
@@ -192,12 +202,12 @@
               href={item.href}
               class="{currentSection === item.label.toLowerCase()
                 ? activeColor
-                : ''} {hoverColor} flex items-center rounded-lg px-3"
+                : ''} {hoverColor} flex items-center rounded-lg px-5"
             >
               <Icon
                 icon={item.icon}
-                width="28"
-                height="28"
+                width="32"
+                height="32"
                 class="group-hover:text-neutral"
               />
               {#if isExpanded}<span class="ml-2">{item.label}</span>{/if}
@@ -205,10 +215,109 @@
           </li>
         {/each}
 
-        <li class="my-1 mt-auto">
+        <li class="mt-auto">
+          <hr class=" transform border-neutral-content opacity-20" />
+        </li>
+
+        <li class="my-1">
+          <div class="{hoverColor} group flex items-center px-3 py-2">
+            <div class="flex flex-col items-center">
+              <Icon
+                icon="solar:user-circle-bold-duotone"
+                width="32"
+                height="32"
+                class="flex-shrink-0"
+              />
+              {#if !isExpanded}
+                <div class="mt-4 flex flex-col items-center space-y-1">
+                  <div
+                    class=" flex items-center"
+                    data-tip="Seats: {seatsUsed}/{totalSeats}"
+                  >
+                    <Icon
+                      icon="solar:users-group-rounded-bold"
+                      width="12"
+                      height="12"
+                      class="mr-1"
+                    />
+                    <progress
+                      class="progress progress-primary w-8 bg-neutral-content group-hover:bg-neutral"
+                      value={seatsPercentage}
+                      max="100"
+                    ></progress>
+                  </div>
+                  <div
+                    class=" flex items-center"
+                    data-tip="Trail: {trailLaid}/{totalTrail}"
+                  >
+                    <Icon
+                      icon="solar:routing-bold"
+                      width="12"
+                      height="12"
+                      class="mr-1"
+                    />
+                    <progress
+                      class="progress progress-secondary w-8 bg-neutral-content group-hover:bg-neutral"
+                      value={trailPercentage}
+                      max="100"
+                    ></progress>
+                  </div>
+                </div>
+              {/if}
+            </div>
+            {#if isExpanded}
+              <div class="ml-2 flex-grow">
+                <p class="text-sm font-semibold">John Doe</p>
+                <p class="text-xs opacity-70">Free Plan</p>
+              </div>
+              <div class="flex flex-col space-y-2">
+                <div
+                  class=" flex items-center"
+                  data-tip="Seats: {seatsUsed}/{totalSeats}"
+                >
+                  <Icon
+                    icon="solar:users-group-rounded-bold"
+                    width="16"
+                    height="16"
+                    class="mr-1"
+                  />
+                  <progress
+                    class="progress progress-primary w-16 bg-neutral-content group-hover:bg-neutral"
+                    value={seatsPercentage}
+                    max="100"
+                  ></progress>
+                  <span class="ml-1 w-2 text-right text-xs">Seats</span>
+                </div>
+                <div
+                  class=" flex items-center"
+                  data-tip="Trail: {trailLaid}/{totalTrail}"
+                >
+                  <Icon
+                    icon="solar:routing-bold"
+                    width="16"
+                    height="16"
+                    class="mr-1"
+                  />
+                  <progress
+                    class="progress progress-secondary w-16 bg-neutral-content group-hover:bg-neutral"
+                    value={trailPercentage}
+                    max="100"
+                  ></progress>
+                  <span class="ml-1 mr-8 w-0 text-right text-xs">Trail</span>
+                </div>
+              </div>
+            {/if}
+          </div>
+        </li>
+
+        <li class="my-1">
+          <hr class="rotate-180 border-neutral-content opacity-20" />
+        </li>
+
+        <li class="my-1">
           <a
             href="/account/sign_out"
-            class="{hoverColor} flex items-center rounded-lg px-3 text-base"
+            class="{hoverColor} flex items-center rounded-lg px-5 text-base"
           >
             <Icon
               icon="solar:logout-3-bold-duotone"
