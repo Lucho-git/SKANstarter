@@ -7,6 +7,7 @@ export const load: PageServerLoad = async ({ locals: { supabase, getSession } })
         throw redirect(303, "/login")
     }
 
+
     const userId = session.user.id
 
     // Run initial queries in parallel

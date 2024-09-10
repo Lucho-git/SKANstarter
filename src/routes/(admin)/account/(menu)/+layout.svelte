@@ -13,6 +13,9 @@
   const adminSectionStore = writable("")
   setContext("adminSection", adminSectionStore)
 
+  export let data
+  console.log("LayoutData", data)
+
   let isExpanded = true
 
   const shouldShowDrawer = derived(

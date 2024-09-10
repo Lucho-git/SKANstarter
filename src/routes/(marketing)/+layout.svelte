@@ -8,40 +8,30 @@
   import Footer2 from "./Footer2.svelte"
   import { deviceStore } from "../../stores/deviceStore"
   import { onMount } from "svelte"
-  export let data
-  let { session } = data
 
   let innerWidth = 0
 
   $: deviceStore.updateInnerWidth(innerWidth)
-
-  onMount(async () => {
-    console.log("Mounted with session: update", session)
-  })
 </script>
 
 <!-- <ThemeSwitcher /> -->
 <svelte:window bind:innerWidth />
 
-<div class="navbar bg-base-100 container mx-auto">
+<div class="container navbar mx-auto bg-base-100">
   <LogoCard href="/" />
   <div class="flex-none">
-    <ul class="menu menu-horizontal px-1 hidden sm:flex font-bold text-lg">
+    <ul class="menu menu-horizontal hidden px-1 text-lg font-bold sm:flex">
       <li class="md:mx-2"><a href="/features">Features</a></li>
       <li class="md:mx-2"><a href="/team">Team</a></li>
       <li class="md:mx-2"><a href="/pricing">Pricing</a></li>
       <li class="md:mx-4">
-        {#if session}
-          <a href="/account" class="border border-primary">Dashboard</a>
-        {:else}
-          <a href="/login" class="border border-primary">★ Enter</a>
-        {/if}
+        <a href="/login" class="border border-primary">★ Enter</a>
       </li>
     </ul>
     <div class="dropdown dropdown-end sm:hidden">
       <!-- svelte-ignore a11y-label-has-associated-control -->
       <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-      <label tabindex="0" class="btn btn-ghost btn-circle">
+      <label tabindex="0" class="btn btn-circle btn-ghost">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="h-5 w-5"
@@ -61,20 +51,13 @@
       <!-- mobile/smallscreen dropdown menu -->
       <ul
         tabindex="0"
-        class="menu menu-lg dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52 font-bold"
+        class="menu dropdown-content rounded-box menu-lg z-[1] mt-3 w-52 bg-base-100 p-2 font-bold shadow"
       >
         <li><a href="/features">Features</a></li>
         <li><a href="/team">Team</a></li>
         <li><a href="/pricing">Pricing</a></li>
         <li>
-          {#if session}
-            <a href="/account" class="border border-primary">★ Dashboard</a>
-            <div class="text-sm font-bold mt-1">
-              Welcome, {session.user.user_metadata.name}!
-            </div>
-          {:else}
-            <a href="/login" class="border border-primary">★ Enter</a>
-          {/if}
+          <a href="/login" class="border border-primary">★ Enter</a>
         </li>
       </ul>
     </div>

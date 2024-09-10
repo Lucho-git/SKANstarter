@@ -30,8 +30,6 @@
   <FrontPageNew_3 />
 </div>
 
-<!-- <FrontPage_4 /> -->
-
 <style>
   @media (max-width: 768px) {
     .hide-on-mobile {
