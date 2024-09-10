@@ -10,7 +10,6 @@
   $: if ($crispVisibility !== visible) {
     setVisibility($crispVisibility)
     visible = $crispVisibility
-    console.log("Updating Crisp Chat", visible)
   }
 
   export let visible = true
@@ -37,7 +36,6 @@
 
     if (isInitialized) {
       setVisibility($crispVisibility)
-      console.log("Display Crisp Chat?", $crispVisibility)
       Crisp.chat.show()
     }
 
@@ -67,13 +65,10 @@
   //Changes the visibility of crisp component by making the component visible or invisible, and uses a dom watcher to ensure the the component is avaliable before applying it on load
   //This keeps the crisp chat in the background even when not visible to allow for tracking and message sounds
   function setVisibility(isVisible: boolean) {
-    console.log("Setting Crisp Chat visibility", isVisible)
-
     if (isInitialized) {
       const applyVisibility = () => {
         const crispElement = document.querySelector(".crisp-client")
         if (crispElement) {
-          console.log("Actually changing Crisp Chat visibility", isVisible)
           crispElement.style.display = isVisible ? "block" : "none"
           if (crispObserver) {
             crispObserver.disconnect()
@@ -101,7 +96,6 @@
 
   function setUserInfo() {
     if (isInitialized && $userStore.id) {
-      console.log("Setting Crisp Chat user info")
       Crisp.user.setEmail($userStore.email)
       Crisp.user.setNickname($userStore.fullName)
       if ($userStore.phone) {
@@ -115,7 +109,6 @@
   }
 
   onMount(() => {
-    console.log("Mounting Crisp Chat component")
     initCrispChat()
   })
 
@@ -132,7 +125,6 @@
 
   $: {
     if (isInitialized && $userStore.id) {
-      console.log("User info changed, updating Crisp")
       setUserInfo()
     }
   }

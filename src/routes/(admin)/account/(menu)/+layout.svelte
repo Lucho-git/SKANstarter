@@ -103,6 +103,7 @@
   $: {
     console.log("Current section changed:", currentSection)
     console.log($page.url.pathname)
+    console.log(data)
   }
 </script>
 
@@ -270,8 +271,20 @@
             </div>
             {#if isExpanded}
               <div class="ml-2 flex-grow">
-                <p class="text-sm font-semibold">John Doe</p>
-                <p class="text-xs opacity-70">Free Plan</p>
+                <p class="text-sm font-semibold">{data.profile?.full_name}</p>
+                {#if data.subscription.subscription === "FREE"}
+                  <p class="text-xs opacity-70">Free Plan</p>
+                {:else}
+                  <p class="flex items-center text-xs opacity-70">
+                    Pro Plan
+                    <Icon
+                      icon="solar:fire-bold"
+                      width="12"
+                      height="12"
+                      class="ml-1"
+                    />
+                  </p>
+                {/if}
               </div>
               <div class="flex flex-col space-y-2">
                 <div

@@ -21,6 +21,8 @@ export const load = async ({ fetch, data, depends, url }) => {
         data: { session },
     } = await supabase.auth.getSession()
 
+    const subscription = data.subscription
+
     const profile: Database["public"]["Tables"]["profiles"]["Row"] | null =
         data.profile;
 
@@ -50,7 +52,7 @@ export const load = async ({ fetch, data, depends, url }) => {
         throw redirect(303, userSurveyPath);
     }
 
-    return { supabase, session, profile };
+    return { supabase, session, profile, subscription };
 };
 
 
