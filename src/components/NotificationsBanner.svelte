@@ -16,16 +16,16 @@
 
 {#if showBanner}
   <div
-    class="fixed top-0 left-0 right-0 z-50 flex justify-center"
+    class="z-200 fixed left-0 right-0 top-0 flex justify-center"
     transition:fly={{ y: -100, duration: 500 }}
   >
-    <div class="alert shadow-lg m-2 sm:w-full md:w-2/3 lg:w-1/3">
+    <div class="alert m-2 shadow-lg sm:w-full md:w-2/3 lg:w-1/3">
       <div class="flex-1">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
-          class="w-6 h-6 mx-2 stroke-current"
+          class="mx-2 h-6 w-6 stroke-current"
         >
           <path
             stroke-linecap="round"
@@ -40,10 +40,10 @@
         >
       </div>
       <div class="flex-none">
-        <button class="btn btn-sm btn-primary" on:click={enableNotifications}>
+        <button class="btn btn-primary btn-sm" on:click={enableNotifications}>
           Get notifications
         </button>
-        <button class="btn btn-sm btn-ghost" on:click={closeBanner}>
+        <button class="btn btn-ghost btn-sm" on:click={closeBanner}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             class="h-6 w-6"
