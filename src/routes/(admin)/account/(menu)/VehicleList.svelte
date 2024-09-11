@@ -258,7 +258,7 @@
         />
       </div>
       <div class="flex-grow">
-        <h4 class="font-bold">New User</h4>
+        <h4 class="font-bold">Invite User</h4>
       </div>
       <button
         class="btn btn-outline btn-sm m-auto opacity-50"
