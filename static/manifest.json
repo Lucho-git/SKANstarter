@@ -5,7 +5,7 @@
     "theme_color": "#f9e58a",
     "background_color": "#d4fea9",
     "display": "standalone",
-    "orientation": "any",
+    "orientation": "natural",
     "scope": "/",
     "start_url": "/account",
     "icons": [
