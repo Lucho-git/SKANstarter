@@ -21,8 +21,6 @@
   let adminSection: Writable<string> = getContext("adminSection")
   adminSection.set("home")
 
-  let showTawkTo = false
-
   onMount(async () => {
     const session = $page.data.session
     if (session) {
@@ -44,10 +42,6 @@
         })
       }
     }
-  })
-
-  onDestroy(() => {
-    showTawkTo = false
   })
 </script>
 
