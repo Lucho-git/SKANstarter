@@ -10,7 +10,6 @@
   adminSection.set("mapviewer")
 
   let wakeLock: WakeLockSentinel | null = null
-  let orientationLock: any = null
 
   function isAndroid() {
     return browser && /Android/.test(navigator.userAgent)
@@ -42,29 +41,9 @@
     }
   }
 
-  async function lockOrientation() {
-    if (browser && "screen" in window && "orientation" in screen) {
-      try {
-        await screen.orientation.lock("portrait")
-        orientationLock = screen.orientation
-        toast.success("Screen orientation locked")
-      } catch (err) {
-        console.log(`Couldn't lock screen orientation: ${err.message}`)
-      }
-    }
-  }
-
-  function unlockOrientation() {
-    if (orientationLock) {
-      orientationLock.unlock()
-      orientationLock = null
-    }
-  }
-
   onMount(() => {
     if (browser) {
       requestWakeLock()
-      lockOrientation()
       document.addEventListener("visibilitychange", handleVisibilityChange)
     }
   })
@@ -72,7 +51,6 @@
   onDestroy(() => {
     if (browser) {
       releaseWakeLock()
-      unlockOrientation()
       document.removeEventListener("visibilitychange", handleVisibilityChange)
     }
   })
@@ -81,10 +59,8 @@
     if (browser) {
       if (document.visibilityState === "visible") {
         requestWakeLock()
-        lockOrientation()
       } else {
         releaseWakeLock()
-        unlockOrientation()
       }
     }
   }
@@ -92,7 +68,6 @@
   function handleBackToDashboard() {
     if (browser) {
       releaseWakeLock()
-      unlockOrientation()
     }
     goto("/account")
   }
