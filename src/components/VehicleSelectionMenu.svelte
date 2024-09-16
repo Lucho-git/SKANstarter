@@ -83,7 +83,6 @@
 
     window.addEventListener("resize", checkMobile)
 
-    // Randomize vehicle colors and sizes
     vehicles = vehicles.map((vehicle) => {
       if (vehicle.type === currentVehicleType) {
         return {
@@ -167,6 +166,7 @@
     usedItems.push(selectedItem)
     return selectedItem
   }
+
   function handleTouchStart(event) {
     startX = event.touches[0].clientX
     startY = event.touches[0].clientY
@@ -206,46 +206,50 @@
 </script>
 
 <div
-  class="fixed bottom-0 left-0 right-0 z-20 flex transform flex-col rounded-t-lg bg-white p-4 shadow-lg transition-transform duration-300 sm:p-6"
+  class="fixed bottom-0 left-0 right-0 z-20 flex transform flex-col rounded-t-lg bg-white p-6 shadow-lg transition-transform duration-300 sm:p-8"
   class:translate-y-full={!showMenu}
   class:translate-y-0={showMenu}
-  style={isMobile ? "height: 100%;" : "height: 45vh;"}
+  style={isMobile ? "height: 100%;" : "height: 60vh;"}
 >
   <div class="flex flex-grow flex-col overflow-hidden text-black sm:flex-row">
     <!-- Vehicle/Color selection (scrollable) -->
     <div
-      class="flex w-full flex-grow flex-col overflow-hidden sm:w-1/2 sm:pr-3"
+      class="flex w-full flex-grow flex-col overflow-hidden sm:w-1/2 sm:pr-4"
     >
       <div
         class="flex w-full overflow-hidden rounded-t-lg border-2 border-b-0 border-gray-300"
       >
-        <a
+        <button
           role="tab"
+          tabindex="0"
           class="flex-1 py-3 text-center text-lg font-semibold transition-colors duration-200 {!isColorSelectionMode
             ? 'border-b-2 border-transparent bg-white'
             : 'bg-blue-200 hover:bg-blue-300'}"
           on:click={() => toggleSelectionMode("vehicle")}
+          on:keydown={(event) =>
+            event.key === "Enter" && toggleSelectionMode("vehicle")}
         >
           Vehicles
-        </a>
-        <a
+        </button>
+        <button
           role="tab"
+          tabindex="0"
           class="flex-1 py-3 text-center text-lg font-semibold transition-colors duration-200 {isColorSelectionMode
             ? 'border-b-2 border-transparent bg-white'
             : 'bg-blue-200 hover:bg-blue-300'}"
           on:click={() => toggleSelectionMode("color")}
+          on:keydown={(event) =>
+            event.key === "Enter" && toggleSelectionMode("color")}
         >
           Colors
-        </a>
+        </button>
       </div>
       <div
         class="flex h-full flex-grow flex-col overflow-hidden rounded-b-lg border-2 border-t-0 border-gray-300 bg-white p-4"
       >
         <div class="flex-grow overflow-y-auto">
           {#if isColorSelectionMode}
-            <div
-              class="grid grid-cols-4 content-start justify-items-center gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6"
-            >
+            <div class="grid-container">
               {#each colors as bodyColor}
                 <button
                   class="btn btn-circle border-8 transition-all duration-200"
@@ -254,19 +258,21 @@
                     ? 'black'
                     : bodyColor};"
                   on:click={() => selectColor(bodyColor)}
+                  on:keydown={(event) =>
+                    event.key === "Enter" && selectColor(bodyColor)}
                 ></button>
               {/each}
             </div>
           {:else}
-            <div
-              class="grid grid-cols-3 content-start justify-items-center gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6"
-            >
+            <div class="grid-container">
               {#each vehicles as vehicle}
                 <button
                   class="btn btn-circle {selectedVehicle.type === vehicle.type
                     ? 'btn-primary'
                     : ''}"
                   on:click={() => selectVehicle(vehicle)}
+                  on:keydown={(event) =>
+                    event.key === "Enter" && selectVehicle(vehicle)}
                 >
                   <svelte:component
                     this={SVGComponents[vehicle.type]}
@@ -282,31 +288,32 @@
     </div>
 
     <!-- Vehicle display box -->
-    <div class="mt-4 flex w-full flex-col sm:mt-0 sm:w-1/2 sm:pl-3">
+    <div class="mt-4 flex w-full flex-col sm:mt-0 sm:w-1/2 sm:pl-4">
       <h2 class="mb-4 text-center text-2xl font-bold">Selected Vehicle</h2>
       <button
-        class="flex flex-grow flex-col items-center justify-center rounded-lg border-2 border-gray-300 bg-blue-100 p-4 transition-all duration-300 hover:bg-blue-200 active:bg-blue-300"
+        class="flex flex-grow flex-col items-center justify-center rounded-lg border-2 border-gray-300 bg-blue-100 p-6 transition-all duration-300 hover:bg-blue-200 active:bg-blue-300"
         on:click={() => cycleSize(1)}
         on:touchstart={handleTouchStart}
         on:touchend={handleTouchEnd}
         on:mousedown={handleMouseDown}
         on:mouseup={handleMouseUp}
+        on:keydown={(event) => event.key === "Enter" && cycleSize(1)}
       >
         <svelte:component
           this={SVGComponents[selectedVehicle.type]}
           bodyColor={selectedVehicle.bodyColor}
           size={getSizeInPixels(selectedVehicle.size)}
         />
-        <p class="mt-2 text-center font-semibold sm:mt-4">
+        <p class="mt-4 text-center font-semibold sm:mt-6">
           {selectedVehicle.type}
         </p>
-        <p class="text-center text-xs text-gray-500 sm:text-sm">
+        <p class="text-center text-sm text-gray-500 sm:text-base">
           Color: {selectedVehicle.bodyColor}
         </p>
-        <p class="text-center text-xs text-gray-500 sm:text-sm">
+        <p class="text-center text-sm text-gray-500 sm:text-base">
           Size: {selectedVehicle.size}
         </p>
-        <div class="mt-2 flex items-center space-x-3">
+        <div class="mt-4 flex items-center space-x-3">
           {#each sizeOptions as size, index}
             <div
               class="rounded-full border-2 transition-all duration-200"
@@ -323,7 +330,7 @@
   </div>
 
   <!-- Underneath section: Cancel and Confirm buttons -->
-  <div class="mt-4 flex">
+  <div class="mt-6 flex">
     <button class="btn mr-2 flex-1" on:click={cancelSelection}>Cancel</button>
     <button
       class="btn btn-primary ml-2 flex-1"
@@ -346,5 +353,11 @@
       width: 5rem;
       height: 5rem;
     }
+  }
+
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+    gap: 1rem;
   }
 </style>

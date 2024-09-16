@@ -1,9 +1,9 @@
 <!-- Tractor.svelte -->
 <script>
   export let bodyColor = "gray"
-  export let outlineColor = "white"
-  export let wheelColor = "black"
-  export let loadColor = "green"
+  //   export let outlineColor = "white"
+  //   export let wheelColor = "black"
+  //   export let loadColor = "green"
   export let size = "60px"
 </script>
 
