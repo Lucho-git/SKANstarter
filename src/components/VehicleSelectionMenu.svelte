@@ -5,58 +5,62 @@
   import { onMount } from "svelte"
   import { toast } from "svelte-sonner"
 
+  import { Button } from "$lib/components/ui/button"
+  import * as Card from "$lib/components/ui/card"
+  import { Label } from "$lib/components/ui/label"
+  import { Slider } from "$lib/components/ui/slider"
+  import { Truck, Paintbrush, Maximize, Minimize } from "lucide-svelte"
+  import { Edit } from "lucide-svelte"
+  import * as Tabs from "$lib/components/ui/tabs"
+
+  import * as Accordion from "$lib/components/ui/accordion"
+  import { ScrollArea } from "$lib/components/ui/scroll-area"
+
+  let swathValue = [2.0] // Default stubbed value
+
   const dispatch = createEventDispatcher()
 
   export let showMenu = false
   export let currentVehicleType
-  export let currentVehicleSize
+  export let currentVehicleSize // Size in pixels
   export let currentVehicleColor
 
+  let activeTab = "vehicles"
+
   let usedColors = []
-  let usedSizes = []
-
-  const sizeMappings = {
-    Small: "60px",
-    Medium: "60px",
-    Large: "60px",
-  }
-
-  const reverseSizeMappings = Object.fromEntries(
-    Object.entries(sizeMappings).map(([k, v]) => [v, k]),
-  )
 
   $: vehicles = [
-    { type: "FourWheelDriveTractor", bodyColor: "green", size: "large" },
-    { type: "TowBetweenSeeder", bodyColor: "red", size: "medium" },
-    { type: "TowBehindSeeder", bodyColor: "red", size: "medium" },
-    { type: "TowBehindSeederTracks", bodyColor: "red", size: "medium" },
-    { type: "TowBehindBoomspray", bodyColor: "red", size: "medium" },
-    { type: "SelfPropelledBoomspray", bodyColor: "red", size: "medium" },
-    { type: "FarmUte", bodyColor: "red", size: "medium" },
-    { type: "FrontWheelChaserBin", bodyColor: "red", size: "medium" },
-    { type: "FourWheelDriveChaserBin", bodyColor: "red", size: "medium" },
-    { type: "HeaderDuals", bodyColor: "red", size: "medium" },
-    { type: "HeaderSingles", bodyColor: "red", size: "medium" },
-    { type: "HeaderTracks", bodyColor: "red", size: "medium" },
-    { type: "SelfPropelledSwather", bodyColor: "red", size: "medium" },
-    { type: "Spreader", bodyColor: "red", size: "medium" },
-    { type: "Truck", bodyColor: "red", size: "medium" },
-    { type: "CabOverTruck", bodyColor: "red", size: "medium" },
-    { type: "CabOverRoadTrain", bodyColor: "red", size: "medium" },
-    { type: "Baler", bodyColor: "red", size: "medium" },
-    { type: "Mower", bodyColor: "red", size: "medium" },
-    { type: "SelfPropelledMower", bodyColor: "red", size: "medium" },
-    { type: "Telehandler", bodyColor: "red", size: "medium" },
-    { type: "ThreePointBoomspray", bodyColor: "red", size: "medium" },
-    { type: "Loader", bodyColor: "red", size: "medium" },
-    { type: "SimpleTractor", bodyColor: "red", size: "small" },
-    { type: "Pointer", bodyColor: "green", size: "medium" },
-    { type: "CombineHarvester", bodyColor: "yellow", size: "large" },
-    { type: "Excavator", bodyColor: "orange", size: "medium" },
-    { type: "Tractor", bodyColor: "green", size: "large" },
-    { type: "WheelLoader", bodyColor: "yellow", size: "medium" },
-    { type: "WorkCar", bodyColor: "red", size: "medium" },
-    { type: "Airplane", bodyColor: "blue", size: "large" },
+    { type: "FourWheelDriveTractor", bodyColor: "green", size: 60, swath: 2.0 },
+    { type: "TowBetweenSeeder", bodyColor: "red", size: 60, swath: 1.5 },
+    { type: "TowBehindSeeder", bodyColor: "red", size: 60, swath: 1.5 },
+    { type: "TowBehindSeederTracks", bodyColor: "red", size: 60, swath: 1.5 },
+    { type: "TowBehindBoomspray", bodyColor: "red", size: 60, swath: 1.5 },
+    { type: "SelfPropelledBoomspray", bodyColor: "red", size: 60, swath: 1.5 },
+    { type: "FarmUte", bodyColor: "red", size: 60, swath: 1.5 },
+    { type: "FrontWheelChaserBin", bodyColor: "red", size: 60, swath: 1.5 },
+    { type: "FourWheelDriveChaserBin", bodyColor: "red", size: 60, swath: 1.5 },
+    { type: "HeaderDuals", bodyColor: "red", size: 60, swath: 1.5 },
+    { type: "HeaderSingles", bodyColor: "red", size: 60, swath: 1.5 },
+    { type: "HeaderTracks", bodyColor: "red", size: 60, swath: 1.5 },
+    { type: "SelfPropelledSwather", bodyColor: "red", size: 60, swath: 1.5 },
+    { type: "Spreader", bodyColor: "red", size: 60, swath: 1.5 },
+    { type: "Truck", bodyColor: "red", size: 60, swath: 1.5 },
+    { type: "CabOverTruck", bodyColor: "red", size: 60, swath: 1.5 },
+    { type: "CabOverRoadTrain", bodyColor: "red", size: 60, swath: 1.5 },
+    { type: "Baler", bodyColor: "red", size: 60, swath: 1.5 },
+    { type: "Mower", bodyColor: "red", size: 60, swath: 1.5 },
+    { type: "SelfPropelledMower", bodyColor: "red", size: 60, swath: 1.5 },
+    { type: "Telehandler", bodyColor: "red", size: 60, swath: 1.5 },
+    { type: "ThreePointBoomspray", bodyColor: "red", size: 60, swath: 1.5 },
+    { type: "Loader", bodyColor: "red", size: 60, swath: 1.5 },
+    { type: "SimpleTractor", bodyColor: "red", size: 60, swath: 1.0 },
+    { type: "Pointer", bodyColor: "green", size: 60, swath: 1.5 },
+    { type: "CombineHarvester", bodyColor: "yellow", size: 60, swath: 2.0 },
+    { type: "Excavator", bodyColor: "orange", size: 60, swath: 1.5 },
+    { type: "Tractor", bodyColor: "green", size: 60, swath: 2.0 },
+    { type: "WheelLoader", bodyColor: "yellow", size: 60, swath: 1.5 },
+    { type: "WorkCar", bodyColor: "red", size: 60, swath: 1.5 },
+    { type: "Airplane", bodyColor: "blue", size: 60, swath: 2.0 },
   ]
 
   $: initialVehicle =
@@ -68,7 +72,7 @@
   let isColorSelectionMode = false
 
   const colors = ["Red", "Blue", "Green", "Yellow", "Orange", "Purple"]
-  const sizeOptions = ["Small", "Medium", "Large"]
+  const sizeOptions = [60, 80, 100] // Example sizes in pixels
 
   $: currentSizeIndex = sizeOptions.indexOf(selectedVehicle.size)
 
@@ -87,14 +91,13 @@
       if (vehicle.type === currentVehicleType) {
         return {
           ...vehicle,
-          size: reverseSizeMappings[currentVehicleSize] || "medium",
+          size: currentVehicleSize || 60,
           bodyColor: currentVehicleColor,
         }
       }
       return {
         ...vehicle,
         bodyColor: cycleRandomItems(colors, usedColors),
-        size: cycleRandomItems(sizeOptions, usedSizes),
       }
     })
 
@@ -105,6 +108,7 @@
 
   function selectVehicle(vehicle) {
     selectedVehicle = { ...vehicle }
+    swathValue = [vehicle.swath || 2.0] // Use vehicle's swath or default to 2.0
   }
 
   function confirmSelection() {
@@ -114,7 +118,8 @@
 
     dispatch("vehicleSelected", {
       ...selectedVehicle,
-      size: sizeMappings[selectedVehicle.size],
+      size: selectedVehicle.size,
+      swath: selectedVehicle.swath,
     })
 
     dispatch("closeMenu")
@@ -132,24 +137,8 @@
     selectedVehicle = { ...selectedVehicle, bodyColor }
   }
 
-  function cycleSize(direction = 1) {
-    currentSizeIndex =
-      (currentSizeIndex + direction + sizeOptions.length) % sizeOptions.length
-    selectedVehicle = {
-      ...selectedVehicle,
-      size: sizeOptions[currentSizeIndex],
-    }
-  }
-
   function getSizeInPixels(size) {
-    switch (size) {
-      case "Small":
-        return "80px"
-      case "Medium":
-        return "80px"
-      case "Large":
-        return "80px"
-    }
+    return `${size}px` // Size in pixels
   }
 
   function getRandomItem(array) {
@@ -167,42 +156,11 @@
     return selectedItem
   }
 
-  function handleTouchStart(event) {
-    startX = event.touches[0].clientX
-    startY = event.touches[0].clientY
-  }
-
-  function handleTouchEnd(event) {
-    const endX = event.changedTouches[0].clientX
-    const endY = event.changedTouches[0].clientY
-    handleSwipe(startX - endX, startY - endY)
-  }
-
-  function handleMouseDown(event) {
-    startX = event.clientX
-    startY = event.clientY
-  }
-
-  function handleMouseUp(event) {
-    const endX = event.clientX
-    const endY = event.clientY
-    handleSwipe(startX - endX, startY - endY)
-  }
-
-  function handleSwipe(deltaX, deltaY) {
-    if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      if (deltaX > 50) {
-        cycleSize(1) // Swipe left
-      } else if (deltaX < -50) {
-        cycleSize(-1) // Swipe right
-      }
-    }
-  }
-
   $: hasChanged =
     selectedVehicle.type !== initialVehicle.type ||
     selectedVehicle.bodyColor !== initialVehicle.bodyColor ||
-    selectedVehicle.size !== initialVehicle.size
+    selectedVehicle.size !== initialVehicle.size ||
+    swathValue[0] !== initialVehicle.swath
 </script>
 
 <div
@@ -212,120 +170,127 @@
   style={isMobile ? "height: 100%;" : "height: 60vh;"}
 >
   <div class="flex flex-grow flex-col overflow-hidden text-black sm:flex-row">
-    <!-- Vehicle/Color selection (scrollable) -->
     <div
       class="flex w-full flex-grow flex-col overflow-hidden sm:w-1/2 sm:pr-4"
     >
-      <div
-        class="flex w-full overflow-hidden rounded-t-lg border-2 border-b-0 border-gray-300"
-      >
-        <button
-          role="tab"
-          tabindex="0"
-          class="flex-1 py-3 text-center text-lg font-semibold transition-colors duration-200 {!isColorSelectionMode
-            ? 'border-b-2 border-transparent bg-white'
-            : 'bg-blue-200 hover:bg-blue-300'}"
-          on:click={() => toggleSelectionMode("vehicle")}
-          on:keydown={(event) =>
-            event.key === "Enter" && toggleSelectionMode("vehicle")}
+      <Card.Root class="h-full overflow-hidden border-2 border-gray-300">
+        <Tabs.Root
+          value={activeTab}
+          onValueChange={(value) => (activeTab = value)}
+          class="rounded-lg bg-gray-100 p-1 shadow-inner"
         >
-          Vehicles
-        </button>
-        <button
-          role="tab"
-          tabindex="0"
-          class="flex-1 py-3 text-center text-lg font-semibold transition-colors duration-200 {isColorSelectionMode
-            ? 'border-b-2 border-transparent bg-white'
-            : 'bg-blue-200 hover:bg-blue-300'}"
-          on:click={() => toggleSelectionMode("color")}
-          on:keydown={(event) =>
-            event.key === "Enter" && toggleSelectionMode("color")}
-        >
-          Colors
-        </button>
-      </div>
-      <div
-        class="flex h-full flex-grow flex-col overflow-hidden rounded-b-lg border-2 border-t-0 border-gray-300 bg-white p-4"
-      >
-        <div class="flex-grow overflow-y-auto">
-          {#if isColorSelectionMode}
-            <div class="grid-container">
-              {#each colors as bodyColor}
-                <button
-                  class="btn btn-circle border-8 transition-all duration-200"
-                  style="background-color: {bodyColor}; border-color: {selectedVehicle.bodyColor ===
-                  bodyColor
-                    ? 'black'
-                    : bodyColor};"
-                  on:click={() => selectColor(bodyColor)}
-                  on:keydown={(event) =>
-                    event.key === "Enter" && selectColor(bodyColor)}
-                ></button>
-              {/each}
-            </div>
-          {:else}
-            <div class="grid-container">
-              {#each vehicles as vehicle}
-                <button
-                  class="btn btn-circle {selectedVehicle.type === vehicle.type
-                    ? 'btn-primary'
-                    : ''}"
-                  on:click={() => selectVehicle(vehicle)}
-                  on:keydown={(event) =>
-                    event.key === "Enter" && selectVehicle(vehicle)}
-                >
-                  <svelte:component
-                    this={SVGComponents[vehicle.type]}
-                    bodyColor={vehicle.bodyColor}
-                    size={sizeMappings[vehicle.size]}
-                  />
-                </button>
-              {/each}
-            </div>
-          {/if}
-        </div>
-      </div>
+          <Tabs.List class="grid w-full grid-cols-3 gap-1">
+            <Tabs.Trigger
+              value="vehicles"
+              class="rounded-md px-4 py-2 text-gray-700 transition-all duration-200 hover:bg-gray-200 data-[state=active]:bg-white data-[state=active]:shadow-md"
+            >
+              Vehicles
+            </Tabs.Trigger>
+            <Tabs.Trigger
+              value="colors"
+              class="rounded-md px-4 py-2 text-gray-700 transition-all duration-200 hover:bg-gray-200 data-[state=active]:bg-white data-[state=active]:shadow-md"
+            >
+              Colors
+            </Tabs.Trigger>
+            <Tabs.Trigger
+              value="swath"
+              class="rounded-md px-4 py-2 text-gray-700 transition-all duration-200 hover:bg-gray-200 data-[state=active]:bg-white data-[state=active]:shadow-md"
+            >
+              Swath
+            </Tabs.Trigger>
+          </Tabs.List>
+
+          <div class="flex-grow overflow-hidden">
+            <Tabs.Content value="vehicles" class="h-full">
+              <ScrollArea class="h-full" type="auto">
+                <div class="grid-container p-4">
+                  {#each vehicles as vehicle}
+                    <Button
+                      variant="outline"
+                      class="h-24 w-24 border-2 p-2"
+                      on:click={() => selectVehicle(vehicle)}
+                    >
+                      <svelte:component
+                        this={SVGComponents[vehicle.type]}
+                        bodyColor={vehicle.bodyColor}
+                        size="100%"
+                      />
+                    </Button>
+                  {/each}
+                </div>
+              </ScrollArea>
+            </Tabs.Content>
+            <Tabs.Content value="colors" class="h-full">
+              <ScrollArea class="h-full" type="auto">
+                <div class="grid-container p-4">
+                  {#each colors as bodyColor}
+                    <Button
+                      variant="outline"
+                      class="h-24 w-24 border-2 p-2"
+                      style="background-color: {bodyColor};"
+                      on:click={() => selectColor(bodyColor)}
+                    ></Button>
+                  {/each}
+                </div>
+              </ScrollArea>
+            </Tabs.Content>
+            <Tabs.Content value="swath" class="h-full">
+              <ScrollArea class="h-full" type="auto">
+                <div class="p-4">
+                  <Label class="mb-2 block">Swath Width</Label>
+                  <Slider bind:value={swathValue} min={2} max={50} step={1} />
+                  <p class="mt-2 text-center">{swathValue[0]}m</p>
+                </div>
+              </ScrollArea>
+            </Tabs.Content>
+          </div>
+        </Tabs.Root>
+      </Card.Root>
     </div>
 
     <!-- Vehicle display box -->
     <div class="mt-4 flex w-full flex-col sm:mt-0 sm:w-1/2 sm:pl-4">
-      <h2 class="mb-4 text-center text-2xl font-bold">Selected Vehicle</h2>
-      <button
-        class="flex flex-grow flex-col items-center justify-center rounded-lg border-2 border-gray-300 bg-blue-100 p-6 transition-all duration-300 hover:bg-blue-200 active:bg-blue-300"
-        on:click={() => cycleSize(1)}
-        on:touchstart={handleTouchStart}
-        on:touchend={handleTouchEnd}
-        on:mousedown={handleMouseDown}
-        on:mouseup={handleMouseUp}
-        on:keydown={(event) => event.key === "Enter" && cycleSize(1)}
-      >
-        <svelte:component
-          this={SVGComponents[selectedVehicle.type]}
-          bodyColor={selectedVehicle.bodyColor}
-          size={getSizeInPixels(selectedVehicle.size)}
-        />
-        <p class="mt-4 text-center font-semibold sm:mt-6">
-          {selectedVehicle.type}
-        </p>
-        <p class="text-center text-sm text-gray-500 sm:text-base">
-          Color: {selectedVehicle.bodyColor}
-        </p>
-        <p class="text-center text-sm text-gray-500 sm:text-base">
-          Size: {selectedVehicle.size}
-        </p>
-        <div class="mt-4 flex items-center space-x-3">
-          {#each sizeOptions as size, index}
-            <div
-              class="rounded-full border-2 transition-all duration-200"
-              class:bg-blue-500={index === currentSizeIndex}
-              class:border-blue-500={index === currentSizeIndex}
-              class:bg-gray-300={index !== currentSizeIndex}
-              class:border-gray-300={index !== currentSizeIndex}
-              style="width: {8 + index * 4}px; height: {8 + index * 4}px;"
-            ></div>
-          {/each}
-        </div>
-      </button>
+      <Card.Root class="h-full w-full">
+        <Card.Header class="pb-2 text-center">
+          <Card.Title class="max-w-full break-words px-2 text-xl font-semibold">
+            {selectedVehicle.type}
+          </Card.Title>
+        </Card.Header>
+        <Card.Content class="space-y-4">
+          <Button
+            variant="outline"
+            class="relative flex h-40 w-full items-center justify-center"
+            on:click={() => (activeTab = "vehicles")}
+          >
+            <Edit class="absolute right-2 top-2 h-4 w-4 text-gray-400" />
+            <svelte:component
+              this={SVGComponents[selectedVehicle.type]}
+              bodyColor={selectedVehicle.bodyColor}
+              size={`${selectedVehicle.size * 1.8}px`}
+            />
+          </Button>
+          <div class="grid grid-cols-2 gap-4">
+            <Button
+              variant="outline"
+              class="relative flex h-20 flex-col items-center justify-center"
+              on:click={() => (activeTab = "colors")}
+            >
+              <Edit class="absolute right-2 top-2 h-4 w-4 text-gray-400" />
+              <Paintbrush class="mb-2 h-5 w-5" />
+              <span>{selectedVehicle.bodyColor}</span>
+            </Button>
+            <Button
+              variant="outline"
+              class="relative flex h-20 flex-col items-center justify-center"
+              on:click={() => (activeTab = "swath")}
+            >
+              <Edit class="absolute right-2 top-2 h-4 w-4 text-gray-400" />
+              <Minimize class="mb-2 h-5 w-5" />
+              <span>{swathValue[0]}m</span>
+            </Button>
+          </div>
+        </Card.Content>
+      </Card.Root>
     </div>
   </div>
 
