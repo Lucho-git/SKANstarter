@@ -109,17 +109,10 @@
     })
   }
 
-  function createTrailLayer(
-    sourceId,
-    layerId,
-    width,
-    opacity,
-    dashArray = [1],
-  ) {
+  function createTrailLayer(sourceId, layerId, opacity, dashArray = [1]) {
     console.log("Creating/updating trail layer:", {
       sourceId,
       layerId,
-      width,
       opacity,
       dashArray,
     })
@@ -129,9 +122,9 @@
       ["exponential", 2],
       ["zoom"],
       10,
-      ["*", width, ["^", 2, -6]],
+      ["*", ["*", ["get", "swath"], 2.5], ["^", 2, -6]],
       24,
-      ["*", width, ["^", 2, 8]],
+      ["*", ["*", ["get", "swath"], 2.5], ["^", 2, 8]],
     ]
 
     if (!map.getLayer(layerId)) {
@@ -215,7 +208,7 @@
 
     const features = []
     let currentLine = []
-    let startTimestamp, endTimestamp, color
+    let startTimestamp, endTimestamp, color, swath
 
     for (let i = 0; i < coordinates.length; i++) {
       const currentPoint = coordinates[i].coordinates
@@ -224,6 +217,7 @@
         .map(parseFloat)
       const currentTimestamp = coordinates[i].timestamp
       color = coordinates[i].color || color
+      swath = coordinates[i].swath || swath
 
       if (currentLine.length === 0) {
         startTimestamp = currentTimestamp
@@ -256,6 +250,7 @@
             startTimestamp,
             endTimestamp,
             color,
+            swath,
           },
         })
         currentLine = []
@@ -350,7 +345,6 @@
       createTrailLayer(
         sourceIdLine,
         sourceIdLine,
-        trailConfig.solidLine.width,
         trailConfig.solidLine.opacity,
         trailConfig.solidLine.dashArray,
       )

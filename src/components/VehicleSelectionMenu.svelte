@@ -1,17 +1,13 @@
 <script>
   import { createEventDispatcher } from "svelte"
-  import { controlStore } from "../stores/controlStore"
   import SVGComponents from "$lib/vehicles/index.js"
   import { onMount } from "svelte"
-  import { toast } from "svelte-sonner"
 
+  import { toast } from "svelte-sonner"
   import { Button } from "$lib/components/ui/button"
   import * as Card from "$lib/components/ui/card"
-  import { Label } from "$lib/components/ui/label"
   import { Slider } from "$lib/components/ui/slider"
   import * as Tabs from "$lib/components/ui/tabs"
-  import * as Popover from "$lib/components/ui/popover"
-  import * as Accordion from "$lib/components/ui/accordion"
   import { ScrollArea } from "$lib/components/ui/scroll-area"
 
   import {
@@ -91,13 +87,16 @@
     selectedVehicle = { ...selectedVehicle, swath: newValue }
   }
 
+  function selectVehicle(vehicle) {
+    selectedVehicle = { ...vehicle }
+    swathValue = [vehicle.swath || 12.0]
+  }
+
   $: hasChanged =
     selectedVehicle.type !== initialVehicle.type ||
     selectedVehicle.bodyColor !== initialVehicle.bodyColor ||
     selectedVehicle.size !== initialVehicle.size ||
     selectedVehicle.swath !== initialVehicle.swath
-
-  $: console.log("swathValue:", swathValue)
 
   let isMobile = false
 
@@ -130,11 +129,6 @@
       window.removeEventListener("resize", checkMobile)
     }
   })
-
-  function selectVehicle(vehicle) {
-    selectedVehicle = { ...vehicle }
-    swathValue = [vehicle.swath || 12.0]
-  }
 
   function confirmSelection() {
     toast.success(
