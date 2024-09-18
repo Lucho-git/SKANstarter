@@ -26,6 +26,7 @@
   // Constants
   const MAX_DISTANCE = 1 // in kilometers
   const MAX_TIME_DIFF = 5 * 60 * 1000 // 3 minutes in milliseconds
+  const TRAIL_MULTIPLIER = 2.5 // the amount we multiplying metres by to get trail units for our conversion approximation
 
   // Configuration object for trail properties
   const trailConfig = {
@@ -122,9 +123,9 @@
       ["exponential", 2],
       ["zoom"],
       10,
-      ["*", ["*", ["get", "swath"], 2.5], ["^", 2, -6]],
+      ["*", ["*", ["get", "swath"], TRAIL_MULTIPLIER], ["^", 2, -6]],
       24,
-      ["*", ["*", ["get", "swath"], 2.5], ["^", 2, 8]],
+      ["*", ["*", ["get", "swath"], TRAIL_MULTIPLIER], ["^", 2, 8]],
     ]
 
     if (!map.getLayer(layerId)) {
