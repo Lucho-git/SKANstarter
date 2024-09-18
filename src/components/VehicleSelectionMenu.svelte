@@ -69,24 +69,39 @@
     { type: "Airplane", bodyColor: "blue", size: 60, swath: 50 },
   ]
 
+  let swathValue = [12] // Default value, adjust as needed
+
   $: initialVehicle =
     vehicles.find((v) => v.type === currentVehicleType) || vehicles[0]
+
   $: selectedVehicle = {
     ...initialVehicle,
     swath: currentVehicleSwath || initialVehicle.swath,
   }
-  $: swathValue = [selectedVehicle.swath]
+
+  $: {
+    if (selectedVehicle.swath !== swathValue[0]) {
+      swathValue = [selectedVehicle.swath]
+    }
+  }
+
+  function updateSwath(value) {
+    const newValue = Array.isArray(value) ? value[0] : value
+    swathValue = [newValue]
+    selectedVehicle = { ...selectedVehicle, swath: newValue }
+  }
+
+  $: hasChanged =
+    selectedVehicle.type !== initialVehicle.type ||
+    selectedVehicle.bodyColor !== initialVehicle.bodyColor ||
+    selectedVehicle.size !== initialVehicle.size ||
+    selectedVehicle.swath !== initialVehicle.swath
+
+  $: console.log("swathValue:", swathValue)
 
   let isMobile = false
-  let isColorSelectionMode = false
 
   const colors = ["Red", "Blue", "Green", "Yellow", "Orange", "Purple"]
-  const sizeOptions = [60, 80, 100] // Example sizes in pixels
-
-  $: currentSizeIndex = sizeOptions.indexOf(selectedVehicle.size)
-
-  let startX = 0
-  let startY = 0
 
   onMount(() => {
     const checkMobile = () => {
@@ -157,12 +172,6 @@
     usedItems.push(selectedItem)
     return selectedItem
   }
-
-  $: hasChanged =
-    selectedVehicle.type !== initialVehicle.type ||
-    selectedVehicle.bodyColor !== initialVehicle.bodyColor ||
-    selectedVehicle.size !== initialVehicle.size ||
-    swathValue[0] !== initialVehicle.swath
 </script>
 
 <div
@@ -249,7 +258,7 @@
                           on:click={() => {
                             toast.info("About Swath Width", {
                               description:
-                                "Swath width is the area covered by your vehicle in one pass.          Proper swath setting ensures correct trailing visuals.",
+                                "Swath width is the area covered by your vehicle in one pass. Proper swath setting ensures correct trailing visuals.",
                               duration: 7000,
                             })
                           }}
@@ -262,11 +271,11 @@
                       <div class="mb-4 grid grid-cols-3 gap-2">
                         {#each [4, 8, 10, 12, 24, 36] as preset}
                           <button
-                            class="rounded-full px-3 py-1 text-sm {swathValue[0] ===
+                            class="rounded-full px-3 py-1 text-sm {selectedVehicle.swath ===
                             preset
                               ? 'bg-primary text-white'
                               : 'bg-gray-200'}"
-                            on:click={() => (swathValue = [preset])}
+                            on:click={() => updateSwath(preset)}
                           >
                             {preset}m
                           </button>
@@ -275,11 +284,12 @@
                       <div class="flex items-center space-x-2">
                         <Minimize class="h-5 w-5" />
                         <Slider
-                          bind:value={swathValue}
+                          value={swathValue}
+                          onValueChange={updateSwath}
                           min={2}
                           max={50}
                           step={1}
-                          class="flex-grow"
+                          class="flex-grow [&_[role=slider]]:h-5 [&_[role=slider]]:w-5 [&_[role=slider]]:bg-gray-100 [&_[role=slider]]:shadow-[inset_-2px_-2px_5px_rgba(255,255,255,0.7),inset_2px_2px_5px_rgba(0,0,0,0.1)] [&_[role=track]]:h-2 [&_[role=track]]:bg-gray-200 [&_[role=track]]:shadow-[inset_1px_1px_3px_rgba(0,0,0,0.1),inset_-1px_-1px_3px_rgba(255,255,255,0.7)]"
                         />
                         <span class="font-semibold">{swathValue[0]}m</span>
                       </div>
