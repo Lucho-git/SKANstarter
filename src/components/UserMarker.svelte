@@ -8,7 +8,7 @@
   export let vehicleSize = "60px"
   export let userVehicle = "tractor"
   export let vehicleColor = "yellow"
-  export let vehicleSwath = 30
+  export let vehicleSwath = 12
   export let showPulse = true
 
   $: vehicle = SVGComponents[userVehicle] || SVGComponents.tractor

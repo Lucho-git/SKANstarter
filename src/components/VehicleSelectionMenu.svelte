@@ -9,14 +9,20 @@
   import * as Card from "$lib/components/ui/card"
   import { Label } from "$lib/components/ui/label"
   import { Slider } from "$lib/components/ui/slider"
-  import { Truck, Paintbrush, Maximize, Minimize } from "lucide-svelte"
-  import { Edit } from "lucide-svelte"
   import * as Tabs from "$lib/components/ui/tabs"
-
+  import * as Popover from "$lib/components/ui/popover"
   import * as Accordion from "$lib/components/ui/accordion"
   import { ScrollArea } from "$lib/components/ui/scroll-area"
 
-  let swathValue = [2.0] // Default stubbed value
+  import {
+    Edit,
+    Truck,
+    Paintbrush,
+    Maximize,
+    Minimize,
+    Info,
+    ChevronsLeftRight,
+  } from "lucide-svelte"
 
   const dispatch = createEventDispatcher()
 
@@ -24,49 +30,52 @@
   export let currentVehicleType
   export let currentVehicleSize // Size in pixels
   export let currentVehicleColor
+  export let currentVehicleSwath
 
   let activeTab = "vehicles"
-
   let usedColors = []
 
   $: vehicles = [
-    { type: "FourWheelDriveTractor", bodyColor: "green", size: 60, swath: 2.0 },
-    { type: "TowBetweenSeeder", bodyColor: "red", size: 60, swath: 1.5 },
-    { type: "TowBehindSeeder", bodyColor: "red", size: 60, swath: 1.5 },
-    { type: "TowBehindSeederTracks", bodyColor: "red", size: 60, swath: 1.5 },
-    { type: "TowBehindBoomspray", bodyColor: "red", size: 60, swath: 1.5 },
-    { type: "SelfPropelledBoomspray", bodyColor: "red", size: 60, swath: 1.5 },
-    { type: "FarmUte", bodyColor: "red", size: 60, swath: 1.5 },
-    { type: "FrontWheelChaserBin", bodyColor: "red", size: 60, swath: 1.5 },
-    { type: "FourWheelDriveChaserBin", bodyColor: "red", size: 60, swath: 1.5 },
-    { type: "HeaderDuals", bodyColor: "red", size: 60, swath: 1.5 },
-    { type: "HeaderSingles", bodyColor: "red", size: 60, swath: 1.5 },
-    { type: "HeaderTracks", bodyColor: "red", size: 60, swath: 1.5 },
-    { type: "SelfPropelledSwather", bodyColor: "red", size: 60, swath: 1.5 },
-    { type: "Spreader", bodyColor: "red", size: 60, swath: 1.5 },
-    { type: "Truck", bodyColor: "red", size: 60, swath: 1.5 },
-    { type: "CabOverTruck", bodyColor: "red", size: 60, swath: 1.5 },
-    { type: "CabOverRoadTrain", bodyColor: "red", size: 60, swath: 1.5 },
-    { type: "Baler", bodyColor: "red", size: 60, swath: 1.5 },
-    { type: "Mower", bodyColor: "red", size: 60, swath: 1.5 },
-    { type: "SelfPropelledMower", bodyColor: "red", size: 60, swath: 1.5 },
-    { type: "Telehandler", bodyColor: "red", size: 60, swath: 1.5 },
-    { type: "ThreePointBoomspray", bodyColor: "red", size: 60, swath: 1.5 },
-    { type: "Loader", bodyColor: "red", size: 60, swath: 1.5 },
-    { type: "SimpleTractor", bodyColor: "red", size: 60, swath: 1.0 },
-    { type: "Pointer", bodyColor: "green", size: 60, swath: 1.5 },
-    { type: "CombineHarvester", bodyColor: "yellow", size: 60, swath: 2.0 },
-    { type: "Excavator", bodyColor: "orange", size: 60, swath: 1.5 },
-    { type: "Tractor", bodyColor: "green", size: 60, swath: 2.0 },
-    { type: "WheelLoader", bodyColor: "yellow", size: 60, swath: 1.5 },
-    { type: "WorkCar", bodyColor: "red", size: 60, swath: 1.5 },
-    { type: "Airplane", bodyColor: "blue", size: 60, swath: 2.0 },
+    { type: "FourWheelDriveTractor", bodyColor: "green", size: 60, swath: 4 },
+    { type: "TowBetweenSeeder", bodyColor: "red", size: 60, swath: 12 },
+    { type: "TowBehindSeeder", bodyColor: "red", size: 60, swath: 12 },
+    { type: "TowBehindSeederTracks", bodyColor: "red", size: 60, swath: 12 },
+    { type: "TowBehindBoomspray", bodyColor: "red", size: 60, swath: 36 },
+    { type: "SelfPropelledBoomspray", bodyColor: "red", size: 60, swath: 36 },
+    { type: "ThreePointBoomspray", bodyColor: "red", size: 60, swath: 36 },
+    { type: "FarmUte", bodyColor: "red", size: 60, swath: 4 },
+    { type: "FrontWheelChaserBin", bodyColor: "red", size: 60, swath: 12 },
+    { type: "FourWheelDriveChaserBin", bodyColor: "red", size: 60, swath: 12 },
+    { type: "HeaderDuals", bodyColor: "red", size: 60, swath: 12 },
+    { type: "HeaderSingles", bodyColor: "red", size: 60, swath: 12 },
+    { type: "HeaderTracks", bodyColor: "red", size: 60, swath: 12 },
+    { type: "SelfPropelledSwather", bodyColor: "red", size: 60, swath: 12 },
+    { type: "Spreader", bodyColor: "red", size: 60, swath: 12 },
+    { type: "Truck", bodyColor: "red", size: 60, swath: 4 },
+    { type: "CabOverTruck", bodyColor: "red", size: 60, swath: 4 },
+    { type: "CabOverRoadTrain", bodyColor: "red", size: 60, swath: 4 },
+    { type: "Baler", bodyColor: "red", size: 60, swath: 12 },
+    { type: "Mower", bodyColor: "red", size: 60, swath: 12 },
+    { type: "SelfPropelledMower", bodyColor: "red", size: 60, swath: 12 },
+    { type: "Telehandler", bodyColor: "red", size: 60, swath: 12 },
+    { type: "Loader", bodyColor: "red", size: 60, swath: 4 },
+    { type: "SimpleTractor", bodyColor: "red", size: 60, swath: 4 },
+    { type: "Pointer", bodyColor: "green", size: 60, swath: 4 },
+    { type: "CombineHarvester", bodyColor: "yellow", size: 60, swath: 12 },
+    { type: "Excavator", bodyColor: "orange", size: 60, swath: 4 },
+    { type: "Tractor", bodyColor: "green", size: 60, swath: 4 },
+    { type: "WheelLoader", bodyColor: "yellow", size: 60, swath: 4 },
+    { type: "WorkCar", bodyColor: "red", size: 60, swath: 4 },
+    { type: "Airplane", bodyColor: "blue", size: 60, swath: 50 },
   ]
 
   $: initialVehicle =
     vehicles.find((v) => v.type === currentVehicleType) || vehicles[0]
-
-  $: selectedVehicle = { ...initialVehicle }
+  $: selectedVehicle = {
+    ...initialVehicle,
+    swath: currentVehicleSwath || initialVehicle.swath,
+  }
+  $: swathValue = [selectedVehicle.swath]
 
   let isMobile = false
   let isColorSelectionMode = false
@@ -93,6 +102,7 @@
           ...vehicle,
           size: currentVehicleSize || 60,
           bodyColor: currentVehicleColor,
+          swath: currentVehicleSwath,
         }
       }
       return {
@@ -108,7 +118,7 @@
 
   function selectVehicle(vehicle) {
     selectedVehicle = { ...vehicle }
-    swathValue = [vehicle.swath || 2.0] // Use vehicle's swath or default to 2.0
+    swathValue = [vehicle.swath || 12.0]
   }
 
   function confirmSelection() {
@@ -119,7 +129,7 @@
     dispatch("vehicleSelected", {
       ...selectedVehicle,
       size: selectedVehicle.size,
-      swath: selectedVehicle.swath,
+      swath: swathValue[0],
     })
 
     dispatch("closeMenu")
@@ -129,16 +139,8 @@
     dispatch("closeMenu")
   }
 
-  function toggleSelectionMode(mode) {
-    isColorSelectionMode = mode === "color"
-  }
-
   function selectColor(bodyColor) {
     selectedVehicle = { ...selectedVehicle, bodyColor }
-  }
-
-  function getSizeInPixels(size) {
-    return `${size}px` // Size in pixels
   }
 
   function getRandomItem(array) {
@@ -199,7 +201,6 @@
               Swath
             </Tabs.Trigger>
           </Tabs.List>
-
           <div class="flex-grow overflow-hidden">
             <Tabs.Content value="vehicles" class="h-full">
               <ScrollArea class="h-full" type="auto">
@@ -236,10 +237,54 @@
             </Tabs.Content>
             <Tabs.Content value="swath" class="h-full">
               <ScrollArea class="h-full" type="auto">
-                <div class="p-4">
-                  <Label class="mb-2 block">Swath Width</Label>
-                  <Slider bind:value={swathValue} min={2} max={50} step={1} />
-                  <p class="mt-2 text-center">{swathValue[0]}m</p>
+                <div class="space-y-4 p-4">
+                  <Card.Root>
+                    <Card.Header class="flex items-center">
+                      <Card.Title class="flex items-center">
+                        Swath Width
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          class="ml-2"
+                          on:click={() => {
+                            toast.info("About Swath Width", {
+                              description:
+                                "Swath width is the area covered by your vehicle in one pass.          Proper swath setting ensures correct trailing visuals.",
+                              duration: 7000,
+                            })
+                          }}
+                        >
+                          <Info class="h-4 w-4" />
+                        </Button>
+                      </Card.Title>
+                    </Card.Header>
+                    <Card.Content>
+                      <div class="mb-4 grid grid-cols-3 gap-2">
+                        {#each [4, 8, 10, 12, 24, 36] as preset}
+                          <button
+                            class="rounded-full px-3 py-1 text-sm {swathValue[0] ===
+                            preset
+                              ? 'bg-primary text-white'
+                              : 'bg-gray-200'}"
+                            on:click={() => (swathValue = [preset])}
+                          >
+                            {preset}m
+                          </button>
+                        {/each}
+                      </div>
+                      <div class="flex items-center space-x-2">
+                        <Minimize class="h-5 w-5" />
+                        <Slider
+                          bind:value={swathValue}
+                          min={2}
+                          max={50}
+                          step={1}
+                          class="flex-grow"
+                        />
+                        <span class="font-semibold">{swathValue[0]}m</span>
+                      </div>
+                    </Card.Content>
+                  </Card.Root>
                 </div>
               </ScrollArea>
             </Tabs.Content>

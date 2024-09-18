@@ -293,7 +293,8 @@
       if (
         vehicleMarker.type === previousVehicleMarker.type &&
         vehicleMarker.bodyColor === previousVehicleMarker.bodyColor &&
-        vehicleMarker.size === previousVehicleMarker.size
+        vehicleMarker.size === previousVehicleMarker.size &&
+        vehicleMarker.swath === previousVehicleMarker.swath
       ) {
         // Vehicle marker hasn't changed, no need to update the marker
         console.log("Vehicle marker hasn't changed")

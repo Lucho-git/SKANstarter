@@ -11,7 +11,7 @@ function createUserVehicleStore() {
         type: 'simpleTractor',
         color: 'red',
         size: '25px',
-        swath: 30,
+        swath: 12,
         path: () => import('$lib/vehicles/SimpleTractor.svelte')
       },
       heading: 0

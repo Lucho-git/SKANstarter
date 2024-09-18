@@ -352,6 +352,7 @@
               this={VehicleIcon}
               bodyColor={$userVehicleStore.vehicle_marker.bodyColor}
               size={$userVehicleStore.vehicle_marker.size}
+              swath={$userVehicleStore.vehicle_marker.swath}
             />
           {:else}
             Loading...
@@ -369,6 +370,7 @@
       currentVehicleType={$userVehicleStore.vehicle_marker.type}
       currentVehicleSize={$userVehicleStore.vehicle_marker.size}
       currentVehicleColor={$userVehicleStore.vehicle_marker.bodyColor}
+      currentVehicleSwath={$userVehicleStore.vehicle_marker.swath}
       on:closeMenu={() => {
         controlStore.update((store) => ({ ...store, showVehicleMenu: false }))
       }}
