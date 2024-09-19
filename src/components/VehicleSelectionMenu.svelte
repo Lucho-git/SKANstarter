@@ -357,18 +357,6 @@
 </div>
 
 <style>
-  .btn-circle {
-    width: 5rem;
-    height: 5rem;
-  }
-
-  @media (max-width: 640px) {
-    .btn-circle {
-      width: 5rem;
-      height: 5rem;
-    }
-  }
-
   .grid-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));

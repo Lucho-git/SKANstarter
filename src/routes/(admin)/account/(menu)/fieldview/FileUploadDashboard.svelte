@@ -1,6 +1,7 @@
+<!-- src/routes/admin/fieldview/FileUploadDashboard.svelte -->
 <script lang="ts">
-  import { onMount } from "svelte"
-  import { userFilesStore } from "../../../../../stores/userFilesStore" // Adjust the path as necessary
+  import { createEventDispatcher } from "svelte"
+  import { userFilesStore } from "../../../../../stores/userFilesStore" // Adjust path if necessary
   import {
     Table,
     TableBody,
@@ -20,99 +21,30 @@
   import { Download, Trash, FileUp } from "lucide-svelte"
   import { get } from "svelte/store"
 
+  // Define the FileUpload type
   type FileUpload = {
     id: string
     name: string
-    uploadedDate: Date
+    path: string
+    uploadedDate: string // ISO string
     status: "Pending" | "Processed" | "Failed"
     message: string
   }
 
-  let files: FileUpload[] = []
-  $: files = $userFilesStore
+  const dispatch = createEventDispatcher()
 
-  let isLoading = false
+  // Read the files once from the store
+  let files: FileUpload[] = get(userFilesStore)
+
+  // Local state for handling errors
   let errorMessage = ""
 
-  // Fetch files from backend or store
-  async function fetchFiles() {
-    isLoading = true
-    errorMessage = ""
-    try {
-      // TODO: Replace the following stub with actual fetch logic
-      // Example using a backend API:
-      // const response = await fetch('/api/user/files')
-      // if (!response.ok) throw new Error('Network response was not ok')
-      // const data: FileUpload[] = await response.json()
-      // userFilesStore.set(data)
-
-      // Stub: Simulate fetching data
-      await new Promise((resolve) => setTimeout(resolve, 1000)) // Simulate network delay
-      const fetchedFiles: FileUpload[] = [
-        {
-          id: "1",
-          name: "document.pdf",
-          uploadedDate: new Date("2023-05-01"),
-          status: "Processed",
-          message: "Successfully processed",
-        },
-        {
-          id: "2",
-          name: "image.jpg",
-          uploadedDate: new Date("2023-05-02"),
-          status: "Pending",
-          message: "Awaiting processing",
-        },
-        {
-          id: "3",
-          name: "spreadsheet.xlsx",
-          uploadedDate: new Date("2023-05-03"),
-          status: "Failed",
-          message: "Error during processing",
-        },
-      ]
-      userFilesStore.set(fetchedFiles)
-    } catch (error) {
-      console.error("Error fetching files:", error)
-      errorMessage = "Failed to load files."
-    } finally {
-      isLoading = false
-    }
-  }
-
-  // Handle file download
-  function handleDownload(fileName: string) {
-    console.log(`Downloading ${fileName}`)
-    // TODO: Replace the following stub with actual download logic
-    // Example:
-    // window.open(`/api/user/files/download/${fileName}`, "_blank")
-  }
-
-  // Handle file deletion
-  async function handleDelete(fileName: string) {
-    if (!confirm(`Are you sure you want to delete ${fileName}?`)) return
-
-    try {
-      // TODO: Replace the following stub with actual delete logic
-      // Example using a backend API:
-      // const response = await fetch(`/api/user/files/${fileName}`, { method: 'DELETE' })
-      // if (!response.ok) throw new Error('Failed to delete the file')
-      // userFilesStore.update(files => files.filter(file => file.name !== fileName))
-
-      // Stub: Simulate deletion delay and update store
-      await new Promise((resolve) => setTimeout(resolve, 500)) // Simulate network delay
-      console.log(`Deleting ${fileName}`)
-      userFilesStore.update((currentFiles) =>
-        currentFiles.filter((file) => file.name !== fileName),
-      )
-    } catch (error) {
-      console.error("Error deleting file:", error)
-      errorMessage = "Failed to delete the file."
-    }
-  }
-
-  // Format date
-  function formatDate(date: Date | string): string {
+  /**
+   * Formats a Date string into a readable format.
+   * @param date - The date string to format.
+   * @returns Formatted date string.
+   */
+  function formatDate(date: string): string {
     return new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -120,10 +52,27 @@
     })
   }
 
-  // On mount, fetch the files
-  onMount(() => {
-    fetchFiles()
-  })
+  /**
+   * Handles the download action for a file.
+   * @param file - The file to download.
+   */
+  function handleDownload(file: FileUpload) {
+    console.log(`Downloading ${file.name}`)
+    // Implement actual download logic here
+    // Example:
+    window.location.href = `/account/api?action=downloadFile&fileName=${encodeURIComponent(file.name)}`
+  }
+
+  /**
+   * Handles the deletion of a file by dispatching an event to the parent.
+   * @param file - The file to delete.
+   */
+  function handleDelete(file: FileUpload) {
+    if (!confirm(`Are you sure you want to delete ${file.name}?`)) return
+
+    // Dispatch the fileDeleted event with the file name
+    dispatch("fileDeleted", { fileName: file.name })
+  }
 </script>
 
 <div class="container mx-auto py-10">
@@ -136,10 +85,25 @@
     </CardHeader>
 
     <CardContent>
-      {#if isLoading}
-        <p>Loading files...</p>
-      {:else if errorMessage}
-        <p class="text-red-500">{errorMessage}</p>
+      {#if !files || files.length === 0}
+        <div class="flex flex-col items-center justify-center text-center">
+          <!-- No Data Symbol -->
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="mb-4 h-12 w-12 text-gray-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+          <p class="text-gray-500">No files uploaded yet.</p>
+        </div>
       {:else}
         <Table>
           <TableCaption>A list of your uploaded files</TableCaption>
@@ -182,8 +146,9 @@
                     <Button
                       variant="ghost"
                       size="icon"
-                      on:click={() => handleDownload(file.name)}
+                      on:click={() => handleDownload(file)}
                       class="h-8 w-8"
+                      aria-label={`Download ${file.name}`}
                     >
                       <Download class="h-4 w-4" />
                       <span class="sr-only">Download {file.name}</span>
@@ -193,8 +158,9 @@
                     <Button
                       variant="ghost"
                       size="icon"
-                      on:click={() => handleDelete(file.name)}
+                      on:click={() => handleDelete(file)}
                       class="h-8 w-8 text-red-600"
+                      aria-label={`Delete ${file.name}`}
                     >
                       <Trash class="h-4 w-4" />
                       <span class="sr-only">Delete {file.name}</span>
@@ -205,10 +171,10 @@
             {/each}
           </TableBody>
         </Table>
+      {/if}
 
-        {#if files.length === 0}
-          <p>No files uploaded yet.</p>
-        {/if}
+      {#if errorMessage}
+        <p class="text-red-500">{errorMessage}</p>
       {/if}
     </CardContent>
   </Card>
