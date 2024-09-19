@@ -378,7 +378,9 @@
           coordinates: { latitude, longitude },
           timestamp: currentTime,
           color: bodyColor,
+          swath: swath,
         }
+        console.log("Saving location data:", locationData)
         unsavedTrailStore.update((markers) => [...markers, locationData])
       }
 

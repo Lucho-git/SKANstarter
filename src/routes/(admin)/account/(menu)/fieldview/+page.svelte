@@ -3,6 +3,7 @@
   import type { Writable } from "svelte/store"
   import UploadPopoverTrigger from "../../../../../components/UploadPopoverTrigger.svelte"
   import UserFiles from "../../../../../components/UserFiles.svelte"
+  import FileUploadDashboard from "./FileUploadDashboard.svelte"
   import { userFilesStore } from "../../../../../stores/userFilesStore"
 
   let adminSection: Writable<string> = getContext("adminSection")
@@ -83,15 +84,15 @@
 </script>
 
 <div class="app-container">
-  <div class="w-full max-w-4xl mx-auto">
-    <h2 class="text-2xl font-bold mb-4">FieldView</h2>
+  <div class="mx-auto w-full max-w-4xl">
+    <h2 class="mb-4 text-2xl font-bold">FieldView</h2>
 
-    <div class="alert alert-info w-full mt-2 mb-4">
+    <div class="alert alert-info mb-4 mt-2 w-full">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
-        class="stroke-current shrink-0 w-6 h-6"
+        class="h-6 w-6 shrink-0 stroke-current"
         ><path
           stroke-linecap="round"
           stroke-linejoin="round"
@@ -108,8 +109,8 @@
       </div>
     </div>
 
-    <div class="alert alert-success w-full mt-2">
-      <img src="/images/file-upload-icon.svg" alt="Gear" class="w-14 h-14" />
+    <div class="alert alert-success mt-2 w-full">
+      <img src="/images/file-upload-icon.svg" alt="Gear" class="h-14 w-14" />
       <div>
         <div class="font-bold">Upload Paddock Boundaries</div>
         <div class="my-2">
@@ -121,7 +122,7 @@
       </div>
     </div>
 
-    <div class="alert alert-success w-full mt-2">
+    <div class="alert alert-success mt-2 w-full">
       <div>
         <div class="font-bold">User Files</div>
         <div class="my-2">
@@ -132,6 +133,8 @@
         </div>
       </div>
     </div>
+
+    <!-- <FileUploadDashboard /> -->
   </div>
 </div>
 

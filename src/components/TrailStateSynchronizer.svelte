@@ -146,6 +146,8 @@
 
       const vehicleId = session.user.id
 
+      console.log("Processing unsaved markers:", markers)
+
       const enrichedMarkers = markers.map((marker) => ({
         ...marker,
         id: `${vehicleId}_${marker.timestamp}`,
@@ -154,7 +156,7 @@
         coordinates: `(${marker.coordinates.longitude},${marker.coordinates.latitude})`,
         master_map_id: masterMapId,
         color: marker.color || "black",
-        // swath: marker.swath, add swath here, rn not working because no swath in current vehiclemarkers / being set in vehicleselectionmenu
+        swath: marker.swath || 12,
       }))
 
       console.log("Saving new trail marker:", enrichedMarkers)
