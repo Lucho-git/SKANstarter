@@ -1,6 +1,8 @@
 <!-- FileUpload.svelte -->
 <script lang="ts">
   import { createEventDispatcher } from "svelte"
+  import { fetchUserFiles, deleteUserFile } from "$lib/api/server/files" // Adjust the import path as necessary
+
   import { userFilesStore } from "../stores/userFilesStore"
   import FileInspector from "./FileInspector.svelte"
 
@@ -91,6 +93,7 @@
 
           if (fetchResponse.ok) {
             const { files } = await fetchResponse.json()
+            console.log("Fetched files:", files)
             userFilesStore.set(files)
           } else {
             const error = await fetchResponse.json()
@@ -166,11 +169,11 @@
   <div class="fixed inset-0 z-50 text-base-content">
     <div class="overlay absolute inset-0 bg-black opacity-50"></div>
     <div
-      class="card w-full max-w-3xl bg-base-100 shadow-xl z-10 mx-auto fullscreen-modal"
+      class="fullscreen-modal card z-10 mx-auto w-full max-w-3xl bg-base-100 shadow-xl"
     >
       <div class="card-body relative">
         <button
-          class="btn btn-sm btn-circle absolute top-2 right-2"
+          class="btn btn-circle btn-sm absolute right-2 top-2"
           on:click={closePopover}
         >
           <svg
@@ -188,25 +191,25 @@
             />
           </svg>
         </button>
-        <h3 class="card-title justify-center text-2xl font-bold mb-4">
+        <h3 class="card-title mb-4 justify-center text-2xl font-bold">
           Upload Files
         </h3>
-        <h3 class="card-title justify-center text-lg mb-4">
+        <h3 class="card-title mb-4 justify-center text-lg">
           Upload your farms paddock boundary files
         </h3>
 
         <div
-          class="flex flex-col items-center justify-center w-full max-w-7xl mx-auto"
+          class="mx-auto flex w-full max-w-7xl flex-col items-center justify-center"
         >
           <label
             for="dropzone-file"
-            class="flex flex-col items-center justify-center w-3/4 h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
+            class="dark:hover:bg-bray-800 flex h-64 w-3/4 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500 dark:hover:bg-gray-600"
             on:dragover={handleDragOver}
             on:dragleave={handleDragLeave}
             on:drop={handleDrop}
           >
             {#if file && !errorMessage}
-              <div class="flex flex-col items-center justify-center pt-5 pb-6">
+              <div class="flex flex-col items-center justify-center pb-6 pt-5">
                 {#if browser && LottiePlayer}
                   <svelte:component
                     this={LottiePlayer}
@@ -226,7 +229,7 @@
                 </p>
               </div>
             {:else if errorMessage}
-              <div class="flex flex-col items-center justify-center pt-5 pb-6">
+              <div class="flex flex-col items-center justify-center pb-6 pt-5">
                 {#if browser && LottiePlayer}
                   <svelte:component
                     this={LottiePlayer}
@@ -243,7 +246,7 @@
                 {/if}
               </div>
             {:else}
-              <div class="flex flex-col items-center justify-center pt-5 pb-6">
+              <div class="flex flex-col items-center justify-center pb-6 pt-5">
                 {#if browser && LottiePlayer}
                   <svelte:component
                     this={LottiePlayer}
@@ -291,7 +294,7 @@
           </button>
         </div>
 
-        <div class="justify-center mx-auto">
+        <div class="mx-auto justify-center">
           {#if errorMessage}
             <p class="text-red-500">{errorMessage}</p>
           {/if}
@@ -305,34 +308,34 @@
           {/if}
         </div>
 
-        <div class="mt-2 max-w-6xl mx-auto">
-          <h3 class="text-lg font-bold mb-2">File Upload Requirements</h3>
-          <ul class="list-none pl-6 mb-4">
+        <div class="mx-auto mt-2 max-w-6xl">
+          <h3 class="mb-2 text-lg font-bold">File Upload Requirements</h3>
+          <ul class="mb-4 list-none pl-6">
             <li class="mb-2">
-              <span class="inline-block w-4 h-4 mr-2">
+              <span class="mr-2 inline-block h-4 w-4">
                 <ion-icon name="shield-checkmark"></ion-icon>
               </span>
               Zipped Shapefiles, .KML files and ISOXML files are all accepted
             </li>
             <li class="mb-2">
-              <span class="inline-block w-4 h-4 mr-2">
+              <span class="mr-2 inline-block h-4 w-4">
                 <ion-icon name="shield-checkmark"></ion-icon>
               </span>
               Shapefile ZIP must contain .dbf, .shx and .shp files.
             </li>
             <li class="mb-2">
-              <span class="inline-block w-4 h-4 mr-2">
+              <span class="mr-2 inline-block h-4 w-4">
                 <ion-icon name="shield-checkmark"></ion-icon>
               </span>
               Multiple ZIP files or an ISOXML can be contained in a single ZIP file.
             </li>
             <li>
-              <span class="inline-block w-4 h-4 mr-2">
+              <span class="mr-2 inline-block h-4 w-4">
                 <ion-icon name="cloud-download"></ion-icon>
               </span>
               <a
                 href="/docs/skan_sample_shapefile.zip"
-                class="text-blue-500 hover:text-blue-700 underline"
+                class="text-blue-500 underline hover:text-blue-700"
                 download
               >
                 Download Example Paddock
@@ -341,16 +344,16 @@
             </li>
           </ul>
 
-          <h3 class="text-lg font-bold mb-2">Supported Polygon Types</h3>
+          <h3 class="mb-2 text-lg font-bold">Supported Polygon Types</h3>
           <ul class="list-none pl-6">
             <li class="mb-2">
-              <span class="inline-block w-4 h-4 mr-2">
+              <span class="mr-2 inline-block h-4 w-4">
                 <ion-icon name="checkbox"></ion-icon>
               </span>
               Polygon
             </li>
             <li>
-              <span class="inline-block w-4 h-4 mr-2">
+              <span class="mr-2 inline-block h-4 w-4">
                 <ion-icon name="checkbox"></ion-icon>
               </span>
               Multipolygon

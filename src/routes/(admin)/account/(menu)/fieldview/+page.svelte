@@ -1,6 +1,6 @@
 <!-- src/routes/admin/fieldview/+page.svelte -->
 <script lang="ts">
-  import { getContext, onMount } from "svelte"
+  import { getContext } from "svelte"
   import type { Writable } from "svelte/store"
   import UploadPopoverTrigger from "../../../../../components/UploadPopoverTrigger.svelte"
   import FileUploadDashboard from "./FileUploadDashboard.svelte"
@@ -9,30 +9,6 @@
   // Retrieve and set the admin section context
   let adminSection: Writable<string> = getContext("adminSection")
   adminSection.set("fieldview")
-
-  /**
-   * Fetches the list of uploaded files from the backend.
-   */
-  async function fetchUploadedFiles() {
-    try {
-      const response = await fetch("/account/api", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ action: "fetchUploadedFiles" }),
-      })
-
-      if (response.ok) {
-        const { files } = await response.json()
-        userFilesStore.set(files)
-      } else {
-        console.error("Error fetching uploaded files")
-      }
-    } catch (error) {
-      console.error("Error fetching uploaded files:", error)
-    }
-  }
 
   /**
    * Deletes a file by communicating with the backend.
@@ -81,8 +57,18 @@
       })
 
       if (response.ok) {
-        // After successful upload, fetch the updated list of files
-        await fetchUploadedFiles()
+        // After successful upload, update the store with the new file
+        // **Note:** Ensure that the backend returns the necessary file details.
+        const newFile = {
+          id: generateUUID(), // **Stub:** Replace with actual ID from backend if available
+          name: file.name,
+          path: `/user/${file.name}`, // **Stub:** Replace with actual path from backend if available
+          uploadedDate: new Date().toISOString(),
+          status: "Processed",
+          message: "File uploaded successfully",
+        }
+        console.log("New file:", newFile)
+        userFilesStore.update((files: any[]) => [newFile, ...files])
       } else {
         console.error("Error uploading file")
       }
@@ -100,22 +86,34 @@
     console.error("Invalid file:", invalidFile.name)
   }
 
-  // Fetch uploaded files when the component mounts
-  onMount(fetchUploadedFiles)
-  //   console.log(data)
+  /**
+   * Generates a UUID for new files.
+   * @returns A randomly generated UUID string.
+   */
+  function generateUUID() {
+    // Simple UUID generator for demonstration purposes
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+      /[xy]/g,
+      function (c) {
+        const r = (Math.random() * 16) | 0,
+          v = c === "x" ? r : (r & 0x3) | 0x8
+        return v.toString(16)
+      },
+    )
+  }
 </script>
 
 <div class="app-container">
-  <div class="mx-auto w-full max-w-4xl">
-    <h2 class="mb-4 text-2xl font-bold">FieldView</h2>
+  <div class="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+    <h2 class="mb-6 text-3xl font-bold">FieldView</h2>
 
     <!-- Information Alert -->
-    <div class="alert alert-info mb-4 mt-2 w-full">
+    <div class="alert alert-info mb-6 flex items-start">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
-        class="h-6 w-6 shrink-0 stroke-current"
+        class="mr-4 h-6 w-6 shrink-0 stroke-current text-blue-500"
       >
         <path
           stroke-linecap="round"
@@ -126,7 +124,7 @@
       </svg>
       <div>
         <h3 class="font-bold">Coming Soon: Paddock Boundary Updates</h3>
-        <div class="text-sm">
+        <div class="mt-1 text-sm">
           You can upload your files now. We'll notify you once the update is
           live and your boundaries are visible.
         </div>
@@ -134,8 +132,12 @@
     </div>
 
     <!-- Upload Section -->
-    <div class="alert alert-success mt-2 w-full">
-      <img src="/images/file-upload-icon.svg" alt="Gear" class="h-14 w-14" />
+    <div class="alert alert-success mb-6 flex items-start">
+      <img
+        src="/images/file-upload-icon.svg"
+        alt="File Upload Icon"
+        class="mr-4 h-14 w-14"
+      />
       <div>
         <div class="font-bold">Upload Paddock Boundaries</div>
         <div class="my-2">
@@ -148,8 +150,9 @@
     </div>
 
     <!-- File Upload Dashboard -->
-
-    <FileUploadDashboard on:fileDeleted={deleteFile} />
+    <div class=" mb-6">
+      <FileUploadDashboard on:fileDeleted={deleteFile} />
+    </div>
   </div>
 </div>
 
@@ -159,5 +162,6 @@
     width: 100%;
     min-height: 100vh;
     padding: 1rem;
+    background-color: #f9fafb; /* Light gray background for better contrast */
   }
 </style>

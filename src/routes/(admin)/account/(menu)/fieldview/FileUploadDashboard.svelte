@@ -1,6 +1,6 @@
 <!-- src/routes/admin/fieldview/FileUploadDashboard.svelte -->
 <script lang="ts">
-  import { createEventDispatcher } from "svelte"
+  import { createEventDispatcher, onMount } from "svelte"
   import { userFilesStore } from "../../../../../stores/userFilesStore" // Adjust path if necessary
   import {
     Table,
@@ -18,7 +18,7 @@
     CardHeader,
     CardTitle,
   } from "$lib/components/ui/card"
-  import { Download, Trash, FileUp } from "lucide-svelte"
+  import { Download, Trash, FileUp, Minimize, Maximize2 } from "lucide-svelte"
   import { get } from "svelte/store"
 
   // Define the FileUpload type
@@ -34,16 +34,30 @@
   const dispatch = createEventDispatcher()
 
   // Read the files once from the store
-  let files: FileUpload[] = get(userFilesStore)
+  $: files = $userFilesStore
 
   // Local state for handling errors
   let errorMessage = ""
 
-  /**
-   * Formats a Date string into a readable format.
-   * @param date - The date string to format.
-   * @returns Formatted date string.
-   */
+  // State for expanded/condensed view
+  let isExpanded = true
+  let isMobile = false
+
+  onMount(() => {
+    const mediaQuery = window.matchMedia("(max-width: 768px)")
+    isMobile = mediaQuery.matches
+    isExpanded = !isMobile
+
+    mediaQuery.addEventListener("change", (e) => {
+      isMobile = e.matches
+      isExpanded = !isMobile
+    })
+  })
+
+  function toggleView() {
+    isExpanded = !isExpanded
+  }
+
   function formatDate(date: string): string {
     return new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
@@ -52,42 +66,44 @@
     })
   }
 
-  /**
-   * Handles the download action for a file.
-   * @param file - The file to download.
-   */
   function handleDownload(file: FileUpload) {
     console.log(`Downloading ${file.name}`)
-    // Implement actual download logic here
-    // Example:
     window.location.href = `/account/api?action=downloadFile&fileName=${encodeURIComponent(file.name)}`
   }
 
-  /**
-   * Handles the deletion of a file by dispatching an event to the parent.
-   * @param file - The file to delete.
-   */
   function handleDelete(file: FileUpload) {
     if (!confirm(`Are you sure you want to delete ${file.name}?`)) return
-
-    // Dispatch the fileDeleted event with the file name
     dispatch("fileDeleted", { fileName: file.name })
+  }
+
+  function truncateFileName(name: string, maxLength: number = 20): string {
+    if (name.length <= maxLength) return name
+    const half = Math.floor((maxLength - 3) / 2)
+    return `${name.slice(0, half)}...${name.slice(-half)}`
   }
 </script>
 
-<div class="container mx-auto py-10">
+<div class="width-auto py-6" class:expanded-mobile={isMobile && isExpanded}>
   <Card>
-    <CardHeader>
-      <CardTitle class="flex items-center text-2xl font-bold">
-        <FileUp class="mr-2 h-6 w-6" />
-        File Upload Dashboard
-      </CardTitle>
+    <CardHeader class="px-2 sm:px-4">
+      <div class="flex items-center justify-between">
+        <CardTitle class="flex items-center text-2xl font-bold">
+          <FileUp class="mr-2 h-6 w-6" />
+          File Upload Dashboard
+        </CardTitle>
+        <Button variant="outline" size="sm" on:click={toggleView}>
+          {#if isExpanded}
+            <Minimize class="h-4 w-4" />
+          {:else}
+            <Maximize2 class="h-4 w-4" />
+          {/if}
+        </Button>
+      </div>
     </CardHeader>
 
-    <CardContent>
+    <CardContent class="px-2 sm:px-4">
       {#if !files || files.length === 0}
         <div class="flex flex-col items-center justify-center text-center">
-          <!-- No Data Symbol -->
           <svg
             xmlns="http://www.w3.org/2000/svg"
             class="mb-4 h-12 w-12 text-gray-400"
@@ -105,72 +121,82 @@
           <p class="text-gray-500">No files uploaded yet.</p>
         </div>
       {:else}
-        <Table>
-          <TableCaption>A list of your uploaded files</TableCaption>
+        <div class="overflow-x-auto">
+          <Table>
+            <TableCaption>A list of your uploaded files</TableCaption>
 
-          <TableHeader>
-            <TableRow>
-              <TableHead>File Name</TableHead>
-              <TableHead>Uploaded Date</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Message</TableHead>
-              <TableHead class="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-
-          <TableBody>
-            {#each files as file (file.id)}
+            <TableHeader>
               <TableRow>
-                <TableCell class="font-medium">{file.name}</TableCell>
-                <TableCell>{formatDate(file.uploadedDate)}</TableCell>
-
-                <TableCell>
-                  <span
-                    class={`rounded-full px-2 py-1 text-xs font-semibold ${
-                      file.status === "Processed"
-                        ? "bg-green-100 text-green-800"
-                        : file.status === "Pending"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {file.status}
-                  </span>
-                </TableCell>
-
-                <TableCell>{file.message}</TableCell>
-
-                <TableCell class="text-right">
-                  <div class="flex justify-end space-x-2">
-                    <!-- Download Button -->
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      on:click={() => handleDownload(file)}
-                      class="h-8 w-8"
-                      aria-label={`Download ${file.name}`}
-                    >
-                      <Download class="h-4 w-4" />
-                      <span class="sr-only">Download {file.name}</span>
-                    </Button>
-
-                    <!-- Delete Button -->
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      on:click={() => handleDelete(file)}
-                      class="h-8 w-8 text-red-600"
-                      aria-label={`Delete ${file.name}`}
-                    >
-                      <Trash class="h-4 w-4" />
-                      <span class="sr-only">Delete {file.name}</span>
-                    </Button>
-                  </div>
-                </TableCell>
+                <TableHead class="whitespace-nowrap">File Name</TableHead>
+                {#if isExpanded}
+                  <TableHead class="whitespace-nowrap">Uploaded Date</TableHead>
+                {/if}
+                <TableHead class="whitespace-nowrap">Status</TableHead>
+                {#if isExpanded}
+                  <TableHead class="whitespace-nowrap">Message</TableHead>
+                {/if}
+                <TableHead class="whitespace-nowrap text-right"
+                  >Actions</TableHead
+                >
               </TableRow>
-            {/each}
-          </TableBody>
-        </Table>
+            </TableHeader>
+
+            <TableBody>
+              {#each files as file (file.id)}
+                <TableRow>
+                  <TableCell class="whitespace-nowrap font-medium">
+                    {truncateFileName(file.name, isExpanded ? 30 : 20)}
+                  </TableCell>
+                  {#if isExpanded}
+                    <TableCell class="whitespace-nowrap"
+                      >{formatDate(file.uploadedDate)}</TableCell
+                    >
+                  {/if}
+                  <TableCell class="whitespace-nowrap">
+                    <span
+                      class={`rounded-full px-2 py-1 text-xs font-semibold ${
+                        file.status === "Processed"
+                          ? "bg-green-100 text-green-800"
+                          : file.status === "Pending"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {file.status}
+                    </span>
+                  </TableCell>
+                  {#if isExpanded}
+                    <TableCell>{file.message}</TableCell>
+                  {/if}
+                  <TableCell class="whitespace-nowrap text-right">
+                    <div class="flex justify-end space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        on:click={() => handleDownload(file)}
+                        class="h-8 w-8"
+                        aria-label={`Download ${file.name}`}
+                      >
+                        <Download class="h-4 w-4" />
+                        <span class="sr-only">Download {file.name}</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        on:click={() => handleDelete(file)}
+                        class="h-8 w-8 text-red-600"
+                        aria-label={`Delete ${file.name}`}
+                      >
+                        <Trash class="h-4 w-4" />
+                        <span class="sr-only">Delete {file.name}</span>
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              {/each}
+            </TableBody>
+          </Table>
+        </div>
       {/if}
 
       {#if errorMessage}
@@ -181,5 +207,7 @@
 </div>
 
 <style>
-  /* Add any necessary styles here */
+  .expanded-mobile {
+    max-width: 77vw;
+  }
 </style>
