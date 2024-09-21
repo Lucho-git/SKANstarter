@@ -2,6 +2,7 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte"
   import { fetchUserFiles, deleteUserFile } from "$lib/api/server/files" // Adjust the import path as necessary
+  import { get } from "svelte/store"
 
   import { userFilesStore } from "../stores/userFilesStore"
   import FileInspector from "./FileInspector.svelte"
@@ -61,49 +62,92 @@
   }
 
   const handleFileUpload = async () => {
+    console.log("handleFileUpload called")
+    console.log("Initial state - file:", file, "isFileValid:", isFileValid)
+
     if (file && isFileValid) {
+      console.log("File is valid, proceeding with upload")
       uploading = true
       errorMessage = ""
       successMessage = ""
+      console.log("Reset messages and set uploading to true")
 
       const formData = new FormData()
       formData.append("file", file)
+      console.log("FormData created with file:", file.name)
 
       try {
+        console.log("Initiating fetch request to /api/files/upload")
         const response = await fetch("/api/files/upload", {
           method: "POST",
           body: formData,
         })
+        console.log(
+          "Fetch response received:",
+          response.status,
+          response.statusText,
+        )
 
         const result = await response.json()
+        console.log("Response data:", result)
 
         if (response.ok) {
-          console.log("File uploaded successfully")
+          console.log("File upload successful")
+
+          console.log("Current store state:", get(userFilesStore))
+
+          // Normalize the new file data
+          const normalizedFile = {
+            id: result.file.file_id,
+            name: result.file.file_name,
+            path: result.file.file_path,
+            uploadedDate: result.file.created_at,
+            status: "Uploaded", // You might want to adjust this based on your application logic
+            message: "File uploaded successfully",
+            userId: result.file.user_id,
+          }
+
+          userFilesStore.update((files) => {
+            console.log("Updating userFilesStore")
+            const updatedFiles = [...files, normalizedFile]
+            console.log("Updated files array:", updatedFiles)
+            return updatedFiles
+          })
+
+          console.log("New store state:", get(userFilesStore))
+
           file = null
           isFileValid = false
           successMessage = "File uploaded successfully"
-          dispatch("fileUploaded")
-
-          // Update the userFilesStore with the new file
-          userFilesStore.update((files) => [...files, result.file])
-
-          console.log("Updated files:", result.file)
+          console.log("Reset file and isFileValid, set successMessage")
         } else {
-          console.error("Error uploading file:", result.error)
+          console.error("Error in response:", result.error)
           errorMessage =
             result.error ||
             "An error occurred while uploading the file. Please try again."
           isFileValid = false
+          console.log("Set errorMessage and reset isFileValid")
         }
       } catch (error) {
-        console.error("Error uploading file:", error)
+        console.error("Exception caught during file upload:", error)
         errorMessage =
           "An unexpected error occurred while uploading the file. Please try again."
         isFileValid = false
+        console.log(
+          "Set errorMessage for unexpected error and reset isFileValid",
+        )
       } finally {
         uploading = false
+        console.log("Upload process completed, set uploading to false")
       }
+    } else {
+      console.log("File upload not initiated: file is null or invalid")
     }
+
+    console.log("Final state - file:", file, "isFileValid:", isFileValid)
+    console.log("Final state - successMessage:", successMessage)
+    console.log("Final state - errorMessage:", errorMessage)
+    console.log("Final state - uploading:", uploading)
   }
 
   function handleDragOver(event: DragEvent) {

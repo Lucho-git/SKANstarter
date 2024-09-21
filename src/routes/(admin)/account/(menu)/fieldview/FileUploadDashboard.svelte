@@ -71,9 +71,41 @@
     window.location.href = `/account/api?action=downloadFile&fileName=${encodeURIComponent(file.name)}`
   }
 
+  async function deleteFile(fileName: string) {
+    console.log("Attempting to delete file:", fileName)
+
+    try {
+      const response = await fetch("/api/files/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ fileName }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(
+          result.error || `HTTP error! status: ${response.status}`,
+        )
+      }
+
+      // Update the store by removing the deleted file
+      userFilesStore.update((files) => {
+        return files.filter((f) => f.name !== fileName)
+      })
+
+      console.log(result.message) // Log success message
+    } catch (error) {
+      console.error(`Error deleting file ${fileName}:`, error.message)
+      errorMessage = `Error deleting file ${fileName}: ${error.message}`
+    }
+  }
+
   function handleDelete(file: FileUpload) {
     if (!confirm(`Are you sure you want to delete ${file.name}?`)) return
-    dispatch("fileDeleted", { fileName: file.name })
+    deleteFile(file.name)
   }
 
   function truncateFileName(name: string, maxLength: number = 20): string {
