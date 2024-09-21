@@ -67,14 +67,15 @@
       successMessage = ""
 
       const formData = new FormData()
-      formData.append("action", "uploadFile")
       formData.append("file", file)
 
       try {
-        const response = await fetch("/account/api", {
+        const response = await fetch("/api/files/upload", {
           method: "POST",
           body: formData,
         })
+
+        const result = await response.json()
 
         if (response.ok) {
           console.log("File uploaded successfully")
@@ -83,43 +84,22 @@
           successMessage = "File uploaded successfully"
           dispatch("fileUploaded")
 
-          const fetchResponse = await fetch("/account/api", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ action: "fetchUploadedFiles" }),
-          })
+          // Update the userFilesStore with the new file
+          userFilesStore.update((files) => [...files, result.file])
 
-          if (fetchResponse.ok) {
-            const { files } = await fetchResponse.json()
-            console.log("Fetched files:", files)
-            userFilesStore.set(files)
-          } else {
-            const error = await fetchResponse.json()
-            console.error("Error fetching uploaded files:", error)
-            errorMessage = "Error fetching uploaded files. Please try again."
-            isFileValid = false // Set isFileValid to false on error
-          }
+          console.log("Updated files:", result.file)
         } else {
-          const error = await response.json()
-          console.error("Error uploading file:", error)
-
-          if (error.message) {
-            errorMessage = error.message
-          } else if (error.error) {
-            errorMessage = error.error
-          } else {
-            errorMessage =
-              "An error occurred while uploading the file. Please try again."
-          }
-          isFileValid = false // Set isFileValid to false on error
+          console.error("Error uploading file:", result.error)
+          errorMessage =
+            result.error ||
+            "An error occurred while uploading the file. Please try again."
+          isFileValid = false
         }
       } catch (error) {
         console.error("Error uploading file:", error)
         errorMessage =
           "An unexpected error occurred while uploading the file. Please try again."
-        isFileValid = false // Set isFileValid to false on error
+        isFileValid = false
       } finally {
         uploading = false
       }

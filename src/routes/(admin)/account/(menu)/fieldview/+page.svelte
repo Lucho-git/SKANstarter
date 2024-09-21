@@ -16,28 +16,37 @@
    */
   async function deleteFile(event: CustomEvent) {
     const fileName = event.detail.fileName
+    console.log("Attempting to delete file:", fileName)
+
     try {
-      const response = await fetch("/account/api", {
+      const response = await fetch("/api/files/delete", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          action: "deleteFile",
-          fileName: fileName,
-        }),
+        body: JSON.stringify({ fileName }),
       })
 
+      const result = await response.json()
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error(
+          result.error || `HTTP error! status: ${response.status}`,
+        )
       }
 
       // Update the store by removing the deleted file
-      userFilesStore.update((files: any[]) =>
-        files.filter((f) => f.name !== fileName),
-      )
+      userFilesStore.update((files) => {
+        const filteredFiles = files.filter((f) => {
+          return f.name !== fileName
+        })
+        return filteredFiles
+      })
+
+      console.log(result.message) // Log success message
     } catch (error) {
       console.error(`Error deleting file ${fileName}:`, error.message)
+      // You might want to show an error message to the user here
     }
   }
 

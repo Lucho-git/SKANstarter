@@ -42,8 +42,3 @@ export const GET: RequestHandler = async ({ locals }) => {
     }
 };
 
-
-
-function generateUniqueId(): string {
-    return '_' + Math.random().toString(36).substr(2, 9);
-}
