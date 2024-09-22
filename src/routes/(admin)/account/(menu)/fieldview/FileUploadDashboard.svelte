@@ -156,6 +156,8 @@
             throw new Error(result.message || "Failed to process file")
           }
 
+          console.log("Result", result) // Log success message
+
           // Update userFilesStore
           userFilesStore.update((files) =>
             files.map((f) =>
@@ -175,64 +177,11 @@
               { title: "World Map", status: null },
               { title: "Europe Map", status: null },
               { title: "Asia Map", status: null },
-              { title: "America Map", status: null },
-              { title: "World Map", status: null },
-              { title: "Europe Map", status: null },
-              { title: "Asia Map", status: null },
-              { title: "America Map", status: null },
-              { title: "World Map", status: null },
-              { title: "Europe Map", status: null },
-              { title: "Asia Map", status: null },
-              { title: "America Map", status: null },
-              { title: "World Map", status: null },
-              { title: "Europe Map", status: null },
-              { title: "Asia Map", status: null },
-              { title: "America Map", status: null },
-              { title: "World Map", status: null },
-              { title: "Europe Map", status: null },
-              { title: "Asia Map", status: null },
-              { title: "America Map", status: null },
-              { title: "World Map", status: null },
-              { title: "Europe Map", status: null },
-              { title: "Asia Map", status: null },
-              { title: "America Map", status: null },
-              { title: "World Map", status: null },
-              { title: "Europe Map", status: null },
-              { title: "Asia Map", status: null },
-              { title: "America Map", status: null },
-              { title: "World Map", status: null },
-              { title: "Europe Map", status: null },
-              { title: "Asia Map", status: null },
-              { title: "America Map", status: null },
-              { title: "World Map", status: null },
-              { title: "Europe Map", status: null },
-              { title: "Asia Map", status: null },
-              { title: "America Map", status: null },
-              { title: "World Map", status: null },
-              { title: "Europe Map", status: null },
-              { title: "Asia Map", status: null },
-              { title: "America Map", status: null },
-              { title: "World Map", status: null },
-              { title: "Europe Map", status: null },
-              { title: "Asia Map", status: null },
-              { title: "America Map", status: null },
-              { title: "World Map", status: null },
-              { title: "Europe Map", status: null },
-              { title: "Asia Map", status: null },
-              { title: "America Map", status: null },
-              { title: "World Map", status: null },
-              { title: "Europe Map", status: null },
-              { title: "Asia Map", status: null },
-              { title: "America Map", status: null },
-              { title: "World Map", status: null },
-              { title: "Europe Map", status: null },
-              { title: "Asia Map", status: null },
-              { title: "America Map", status: null },
             ],
           }
 
-          // Store the stub data in sessionStorage
-          sessionStorage.setItem("processedData", JSON.stringify(stubData))
+          // Store the actual result data in sessionStorage
+          sessionStorage.setItem("processedData", JSON.stringify(result))
 
           // Navigate to the new page
           console.log("Navigating to landwizard")
