@@ -1,7 +1,13 @@
 <!-- src/routes/admin/fieldview/FileUploadDashboard.svelte -->
 <script lang="ts">
-  import { createEventDispatcher, onMount } from "svelte"
+  import { onMount } from "svelte"
+  import { goto } from "$app/navigation"
   import { userFilesStore } from "../../../../../stores/userFilesStore" // Adjust path if necessary
+  import { menuStore } from "../../../../../stores/menuStore"
+
+  import type { FileUpload } from "$lib/types"
+  import MapCarousel from "./MapCarousel.svelte"
+
   import {
     Table,
     TableBody,
@@ -18,20 +24,16 @@
     CardHeader,
     CardTitle,
   } from "$lib/components/ui/card"
-  import { Download, Trash, FileUp, Minimize, Maximize2 } from "lucide-svelte"
-  import { get } from "svelte/store"
+  import {
+    Download,
+    Trash,
+    FileUp,
+    Minimize,
+    Maximize2,
+    Play,
+  } from "lucide-svelte"
 
-  // Define the FileUpload type
-  type FileUpload = {
-    id: string
-    name: string
-    path: string
-    uploadedDate: string // ISO string
-    status: "Pending" | "Processed" | "Failed"
-    message: string
-  }
-
-  const dispatch = createEventDispatcher()
+  import { toast } from "svelte-sonner"
 
   // Read the files once from the store
   $: files = $userFilesStore
@@ -135,6 +137,138 @@
     const half = Math.floor((maxLength - 3) / 2)
     return `${name.slice(0, half)}...${name.slice(-half)}`
   }
+
+  async function handleProcess(file: FileUpload) {
+    toast.promise(
+      (async () => {
+        try {
+          // Call the real API
+          const response = await fetch("/api/files/process", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ fileName: file.name }),
+          })
+
+          const result = await response.json()
+          if (!response.ok) {
+            throw new Error(result.message || "Failed to process file")
+          }
+
+          // Update userFilesStore
+          userFilesStore.update((files) =>
+            files.map((f) =>
+              f.id === file.id
+                ? { ...f, message: result.message, status: "Processed" }
+                : f,
+            ),
+          )
+
+          // Stub data (to be used for navigation)
+          const stubData = {
+            maps: [
+              { title: "World Map", status: null },
+              { title: "Europe Map", status: null },
+              { title: "Asia Map", status: null },
+              { title: "America Map", status: null },
+              { title: "World Map", status: null },
+              { title: "Europe Map", status: null },
+              { title: "Asia Map", status: null },
+              { title: "America Map", status: null },
+              { title: "World Map", status: null },
+              { title: "Europe Map", status: null },
+              { title: "Asia Map", status: null },
+              { title: "America Map", status: null },
+              { title: "World Map", status: null },
+              { title: "Europe Map", status: null },
+              { title: "Asia Map", status: null },
+              { title: "America Map", status: null },
+              { title: "World Map", status: null },
+              { title: "Europe Map", status: null },
+              { title: "Asia Map", status: null },
+              { title: "America Map", status: null },
+              { title: "World Map", status: null },
+              { title: "Europe Map", status: null },
+              { title: "Asia Map", status: null },
+              { title: "America Map", status: null },
+              { title: "World Map", status: null },
+              { title: "Europe Map", status: null },
+              { title: "Asia Map", status: null },
+              { title: "America Map", status: null },
+              { title: "World Map", status: null },
+              { title: "Europe Map", status: null },
+              { title: "Asia Map", status: null },
+              { title: "America Map", status: null },
+              { title: "World Map", status: null },
+              { title: "Europe Map", status: null },
+              { title: "Asia Map", status: null },
+              { title: "America Map", status: null },
+              { title: "World Map", status: null },
+              { title: "Europe Map", status: null },
+              { title: "Asia Map", status: null },
+              { title: "America Map", status: null },
+              { title: "World Map", status: null },
+              { title: "Europe Map", status: null },
+              { title: "Asia Map", status: null },
+              { title: "America Map", status: null },
+              { title: "World Map", status: null },
+              { title: "Europe Map", status: null },
+              { title: "Asia Map", status: null },
+              { title: "America Map", status: null },
+              { title: "World Map", status: null },
+              { title: "Europe Map", status: null },
+              { title: "Asia Map", status: null },
+              { title: "America Map", status: null },
+              { title: "World Map", status: null },
+              { title: "Europe Map", status: null },
+              { title: "Asia Map", status: null },
+              { title: "America Map", status: null },
+              { title: "World Map", status: null },
+              { title: "Europe Map", status: null },
+              { title: "Asia Map", status: null },
+              { title: "America Map", status: null },
+            ],
+          }
+
+          // Store the stub data in sessionStorage
+          sessionStorage.setItem("processedData", JSON.stringify(stubData))
+
+          // Navigate to the new page
+          console.log("Navigating to landwizard")
+          await goto("/account/fieldview/landwizard")
+
+          console.log("Navigation completed")
+
+          return result
+        } catch (error) {
+          console.error("Error in handleProcess:", error)
+          throw error
+        }
+      })(),
+      {
+        loading: `Processing ${file.name}...`,
+        success: (result) => {
+          // This won't be executed due to navigation, but kept for consistency
+          menuStore.update((state) => ({
+            ...state,
+            showMapCarouselModal: true,
+          }))
+          return `${file.name} processed successfully: ${result.message}`
+        },
+        error: (error) => {
+          userFilesStore.update((files) =>
+            files.map((f) =>
+              f.id === file.id
+                ? { ...f, message: error.message, status: "Failed" }
+                : f,
+            ),
+          )
+          return `Error processing ${file.name}: ${error.message}`
+        },
+      },
+    )
+  }
 </script>
 
 <div class="width-auto py-6" class:expanded-mobile={isMobile && isExpanded}>
@@ -202,9 +336,9 @@
                     {truncateFileName(file.name, isExpanded ? 30 : 20)}
                   </TableCell>
                   {#if isExpanded}
-                    <TableCell class="whitespace-nowrap"
-                      >{formatDate(file.uploadedDate)}</TableCell
-                    >
+                    <TableCell class="whitespace-nowrap">
+                      {formatDate(file.uploadedDate)}
+                    </TableCell>
                   {/if}
                   <TableCell class="whitespace-nowrap">
                     <span
@@ -220,10 +354,26 @@
                     </span>
                   </TableCell>
                   {#if isExpanded}
-                    <TableCell>{file.message}</TableCell>
+                    <TableCell>
+                      {#if file.status === "Processed"}
+                        {file.message}
+                      {:else}
+                        {file.message || ""}
+                      {/if}
+                    </TableCell>
                   {/if}
                   <TableCell class="whitespace-nowrap text-right">
                     <div class="flex justify-end space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        on:click={() => handleProcess(file)}
+                        class="h-8 w-8"
+                        aria-label={`Process ${file.name}`}
+                      >
+                        <Play class="h-4 w-4" />
+                        <span class="sr-only">Process {file.name}</span>
+                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"
@@ -234,16 +384,18 @@
                         <Download class="h-4 w-4" />
                         <span class="sr-only">Download {file.name}</span>
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        on:click={() => handleDelete(file)}
-                        class="h-8 w-8 text-red-600"
-                        aria-label={`Delete ${file.name}`}
-                      >
-                        <Trash class="h-4 w-4" />
-                        <span class="sr-only">Delete {file.name}</span>
-                      </Button>
+                      {#if isExpanded}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          on:click={() => handleDelete(file)}
+                          class="h-8 w-8 text-red-600"
+                          aria-label={`Delete ${file.name}`}
+                        >
+                          <Trash class="h-4 w-4" />
+                          <span class="sr-only">Delete {file.name}</span>
+                        </Button>
+                      {/if}
                     </div>
                   </TableCell>
                 </TableRow>

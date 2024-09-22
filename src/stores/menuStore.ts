@@ -1,3 +1,4 @@
+// menuStore.ts
 import { writable } from 'svelte/store';
 
 export const menuStore = writable({
@@ -5,5 +6,6 @@ export const menuStore = writable({
     showConnectModal: false,
     showDeleteConfirmationModal: false,
     showSettingsModal: false,
-    showRenameModal: false
+    showRenameModal: false,
+    showMapCarouselModal: false  // Add this new property
 });
