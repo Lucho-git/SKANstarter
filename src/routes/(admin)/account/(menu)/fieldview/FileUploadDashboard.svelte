@@ -66,9 +66,31 @@
     })
   }
 
-  function handleDownload(file: FileUpload) {
+  async function handleDownload(file: FileUpload) {
     console.log(`Downloading ${file.name}`)
-    window.location.href = `/account/api?action=downloadFile&fileName=${encodeURIComponent(file.name)}`
+    try {
+      const response = await fetch(
+        `/api/files/download?fileName=${encodeURIComponent(file.name)}`,
+      )
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to download file")
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = file.name
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error("Error downloading file:", error)
+      errorMessage = `Error downloading file: ${error.message}`
+    }
   }
 
   async function deleteFile(fileName: string) {

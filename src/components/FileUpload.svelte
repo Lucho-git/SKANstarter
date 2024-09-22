@@ -1,7 +1,6 @@
 <!-- FileUpload.svelte -->
 <script lang="ts">
   import { createEventDispatcher } from "svelte"
-  import { fetchUserFiles, deleteUserFile } from "$lib/api/server/files" // Adjust the import path as necessary
   import { get } from "svelte/store"
 
   import { userFilesStore } from "../stores/userFilesStore"
