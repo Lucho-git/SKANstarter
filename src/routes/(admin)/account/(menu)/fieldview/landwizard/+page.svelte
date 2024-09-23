@@ -27,6 +27,7 @@
 
   onMount(() => {
     console.log("Component mounted")
+    console.log("Data:", data)
     console.log("Processed data:", data.processedData)
 
     if (data.processedData.paddocks) {

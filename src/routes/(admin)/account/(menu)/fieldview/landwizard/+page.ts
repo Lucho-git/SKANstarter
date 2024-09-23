@@ -1,25 +1,103 @@
-import type { Load } from '@sveltejs/kit';
+import type { PageLoad } from './$types';
+import { error, redirect } from '@sveltejs/kit';
+import { userFilesStore } from '../../../../../../stores/userFilesStore';
+import { browser } from '$app/environment';
 
-export const load: Load = async ({ fetch }) => {
-    let processedData;
+const showPromiseToast = async (promise: Promise<any>, fileName: string) => {
+    if (browser) {
+        const { toast } = await import('svelte-sonner');
+        return new Promise((resolve, reject) => {
+            toast.promise(promise, {
+                loading: `Processing ${fileName}...`,
+                success: (result) => {
+                    setTimeout(() => resolve(result), 500);
+                    return `${fileName} processed: ${result.message}`;
+                },
+                error: (err) => {
+                    setTimeout(() => reject(err), 500);
+                    return `Error processing ${fileName}: ${err.message}`;
+                }
+            });
+        });
+    }
+    return promise;
+};
 
-    if (typeof window !== 'undefined') {
-        const storedData = sessionStorage.getItem('processedData');
-        if (storedData) {
-            processedData = JSON.parse(storedData);
-            sessionStorage.removeItem('processedData'); // Clear the data after retrieving
+const showErrorToast = async (message: string) => {
+    if (browser) {
+        const { toast } = await import('svelte-sonner');
+        toast.error(message, {
+            duration: 5000,
+            position: 'top-center',
+        });
+    }
+};
+
+export const load: PageLoad = async ({ url, fetch, parent }) => {
+    const parentData = await parent();
+
+    // Check if user is connected to a map
+    console.log('Parent Data:', parentData.connectedMap);
+    if (!parentData.connectedMap?.id) {
+        await showErrorToast('Please connect to a map before processing files.');
+        throw redirect(303, '/account/fieldview/');
+    }
+
+    const fileName = url.searchParams.get('fileName');
+    const fileId = url.searchParams.get('fileId');
+
+    if (!fileName || !fileId) {
+        throw error(400, 'Missing file information');
+    }
+
+    const processFile = async () => {
+        const response = await fetch("/api/files/process", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ fileName }),
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || "Failed to process file");
         }
-    }
 
-    if (!processedData) {
-        // If no data in sessionStorage, redirect back to upload page
-        return {
-            status: 302,
-            redirect: '/account/fieldview/upload'
-        };
-    }
-
-    return {
-        processedData
+        return result;
     };
+
+    try {
+        const result = await showPromiseToast(processFile(), fileName);
+
+        // Update userFilesStore
+        userFilesStore.update((files) =>
+            files.map((f) =>
+                f.id === fileId
+                    ? { ...f, message: result.message, status: "Processed" }
+                    : f,
+            ),
+        );
+
+        return {
+            processedData: result,
+            fileName,
+            fileId
+        };
+
+    } catch (err) {
+        console.error("Error processing file:", err);
+
+        // Update userFilesStore to reflect the error
+        userFilesStore.update((files) =>
+            files.map((f) =>
+                f.id === fileId
+                    ? { ...f, message: err.message, status: "Failed" }
+                    : f,
+            ),
+        );
+
+        // Redirect back to the original page
+        throw redirect(303, '/account/fieldview/');
+    }
 };

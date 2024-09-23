@@ -139,84 +139,19 @@
   }
 
   async function handleProcess(file: FileUpload) {
-    toast.promise(
-      (async () => {
-        try {
-          // Call the real API
-          const response = await fetch("/api/files/process", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ fileName: file.name }),
-          })
+    try {
+      // Encode the file name to ensure it's URL-safe
+      const encodedFileName = encodeURIComponent(file.name)
+      const encodedFileId = encodeURIComponent(file.id)
 
-          const result = await response.json()
-          if (!response.ok) {
-            throw new Error(result.message || "Failed to process file")
-          }
-
-          console.log("Result", result) // Log success message
-
-          // Update userFilesStore
-          userFilesStore.update((files) =>
-            files.map((f) =>
-              f.id === file.id
-                ? { ...f, message: result.message, status: "Processed" }
-                : f,
-            ),
-          )
-
-          // Stub data (to be used for navigation)
-          const stubData = {
-            maps: [
-              { title: "World Map", status: null },
-              { title: "Europe Map", status: null },
-              { title: "Asia Map", status: null },
-              { title: "America Map", status: null },
-              { title: "World Map", status: null },
-              { title: "Europe Map", status: null },
-              { title: "Asia Map", status: null },
-            ],
-          }
-
-          // Store the actual result data in sessionStorage
-          sessionStorage.setItem("processedData", JSON.stringify(result))
-
-          // Navigate to the new page
-          console.log("Navigating to landwizard")
-          await goto("/account/fieldview/landwizard")
-
-          console.log("Navigation completed")
-
-          return result
-        } catch (error) {
-          console.error("Error in handleProcess:", error)
-          throw error
-        }
-      })(),
-      {
-        loading: `Processing ${file.name}...`,
-        success: (result) => {
-          // This won't be executed due to navigation, but kept for consistency
-          menuStore.update((state) => ({
-            ...state,
-            showMapCarouselModal: true,
-          }))
-          return `${file.name} processed : ${result.message}`
-        },
-        error: (error) => {
-          userFilesStore.update((files) =>
-            files.map((f) =>
-              f.id === file.id
-                ? { ...f, message: error.message, status: "Failed" }
-                : f,
-            ),
-          )
-          return `Error processing ${file.name}: ${error.message}`
-        },
-      },
-    )
+      // Navigate to the new page with file information in the URL
+      await goto(
+        `/account/fieldview/landwizard?fileName=${encodedFileName}&fileId=${encodedFileId}`,
+      )
+    } catch (error) {
+      console.error("Error in handleProcess:", error)
+      toast.error(`Error initiating process for ${file.name}: ${error.message}`)
+    }
   }
 </script>
 

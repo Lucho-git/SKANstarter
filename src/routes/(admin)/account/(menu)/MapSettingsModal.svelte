@@ -8,6 +8,8 @@
   import { goto } from "$app/navigation"
   import { Edit, Save, X, LogOut, Trash2, X as Close } from "lucide-svelte"
 
+  export let data
+
   let isRenaming = false
   let newMapNameInput = $connectedMapStore.map_name
 
@@ -33,6 +35,13 @@
 
   function updateStores() {
     console.log("updating stores")
+    console.log("Data before disconnect:", data)
+
+    // Null out data.connectedMap if it exists
+    if (data && data.connectedMap) {
+      data.connectedMap = null
+    }
+
     connectedMapStore.set({
       id: null,
       map_name: null,
@@ -42,6 +51,7 @@
       masterSubscription: null,
       is_connected: false,
     })
+
     console.log($connectedMapStore)
     console.log($mapActivityStore)
     console.log($profileStore)
