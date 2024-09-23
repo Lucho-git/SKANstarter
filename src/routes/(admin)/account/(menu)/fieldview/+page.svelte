@@ -4,7 +4,9 @@
   import type { Writable } from "svelte/store"
   import UploadPopoverTrigger from "../../../../../components/UploadPopoverTrigger.svelte"
   import FileUploadDashboard from "./FileUploadDashboard.svelte"
+  import FieldsOverview from "./FieldsOverview.svelte"
   import { Info, FileUp } from "lucide-svelte"
+
   // Retrieve and set the admin section context
   let adminSection: Writable<string> = getContext("adminSection")
   adminSection.set("fieldview")
@@ -39,8 +41,13 @@
     </div>
 
     <!-- File Upload Dashboard -->
-    <div class=" mb-6">
+    <div class="mb-6">
       <FileUploadDashboard />
+    </div>
+
+    <!-- Fields Overview -->
+    <div class="mb-6">
+      <FieldsOverview />
     </div>
   </div>
 </div>
