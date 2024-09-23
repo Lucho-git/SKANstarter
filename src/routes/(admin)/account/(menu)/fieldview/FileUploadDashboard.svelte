@@ -203,7 +203,7 @@
             ...state,
             showMapCarouselModal: true,
           }))
-          return `${file.name} processed successfully: ${result.message}`
+          return `${file.name} processed : ${result.message}`
         },
         error: (error) => {
           userFilesStore.update((files) =>

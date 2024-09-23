@@ -1,14 +1,20 @@
 <!-- src/lib/components/GeoJSONMap.svelte -->
 <script lang="ts">
   import { onMount } from "svelte"
-  import { geoPath, geoMercator } from "d3-geo"
+  import { geoPath, geoMercator, geoArea } from "d3-geo"
   import type { GeoJSON, GeoProjection } from "d3-geo"
 
   export let geojson: GeoJSON
   export let width: number = 300
   export let height: number = 200
+  export let areaHectares: number = 0
 
   let pathData = ""
+
+  function calculateAreaInHectares(geojson: GeoJSON): number {
+    const areaInSquareMeters = geoArea(geojson) * 6378137 * 6378137
+    return areaInSquareMeters / 10000
+  }
 
   onMount(() => {
     // Create a projection
@@ -22,6 +28,9 @@
 
     // Generate SVG path data
     pathData = pathGenerator(geojson) || ""
+
+    // Calculate area
+    areaHectares = calculateAreaInHectares(geojson)
   })
 </script>
 

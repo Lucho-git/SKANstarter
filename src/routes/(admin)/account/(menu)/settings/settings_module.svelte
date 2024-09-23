@@ -44,8 +44,7 @@
       if (result.type === "success") {
         showSuccess = true
         toast.success(successTitle, {
-          description:
-            successBody || "Your changes have been saved successfully.",
+          description: successBody || "Your changes have been saved.",
         })
       } else if (result.type === "failure") {
         toast.error("Error", {

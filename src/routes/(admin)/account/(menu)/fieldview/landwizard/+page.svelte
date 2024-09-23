@@ -1,20 +1,26 @@
+<!-- src/routes/+page.svelte -->
 <script lang="ts">
   import { onMount } from "svelte"
+  import { goto } from "$app/navigation"
+
   import * as Card from "$lib/components/ui/card/index.js"
   import * as Carousel from "$lib/components/ui/carousel/index.js"
   import { Button } from "$lib/components/ui/button"
   import { Input } from "$lib/components/ui/input"
   import { Check, X } from "lucide-svelte"
   import type { CarouselAPI } from "$lib/components/ui/carousel/context.js"
-  import GeoJSONMap from "$lib/components/GeoJSONMap.svelte"
+  import GeoJSONMap from "$lib/components/GeoJsonMap.svelte"
+  import { toast } from "svelte-sonner"
 
   export let data
 
   interface Paddock {
     name: string
-    boundary: GeoJSON.Polygon
+    boundary: GeoJSON.Polygon | GeoJSON.MultiPolygon
     properties: Record<string, any>
     status: null | "accepted" | "rejected"
+    area?: number
+    isMultiPolygon: boolean
   }
 
   let paddocks: Paddock[] = []
@@ -24,10 +30,15 @@
     console.log("Processed data:", data.processedData)
 
     if (data.processedData.paddocks) {
-      paddocks = data.processedData.paddocks.map((paddock: any) => ({
-        ...paddock,
-        status: null,
-      }))
+      paddocks = data.processedData.paddocks.map((paddock: any) => {
+        const isMultiPolygon = paddock.boundary.type === "MultiPolygon"
+        return {
+          ...paddock,
+          status: isMultiPolygon ? "rejected" : null,
+          area: undefined,
+          isMultiPolygon,
+        }
+      })
     }
   })
 
@@ -40,16 +51,7 @@
     currentIndex = api.selectedScrollSnap()
     api.on("select", () => {
       currentIndex = api.selectedScrollSnap()
-      console.log("Current index changed:", currentIndex)
     })
-  }
-
-  $: {
-    console.log("Current paddocks state:", paddocks)
-    console.log(
-      "All paddocks processed:",
-      paddocks.every((paddock) => paddock.status !== null),
-    )
   }
 
   $: allPaddocksProcessed = paddocks.every((paddock) => paddock.status !== null)
@@ -62,10 +64,12 @@
   }
 
   function acceptPaddock(index: number) {
-    console.log("Accepting paddock at index:", index)
-    paddocks[index].status = "accepted"
-    paddocks = [...paddocks]
-    scrollToNext()
+    if (!paddocks[index].isMultiPolygon) {
+      console.log("Accepting paddock at index:", index)
+      paddocks[index].status = "accepted"
+      paddocks = [...paddocks]
+      scrollToNext()
+    }
   }
 
   function rejectPaddock(index: number) {
@@ -82,13 +86,70 @@
   }
 
   function acceptAll() {
-    console.log("Accepting all paddocks")
-    paddocks = paddocks.map((paddock) => ({ ...paddock, status: "accepted" }))
+    console.log("Accepting all non-MultiPolygon paddocks")
+    paddocks = paddocks.map((paddock) => ({
+      ...paddock,
+      status: paddock.isMultiPolygon ? "rejected" : "accepted",
+    }))
   }
 
-  function finish() {
+  async function finish() {
     console.log("Finished processing paddocks:", paddocks)
-    // Handle finishing logic here (e.g., navigate to another page or update state)
+
+    const map_id = data.connectedMap.id
+
+    const promise = fetch("/api/files/upload_fields", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        map_id: map_id,
+        fields: paddocks,
+      }),
+    }).then(async (response) => {
+      const result = await response.json()
+      if (!response.ok) {
+        throw new Error(result.error)
+      }
+      return result
+    })
+
+    toast.promise(promise, {
+      loading: "Submitting paddocks...",
+      success: (result) => {
+        const successCount = result.insertedFields.length
+        return successCount === 1
+          ? `Paddock "${result.insertedFields[0].name}" was uploaded.`
+          : `${successCount} paddocks were uploaded.`
+      },
+      error: (err) => err.message,
+    })
+
+    try {
+      const result = await promise
+
+      // Handle partial rejections
+      if (result.rejectedFields && result.rejectedFields.length > 0) {
+        const rejectionReasons = result.rejectedFields.reduce((acc, field) => {
+          acc[field.reason] = (acc[field.reason] || 0) + 1
+          return acc
+        }, {})
+
+        let rejectionMessage = `${result.rejectedFields.length} paddock(s) were rejected:`
+        for (const [reason, count] of Object.entries(rejectionReasons)) {
+          rejectionMessage += `\n${count} ${count === 1 ? "paddock" : "paddocks"} rejected for ${reason}`
+        }
+        toast.error(rejectionMessage, { duration: 7000 })
+      }
+    } catch (error) {
+      console.error("Error submitting fields:", error)
+    } finally {
+      // Redirect to fieldview page after a short delay to allow toasts to be seen
+      setTimeout(() => {
+        goto(`/account/fieldview/`)
+      }, 500) // 2 second delay
+    }
   }
 </script>
 
@@ -116,16 +177,16 @@
                     on:input={(e) => updateName(index, e)}
                     class="w-full bg-transparent text-base font-semibold sm:text-lg"
                   />
-                  <div
-                    class="flex aspect-video w-full items-center justify-center rounded-md bg-gray-100 p-1 dark:bg-gray-600 sm:p-2"
-                  >
-                    <div class="h-full max-h-[200px] w-full max-w-[300px]">
-                      <GeoJSONMap
-                        geojson={paddock.boundary}
-                        width="300"
-                        height="200"
-                      />
-                    </div>
+                  <div class="mx-auto aspect-[3/2] w-full max-w-[300px]">
+                    <GeoJSONMap
+                      geojson={paddock.boundary}
+                      width={300}
+                      height={200}
+                      bind:areaHectares={paddock.area}
+                    />
+                  </div>
+                  <div class="text-center text-sm">
+                    {paddock.area?.toFixed(2) ?? "N/A"} hectares
                   </div>
                   <div class="text-center">
                     <Button
@@ -134,6 +195,7 @@
                         ? "default"
                         : "outline"}
                       class="mx-1.5 inline-block h-10 w-10 rounded-full p-0 align-middle leading-[2.5rem]"
+                      disabled={paddock.isMultiPolygon}
                     >
                       <Check class="inline-block h-5 w-5 align-middle" />
                     </Button>
@@ -147,6 +209,12 @@
                       <X class="inline-block h-5 w-5 align-middle" />
                     </Button>
                   </div>
+                  {#if paddock.isMultiPolygon}
+                    <div class="text-center text-sm text-red-500">
+                      MultiPolygon detected. This paddock will be automatically
+                      rejected.
+                    </div>
+                  {/if}
                 </div>
               </Card.Root>
             </Carousel.Item>
@@ -192,7 +260,7 @@
         class="bg-black"
         disabled={!allPaddocksProcessed}
       >
-        Finish
+        Load
       </Button>
     </Card.Footer>
   </Card.Root>

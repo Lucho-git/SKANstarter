@@ -107,7 +107,7 @@ async function processFile(fileData: ArrayBuffer, fileName: string): Promise<{ s
 
             return {
                 status: 'success',
-                message: `Shapefile processed successfully. Found ${paddockList.length} paddock${paddockList.length !== 1 ? 's' : ''}.`,
+                message: `Found ${paddockList.length} paddock${paddockList.length !== 1 ? 's' : ''}.`,
                 paddocks: paddockList
             };
         }
