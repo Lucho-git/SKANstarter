@@ -58,7 +58,7 @@
     <!-- <h2 class="mt-2 text-2xl font-bold">Map Manager</h2> -->
 
     <!-- <MasterMapManager /> -->
-    <NewMasterMapManager {data} />
+    <NewMasterMapManager />
     <div class="flex items-center space-x-4">
       <div class="space-y-2"></div>
     </div>

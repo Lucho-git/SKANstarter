@@ -1,6 +1,9 @@
 import type { PageLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
 import { userFilesStore } from '../../../../../../stores/userFilesStore';
+import { connectedMapStore } from '../../../../../../stores/connectedMapStore';
+import { get } from 'svelte/store';
+
 import { browser } from '$app/environment';
 
 const showPromiseToast = async (promise: Promise<any>, fileName: string) => {
@@ -33,12 +36,11 @@ const showErrorToast = async (message: string) => {
     }
 };
 
-export const load: PageLoad = async ({ url, fetch, parent }) => {
-    const parentData = await parent();
-
-    // Check if user is connected to a map
-    console.log('Parent Data:', parentData.connectedMap);
-    if (!parentData.connectedMap?.id) {
+export const load: PageLoad = async ({ url, fetch }) => {
+    // Check if user is connected to a map using the store
+    const connectedMap = get(connectedMapStore);
+    console.log('Connected Map:', connectedMap);
+    if (!connectedMap.is_connected || !connectedMap.id) {
         await showErrorToast('Please connect to a map before processing files.');
         throw redirect(303, '/account/fieldview/');
     }

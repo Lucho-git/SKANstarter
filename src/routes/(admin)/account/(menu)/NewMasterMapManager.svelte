@@ -6,7 +6,6 @@
   import DeleteConfirmationModal from "./DeleteConfirmationModal.svelte"
 
   import { menuStore } from "../../../../stores/menuStore"
-  export let data // Accept the data prop
 </script>
 
 <div class=" py-2">
@@ -23,7 +22,7 @@
 {/if}
 
 {#if $menuStore.showSettingsModal}
-  <MapSettingsModal {data} />
+  <MapSettingsModal />
 {/if}
 
 {#if $menuStore.showDeleteConfirmationModal}

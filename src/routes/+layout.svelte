@@ -42,5 +42,5 @@
 
   <slot />
 
-  <Toaster expand={true} position="bottom-center" richColors />
+  <Toaster expand={true} position="top-center" richColors />
 </main>
