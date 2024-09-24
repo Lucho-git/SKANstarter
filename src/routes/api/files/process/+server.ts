@@ -80,11 +80,15 @@ async function processFile(fileData, fileName) {
                     properties: properties,
                     boundary: feature.geometry
                 };
-            });
+            }).filter(paddock => paddock.boundary !== null);
+
+            if (paddockList.length === 0) {
+                return { status: 'error', message: 'No valid paddocks found with boundary data in KML file.' };
+            }
 
             return {
                 status: 'success',
-                message: `Found ${paddockList.length} paddock${paddockList.length !== 1 ? 's' : ''} in KML file.`,
+                message: `Found ${paddockList.length} valid paddock${paddockList.length !== 1 ? 's' : ''} in KML file.`,
                 paddocks: paddockList
             };
         } catch (error) {
@@ -126,20 +130,26 @@ async function processFile(fileData, fileName) {
                     const properties = feature.properties;
                     const geometry = feature.geometry;
 
-                    const paddockName = findPaddockName(properties) || `ImportPaddock${index + 1}`;
+                    if (geometry !== null) {
+                        const paddockName = findPaddockName(properties) || `ImportPaddock${index + 1}`;
 
-                    paddockList.push({
-                        name: paddockName,
-                        properties: properties,
-                        boundary: geometry
-                    });
+                        paddockList.push({
+                            name: paddockName,
+                            properties: properties,
+                            boundary: geometry
+                        });
 
-                    index++;
+                        index++;
+                    }
+                }
+
+                if (paddockList.length === 0) {
+                    return { status: 'error', message: 'No valid paddocks found with boundary data in shapefile.' };
                 }
 
                 return {
                     status: 'success',
-                    message: `Found ${paddockList.length} paddock${paddockList.length !== 1 ? 's' : ''} in shapefile.`,
+                    message: `Found ${paddockList.length} valid paddock${paddockList.length !== 1 ? 's' : ''} in shapefile.`,
                     paddocks: paddockList
                 };
             }
@@ -165,11 +175,15 @@ async function processFile(fileData, fileName) {
                         properties: properties,
                         boundary: feature.geometry
                     };
-                });
+                }).filter(paddock => paddock.boundary !== null);
+
+                if (paddockList.length === 0) {
+                    return { status: 'error', message: 'No valid paddocks found with boundary data in KML file inside ZIP archive.' };
+                }
 
                 return {
                     status: 'success',
-                    message: `Found ${paddockList.length} paddock${paddockList.length !== 1 ? 's' : ''} in KML file inside ZIP archive.`,
+                    message: `Found ${paddockList.length} valid paddock${paddockList.length !== 1 ? 's' : ''} in KML file inside ZIP archive.`,
                     paddocks: paddockList
                 };
             }
@@ -261,20 +275,26 @@ function processISOXML(xmlContent) {
                 };
             }
 
-            paddockList.push({
-                name: paddockName,
-                properties: {
-                    id: paddockId,
-                    area: areaValue,
-                    farmId: farmId
-                },
-                boundary: boundary
-            });
+            if (boundary !== null) {
+                paddockList.push({
+                    name: paddockName,
+                    properties: {
+                        id: paddockId,
+                        area: areaValue,
+                        farmId: farmId
+                    },
+                    boundary: boundary
+                });
+            }
+        }
+
+        if (paddockList.length === 0) {
+            return { status: 'error', message: 'No valid paddocks found with boundary data in ISOXML file.' };
         }
 
         return {
             status: 'success',
-            message: `Found ${paddockList.length} paddock${paddockList.length !== 1 ? 's' : ''} in ISOXML file.`,
+            message: `Found ${paddockList.length} valid paddock${paddockList.length !== 1 ? 's' : ''} in ISOXML file.`,
             paddocks: paddockList
         };
     } catch (error) {

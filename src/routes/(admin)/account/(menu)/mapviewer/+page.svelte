@@ -5,7 +5,12 @@
   import { toast } from "svelte-sonner"
   import { browser } from "$app/environment"
   import MapViewer from "../../../../../components/MapViewer.svelte"
+  import type { PageData } from "./$types"
 
+  // Add the data prop
+  export let data: PageData
+
+  console.log("Inital map load data:", data)
   let adminSection: Writable<string> = getContext("adminSection")
   adminSection.set("mapviewer")
 

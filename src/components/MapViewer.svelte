@@ -13,6 +13,7 @@
   import VehicleTracker from "./VehicleTracker.svelte" // Add this import
   import VehicleStateSynchronizer from "./VehicleStateSynchronizer.svelte"
   import TrailTracker from "./TrailTracker.svelte"
+  import MapFields from "./MapFields.svelte"
 
   import TrailStateSynchronizer from "./TrailStateSynchronizer.svelte"
 
@@ -131,6 +132,7 @@
     {#if $trailDataLoaded}
       {#key currentMapStyle}
         <TrailTracker {map} />
+        <MapFields {map} />
       {/key}
     {/if}
   {/if}
