@@ -1,32 +1,67 @@
 <!-- src/lib/components/FieldIcon.svelte -->
 <script lang="ts">
   import { onMount } from "svelte"
-  import { geoPath, geoMercator } from "d3-geo"
-  import type { GeoJSON, GeoProjection } from "d3-geo"
+  import type { GeoJSON } from "d3-geo"
 
   export let geojson: GeoJSON
   export let size: number = 24
 
   let pathData = ""
 
-  console.log("FieldIcon: Received GeoJSON:", JSON.stringify(geojson, null, 2))
+  function extractCoordinates(geojson: GeoJSON): number[][] {
+    if (geojson.type === "Feature" && geojson.geometry) {
+      return extractCoordinates(geojson.geometry as GeoJSON)
+    }
+    if (geojson.type === "Polygon") {
+      return geojson.coordinates[0]
+    }
+    if (geojson.type === "MultiPolygon") {
+      return geojson.coordinates[0][0]
+    }
+    console.error("FieldIcon: Unsupported GeoJSON type", geojson.type)
+    return []
+  }
+
+  function createCustomProjection(coordinates: number[][]): [number, number][] {
+    if (coordinates.length === 0) return []
+
+    const [minX, minY, maxX, maxY] = coordinates.reduce(
+      ([minX, minY, maxX, maxY], [x, y]) => [
+        Math.min(minX, x),
+        Math.min(minY, y),
+        Math.max(maxX, x),
+        Math.max(maxY, y),
+      ],
+      [Infinity, Infinity, -Infinity, -Infinity],
+    )
+
+    const scaleX = size / (maxX - minX)
+    const scaleY = size / (maxY - minY)
+    const scale = Math.min(scaleX, scaleY) * 0.9
+
+    const centerX = (minX + maxX) / 2
+    const centerY = (minY + maxY) / 2
+
+    return coordinates.map(([x, y]) => [
+      (x - centerX) * scale + size / 2,
+      (centerY - y) * scale + size / 2,
+    ])
+  }
 
   onMount(() => {
-    console.log("FieldIcon: onMount started")
     try {
-      const projection: GeoProjection = geoMercator().fitSize(
-        [size, size],
-        geojson,
-      )
-      console.log("FieldIcon: Projection created")
-
-      const pathGenerator = geoPath().projection(projection)
-      console.log("FieldIcon: Path generator created")
-
-      pathData = pathGenerator(geojson) || ""
-      console.log("FieldIcon: Generated pathData:", pathData)
+      const coordinates = extractCoordinates(geojson)
+      if (coordinates.length > 0) {
+        const projectedCoordinates = createCustomProjection(coordinates)
+        pathData =
+          "M" +
+          projectedCoordinates.map((point) => point.join(",")).join("L") +
+          "Z"
+      } else {
+        console.error("FieldIcon: No valid coordinates found in GeoJSON")
+      }
     } catch (error) {
-      console.error("FieldIcon: Error in onMount:", error)
+      console.error("FieldIcon: Error processing GeoJSON", error)
     }
   })
 </script>
@@ -34,7 +69,7 @@
 <svg
   width={size}
   height={size}
-  viewBox="-1 -1 {size + 2} {size + 2}"
+  viewBox="0 0 {size} {size}"
   xmlns="http://www.w3.org/2000/svg"
   style="background-color: #f0f0f0; border: 1px solid #ccc;"
 >
@@ -42,7 +77,7 @@
     d={pathData}
     fill="rgba(0, 128, 0, 0.5)"
     stroke="#006400"
-    stroke-width="1"
+    stroke-width="0.5"
   />
 </svg>
 

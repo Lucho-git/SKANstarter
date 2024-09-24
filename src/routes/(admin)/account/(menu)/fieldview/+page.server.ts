@@ -28,7 +28,7 @@ export const load: PageServerLoad = async ({ locals, fetch }) => {
         }
 
         const files = await filesResponse.json();
-        console.log('Files fetched:', files);
+        // console.log('Files fetched:', files);
 
         // Attempt to fetch fields
         console.log('Attempting to fetch fields...');
@@ -45,7 +45,7 @@ export const load: PageServerLoad = async ({ locals, fetch }) => {
             if (fieldsResponse.ok) {
                 const fieldsData = await fieldsResponse.json();
                 fields = fieldsData.fields;
-                console.log('Fields fetched:', fields);
+                // console.log('Fields fetched:', fields);
             } else {
                 console.log('No fields available or not connected to a master map');
             }

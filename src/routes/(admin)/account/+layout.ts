@@ -21,7 +21,7 @@ export const load = async ({ fetch, data, depends, url }) => {
         event: { fetch },
         serverSession: data.session,
     })
-    console.log('Preload data', data)
+    // console.log('Preload data', data)
 
     const {
         data: { session },
@@ -62,7 +62,7 @@ export const load = async ({ fetch, data, depends, url }) => {
     //Load all the stores with data
     data = { supabase, session, profile, subscription, connectedMap: data.connectedMap, mapActivity: data.mapActivity, masterSubscription: data.masterSubscription }
 
-    console.log("Loading data into stores:", data);
+    // console.log("Loading data into stores:", data);
 
     // Load profile data
     profileStore.set({
@@ -129,7 +129,7 @@ export const load = async ({ fetch, data, depends, url }) => {
         });
     }
 
-    console.log("Loaded data:", data);
+    // console.log("Loaded data:", data);
     return data;
 
 };

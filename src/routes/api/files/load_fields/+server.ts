@@ -27,7 +27,6 @@ export const POST: RequestHandler = async ({ locals }) => {
         }
 
         const masterMapId = profileData.master_map_id;
-        console.log('Master map ID:', profileData);
         if (!masterMapId) {
             console.error('No master_map_id found for user');
             return json({ error: 'No master map associated with user' }, { status: 400 });
@@ -44,7 +43,7 @@ export const POST: RequestHandler = async ({ locals }) => {
             throw fieldsError;
         }
 
-        console.log('Fields fetched:', fieldsData);
+        // console.log('Fields fetched:', fieldsData);
 
         return json({ fields: fieldsData });
     } catch (error) {

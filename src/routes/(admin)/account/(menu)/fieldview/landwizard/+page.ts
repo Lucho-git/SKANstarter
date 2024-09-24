@@ -80,7 +80,7 @@ export const load: PageLoad = async ({ url, fetch }) => {
                     : f,
             ),
         );
-
+        console.log("Result:", result);
         return {
             processedData: result,
             fileName,

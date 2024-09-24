@@ -8,11 +8,11 @@ export const load: PageLoad = async ({ data }) => {
 
     // Update the userFilesStore with the fetched files
     userFilesStore.set(files)
-    console.log('FILE DATA', files)
+    // console.log('FILE DATA', files)
 
     // Update the fieldStore with the fetched fields
     fieldStore.set(fields)
-    console.log('FIELD DATA', fields)
+    // console.log('FIELD DATA', fields)
 
     // Return an empty object since we're using stores
     return {}

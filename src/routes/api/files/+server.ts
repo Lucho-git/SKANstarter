@@ -24,7 +24,7 @@ export const GET: RequestHandler = async ({ locals }) => {
             throw error;
         }
 
-        console.log('Files fetched:', data);
+        // console.log('Files fetched:', data);
 
         const files: FileUpload[] = data.map((file: any) => ({
             id: file.file_id,

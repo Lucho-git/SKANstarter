@@ -14,7 +14,7 @@
   setContext("adminSection", adminSectionStore)
 
   export let data
-  console.log("LayoutData", data)
+  //   console.log("LayoutData", data)
 
   let isExpanded = true
 
@@ -103,7 +103,7 @@
   $: {
     console.log("Current section changed:", currentSection)
     console.log($page.url.pathname)
-    console.log(data)
+    // console.log(data)
   }
 </script>
 
