@@ -100,7 +100,9 @@
                         geojson={createGeoJSON(field.boundary)}
                         size={36}
                       />
-                      <span class="truncate">{field.name}</span>
+                      <span class="truncate text-xs font-bold"
+                        >{field.name}</span
+                      >
                     </div>
                   </TableCell>
                   <TableCell class="w-24">{field.area.toFixed(2)}</TableCell>
