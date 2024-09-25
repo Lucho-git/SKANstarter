@@ -10,7 +10,7 @@
   import { Skeleton } from "$lib/components/ui/skeleton/index.js"
   import { profileStore } from "../../../../stores/profileStore"
   import { connectedMapStore } from "../../../../stores/connectedMapStore"
-  import NewMasterMapManager from "./NewMasterMapManager.svelte"
+  import MasterMapManager from "./MasterMapManager.svelte"
 
   export let data
   $: ({ subscription, vehicles, isOwner } = data)
@@ -56,13 +56,13 @@
   <div>
     <!-- <h2 class="mt-2 text-2xl font-bold">Map Manager</h2> -->
 
-    <NewMasterMapManager />
+    <MasterMapManager />
     <div class="flex items-center space-x-4">
       <div class="space-y-2"></div>
     </div>
     {#if $connectedMapStore.is_connected}
-      <MapStats {subscription} />
-      <VehicleList {vehicles} {isOwner} />
+      <MapStats />
+      <VehicleList />
     {/if}
   </div>
 </div>

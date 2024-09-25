@@ -245,7 +245,8 @@
           const otherPoints = countTotalPoints(data.otherTrailData)
           return `Trail data loaded. Trail points: ${userPoints + otherPoints}`
         },
-        error: "Failed to load trail data",
+        error:
+          "Failed to load trail data. This may be due to a large amount of trail data. We're working on optimizations.",
       },
       {
         duration: 5000, // Adjust as needed

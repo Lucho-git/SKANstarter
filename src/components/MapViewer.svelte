@@ -54,7 +54,6 @@
   }
 
   onMount(async () => {
-    mapInitialized = false
     mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN
 
     mapOptions.container = mapContainer
@@ -63,10 +62,13 @@
     mapStore.set(map)
     mapInitialized = true
 
-    map.on("load", () => {
+    if (map.loaded()) {
       mapLoaded = true
-    })
-
+    } else {
+      map.on("load", () => {
+        mapLoaded = true
+      })
+    }
     try {
       await db.open()
       dbInstance = db
@@ -140,10 +142,8 @@
       <TrailStateSynchronizer db={dbInstance} />
     {/if}
     <!-- // Wait for the trail data to be loaded before loading the trail tracker -->
-    {#if $trailDataLoaded}
-      {#key currentMapStyle}
-        <TrailTracker {map} />
-      {/key}
+    {#if $trailDataLoaded && mapLoaded}
+      <TrailTracker {map} />
     {/if}
   {/if}
 </div>
