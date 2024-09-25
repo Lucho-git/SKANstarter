@@ -1,4 +1,3 @@
-<!-- src/components/FieldsOverview.svelte -->
 <script lang="ts">
   import {
     Table,
@@ -21,9 +20,6 @@
     ChevronDown,
     ChevronUp,
     LandPlot,
-    CircleDot,
-    Ruler,
-    Settings,
   } from "lucide-svelte"
   import { connectedMapStore } from "../../../../../stores/connectedMapStore"
   import { fieldStore } from "../../../../../stores/fieldStore"
@@ -60,6 +56,11 @@
       duration: 3000,
     })
   }
+
+  let tableStyle = "width: 100%; max-width: 1600px;"
+  let fieldNameStyle = "min-width: 20vw; max-width: 30vw;"
+  let areaCellStyle = "width: 15%; min-width: 80px;"
+  let actionsCellStyle = "width: 20%; min-width: 120px;"
 </script>
 
 <Card>
@@ -82,20 +83,20 @@
     {/if}
     {#if farmName && fields.length > 0}
       {#if isExpanded}
-        <div class="overflow-hidden">
-          <Table class="w-full text-black">
+        <div class="overflow-x-auto">
+          <Table class="text-black" style={tableStyle}>
             <TableHeader>
               <TableRow>
-                <TableHead class="w-auto">Field</TableHead>
-                <TableHead class="w-24">Area (ha)</TableHead>
-                <TableHead class="w-20">Actions</TableHead>
+                <TableHead style={fieldNameStyle}>Field</TableHead>
+                <TableHead style={areaCellStyle}>Area (ha)</TableHead>
+                <TableHead style={actionsCellStyle}>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {#each fields as field}
                 <TableRow>
-                  <TableCell class="w-auto">
-                    <div class="flex items-center space-x-2">
+                  <TableCell style={fieldNameStyle}>
+                    <div class="flex max-w-full items-center space-x-2">
                       <FieldIcon
                         geojson={createGeoJSON(field.boundary)}
                         size={36}
@@ -105,8 +106,10 @@
                       >
                     </div>
                   </TableCell>
-                  <TableCell class="w-24">{field.area.toFixed(2)}</TableCell>
-                  <TableCell class="w-20">
+                  <TableCell style={areaCellStyle}
+                    >{field.area.toFixed(1)}</TableCell
+                  >
+                  <TableCell style={actionsCellStyle}>
                     <div class="flex space-x-1">
                       <Button
                         variant="ghost"

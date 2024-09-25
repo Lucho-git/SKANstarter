@@ -13,7 +13,7 @@
 </script>
 
 <div class="app-container">
-  <div class="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+  <div class="mx-auto w-full">
     <h2 class="mb-6 text-3xl font-bold">FieldView</h2>
 
     <!-- Upload Section -->
@@ -45,6 +45,5 @@
     display: flex;
     width: 100%;
     min-height: 100vh;
-    padding: 1rem;
   }
 </style>
