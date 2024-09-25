@@ -23,6 +23,9 @@ export const POST: RequestHandler = async ({ locals, request }) => {
         // Calculate retention timestamp in milliseconds
         const retentionTimestamp = Date.now() - TRAIL_DATA_RETENTION_DAYS * 24 * 60 * 60 * 1000;
 
+
+
+        // Actual user trail data query
         const { data: userTrailData, error: userError } = await locals.supabase
             .from("trail_data")
             .select("*")
@@ -36,6 +39,8 @@ export const POST: RequestHandler = async ({ locals, request }) => {
             throw userError;
         }
 
+
+        // Actual other trail data query
         const { data: otherTrailData, error: otherError } = await locals.supabase
             .from("trail_data")
             .select("*")

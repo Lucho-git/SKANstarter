@@ -43,7 +43,7 @@ export const POST: RequestHandler = async ({ locals }) => {
             throw fieldsError;
         }
 
-        // console.log('Fields fetched:', fieldsData);
+        console.log('Fields fetched:', fieldsData);
 
         return json({ fields: fieldsData });
     } catch (error) {

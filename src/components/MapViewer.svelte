@@ -131,8 +131,8 @@
     <!-- // Wait for the trail data to be loaded before loading the trail tracker -->
     {#if $trailDataLoaded}
       {#key currentMapStyle}
-        <TrailTracker {map} />
         <MapFields {map} />
+        <TrailTracker {map} />
       {/key}
     {/if}
   {/if}
