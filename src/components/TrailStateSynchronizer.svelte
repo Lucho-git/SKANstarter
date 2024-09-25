@@ -59,7 +59,7 @@
 
     masterMapId = profile.master_map_id
     // Load initial trail data
-    await loadTrailData()
+    await loadTrailDataWithToast()
 
     // Subscribe to changes in the unsavedMarkers store
     unsubscribeUnsavedTrailData = unsavedTrailStore.subscribe(
@@ -235,6 +235,25 @@
       })
   }
 
+  async function loadTrailDataWithToast() {
+    return toast.promise(
+      loadTrailData(),
+      {
+        loading: "Loading trail data...",
+        success: (data) => {
+          const userPoints = countTotalPoints(data.userTrailData)
+          const otherPoints = countTotalPoints(data.otherTrailData)
+          return `Trail data loaded successfully! User points: ${userPoints}, Other points: ${otherPoints}`
+        },
+        error: "Failed to load trail data",
+      },
+      {
+        duration: 5000, // Adjust as needed
+      },
+    )
+  }
+
+  // Modify your loadTrailData function to return the data
   async function loadTrailData() {
     let userTrailData = {}
     let otherTrailData = {}
@@ -259,11 +278,6 @@
     console.log("Before simplification:")
     console.log("User trail points:", countTotalPoints(userTrailData))
     console.log("Other trail points:", countTotalPoints(otherTrailData))
-    // console.log("User trail length (km):", calculateTrailLength(userTrailData))
-    // console.log(
-    //   "Other trail length (km):",
-    //   calculateTrailLength(otherTrailData),
-    // )
 
     userTrailData = simplifyTrailData(userTrailData, SIMPLIFICATION_TOLERANCE)
     otherTrailData = simplifyTrailData(otherTrailData, SIMPLIFICATION_TOLERANCE)
@@ -271,17 +285,13 @@
     console.log("After simplification:")
     console.log("User trail points:", countTotalPoints(userTrailData))
     console.log("Other trail points:", countTotalPoints(otherTrailData))
-    // console.log("User trail length (km):", calculateTrailLength(userTrailData))
-    // console.log(
-    //   "Other trail length (km):",
-    //   calculateTrailLength(otherTrailData),
-    // )
 
     userTrailStore.set(userTrailData)
     otherTrailStore.set(otherTrailData)
     trailDataLoaded.set(true)
-  }
 
+    return { userTrailData, otherTrailData }
+  }
   function simplifyTrailData(trailData, tolerance) {
     return Object.fromEntries(
       Object.entries(trailData).map(([vehicleId, trail]) => [

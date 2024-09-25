@@ -89,12 +89,6 @@
     }
 
     return () => {
-      // Cleanup function
-      if (map.getSource("fields")) {
-        map.removeLayer("fields-outline")
-        map.removeLayer("fields-fill")
-        map.removeSource("fields")
-      }
       map.off("load", loadFields)
     }
   })
