@@ -194,7 +194,7 @@
         </div>
       {:else}
         <div class="overflow-x-auto">
-          <Table class="text-black">
+          <Table class="text-black ">
             <TableCaption>A list of your uploaded files</TableCaption>
 
             <TableHeader>
@@ -216,7 +216,10 @@
             <TableBody>
               {#each files as file (file.id)}
                 <TableRow>
-                  <TableCell class="whitespace-nowrap font-medium">
+                  <TableCell
+                    class="whitespace-nowrap font-medium"
+                    style="max-width: 35vw"
+                  >
                     {truncateFileName(file.name, isExpanded ? 30 : 20)}
                   </TableCell>
                   {#if isExpanded}
@@ -224,7 +227,7 @@
                       {formatDate(file.uploadedDate)}
                     </TableCell>
                   {/if}
-                  <TableCell class="whitespace-nowrap">
+                  <TableCell class="whitespace-nowrap" style="max-width: 10vw">
                     <span
                       class={`rounded-full px-2 py-1 text-xs font-semibold ${
                         file.status === "Processed"
