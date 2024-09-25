@@ -23,7 +23,21 @@ export const POST: RequestHandler = async ({ locals, request }) => {
         // Calculate retention timestamp in milliseconds
         const retentionTimestamp = Date.now() - TRAIL_DATA_RETENTION_DAYS * 24 * 60 * 60 * 1000;
 
+        // EXPLAIN for user trail data query
+        const { data: userExplain, error: userExplainError } = await locals.supabase
+            .from("trail_data")
+            .select("*")
+            .eq("master_map_id", masterMapId)
+            .eq("vehicle_id", userId)
+            .gte("timestamp", retentionTimestamp)
+            .order("timestamp", { ascending: true })
+            .explain({ analyze: true, verbose: true, settings: true, buffers: true, format: 'json' });
 
+        if (userExplainError) {
+            console.error('Error getting EXPLAIN for user query:', userExplainError);
+        } else {
+            console.log('EXPLAIN for user query:', JSON.stringify(userExplain, null, 2));
+        }
 
         // Actual user trail data query
         const { data: userTrailData, error: userError } = await locals.supabase
@@ -39,15 +53,28 @@ export const POST: RequestHandler = async ({ locals, request }) => {
             throw userError;
         }
 
+        // EXPLAIN for other trail data query (RPC)
+        const { data: otherExplain, error: otherExplainError } = await locals.supabase
+            .rpc('get_other_trail_data', {
+                p_master_map_id: masterMapId,
+                p_user_id: userId,
+                p_retention_timestamp: retentionTimestamp
+            })
+            .explain({ analyze: true, verbose: true, settings: true, buffers: true, format: 'json' });
+
+        if (otherExplainError) {
+            console.error('Error getting EXPLAIN for other query:', otherExplainError);
+        } else {
+            console.log('EXPLAIN for other query:', JSON.stringify(otherExplain, null, 2));
+        }
 
         // Actual other trail data query
         const { data: otherTrailData, error: otherError } = await locals.supabase
-            .from("trail_data")
-            .select("*")
-            .eq("master_map_id", masterMapId)
-            .neq("vehicle_id", userId)
-            .gte("timestamp", retentionTimestamp)
-            .order("timestamp", { ascending: true });
+            .rpc('get_other_trail_data', {
+                p_master_map_id: masterMapId,
+                p_user_id: userId,
+                p_retention_timestamp: retentionTimestamp
+            });
 
         if (otherError) {
             console.error('Supabase error fetching other trail data:', otherError);
