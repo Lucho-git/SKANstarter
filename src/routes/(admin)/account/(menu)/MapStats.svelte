@@ -3,7 +3,8 @@
   import { profileStore } from "../../../../stores/profileStore"
   import { connectedMapStore } from "../../../../stores/connectedMapStore"
   import { mapActivityStore } from "../../../../stores/mapActivityStore"
-
+  import { Card, CardContent } from "$lib/components/ui/card"
+  import { MapPin, Truck, Route } from "lucide-svelte"
   function formatNumber(num: number): string {
     if (num >= 1000000) {
       return (num / 1000000).toFixed(1) + "M"
@@ -41,41 +42,64 @@
     </div>
   </div>
 {:else}
-  <div class="stats w-full text-xs shadow sm:text-sm md:text-base">
-    <div class="stat place-items-center p-2 sm:p-4">
-      <div class="stat-title">Pin Drops</div>
-      <div class="stat-value text-3xl sm:text-3xl md:text-4xl">
-        {mapMarkers}{#if !isPaidSubscription}/{masterSubscription.marker_limit}{/if}
-      </div>
-      <div class="stat-desc">
-        {#if isPaidSubscription}
-          Unlimited Drops
-        {:else}
-          Total markers
-        {/if}
-      </div>
-    </div>
+  <div class="container mx-auto px-2 py-2">
+    <div class="grid grid-cols-3 gap-2 sm:gap-4">
+      <Card
+        class="bg-gradient-to-br from-[#f8f9fa] to-[#e9ecef] text-[#1f2937]"
+      >
+        <CardContent
+          class="flex h-full flex-col items-center justify-center p-2"
+        >
+          <MapPin class="mb-1 h-4 w-4" />
+          <p class="text-xs font-semibold">Pins</p>
+          <span class="text-base font-bold">
+            {mapMarkers}{#if !isPaidSubscription}/{masterSubscription.marker_limit}{/if}
+          </span>
+          <p class="mt-1 text-center text-[10px]">
+            {#if isPaidSubscription}
+              Unlimited Drops
+            {:else}
+              Total markers
+            {/if}
+          </p>
+        </CardContent>
+      </Card>
 
-    <div class="stat place-items-center p-2 sm:p-4">
-      <div class="stat-title">Vehicles</div>
-      <div class="stat-value text-3xl sm:text-3xl md:text-4xl">
-        {vehicles}/{masterSubscription.current_seats}
-      </div>
-      <div class="stat-desc">Active Vehicles</div>
-    </div>
+      <Card
+        class="bg-gradient-to-br from-[#f8f9fa] to-[#e9ecef] text-[#1f2937]"
+      >
+        <CardContent
+          class="flex h-full flex-col items-center justify-center p-2"
+        >
+          <Truck class="mb-1 h-4 w-4" />
+          <p class="text-xs font-semibold">Vehicles</p>
+          <span class="text-base font-bold"
+            >{vehicles}/{masterSubscription.current_seats}</span
+          >
+          <p class="mt-1 text-center text-[10px]">Active Vehicles</p>
+        </CardContent>
+      </Card>
 
-    <div class="stat place-items-center p-2 sm:p-4">
-      <div class="stat-title">Trail Coordinates</div>
-      <div class="stat-value text-3xl sm:text-3xl md:text-4xl">
-        {formatNumber(trailCoordinates)}
-      </div>
-      <div class="stat-desc">
-        {#if isPaidSubscription}
-          Unlimited Trails
-        {:else}
-          Limit: 100K coordinates
-        {/if}
-      </div>
+      <Card
+        class="bg-gradient-to-br from-[#f8f9fa] to-[#e9ecef] text-[#1f2937]"
+      >
+        <CardContent
+          class="flex h-full flex-col items-center justify-center p-2"
+        >
+          <Route class="mb-1 h-4 w-4" />
+          <p class="text-xs font-semibold">Trail Points</p>
+          <span class="text-base font-bold"
+            >{formatNumber(trailCoordinates)}</span
+          >
+          <p class="mt-1 text-center text-[10px]">
+            {#if isPaidSubscription}
+              Unlimited Trails
+            {:else}
+              Limit: 100K coordinates
+            {/if}
+          </p>
+        </CardContent>
+      </Card>
     </div>
   </div>
 {/if}

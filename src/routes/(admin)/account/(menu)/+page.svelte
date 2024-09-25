@@ -3,7 +3,6 @@
   import type { Writable } from "svelte/store"
   import { userStore } from "../../../../stores/userStore"
   import { supabase } from "$lib/supabaseClient"
-  import MasterMapManager from "../(menu)/MasterMapManager.svelte"
   import MapStats from "../(menu)/MapStats.svelte"
   import VehicleList from "./VehicleList.svelte"
   import { page } from "$app/stores"
@@ -57,7 +56,6 @@
   <div>
     <!-- <h2 class="mt-2 text-2xl font-bold">Map Manager</h2> -->
 
-    <!-- <MasterMapManager /> -->
     <NewMasterMapManager />
     <div class="flex items-center space-x-4">
       <div class="space-y-2"></div>

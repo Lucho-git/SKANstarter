@@ -80,6 +80,7 @@
       <div class="mt-4 flex justify-center space-x-8">
         <a
           href="/account/mapviewer"
+          role="button"
           class="flex h-32 w-32 items-center justify-center rounded-full bg-info/30 shadow-lg transition-all duration-300 hover:scale-105 hover:bg-info/40 dark:bg-info/50 dark:hover:bg-info/60"
         >
           {#if browser && LottiePlayer}

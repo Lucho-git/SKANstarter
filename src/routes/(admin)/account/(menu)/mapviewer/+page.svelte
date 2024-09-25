@@ -24,7 +24,6 @@
     if (browser && isAndroid() && "wakeLock" in navigator) {
       try {
         wakeLock = await navigator.wakeLock.request("screen")
-        toast.success("Screen will stay awake")
       } catch (err) {
         if (err.name !== "NotAllowedError") {
           toast.error(`Couldn't keep screen awake: ${err.message}`)
