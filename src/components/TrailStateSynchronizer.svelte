@@ -347,39 +347,22 @@
 
   async function loadTrailDataFromSupabase() {
     try {
-      const retentionDate = getRetentionDate()
+      const response = await fetch("/api/map-trails/load-map-trails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ masterMapId }),
+      })
 
-      const { data: userTrailData, error: userError } = await supabase
-        .from("trail_data")
-        .select("*")
-        .eq("master_map_id", masterMapId)
-        .eq("vehicle_id", userId)
-        .gte("timestamp", retentionDate)
-        .order("timestamp", { ascending: true })
-
-      if (userError) {
-        throw userError
+      if (!response.ok) {
+        throw new Error("Failed to fetch trail data")
       }
 
-      const { data: otherTrailData, error: otherError } = await supabase
-        .from("trail_data")
-        .select("*")
-        .eq("master_map_id", masterMapId)
-        .neq("vehicle_id", userId)
-        .gte("timestamp", retentionDate)
-        .order("timestamp", { ascending: true })
-
-      if (otherError) {
-        throw otherError
-      }
-
-      // Group the trail data by vehicle ID
-      const groupedUserTrailData = groupBy(userTrailData, "vehicle_id")
-      const groupedOtherTrailData = groupBy(otherTrailData, "vehicle_id")
-
-      return { user: groupedUserTrailData, other: groupedOtherTrailData }
+      const data = await response.json()
+      return data
     } catch (error) {
-      console.error("Error loading trail data from Supabase:", error)
+      console.error("Error loading trail data from server:", error)
       return { user: {}, other: {} }
     }
   }
