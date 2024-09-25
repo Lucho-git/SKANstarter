@@ -76,72 +76,61 @@
       {/if}
     </Button>
   </CardHeader>
-  <CardContent>
+  <CardContent class="p-0">
     {#if farmName}
-      <p class="mb-4 text-sm text-muted-foreground">{farmName}</p>
+      <p class="px-4 py-2 text-sm text-muted-foreground">{farmName}</p>
     {/if}
     {#if farmName && fields.length > 0}
       {#if isExpanded}
-        <Table class="text-black">
-          <TableHeader>
-            <TableRow>
-              <TableHead>
-                <div class="flex items-center space-x-1">
-                  <CircleDot class="h-4 w-4" />
-                  <span>Field</span>
-                </div>
-              </TableHead>
-              <TableHead>
-                <div class="flex items-center space-x-1">
-                  <Ruler class="h-4 w-4" />
-                  <span>Area (ha)</span>
-                </div>
-              </TableHead>
-              <TableHead>
-                <div class="flex items-center space-x-1">
-                  <Settings class="h-4 w-4" />
-                  <span>Actions</span>
-                </div>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {#each fields as field}
+        <div class="overflow-hidden">
+          <Table class="w-full text-black">
+            <TableHeader>
               <TableRow>
-                <TableCell>
-                  <div class="flex items-center space-x-2">
-                    <FieldIcon
-                      geojson={createGeoJSON(field.boundary)}
-                      size={32}
-                    />
-                    <span>{field.name}</span>
-                  </div>
-                </TableCell>
-                <TableCell>{field.area.toFixed(2)}</TableCell>
-                <TableCell>
-                  <div class="flex space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="Go to field"
-                      on:click={handleLocateField}
-                    >
-                      <MapPinned class="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="Delete field"
-                      on:click={handleDeleteField}
-                    >
-                      <Trash2 class="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
+                <TableHead class="w-auto">Field</TableHead>
+                <TableHead class="w-24">Area (ha)</TableHead>
+                <TableHead class="w-20">Actions</TableHead>
               </TableRow>
-            {/each}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {#each fields as field}
+                <TableRow>
+                  <TableCell class="w-auto">
+                    <div class="flex items-center space-x-2">
+                      <FieldIcon
+                        geojson={createGeoJSON(field.boundary)}
+                        size={36}
+                      />
+                      <span class="truncate">{field.name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell class="w-24">{field.area.toFixed(2)}</TableCell>
+                  <TableCell class="w-20">
+                    <div class="flex space-x-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        class="h-8 w-8"
+                        aria-label="Go to field"
+                        on:click={handleLocateField}
+                      >
+                        <MapPinned class="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        class="h-8 w-8"
+                        aria-label="Delete field"
+                        on:click={handleDeleteField}
+                      >
+                        <Trash2 class="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              {/each}
+            </TableBody>
+          </Table>
+        </div>
       {/if}
     {:else}
       <div class="py-10 text-center">
