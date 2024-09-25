@@ -14,20 +14,13 @@
     // Add other properties if needed
   }
 
-  onMount(() => {
-    if (!map) {
-      console.error("Map is not available")
-      return
-    }
-
-    console.log("MapFields component mounted")
+  function loadFields() {
+    console.log("MapFields component: Loading fields")
 
     const fields: Field[] = get(mapFieldsStore)
     console.log(`Loaded ${fields.length} fields from store`)
-    console.log("Fields:", fields)
 
     if (fields.length > 0) {
-      console.log("Creating GeoJSON FeatureCollection")
       const geojson = {
         type: "FeatureCollection",
         features: fields.map((field, index) => ({
@@ -40,13 +33,11 @@
         })),
       }
 
-      console.log("Adding fields source to map")
       map.addSource("fields", {
         type: "geojson",
         data: geojson,
       })
 
-      console.log("Adding fields-fill layer")
       map.addLayer({
         id: "fields-fill",
         type: "fill",
@@ -57,7 +48,6 @@
         },
       })
 
-      console.log("Adding fields-outline layer")
       map.addLayer({
         id: "fields-outline",
         type: "line",
@@ -78,10 +68,34 @@
           })
         }
       })
-
-      console.log("Fields loaded and displayed on map")
+      map.fitBounds(bounds, { padding: 50 })
     } else {
       console.log("No fields found in store")
+    }
+  }
+
+  onMount(() => {
+    if (!map) {
+      console.error("Map is not available")
+      return
+    }
+
+    console.log("MapFields component mounted")
+
+    if (map.loaded()) {
+      loadFields()
+    } else {
+      map.on("load", loadFields)
+    }
+
+    return () => {
+      // Cleanup function
+      if (map.getSource("fields")) {
+        map.removeLayer("fields-outline")
+        map.removeLayer("fields-fill")
+        map.removeSource("fields")
+      }
+      map.off("load", loadFields)
     }
   })
 </script>

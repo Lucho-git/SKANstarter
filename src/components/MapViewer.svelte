@@ -31,6 +31,7 @@
 
   let isSatelliteStyle = true
   let currentMapStyle = DEFAULT_SATELLITE_STYLE
+  let mapLoaded = false
 
   let mapContainer
   let map
@@ -61,6 +62,10 @@
 
     mapStore.set(map)
     mapInitialized = true
+
+    map.on("load", () => {
+      mapLoaded = true
+    })
 
     try {
       await db.open()
@@ -96,12 +101,16 @@
   }
 
   function toggleMapStyle() {
+    mapLoaded = false
     if (isSatelliteStyle) {
       currentMapStyle = DEFAULT_OUTDOORS_STYLE
     } else {
       currentMapStyle = DEFAULT_SATELLITE_STYLE
     }
     map.setStyle(currentMapStyle)
+    map.once("load", () => {
+      mapLoaded = true
+    })
     isSatelliteStyle = !isSatelliteStyle
   }
 </script>
@@ -115,6 +124,7 @@
 
     <MarkerManager {markerPlacementEvent} {markerClickEvent} />
     <MapStateSaver {map} />
+
     <MapControls
       bind:this={mapControls}
       {map}
@@ -123,6 +133,7 @@
     />
     <VehicleStateSynchronizer />
     <VehicleTracker {map} />
+    <MapFields {map} />
 
     <!-- // Wait for veihicle data to be loaded before loading the trail data -->
     {#if $vehicleDataLoaded}
@@ -131,7 +142,6 @@
     <!-- // Wait for the trail data to be loaded before loading the trail tracker -->
     {#if $trailDataLoaded}
       {#key currentMapStyle}
-        <MapFields {map} />
         <TrailTracker {map} />
       {/key}
     {/if}
