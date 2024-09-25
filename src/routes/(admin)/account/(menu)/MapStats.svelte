@@ -44,7 +44,7 @@
   <div class="stats w-full text-xs shadow sm:text-sm md:text-base">
     <div class="stat place-items-center p-2 sm:p-4">
       <div class="stat-title">Pin Drops</div>
-      <div class="stat-value text-3xl text-info sm:text-3xl md:text-4xl">
+      <div class="stat-value text-3xl sm:text-3xl md:text-4xl">
         {mapMarkers}{#if !isPaidSubscription}/{masterSubscription.marker_limit}{/if}
       </div>
       <div class="stat-desc">
@@ -58,7 +58,7 @@
 
     <div class="stat place-items-center p-2 sm:p-4">
       <div class="stat-title">Vehicles</div>
-      <div class="stat-value text-3xl text-secondary sm:text-3xl md:text-4xl">
+      <div class="stat-value text-3xl sm:text-3xl md:text-4xl">
         {vehicles}/{masterSubscription.current_seats}
       </div>
       <div class="stat-desc">Active Vehicles</div>

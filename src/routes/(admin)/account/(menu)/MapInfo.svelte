@@ -78,9 +78,9 @@
           : "Connect to a map to view details"}
       </Card.Description>
       <div class="mt-4 flex justify-center space-x-8">
-        <button
+        <a
+          href="/account/mapviewer"
           class="flex h-32 w-32 items-center justify-center rounded-full bg-info/30 shadow-lg transition-all duration-300 hover:scale-105 hover:bg-info/40 dark:bg-info/50 dark:hover:bg-info/60"
-          on:click={goToMapViewer}
         >
           {#if browser && LottiePlayer}
             <LottiePlayer
@@ -96,7 +96,7 @@
           {:else}
             <MapIcon class="h-16 w-16" />
           {/if}
-        </button>
+        </a>
         <button
           class="flex h-32 w-32 items-center justify-center rounded-full bg-info/30 shadow-lg transition-all duration-300 hover:scale-105 hover:bg-info/40 dark:bg-info/50 dark:hover:bg-info/60"
           on:click={openSettingsModal}
