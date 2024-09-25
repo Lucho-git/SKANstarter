@@ -57,10 +57,9 @@
     })
   }
 
-  let tableStyle = "width: 100%; max-width: 1600px;"
   let fieldNameStyle = "min-width: 20vw; max-width: 30vw;"
   let areaCellStyle = "width: 15%; min-width: 80px;"
-  let actionsCellStyle = "width: 20%; min-width: 120px;"
+  let actionsCellStyle = "width: 20%; min-width: 20vw;"
 </script>
 
 <Card>
@@ -84,7 +83,7 @@
     {#if farmName && fields.length > 0}
       {#if isExpanded}
         <div class="overflow-x-auto">
-          <Table class="text-black" style={tableStyle}>
+          <Table class="text-black">
             <TableHeader>
               <TableRow>
                 <TableHead style={fieldNameStyle}>Field</TableHead>
