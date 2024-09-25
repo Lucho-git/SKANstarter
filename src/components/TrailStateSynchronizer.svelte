@@ -243,7 +243,7 @@
         success: (data) => {
           const userPoints = countTotalPoints(data.userTrailData)
           const otherPoints = countTotalPoints(data.otherTrailData)
-          return `Trail data loaded successfully! User points: ${userPoints}, Other points: ${otherPoints}`
+          return `Trail data loaded. Trail points: ${userPoints + otherPoints}`
         },
         error: "Failed to load trail data",
       },
