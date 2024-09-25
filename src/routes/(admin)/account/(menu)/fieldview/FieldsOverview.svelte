@@ -82,7 +82,7 @@
     {/if}
     {#if farmName && fields.length > 0}
       {#if isExpanded}
-        <Table>
+        <Table class="text-black">
           <TableHeader>
             <TableRow>
               <TableHead>

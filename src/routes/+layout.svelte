@@ -16,6 +16,7 @@
   import { onMount } from "svelte"
   import { getAuthState } from "../stores/user"
   import "../app.pcss"
+  import { ModeWatcher } from "mode-watcher"
 
   onMount(async () => {
     await getAuthState()
@@ -39,6 +40,7 @@
       in:slide={{ delay: 100, duration: 12000, axis: "x", easing: expoOut }}
     ></div>
   {/if}
+  <!-- <ModeWatcher /> -->
 
   <slot />
 

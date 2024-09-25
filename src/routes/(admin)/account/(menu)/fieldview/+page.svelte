@@ -16,18 +16,6 @@
   <div class="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
     <h2 class="mb-6 text-3xl font-bold">FieldView</h2>
 
-    <!-- Information Alert -->
-    <div class="alert alert-info mb-6 flex items-start">
-      <Info class="mr-4 h-10 w-10" />
-      <div>
-        <h3 class="font-bold">Coming Soon: Paddock Boundary Updates</h3>
-        <div class="mt-1 text-sm">
-          You can upload your files now. We'll notify you once the update is
-          live and your boundaries are visible.
-        </div>
-      </div>
-    </div>
-
     <!-- Upload Section -->
     <div class="alert alert-success mb-6 flex items-start">
       <FileUp class="mr-2 mt-4 h-14 w-14" />
@@ -58,6 +46,5 @@
     width: 100%;
     min-height: 100vh;
     padding: 1rem;
-    background-color: #f9fafb; /* Light gray background for better contrast */
   }
 </style>
