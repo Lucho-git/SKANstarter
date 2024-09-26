@@ -1,5 +1,15 @@
 <script lang="ts">
   import { onMount } from "svelte"
+  import { DateTime, Duration } from "luxon"
+
+  import {
+    formatDistanceToNow,
+    parseISO,
+    format,
+    differenceInSeconds,
+  } from "date-fns"
+  import { toZonedTime } from "date-fns-tz"
+
   import * as Avatar from "$lib/components/ui/avatar"
   import { Skeleton } from "$lib/components/ui/skeleton"
   import { toast } from "svelte-sonner"
@@ -48,19 +58,22 @@
     console.log("mapActivityStore", $mapActivityStore)
   })
 
-  function getTimeSinceLastUpdate(lastUpdate: string) {
-    const now = new Date()
-    const updateTime = new Date(lastUpdate)
-    const diffInSeconds = Math.floor(
-      (now.getTime() - updateTime.getTime()) / 1000,
-    )
+  function getTimeSinceLastUpdate(lastUpdate) {
+    const updateTime = DateTime.fromISO(lastUpdate, { zone: "utc" })
+    const now = DateTime.utc()
 
-    if (diffInSeconds < 60) return `${diffInSeconds} seconds ago`
-    if (diffInSeconds < 3600)
-      return `${Math.floor(diffInSeconds / 60)} minutes ago`
-    if (diffInSeconds < 86400)
-      return `${Math.floor(diffInSeconds / 3600)} hours ago`
-    return `${Math.floor(diffInSeconds / 86400)} days ago`
+    console.log(`Input lastUpdate string: ${lastUpdate}`)
+    console.log(
+      `Parsed UTC time: ${updateTime.toFormat("yyyy-MM-dd HH:mm:ss")} UTC`,
+    )
+    console.log(`Current UTC time: ${now.toFormat("yyyy-MM-dd HH:mm:ss")} UTC`)
+
+    // Use the toRelative method to get human-readable duration
+    const timeDifference = updateTime.toRelative({ base: now })
+
+    console.log(`Time difference: ${timeDifference}`)
+
+    return timeDifference
   }
 
   function getVehicleIcon(type: string) {
