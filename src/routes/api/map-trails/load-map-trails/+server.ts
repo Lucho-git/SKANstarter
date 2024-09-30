@@ -106,10 +106,6 @@ export const POST: RequestHandler = async ({ locals, request }) => {
         return json({
             user: groupedUserTrailData,
             other: groupedOtherTrailData,
-            performance: {
-                userQuery: userExplainSummary,
-                otherQuery: otherExplainSummary
-            }
         });
     } catch (error) {
         console.error('Error fetching trail data:', error);
