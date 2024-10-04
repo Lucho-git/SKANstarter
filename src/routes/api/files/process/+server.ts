@@ -47,7 +47,7 @@ export async function POST({ request, locals }) {
         }
 
         // Return the extracted paddock data
-        return new Response(JSON.stringify({ message: result.message, paddocks: result.paddocks || [] }), {
+        return new Response(JSON.stringify({ message: result.message, paddocks: result.paddocks || [], geojson: result.geojson }), {
             headers: { 'Content-Type': 'application/json' }
         });
     } catch (err) {
@@ -60,153 +60,157 @@ async function processFile(fileData, fileName) {
     const fileExtension = fileName.split('.').pop().toLowerCase();
 
     if (fileExtension === 'kml') {
-        try {
-            // Convert ArrayBuffer to string
-            const decoder = new TextDecoder('utf-8');
-            const kmlContent = decoder.decode(new Uint8Array(fileData));
-
-            // Parse the KML content
-            const kmlDoc = new DOMParser().parseFromString(kmlContent, 'text/xml');
-
-            // Convert KML to GeoJSON
-            const geojson = kml(kmlDoc);
-
-            const paddockList = geojson.features.map((feature, index) => {
-                const properties = feature.properties;
-                const paddockName = findPaddockName(properties) || `ImportPaddock${index + 1}`;
-
-                return {
-                    name: paddockName,
-                    properties: properties,
-                    boundary: feature.geometry
-                };
-            }).filter(paddock => paddock.boundary !== null);
-
-            if (paddockList.length === 0) {
-                return { status: 'error', message: 'No valid paddocks found with boundary data in KML file.' };
-            }
-
-            return {
-                status: 'success',
-                message: `Found ${paddockList.length} valid paddock${paddockList.length !== 1 ? 's' : ''} in KML file.`,
-                paddocks: paddockList
-            };
-        } catch (error) {
-            console.error('Error processing KML file:', error);
-            return { status: 'error', message: 'Error processing the KML file.' };
-        }
+        return processKML(fileData);
     } else if (fileExtension === 'zip') {
-        const zip = new JSZip();
-
-        try {
-            const contents = await zip.loadAsync(fileData);
-            const files = Object.keys(contents.files);
-
-            // Check for required shapefile components
-            const requiredExtensions = ['.shp', '.shx', '.dbf'];
-            const hasAllComponents = requiredExtensions.every(ext =>
-                files.some(file => file.toLowerCase().endsWith(ext))
-            );
-
-            if (hasAllComponents) {
-                // Extract filenames of the shapefile components
-                const shpFileName = files.find(file => file.toLowerCase().endsWith('.shp'));
-                const shxFileName = files.find(file => file.toLowerCase().endsWith('.shx'));
-                const dbfFileName = files.find(file => file.toLowerCase().endsWith('.dbf'));
-
-                // Extract the files as buffers
-                const shpFile = await contents.file(shpFileName).async('nodebuffer');
-                const shxFile = await contents.file(shxFileName).async('nodebuffer');
-                const dbfFile = await contents.file(dbfFileName).async('nodebuffer');
-
-                // Read the shapefile
-                const paddockList = [];
-                const source = await shapefile.open(shpFile, dbfFile, { 'shx': shxFile });
-
-                let result;
-                let index = 0;
-                while (!(result = await source.read()).done) {
-                    const feature = result.value;
-                    const properties = feature.properties;
-                    const geometry = feature.geometry;
-
-                    if (geometry !== null) {
-                        const paddockName = findPaddockName(properties) || `ImportPaddock${index + 1}`;
-
-                        paddockList.push({
-                            name: paddockName,
-                            properties: properties,
-                            boundary: geometry
-                        });
-
-                        index++;
-                    }
-                }
-
-                if (paddockList.length === 0) {
-                    return { status: 'error', message: 'No valid paddocks found with boundary data in shapefile.' };
-                }
-
-                return {
-                    status: 'success',
-                    message: `Found ${paddockList.length} valid paddock${paddockList.length !== 1 ? 's' : ''} in shapefile.`,
-                    paddocks: paddockList
-                };
-            }
-
-            // Check for KML file inside ZIP
-            const kmlFileName = files.find(file => file.toLowerCase().endsWith('.kml'));
-            if (kmlFileName) {
-                // Extract the KML file content as text
-                const kmlFileContent = await contents.file(kmlFileName).async('text');
-
-                // Parse the KML content
-                const kmlDoc = new DOMParser().parseFromString(kmlFileContent, 'text/xml');
-
-                // Convert KML to GeoJSON
-                const geojson = kml(kmlDoc);
-
-                const paddockList = geojson.features.map((feature, index) => {
-                    const properties = feature.properties;
-                    const paddockName = findPaddockName(properties) || `ImportPaddock${index + 1}`;
-
-                    return {
-                        name: paddockName,
-                        properties: properties,
-                        boundary: feature.geometry
-                    };
-                }).filter(paddock => paddock.boundary !== null);
-
-                if (paddockList.length === 0) {
-                    return { status: 'error', message: 'No valid paddocks found with boundary data in KML file inside ZIP archive.' };
-                }
-
-                return {
-                    status: 'success',
-                    message: `Found ${paddockList.length} valid paddock${paddockList.length !== 1 ? 's' : ''} in KML file inside ZIP archive.`,
-                    paddocks: paddockList
-                };
-            }
-
-            // Check for XML file (assuming it's ISOXML)
-            const xmlFileName = files.find(file => file.toLowerCase().endsWith('.xml'));
-            if (xmlFileName) {
-                const xmlContent = await contents.file(xmlFileName).async('text');
-                return processISOXML(xmlContent);
-            }
-
-            return { status: 'error', message: 'No valid data files found in the zip archive.' };
-        } catch (error) {
-            console.error('Error processing zip file:', error);
-            return { status: 'error', message: 'Error processing the zip file.' };
-        }
+        return processZIP(fileData);
     } else if (fileExtension === 'xml') {
-        // Handle standalone XML file
         const decoder = new TextDecoder('utf-8');
         const xmlContent = decoder.decode(new Uint8Array(fileData));
         return processISOXML(xmlContent);
     } else {
         return { status: 'error', message: 'Invalid file type. Please upload a zip, KML, or XML file.' };
+    }
+}
+
+async function processKML(fileData) {
+    try {
+        const decoder = new TextDecoder('utf-8');
+        const kmlContent = decoder.decode(new Uint8Array(fileData));
+
+        const kmlDoc = new DOMParser().parseFromString(kmlContent, 'text/xml');
+        const geojson = kml(kmlDoc);
+
+        const paddockList = geojson.features.map((feature, index) => {
+            const properties = feature.properties;
+            const paddockName = findPaddockName(properties) || `ImportPaddock${index + 1}`;
+
+            return {
+                name: paddockName,
+                properties: properties,
+                boundary: feature.geometry
+            };
+        }).filter(paddock => paddock.boundary !== null);
+
+        if (paddockList.length === 0) {
+            return { status: 'error', message: 'No valid paddocks found with boundary data in KML file.' };
+        }
+
+        return {
+            status: 'success',
+            message: `Found ${paddockList.length} valid paddock${paddockList.length !== 1 ? 's' : ''} in KML file.`,
+            paddocks: paddockList,
+            geojson: {
+                type: "FeatureCollection",
+                features: paddockList.map(paddock => ({
+                    type: "Feature",
+                    properties: {
+                        ...paddock.properties,
+                        name: paddock.name
+                    },
+                    geometry: paddock.boundary
+                }))
+            }
+        };
+    } catch (error) {
+        console.error('Error processing KML file:', error);
+        return { status: 'error', message: 'Error processing the KML file.' };
+    }
+}
+
+async function processShapefile(shpFile, dbfFile, shxFile) {
+    try {
+        const paddockList = [];
+        const source = await shapefile.open(shpFile, dbfFile, { 'shx': shxFile });
+
+        let result;
+        let index = 0;
+        while (!(result = await source.read()).done) {
+            const feature = result.value;
+            const properties = feature.properties;
+            const geometry = feature.geometry;
+
+            if (geometry !== null) {
+                const paddockName = findPaddockName(properties) || `ImportPaddock${index + 1}`;
+
+                paddockList.push({
+                    name: paddockName,
+                    properties: properties,
+                    boundary: geometry
+                });
+
+                index++;
+            }
+        }
+
+        if (paddockList.length === 0) {
+            return { status: 'error', message: 'No valid paddocks found with boundary data in shapefile.' };
+        }
+
+        return {
+            status: 'success',
+            message: `Found ${paddockList.length} valid paddock${paddockList.length !== 1 ? 's' : ''} in shapefile.`,
+            paddocks: paddockList,
+            geojson: {
+                type: "FeatureCollection",
+                features: paddockList.map(paddock => ({
+                    type: "Feature",
+                    properties: {
+                        ...paddock.properties,
+                        name: paddock.name
+                    },
+                    geometry: paddock.boundary
+                }))
+            }
+        };
+    } catch (error) {
+        console.error('Error processing shapefile:', error);
+        return { status: 'error', message: 'Error processing the shapefile.' };
+    }
+}
+
+async function processZIP(fileData) {
+    const zip = new JSZip();
+
+    try {
+        const contents = await zip.loadAsync(fileData);
+        const files = Object.keys(contents.files);
+
+        // Check for required shapefile components
+        const requiredExtensions = ['.shp', '.shx', '.dbf'];
+        const hasAllComponents = requiredExtensions.every(ext =>
+            files.some(file => file.toLowerCase().endsWith(ext))
+        );
+
+        if (hasAllComponents) {
+            const shpFileName = files.find(file => file.toLowerCase().endsWith('.shp'));
+            const shxFileName = files.find(file => file.toLowerCase().endsWith('.shx'));
+            const dbfFileName = files.find(file => file.toLowerCase().endsWith('.dbf'));
+
+            const shpFile = await contents.file(shpFileName).async('nodebuffer');
+            const shxFile = await contents.file(shxFileName).async('nodebuffer');
+            const dbfFile = await contents.file(dbfFileName).async('nodebuffer');
+
+            return processShapefile(shpFile, dbfFile, shxFile);
+        }
+
+        // Check for KML file inside ZIP
+        const kmlFileName = files.find(file => file.toLowerCase().endsWith('.kml'));
+        if (kmlFileName) {
+            const kmlFileContent = await contents.file(kmlFileName).async('arraybuffer');
+            return processKML(kmlFileContent);
+        }
+
+        // Check for XML file (assuming it's ISOXML)
+        const xmlFileName = files.find(file => file.toLowerCase().endsWith('.xml'));
+        if (xmlFileName) {
+            const xmlContent = await contents.file(xmlFileName).async('text');
+            return processISOXML(xmlContent);
+        }
+
+        return { status: 'error', message: 'No valid data files found in the zip archive.' };
+    } catch (error) {
+        console.error('Error processing zip file:', error);
+        return { status: 'error', message: 'Error processing the zip file.' };
     }
 }
 
