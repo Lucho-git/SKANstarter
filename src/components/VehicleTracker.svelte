@@ -13,6 +13,7 @@
   import { unsavedTrailStore } from "../stores/trailDataStore"
   import { toast } from "svelte-sonner"
   import { page } from "$app/stores"
+  import "../styles/global.css"
 
   export let map
 
@@ -51,6 +52,7 @@
       showUserHeading: true,
       showAccuracyCircle: true,
       showUserLocation: false,
+      className: "custom-geolocate-control",
     })
 
     map.addControl(geolocateControl, "bottom-right")
@@ -439,3 +441,9 @@
     }
   }
 </script>
+
+<style>
+  .mapboxgl-ctrl-group {
+    border-radius: 1px;
+  }
+</style>

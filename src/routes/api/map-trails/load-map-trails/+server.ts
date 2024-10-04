@@ -70,22 +70,22 @@ export const POST: RequestHandler = async ({ locals, request }) => {
         }
 
         // EXPLAIN for other trail data query (RPC)
-        // const { data: otherExplain, error: otherExplainError } = await locals.supabase
-        //     .rpc('get_other_trail_data', {
-        //         p_master_map_id: masterMapId,
-        //         p_user_id: userId,
-        //         p_retention_timestamp: retentionTimestamp
-        //     })
-        //     .explain('analyze, buffers, format text');
+        const { data: otherExplain, error: otherExplainError } = await locals.supabase
+            .rpc('get_other_trail_data', {
+                p_master_map_id: masterMapId,
+                p_user_id: userId,
+                p_retention_timestamp: retentionTimestamp
+            })
+            .explain('analyze, buffers, format text');
 
-        // let otherExplainSummary = null;
-        // if (otherExplainError) {
-        //     console.error('Error getting EXPLAIN for other query:', otherExplainError);
-        // } else {
-        //     console.log('Full EXPLAIN for other query:', otherExplain);
-        //     otherExplainSummary = summarizeExplain(otherExplain);
-        //     console.log('Other query EXPLAIN summary:', otherExplainSummary);
-        // }
+        let otherExplainSummary = null;
+        if (otherExplainError) {
+            console.error('Error getting EXPLAIN for other query:', otherExplainError);
+        } else {
+            console.log('Full EXPLAIN for other query:', otherExplain);
+            otherExplainSummary = summarizeExplain(otherExplain);
+            console.log('Other query EXPLAIN summary:', otherExplainSummary);
+        }
 
         // Actual other trail data query
         const { data: otherTrailData, error: otherError } = await locals.supabase

@@ -230,6 +230,7 @@ function processISOXML(xmlContent) {
         });
 
         const paddockList = [];
+        let totalExclusions = 0;
 
         // Process farms (FRM elements)
         const farms = xmlDoc.getElementsByTagName('FRM');
@@ -255,36 +256,55 @@ function processISOXML(xmlContent) {
 
             // Process polygons for this partfield
             const polygons = partfield.getElementsByTagName('PLN');
-            let boundary = null;
+            let boundaryCoordinates = [];
+
             if (polygons.length > 0) {
-                const points = polygons[0].getElementsByTagName('PNT');
-                const coordinates = [];
-                console.log(`    Polygon with ${points.length} points:`);
-                for (let j = 0; j < points.length; j++) {
-                    const point = points[j];
-                    const lat = parseFloat(point.getAttribute('C'));
-                    const lon = parseFloat(point.getAttribute('D'));
-                    coordinates.push([lon, lat]);
-                    console.log(`      Point ${j + 1}: Lat=${lat}, Lon=${lon}`);
+                const lineStrings = polygons[0].getElementsByTagName('LSG');
+                for (let j = 0; j < lineStrings.length; j++) {
+                    const lsg = lineStrings[j];
+                    const lsgType = lsg.getAttribute('A');
+                    const points = lsg.getElementsByTagName('PNT');
+                    const ringCoordinates = [];
+
+                    for (let k = 0; k < points.length; k++) {
+                        const point = points[k];
+                        const lat = parseFloat(point.getAttribute('C'));
+                        const lon = parseFloat(point.getAttribute('D'));
+                        ringCoordinates.push([lon, lat]);
+                    }
+
+                    // Close the polygon
+                    ringCoordinates.push(ringCoordinates[0]);
+
+                    if (lsgType === "1") {
+                        // Main boundary
+                        boundaryCoordinates.unshift(ringCoordinates);
+                    } else if (lsgType === "2") {
+                        // Exclusion
+                        boundaryCoordinates.push(ringCoordinates);
+                        totalExclusions++;
+                    }
                 }
-                // Close the polygon
-                coordinates.push(coordinates[0]);
-                boundary = {
-                    type: 'Polygon',
-                    coordinates: [coordinates]
-                };
             }
 
-            if (boundary !== null) {
-                paddockList.push({
+            if (boundaryCoordinates.length > 0) {
+                // Create a paddock object
+                const paddock = {
                     name: paddockName,
                     properties: {
                         id: paddockId,
                         area: areaValue,
                         farmId: farmId
                     },
-                    boundary: boundary
-                });
+                    boundary: {
+                        type: "Polygon",
+                        coordinates: boundaryCoordinates
+                    }
+                };
+
+                paddockList.push(paddock);
+
+                console.log(`    Number of exclusions: ${boundaryCoordinates.length - 1}`);
             }
         }
 
@@ -292,10 +312,26 @@ function processISOXML(xmlContent) {
             return { status: 'error', message: 'No valid paddocks found with boundary data in ISOXML file.' };
         }
 
+        console.log(`\nTotal number of exclusions in the ISOXML file: ${totalExclusions}`);
+
+        // Create a GeoJSON FeatureCollection
+        const geojson = {
+            type: "FeatureCollection",
+            features: paddockList.map(paddock => ({
+                type: "Feature",
+                properties: {
+                    ...paddock.properties,
+                    name: paddock.name
+                },
+                geometry: paddock.boundary
+            }))
+        };
+
         return {
             status: 'success',
-            message: `Found ${paddockList.length} valid paddock${paddockList.length !== 1 ? 's' : ''} in ISOXML file.`,
-            paddocks: paddockList
+            message: `Found ${paddockList.length} valid paddock${paddockList.length !== 1 ? 's' : ''} in ISOXML file with a total of ${totalExclusions} exclusion${totalExclusions !== 1 ? 's' : ''}.`,
+            paddocks: paddockList,
+            geojson: geojson
         };
     } catch (error) {
         console.error('Error processing ISOXML file:', error);

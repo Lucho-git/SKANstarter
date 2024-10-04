@@ -1,0 +1,5 @@
+/* src/styles/global.css */
+.mapboxgl-ctrl-group.custom-geolocate-control .mapboxgl-ctrl-icon {
+    width: 200px;
+    height: 200px;
+  }

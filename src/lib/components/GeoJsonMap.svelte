@@ -15,16 +15,22 @@
   function isValidGeoJSON(geojson: GeoJSON): boolean {
     return (
       geojson &&
-      geojson.type === "Polygon" &&
+      (geojson.type === "Polygon" || geojson.type === "MultiPolygon") &&
       Array.isArray(geojson.coordinates) &&
-      geojson.coordinates.length > 0 &&
-      Array.isArray(geojson.coordinates[0]) &&
-      geojson.coordinates[0].length >= 4 &&
-      JSON.stringify(geojson.coordinates[0][0]) ===
-        JSON.stringify(
-          geojson.coordinates[0][geojson.coordinates[0].length - 1],
-        )
+      geojson.coordinates.length > 0
     )
+  }
+
+  function countRings(geojson: GeoJSON): number {
+    if (geojson.type === "Polygon") {
+      return geojson.coordinates.length
+    } else if (geojson.type === "MultiPolygon") {
+      return geojson.coordinates.reduce(
+        (sum, polygon) => sum + polygon.length,
+        0,
+      )
+    }
+    return 0
   }
 
   function calculateAreaInHectares(geojson: GeoJSON): number {
@@ -44,7 +50,9 @@
     return areaInHectares
   }
 
-  function createCustomProjection(coordinates: number[][]): [number, number][] {
+  function createCustomProjection(
+    coordinates: number[][],
+  ): (coord: number[]) => [number, number] {
     const [minX, minY, maxX, maxY] = coordinates.reduce(
       ([minX, minY, maxX, maxY], [x, y]) => [
         Math.min(minX, x),
@@ -62,21 +70,48 @@
     const centerX = (minX + maxX) / 2
     const centerY = (minY + maxY) / 2
 
-    return coordinates.map(([x, y]) => [
+    return ([x, y]) => [
       (x - centerX) * scale + width / 2,
       (centerY - y) * scale + height / 2,
-    ])
+    ]
+  }
+
+  function createPathData(geojson: GeoJSON): string {
+    if (geojson.type === "Polygon") {
+      const projectPoint = createCustomProjection(geojson.coordinates[0])
+      const outerRing = geojson.coordinates[0].map(projectPoint)
+      const innerRings = geojson.coordinates
+        .slice(1)
+        .map((ring) => ring.map(projectPoint))
+
+      return `M${outerRing.map((p) => p.join(",")).join("L")}Z ${innerRings
+        .map((ring) => `M${ring.map((p) => p.join(",")).join("L")}Z`)
+        .join(" ")}`
+    } else if (geojson.type === "MultiPolygon") {
+      return geojson.coordinates
+        .map((polygon) => {
+          const projectPoint = createCustomProjection(polygon[0])
+          const outerRing = polygon[0].map(projectPoint)
+          const innerRings = polygon
+            .slice(1)
+            .map((ring) => ring.map(projectPoint))
+
+          return `M${outerRing.map((p) => p.join(",")).join("L")}Z ${innerRings
+            .map((ring) => `M${ring.map((p) => p.join(",")).join("L")}Z`)
+            .join(" ")}`
+        })
+        .join(" ")
+    }
+
+    return ""
   }
 
   onMount(() => {
     if (isValidGeoJSON(geojson)) {
-      const projectedCoordinates = createCustomProjection(
-        geojson.coordinates[0],
-      )
-      pathData =
-        "M" +
-        projectedCoordinates.map((point) => point.join(",")).join("L") +
-        "Z"
+      const ringCount = countRings(geojson)
+      console.log(`Number of rings: ${ringCount}`)
+
+      pathData = createPathData(geojson)
 
       areaHectares = calculateAreaInHectares(geojson)
     } else {
@@ -96,6 +131,7 @@
     fill="rgba(0, 128, 0, 0.5)"
     stroke="#006400"
     stroke-width="1"
+    fill-rule="evenodd"
   />
 </svg>
 
