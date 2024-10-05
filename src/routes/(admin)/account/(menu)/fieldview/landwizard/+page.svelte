@@ -7,7 +7,7 @@
   import * as Carousel from "$lib/components/ui/carousel/index.js"
   import { Button } from "$lib/components/ui/button"
   import { Input } from "$lib/components/ui/input"
-  import { Check, X } from "lucide-svelte"
+  import { Check, X, Info } from "lucide-svelte"
   import type { CarouselAPI } from "$lib/components/ui/carousel/context.js"
   import GeoJSONMap from "$lib/components/GeoJsonMap.svelte"
   import { toast } from "svelte-sonner"
@@ -18,7 +18,7 @@
     name: string
     boundary: GeoJSON.Polygon | GeoJSON.MultiPolygon
     properties: Record<string, any>
-    status: null | "accepted" | "rejected"
+    status: null | "accepted" | "rejected" | "warning"
     area?: number
     isMultiPolygon: boolean
   }
@@ -35,7 +35,7 @@
         const isMultiPolygon = paddock.boundary.type === "MultiPolygon"
         return {
           ...paddock,
-          status: isMultiPolygon ? "rejected" : null,
+          status: isMultiPolygon ? "warning" : null,
           area: undefined,
           isMultiPolygon,
         }
@@ -65,12 +65,10 @@
   }
 
   function acceptPaddock(index: number) {
-    if (!paddocks[index].isMultiPolygon) {
-      console.log("Accepting paddock at index:", index)
-      paddocks[index].status = "accepted"
-      paddocks = [...paddocks]
-      scrollToNext()
-    }
+    console.log("Accepting paddock at index:", index)
+    paddocks[index].status = "accepted"
+    paddocks = [...paddocks]
+    scrollToNext()
   }
 
   function rejectPaddock(index: number) {
@@ -87,10 +85,10 @@
   }
 
   function acceptAll() {
-    console.log("Accepting all non-MultiPolygon paddocks")
+    console.log("Accepting all paddocks")
     paddocks = paddocks.map((paddock) => ({
       ...paddock,
-      status: paddock.isMultiPolygon ? "rejected" : "accepted",
+      status: "accepted",
     }))
   }
 
@@ -196,7 +194,6 @@
                         ? "default"
                         : "outline"}
                       class="mx-1.5 inline-block h-10 w-10 rounded-full p-0 align-middle leading-[2.5rem]"
-                      disabled={paddock.isMultiPolygon}
                     >
                       <Check class="inline-block h-5 w-5 align-middle" />
                     </Button>
@@ -211,9 +208,8 @@
                     </Button>
                   </div>
                   {#if paddock.isMultiPolygon}
-                    <div class="text-center text-sm text-red-500">
-                      MultiPolygon detected. This paddock will be automatically
-                      rejected.
+                    <div class="text-center text-sm text-blue-500">
+                      MultiPolygon detected.
                     </div>
                   {/if}
                 </div>
@@ -245,6 +241,12 @@
                 class="flex h-full w-full items-center justify-center rounded-full bg-red-500"
               >
                 <X class="h-3 w-3 text-white" />
+              </div>
+            {:else if paddock.status === "warning"}
+              <div
+                class="flex h-full w-full items-center justify-center rounded-full bg-blue-200"
+              >
+                <Info class="h-3 w-3 text-white" />
               </div>
             {/if}
           </div>

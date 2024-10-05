@@ -9,7 +9,8 @@
   interface Field {
     area: number
     boundary: {
-      coordinates: number[][][]
+      type: "Polygon" | "MultiPolygon"
+      coordinates: number[][][] | number[][][][]
     }
     // Add other properties if needed
   }
@@ -18,17 +19,14 @@
     console.log("MapFields component: Loading fields")
 
     const fields: Field[] = get(mapFieldsStore)
-    console.log(`Loaded ${fields.length} fields from store`)
+    console.log(`Loaded ${fields.length} fields from store`, fields)
 
     if (fields.length > 0) {
       const geojson = {
         type: "FeatureCollection",
         features: fields.map((field, index) => ({
           type: "Feature",
-          geometry: {
-            type: "Polygon",
-            coordinates: field.boundary.coordinates,
-          },
+          geometry: field.boundary,
           properties: { id: index, area: field.area },
         })),
       }
@@ -65,6 +63,12 @@
         if (feature.geometry.type === "Polygon") {
           feature.geometry.coordinates[0].forEach((coord) => {
             bounds.extend(coord as [number, number])
+          })
+        } else if (feature.geometry.type === "MultiPolygon") {
+          feature.geometry.coordinates.forEach((polygon) => {
+            polygon[0].forEach((coord) => {
+              bounds.extend(coord as [number, number])
+            })
           })
         }
       })

@@ -41,6 +41,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
                     rejectedFields.push({ name: field.name, reason: 'Duplicate field name' });
                 } else {
                     rejectedFields.push({ name: field.name, reason: error.message });
+                    console.error('Actual postgres/supabase error:', error);
                 }
             } else {
                 insertedFields.push(data[0]);

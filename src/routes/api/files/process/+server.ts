@@ -236,13 +236,20 @@ function processISOXML(xmlContent) {
         const paddockList = [];
         let totalExclusions = 0;
 
+        // Process client (CTR element)
+        const ctr = xmlDoc.getElementsByTagName('CTR')[0];
+        const client = ctr ? ctr.getAttribute('B') : 'Unknown Client';
+        console.log(`\nClient: ${client}`);
+
         // Process farms (FRM elements)
         const farms = xmlDoc.getElementsByTagName('FRM');
         console.log(`\nFound ${farms.length} farms:`);
+        const farmMap = new Map();
         for (let i = 0; i < farms.length; i++) {
             const farm = farms[i];
             const farmId = farm.getAttribute('A');
             const farmName = farm.getAttribute('B');
+            farmMap.set(farmId, farmName);
             console.log(`  Farm ${i + 1}: ID=${farmId}, Name=${farmName}`);
         }
 
@@ -255,39 +262,47 @@ function processISOXML(xmlContent) {
             const paddockName = partfield.getAttribute('C') || `ImportPaddock${i + 1}`;
             const areaValue = partfield.getAttribute('D');
             const farmId = partfield.getAttribute('F');
+            const farm = farmMap.get(farmId) || 'Unknown Farm';
 
-            console.log(`  Paddock ${i + 1}: ID=${paddockId}, Name=${paddockName}, Area=${areaValue}, FarmID=${farmId}`);
+            console.log(`  Paddock ${i + 1}: ID=${paddockId}, Name=${paddockName}, Area=${areaValue}, Farm=${farm}`);
 
             // Process polygons for this partfield
             const polygons = partfield.getElementsByTagName('PLN');
             let boundaryCoordinates = [];
 
-            if (polygons.length > 0) {
-                const lineStrings = polygons[0].getElementsByTagName('LSG');
-                for (let j = 0; j < lineStrings.length; j++) {
-                    const lsg = lineStrings[j];
+            for (let j = 0; j < polygons.length; j++) {
+                const polygon = polygons[j];
+                const lineStrings = polygon.getElementsByTagName('LSG');
+                let polygonCoordinates = [];
+
+                for (let k = 0; k < lineStrings.length; k++) {
+                    const lsg = lineStrings[k];
                     const lsgType = lsg.getAttribute('A');
                     const points = lsg.getElementsByTagName('PNT');
                     const ringCoordinates = [];
 
-                    for (let k = 0; k < points.length; k++) {
-                        const point = points[k];
+                    for (let l = 0; l < points.length; l++) {
+                        const point = points[l];
                         const lat = parseFloat(point.getAttribute('C'));
                         const lon = parseFloat(point.getAttribute('D'));
                         ringCoordinates.push([lon, lat]);
                     }
 
-                    // Close the polygon
+                    // Close the ring
                     ringCoordinates.push(ringCoordinates[0]);
 
                     if (lsgType === "1") {
                         // Main boundary
-                        boundaryCoordinates.unshift(ringCoordinates);
+                        polygonCoordinates.unshift(ringCoordinates);
                     } else if (lsgType === "2") {
                         // Exclusion
-                        boundaryCoordinates.push(ringCoordinates);
+                        polygonCoordinates.push(ringCoordinates);
                         totalExclusions++;
                     }
+                }
+
+                if (polygonCoordinates.length > 0) {
+                    boundaryCoordinates.push(polygonCoordinates);
                 }
             }
 
@@ -298,17 +313,20 @@ function processISOXML(xmlContent) {
                     properties: {
                         id: paddockId,
                         area: areaValue,
-                        farmId: farmId
+                        farmId: farmId,
+                        client: client,
+                        farm: farm
                     },
                     boundary: {
-                        type: "Polygon",
-                        coordinates: boundaryCoordinates
+                        type: boundaryCoordinates.length > 1 ? "MultiPolygon" : "Polygon",
+                        coordinates: boundaryCoordinates.length > 1 ? boundaryCoordinates : boundaryCoordinates[0]
                     }
                 };
 
                 paddockList.push(paddock);
 
-                console.log(`    Number of exclusions: ${boundaryCoordinates.length - 1}`);
+                console.log(`    Number of shapes: ${boundaryCoordinates.length}`);
+                console.log(`    Total number of exclusions: ${totalExclusions}`);
             }
         }
 

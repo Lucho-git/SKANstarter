@@ -3,7 +3,7 @@
   import { onMount } from "svelte"
   import type { GeoJSON } from "d3-geo"
   import area from "@turf/area"
-  import { polygon } from "@turf/helpers"
+  import { polygon, multiPolygon } from "@turf/helpers"
 
   export let geojson: GeoJSON
   export let width: number = 300
@@ -12,57 +12,57 @@
 
   let pathData = ""
 
-  function isValidGeoJSON(geojson: GeoJSON): boolean {
+  function isValidGeoJSON(geojson: any): boolean {
     return (
-      geojson &&
-      (geojson.type === "Polygon" || geojson.type === "MultiPolygon") &&
-      Array.isArray(geojson.coordinates) &&
-      geojson.coordinates.length > 0
+      geojson && (geojson.type === "Polygon" || geojson.type === "MultiPolygon")
     )
   }
 
-  function countRings(geojson: GeoJSON): number {
+  function calculateAreaInHectares(geojson: GeoJSON): number {
     if (geojson.type === "Polygon") {
-      return geojson.coordinates.length
+      return calculatePolygonAreaInHectares(geojson.coordinates)
     } else if (geojson.type === "MultiPolygon") {
-      return geojson.coordinates.reduce(
-        (sum, polygon) => sum + polygon.length,
-        0,
-      )
+      return geojson.coordinates.reduce((total, polygonCoords) => {
+        return total + calculatePolygonAreaInHectares(polygonCoords)
+      }, 0)
     }
     return 0
   }
 
-  function calculateAreaInHectares(geojson: GeoJSON): number {
-    console.log("Input to area calculation:", JSON.stringify(geojson))
+  function calculatePolygonAreaInHectares(coordinates: number[][][]): number {
+    const outerRing = coordinates[0]
+    const innerRings = coordinates.slice(1)
 
-    if (!isValidGeoJSON(geojson)) {
-      console.error("Invalid GeoJSON structure")
-      return 0
-    }
+    const outerArea = area(polygon([outerRing])) / 10000 // Convert to hectares
+    const innerArea = innerRings.reduce((total, ring) => {
+      return total + area(polygon([ring])) / 10000
+    }, 0)
 
-    const poly = polygon(geojson.coordinates)
-    const areaInSquareMeters = area(poly)
-    const areaInHectares = areaInSquareMeters / 10000
-
-    console.log("Calculated area in hectares:", areaInHectares)
-
-    return areaInHectares
+    return outerArea - innerArea
   }
 
-  function createCustomProjection(
-    coordinates: number[][],
-  ): (coord: number[]) => [number, number] {
-    const [minX, minY, maxX, maxY] = coordinates.reduce(
-      ([minX, minY, maxX, maxY], [x, y]) => [
-        Math.min(minX, x),
-        Math.min(minY, y),
-        Math.max(maxX, x),
-        Math.max(maxY, y),
-      ],
-      [Infinity, Infinity, -Infinity, -Infinity],
-    )
+  function getBoundingBox(
+    coordinates: number[][][],
+  ): [number, number, number, number] {
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity
+    coordinates.forEach((ring) => {
+      ring.forEach(([x, y]) => {
+        minX = Math.min(minX, x)
+        minY = Math.min(minY, y)
+        maxX = Math.max(maxX, x)
+        maxY = Math.max(maxY, y)
+      })
+    })
+    return [minX, minY, maxX, maxY]
+  }
 
+  function createProjection(
+    bbox: [number, number, number, number],
+  ): (coord: number[]) => [number, number] {
+    const [minX, minY, maxX, maxY] = bbox
     const scaleX = width / (maxX - minX)
     const scaleY = height / (maxY - minY)
     const scale = Math.min(scaleX, scaleY) * 0.9
@@ -76,43 +76,42 @@
     ]
   }
 
+  function createPolygonPathData(
+    coordinates: number[][][],
+    project: (coord: number[]) => [number, number],
+  ): string {
+    const outerRing = coordinates[0].map(project)
+    const innerRings = coordinates.slice(1).map((ring) => ring.map(project))
+
+    return `M${outerRing.map((p) => p.join(",")).join("L")}Z ${innerRings
+      .map((ring) => `M${ring.map((p) => p.join(",")).join("L")}Z`)
+      .join(" ")}`
+  }
+
   function createPathData(geojson: GeoJSON): string {
+    let allCoordinates: number[][][] = []
     if (geojson.type === "Polygon") {
-      const projectPoint = createCustomProjection(geojson.coordinates[0])
-      const outerRing = geojson.coordinates[0].map(projectPoint)
-      const innerRings = geojson.coordinates
-        .slice(1)
-        .map((ring) => ring.map(projectPoint))
-
-      return `M${outerRing.map((p) => p.join(",")).join("L")}Z ${innerRings
-        .map((ring) => `M${ring.map((p) => p.join(",")).join("L")}Z`)
-        .join(" ")}`
+      allCoordinates = geojson.coordinates
     } else if (geojson.type === "MultiPolygon") {
-      return geojson.coordinates
-        .map((polygon) => {
-          const projectPoint = createCustomProjection(polygon[0])
-          const outerRing = polygon[0].map(projectPoint)
-          const innerRings = polygon
-            .slice(1)
-            .map((ring) => ring.map(projectPoint))
-
-          return `M${outerRing.map((p) => p.join(",")).join("L")}Z ${innerRings
-            .map((ring) => `M${ring.map((p) => p.join(",")).join("L")}Z`)
-            .join(" ")}`
-        })
-        .join(" ")
+      allCoordinates = geojson.coordinates.flat()
     }
 
+    const bbox = getBoundingBox(allCoordinates)
+    const project = createProjection(bbox)
+
+    if (geojson.type === "Polygon") {
+      return createPolygonPathData(geojson.coordinates, project)
+    } else if (geojson.type === "MultiPolygon") {
+      return geojson.coordinates
+        .map((polygonCoords) => createPolygonPathData(polygonCoords, project))
+        .join(" ")
+    }
     return ""
   }
 
   onMount(() => {
     if (isValidGeoJSON(geojson)) {
-      const ringCount = countRings(geojson)
-      console.log(`Number of rings: ${ringCount}`)
-
       pathData = createPathData(geojson)
-
       areaHectares = calculateAreaInHectares(geojson)
     } else {
       console.error("Invalid GeoJSON structure")
