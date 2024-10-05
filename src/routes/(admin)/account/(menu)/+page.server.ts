@@ -86,10 +86,33 @@ export const actions = {
             return fail(404, { message: 'Map not found' });
         }
 
-        // Update the user's profile with the new master_map_id
+        // Get the current user's profile, including recent_maps
+        const { data: userData, error: userError } = await locals.supabase
+            .from("profiles")
+            .select("recent_maps")
+            .eq("id", session.user.id)
+            .single();
+
+        if (userError) {
+            return fail(500, { message: 'Failed to fetch user data' });
+        }
+
+        // Update recent_maps
+        let recentMaps = userData.recent_maps || [];
+        // Remove the mapIdToJoin if it already exists
+        recentMaps = recentMaps.filter(id => id !== mapIdToJoin);
+        // Add the mapIdToJoin to the front of the array
+        recentMaps.unshift(mapIdToJoin);
+        // Limit the array to a certain number of recent maps (e.g., 10)
+        recentMaps = recentMaps.slice(0, 10);
+
+        // Update the user's profile with the new master_map_id and recent_maps
         const { error: updateError } = await locals.supabase
             .from("profiles")
-            .update({ master_map_id: mapIdToJoin })
+            .update({
+                master_map_id: mapIdToJoin,
+                recent_maps: recentMaps
+            })
             .eq("id", session.user.id);
 
         if (updateError) {

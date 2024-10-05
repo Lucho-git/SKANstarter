@@ -62,7 +62,7 @@ export const load = async ({ fetch, data, depends, url }) => {
     //Load all the stores with data
     data = { supabase, session, profile, subscription, connectedMap: data.connectedMap, mapActivity: data.mapActivity, masterSubscription: data.masterSubscription }
 
-    // console.log("Loading data into stores:", data);
+    console.log("Loading data into stores:", data);
 
     // Load profile data
     profileStore.set({
@@ -71,7 +71,8 @@ export const load = async ({ fetch, data, depends, url }) => {
         company_name: data.profile.company_name,
         website: data.profile.website,
         survey_completed: data.profile.survey_completed,
-        master_map_id: data.profile.master_map_id
+        master_map_id: data.profile.master_map_id,
+        recent_maps: data.profile.recent_maps
     });
 
     // Load user's subscription data
