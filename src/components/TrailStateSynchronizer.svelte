@@ -207,6 +207,7 @@
   }
 
   async function saveMarkersToIndexedDB(markers, synced) {
+    console.log("Saving markers to IndexedDB with synced set to", markers)
     try {
       const updatedMarkers = markers.map((marker) => ({
         ...marker,
@@ -412,13 +413,7 @@
 
       console.log("Unsynced data found:", unsyncedData)
 
-      const convertedData = unsyncedData.map((point) => ({
-        id: point.id,
-        vehicle_id: point.vehicle_id,
-        timestamp: new Date(point.timestamp).getTime(), // Convert to Unix timestamp (milliseconds)
-        coordinates: point.coordinates,
-        master_map_id: point.master_map_id,
-      }))
+      const convertedData = unsyncedData.map(({ synced, ...point }) => point)
 
       console.log("Sending unsynced data to Supabase:", convertedData)
       const { data, error } = await supabase
