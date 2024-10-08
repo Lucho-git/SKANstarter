@@ -7,6 +7,10 @@
     markerActionsStore,
     syncStore,
   } from "../stores/mapStore"
+  import { LngLatBounds } from "mapbox-gl" // Or equivalent from your map library
+
+  import { markerBoundaryStore } from "$lib/stores/homeBoundaryStore"
+
   import { supabase } from "../lib/supabaseClient"
   import { page } from "$app/stores"
   import { toast } from "svelte-sonner"
@@ -251,6 +255,10 @@
         serverMarkersToBeUpdated,
         serverMarkersToBeDeleted,
       })
+
+      // Calculate and store the bounding box
+      calculateAndStoreBoundingBox()
+
       if (toasttext) {
         toast.success(toasttext)
       }
@@ -555,5 +563,21 @@
       ...marker,
       iconClass: marker.marker_data.properties.icon,
     }))
+  }
+
+  function calculateAndStoreBoundingBox() {
+    const markers = $confirmedMarkersStore
+    if (markers.length > 0) {
+      const bounds = new LngLatBounds()
+      markers.forEach(({ marker }) => {
+        bounds.extend(marker.getLngLat())
+      })
+
+      // Store the bounding box in the markerBoundaryStore
+      markerBoundaryStore.set(bounds)
+    } else {
+      // If there are no markers, set the store to null
+      markerBoundaryStore.set(null)
+    }
   }
 </script>

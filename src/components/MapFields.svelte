@@ -2,6 +2,7 @@
   import { onMount } from "svelte"
   import { get } from "svelte/store"
   import { mapFieldsStore } from "$lib/stores/mapFieldsStore"
+  import { fieldBoundaryStore } from "$lib/stores/homeBoundaryStore"
   import mapboxgl from "mapbox-gl"
 
   export let map: mapboxgl.Map
@@ -12,7 +13,42 @@
       type: "Polygon" | "MultiPolygon"
       coordinates: number[][][] | number[][][][]
     }
-    // Add other properties if needed
+  }
+
+  function calculateBoundingBox(fields: Field[]): mapboxgl.LngLatBounds | null {
+    console.log("Calculating bounding box for", fields.length, "fields")
+
+    if (fields.length === 0) {
+      console.warn("No fields to calculate bounding box")
+      return null
+    }
+
+    const bounds = new mapboxgl.LngLatBounds()
+
+    fields.forEach((field, index) => {
+      const coordinates =
+        field.boundary.type === "Polygon"
+          ? field.boundary.coordinates[0]
+          : field.boundary.coordinates.flat(1)
+
+      coordinates.forEach(([lng, lat], coordIndex) => {
+        if (isNaN(lng) || isNaN(lat)) {
+          console.warn(
+            `Invalid coordinate at field ${index}, coordinate ${coordIndex}: [${lng}, ${lat}]`,
+          )
+          return
+        }
+        bounds.extend(new mapboxgl.LngLat(lng, lat))
+      })
+    })
+
+    if (!bounds.isEmpty()) {
+      console.log("Calculated bounding box:", bounds.toArray())
+      return bounds
+    } else {
+      console.warn("Unable to calculate valid bounding box")
+      return null
+    }
   }
 
   function loadFields() {
@@ -57,22 +93,17 @@
         },
       })
 
-      console.log("Fitting map to field bounds")
-      const bounds = new mapboxgl.LngLatBounds()
-      geojson.features.forEach((feature) => {
-        if (feature.geometry.type === "Polygon") {
-          feature.geometry.coordinates[0].forEach((coord) => {
-            bounds.extend(coord as [number, number])
-          })
-        } else if (feature.geometry.type === "MultiPolygon") {
-          feature.geometry.coordinates.forEach((polygon) => {
-            polygon[0].forEach((coord) => {
-              bounds.extend(coord as [number, number])
-            })
-          })
-        }
-      })
-      map.fitBounds(bounds, { padding: 50 })
+      // Calculate bounding box and store it
+      const bounds = calculateBoundingBox(fields)
+      if (bounds) {
+        fieldBoundaryStore.set(bounds.toArray())
+        console.log("Stored field bounding box")
+
+        console.log("Fitting map to field bounds")
+        map.fitBounds(bounds, { padding: 50 })
+      } else {
+        console.warn("Unable to calculate valid bounding box")
+      }
     } else {
       console.log("No fields found in store")
     }

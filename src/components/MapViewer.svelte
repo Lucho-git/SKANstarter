@@ -3,7 +3,12 @@
   import mapboxgl from "mapbox-gl"
   import "mapbox-gl/dist/mapbox-gl.css"
   import { mapStore } from "../stores/mapStore"
+  import {
+    fieldBoundaryStore,
+    markerBoundaryStore,
+  } from "$lib/stores/homeBoundaryStore"
   import { trailDataLoaded, vehicleDataLoaded } from "../stores/loadedStore"
+  import { toast } from "svelte-sonner"
 
   import MarkerManager from "./MarkerManager.svelte"
 
@@ -115,6 +120,34 @@
     })
     isSatelliteStyle = !isSatelliteStyle
   }
+
+  function handleLocateHome() {
+    console.log("Locating home", $fieldBoundaryStore, $markerBoundaryStore)
+
+    if ($fieldBoundaryStore) {
+      // Use field boundary if available
+      const [minLng, minLat, maxLng, maxLat] = $fieldBoundaryStore
+
+      map.fitBounds($fieldBoundaryStore, {
+        padding: 50,
+        maxZoom: 15,
+      })
+    } else if ($markerBoundaryStore) {
+      // Use marker boundary if field boundary is not available
+      map.fitBounds($markerBoundaryStore, {
+        padding: 50,
+        maxZoom: 15,
+      })
+    } else {
+      console.log("No bounding box available")
+      toast.error(
+        "Please place markers or upload field boundaries to set a home location",
+        {
+          duration: 4000,
+        },
+      )
+    }
+  }
 </script>
 
 <div class="map-container" bind:this={mapContainer}>
@@ -122,6 +155,7 @@
     <ButtonSection
       on:toggleMapStyleDispatcher={toggleMapStyle}
       on:backToDashboard={handleBackToDashboard}
+      on:locateHome={handleLocateHome}
     />
 
     <MarkerManager {markerPlacementEvent} {markerClickEvent} />
