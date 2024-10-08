@@ -51,10 +51,54 @@
     })
   }
 
-  function handleDeleteField() {
-    toast.info("Deletion coming soon", {
-      duration: 3000,
-    })
+  async function handleDeleteField(fieldId: string) {
+    // Find the field to get its name
+    const fieldToDelete = $fieldStore.find(
+      (field) => field.field_id === fieldId,
+    )
+
+    if (!fieldToDelete) {
+      toast.error("Field not found")
+      return
+    }
+
+    // Show confirmation dialog
+    const isConfirmed = confirm(
+      `Are you sure you want to delete the field "${fieldToDelete.name}"?`,
+    )
+
+    if (!isConfirmed) {
+      return // User cancelled the deletion
+    }
+
+    console.log("Deleting field with ID:", fieldId)
+    try {
+      const response = await fetch("/api/files/delete_fields", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ fieldId }),
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        // Remove the deleted field from the store
+        fieldStore.update((fields) =>
+          fields.filter((field) => field.field_id !== fieldId),
+        )
+        toast.success(`Field "${fieldToDelete.name}" deleted successfully`)
+        console.log($fieldStore)
+      } else {
+        throw new Error(result.error || "Failed to delete field")
+      }
+    } catch (error) {
+      console.error("Error deleting field:", error)
+      toast.error(
+        `Failed to delete field "${fieldToDelete.name}". Please try again.`,
+      )
+    }
   }
 
   let fieldNameStyle = "min-width: 20vw; max-width: 30vw;"
@@ -124,7 +168,7 @@
                         size="icon"
                         class="h-8 w-8"
                         aria-label="Delete field"
-                        on:click={handleDeleteField}
+                        on:click={() => handleDeleteField(field.field_id)}
                       >
                         <Trash2 class="h-4 w-4" />
                       </Button>
