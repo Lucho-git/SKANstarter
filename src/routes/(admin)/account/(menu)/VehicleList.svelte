@@ -100,18 +100,22 @@
     }))
   }
 
-  function handleLocate(profileId: string) {
-    console.log("Locate button pressed for profile:", profileId)
-    toast.info("Connecting to user", {
-      description: "Location feature is not implemented yet",
-    })
-    goto(`/account/mapviewer?vehicle=${profileId}`)
+  function handleLocate(profile: any) {
+    toast.info(`Finding ${profile.full_name}`)
+
+    if (profile.id === currentUserId) {
+      goto(`/account/mapviewer`)
+    } else {
+      goto(`/account/mapviewer?vehicle=${profile.id}`)
+    }
   }
 
-  function handleConnect(profileId: string) {
-    console.log("Connect button pressed for profile:", profileId)
+  function handleConnect(profile: any) {
+    toast.info(`Connecting as ${profile.full_name}`)
 
-    goto(`/account/mapviewer?userId=${profileId}`)
+    if (profile.id === currentUserId) {
+      goto(`/account/mapviewer`)
+    }
   }
 </script>
 
@@ -242,7 +246,7 @@
             class="btn {buttonClass} btn-sm m-auto"
             class:btn-info={!vehicle}
             on:click={() =>
-              vehicle ? handleLocate(profile.id) : handleConnect(profile.id)}
+              vehicle ? handleLocate(profile) : handleConnect(profile)}
             disabled={!vehicle && !is_user(profile.id)}
           >
             {vehicle ? "Locate" : "Connect"}
