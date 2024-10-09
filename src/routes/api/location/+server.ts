@@ -87,9 +87,39 @@ export const GET: RequestHandler = async ({ locals, url }) => {
                 break;
 
             case 'vehicle':
-                // Simulating fetching a vehicle's coordinates
-                // Replace this with actual database query when implemented
-                location = [0, 0]; // Example coordinate
+                const { data: vehicleData, error: vehicleError } = await locals.supabase
+                    .from('vehicle_state')
+                    .select('coordinates')
+                    .eq('master_map_id', masterMapId)
+                    .eq('vehicle_id', objectId)
+                    .single();
+
+                if (vehicleError) {
+                    console.error('Supabase error fetching vehicle:', vehicleError);
+                    throw vehicleError;
+                }
+
+                console.log('Fetched vehicle data:', vehicleData);
+
+                if (!vehicleData || !vehicleData.coordinates) {
+                    console.log('No location data found for vehicle:', objectId);
+                    return json({ error: 'Vehicle location not found' }, { status: 404 });
+                }
+
+                // Parse the coordinates string
+                const coordinatesMatch = vehicleData.coordinates.match(/\(([-\d.]+),([-\d.]+)\)/);
+                if (!coordinatesMatch) {
+                    console.log('Invalid coordinate format for vehicle:', objectId);
+                    return json({ error: 'Invalid coordinate format' }, { status: 400 });
+                }
+
+                // Extract longitude and latitude
+                const longitude = parseFloat(coordinatesMatch[1]);
+                const latitude = parseFloat(coordinatesMatch[2]);
+
+                console.log('Parsed vehicle location:', { longitude, latitude });
+
+                location = [longitude, latitude];
                 type = 'coordinate';
                 break;
 

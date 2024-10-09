@@ -65,8 +65,11 @@
           maxZoom: 15,
         })
       } else if (initialLocation.length === 2) {
-        map.setCenter(initialLocation)
-        map.setZoom(15)
+        map.flyTo({
+          center: initialLocation,
+          zoom: 15,
+          duration: 4000, // Duration of animation in milliseconds
+        })
       }
     }
   }
@@ -181,12 +184,12 @@
     <VehicleTracker {map} disableAutoZoom={initialLocation} />
     <MapFields {map} />
 
-    {#if $vehicleDataLoaded}
+    <!-- {#if $vehicleDataLoaded}
       <TrailStateSynchronizer db={dbInstance} />
     {/if}
     {#if $trailDataLoaded && mapLoaded}
       <TrailTracker {map} />
-    {/if}
+    {/if} -->
   {/if}
 </div>
 
