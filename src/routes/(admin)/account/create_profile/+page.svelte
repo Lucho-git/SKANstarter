@@ -31,25 +31,8 @@
 
       if (result.type === "success") {
         console.log("Form submission successful, creating user subscription")
-        try {
-          const response = await fetch("/account/api?/updateUserSubscription", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ action: "updateUserSubscription" }),
-          })
 
-          console.log("response", response)
-          if (!response.ok) {
-            throw new Error("Failed to update user subscription")
-          }
-
-          console.log("User subscription updated successfully")
-          goto("/account/user_survey")
-        } catch (error) {
-          console.error("Error updating user subscription:", error)
-        }
+        goto("/account/user_survey")
       }
 
       loading = false

@@ -16,7 +16,7 @@
   import "../styles/global.css"
 
   export let map
-  export let disableAutoZoom = false // New prop to control auto-zooming
+  export let disableAutoZoom = false
 
   let userVehicleId
   let geolocateControl
