@@ -105,7 +105,7 @@
     toast.info("Connecting to user", {
       description: "Location feature is not implemented yet",
     })
-    goto(`/account/mapviewer?userId=${profileId}`)
+    goto(`/account/mapviewer?vehicle=${profileId}`)
   }
 
   function handleConnect(profileId: string) {

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { goto } from "$app/navigation"
+
   import {
     Table,
     TableBody,
@@ -45,10 +47,9 @@
     }
   }
 
-  function handleLocateField() {
-    toast.info("Locate area coming soon", {
-      duration: 3000,
-    })
+  function handleLocateField(fieldId: string) {
+    console.log("locating field", fieldId)
+    goto(`/account/mapviewer?field=${fieldId}`)
   }
 
   async function handleDeleteField(fieldId: string) {
@@ -159,7 +160,7 @@
                         size="icon"
                         class="h-8 w-8"
                         aria-label="Go to field"
-                        on:click={handleLocateField}
+                        on:click={() => handleLocateField(field.field_id)}
                       >
                         <MapPinned class="h-4 w-4" />
                       </Button>

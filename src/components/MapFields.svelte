@@ -98,9 +98,6 @@
       if (bounds) {
         fieldBoundaryStore.set(bounds.toArray())
         console.log("Stored field bounding box")
-
-        console.log("Fitting map to field bounds")
-        map.fitBounds(bounds, { padding: 50 })
       } else {
         console.warn("Unable to calculate valid bounding box")
       }

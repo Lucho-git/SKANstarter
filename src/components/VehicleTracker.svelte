@@ -16,6 +16,7 @@
   import "../styles/global.css"
 
   export let map
+  export let disableAutoZoom = false // New prop to control auto-zooming
 
   let userVehicleId
   let geolocateControl
@@ -57,7 +58,9 @@
 
     map.addControl(geolocateControl, "bottom-right")
     map.on("load", () => {
-      geolocateControl.trigger()
+      if (!disableAutoZoom) {
+        geolocateControl.trigger()
+      }
     })
 
     // Update the user location marker on geolocate event

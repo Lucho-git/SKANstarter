@@ -7,14 +7,16 @@
   import MapViewer from "../../../../../components/MapViewer.svelte"
   import type { PageData } from "./$types"
 
-  // Add the data prop
   export let data: PageData
 
-  console.log("Inital map load data:", data)
+  console.log("Initial map load data:", data)
   let adminSection: Writable<string> = getContext("adminSection")
   adminSection.set("mapviewer")
 
   let wakeLock: WakeLockSentinel | null = null
+
+  // Pass through the raw location data
+  $: initialLocation = data.location
 
   function isAndroid() {
     return browser && /Android/.test(navigator.userAgent)
@@ -78,5 +80,5 @@
 </script>
 
 <div class="fixed left-0 top-0 h-full w-full overflow-hidden">
-  <MapViewer {handleBackToDashboard} />
+  <MapViewer {handleBackToDashboard} {initialLocation} />
 </div>

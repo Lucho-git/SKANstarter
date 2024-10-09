@@ -1,14 +1,16 @@
-// src/routes/admin/fieldview/+page.server.ts
-
 import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
-export const load: PageServerLoad = async ({ locals, fetch }) => {
+export const load: PageServerLoad = async ({ locals, fetch, url }) => {
     const session = await locals.getSession();
 
     if (!session) {
         throw redirect(303, "/login");
     }
+
+    const field = url.searchParams.get('field');
+
+    console.log(`Loaded field ID: ${field}`);
 
     try {
         console.log('Attempting to fetch fields...');
@@ -29,11 +31,10 @@ export const load: PageServerLoad = async ({ locals, fetch }) => {
 
         const fieldsData = await fieldsResponse.json();
         const fields = fieldsData.fields;
-        // console.log('Fields fetched:', fields);
 
-        return { fields };
+        return { fields, field };
     } catch (error) {
         console.error('Error fetching fields:', error);
-        return { fields: [], error: 'Failed to fetch fields.' };
+        return { fields: [], error: 'Failed to fetch fields.', field };
     }
 };

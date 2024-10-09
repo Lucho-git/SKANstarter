@@ -11,22 +11,20 @@
   import { toast } from "svelte-sonner"
 
   import MarkerManager from "./MarkerManager.svelte"
-
   import ButtonSection from "./ButtonSection.svelte"
   import MapControls from "./MapControls.svelte"
   import MapStateSaver from "./MapStateSaver.svelte"
-  import VehicleTracker from "./VehicleTracker.svelte" // Add this import
+  import VehicleTracker from "./VehicleTracker.svelte"
   import VehicleStateSynchronizer from "./VehicleStateSynchronizer.svelte"
   import TrailTracker from "./TrailTracker.svelte"
   import MapFields from "./MapFields.svelte"
-
   import TrailStateSynchronizer from "./TrailStateSynchronizer.svelte"
 
   import { db } from "./db.js"
 
   export let handleBackToDashboard
+  export let initialLocation
 
-  //Constants and variable initializations
   let dbInstance
 
   const MAPBOX_ACCESS_TOKEN =
@@ -48,20 +46,36 @@
     getMap: () => Promise.resolve(map),
   })
 
-  // end map controls
-
   const mapOptions = {
     container: null,
     style: DEFAULT_SATELLITE_STYLE,
     center: [90, -40],
     zoom: 2,
-    // failIfMajorPerformanceCaveat: true,
+  }
+
+  function initializeMapLocation() {
+    if (initialLocation && Array.isArray(initialLocation)) {
+      if (initialLocation.length === 4) {
+        const bounds = [
+          [initialLocation[0], initialLocation[1]],
+          [initialLocation[2], initialLocation[3]],
+        ]
+        map.fitBounds(bounds, {
+          padding: 50,
+          maxZoom: 15,
+        })
+      } else if (initialLocation.length === 2) {
+        map.setCenter(initialLocation)
+        map.setZoom(15)
+      }
+    }
   }
 
   onMount(async () => {
     mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN
 
     mapOptions.container = mapContainer
+
     map = new mapboxgl.Map(mapOptions)
 
     mapStore.set(map)
@@ -69,11 +83,14 @@
 
     if (map.loaded()) {
       mapLoaded = true
+      initializeMapLocation()
     } else {
       map.on("load", () => {
         mapLoaded = true
+        initializeMapLocation()
       })
     }
+
     try {
       await db.open()
       dbInstance = db
@@ -83,7 +100,6 @@
   })
 
   onDestroy(() => {
-    console.log("DestroyingMap")
     if (map) {
       map.off()
       map.remove()
@@ -95,7 +111,6 @@
     }
   })
 
-  //Finished Setup
   let markerPlacementEvent = null
   let markerClickEvent = null
 
@@ -117,29 +132,23 @@
     map.setStyle(currentMapStyle)
     map.once("load", () => {
       mapLoaded = true
+      initializeMapLocation()
     })
     isSatelliteStyle = !isSatelliteStyle
   }
 
   function handleLocateHome() {
-    console.log("Locating home", $fieldBoundaryStore, $markerBoundaryStore)
-
     if ($fieldBoundaryStore) {
-      // Use field boundary if available
-      const [minLng, minLat, maxLng, maxLat] = $fieldBoundaryStore
-
       map.fitBounds($fieldBoundaryStore, {
         padding: 50,
         maxZoom: 15,
       })
     } else if ($markerBoundaryStore) {
-      // Use marker boundary if field boundary is not available
       map.fitBounds($markerBoundaryStore, {
         padding: 50,
         maxZoom: 15,
       })
     } else {
-      console.log("No bounding box available")
       toast.error(
         "Please place markers or upload field boundaries to set a home location",
         {
@@ -167,15 +176,14 @@
       on:markerPlacement={handleMarkerPlacement}
       on:markerClick={handleMarkerClick}
     />
+
     <VehicleStateSynchronizer />
-    <VehicleTracker {map} />
+    <VehicleTracker {map} disableAutoZoom={initialLocation} />
     <MapFields {map} />
 
-    <!-- // Wait for veihicle data to be loaded before loading the trail data -->
     {#if $vehicleDataLoaded}
       <TrailStateSynchronizer db={dbInstance} />
     {/if}
-    <!-- // Wait for the trail data to be loaded before loading the trail tracker -->
     {#if $trailDataLoaded && mapLoaded}
       <TrailTracker {map} />
     {/if}
