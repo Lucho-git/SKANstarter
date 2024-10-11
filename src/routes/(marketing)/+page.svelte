@@ -25,10 +25,11 @@
 <div bind:this={frontPageNew1}>
   <FrontPageNew_1 />
 </div>
-<FrontPageNew_2 />
+
+<!-- <FrontPageNew_2 />
 <div class="hide-on-mobile">
   <FrontPageNew_3 />
-</div>
+</div> -->
 
 <style>
   @media (max-width: 768px) {
