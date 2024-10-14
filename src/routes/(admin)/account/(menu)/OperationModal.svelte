@@ -1,5 +1,6 @@
 <script>
   import { Plus, Pencil, Tractor } from "lucide-svelte"
+  import Icon from "@iconify/svelte"
 
   let operations = [
     {
@@ -93,8 +94,7 @@
   <h2
     class="mb-4 flex items-center justify-center text-center text-xl font-bold"
   >
-    <Tractor class="mr-2 h-6 w-6" />
-    Operation
+    <Icon class="mr-2 " icon="ph:tractor-fill" /> Operation
   </h2>
   <div class="flex flex-col items-center gap-4 sm:flex-row">
     <select

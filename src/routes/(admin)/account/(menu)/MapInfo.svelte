@@ -4,6 +4,7 @@
   import { connectedMapStore } from "../../../../stores/connectedMapStore"
   import { menuStore } from "../../../../stores/menuStore"
   import OperationModal from "./OperationModal.svelte"
+  import Icon from "@iconify/svelte"
 
   import * as Card from "$lib/components/ui/card"
   import { MapIcon, Copy, Check } from "lucide-svelte"
@@ -66,9 +67,11 @@
     class="absolute left-0 top-0 h-full w-full bg-gradient-to-br from-info-content/20 to-transparent"
   ></div>
   <Card.Header class="relative z-10 flex flex-col items-center">
-    <Card.Title class="text-center text-2xl font-bold">
-      {$connectedMapStore?.map_name || "No Map Connected"}
-      {#if !$connectedMapStore?.map_name}<div class="mt-4" />{/if}
+    <Card.Title
+      class="flex items-center justify-center space-x-2 text-2xl font-bold"
+    >
+      <Icon icon="solar:map-bold-duotone" class="text-3xl" />
+      <span>{$connectedMapStore?.map_name || "No Map Connected"}</span>
     </Card.Title>
     {#if $connectedMapStore?.id}
       <Card.Description
@@ -171,10 +174,10 @@
     {/if}
   </Card.Header>
   <Card.Content class="relative z-10 w-full space-y-4">
-    <OperationModal />
-
     {#if $connectedMapStore?.id}
-      <div
+      <OperationModal />
+
+      <!-- <div
         class="tooltip w-full"
         data-tip={copied ? "Copied!" : "Click to copy"}
       >
@@ -196,7 +199,7 @@
             {/if}
           </div>
         </button>
-      </div>
+      </div> -->
     {/if}
   </Card.Content>
 </Card.Root>
