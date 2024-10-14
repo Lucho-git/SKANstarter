@@ -170,7 +170,9 @@
       </div>
     {/if}
   </Card.Header>
-  <Card.Content class="mt relative z-10 w-full">
+  <Card.Content class="relative z-10 w-full space-y-4">
+    <OperationModal />
+
     {#if $connectedMapStore?.id}
       <div
         class="tooltip w-full"
@@ -195,7 +197,6 @@
           </div>
         </button>
       </div>
-      <OperationModal />
     {/if}
   </Card.Content>
 </Card.Root>
