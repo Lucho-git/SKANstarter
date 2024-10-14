@@ -1,5 +1,5 @@
 <script>
-  import { Plus, Pencil, Briefcase } from "lucide-svelte"
+  import { Plus, Pencil, Tractor } from "lucide-svelte"
 
   let operations = [
     {
@@ -93,7 +93,7 @@
   <h2
     class="mb-4 flex items-center justify-center text-center text-xl font-bold"
   >
-    <Briefcase class="mr-2 h-6 w-6" />
+    <Tractor class="mr-2 h-6 w-6" />
     Operation
   </h2>
   <div class="flex flex-col items-center gap-4 sm:flex-row">
