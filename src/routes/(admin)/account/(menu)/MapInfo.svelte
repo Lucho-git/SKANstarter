@@ -3,6 +3,7 @@
   import { browser } from "$app/environment"
   import { connectedMapStore } from "../../../../stores/connectedMapStore"
   import { menuStore } from "../../../../stores/menuStore"
+  import OperationModal from "./OperationModal.svelte"
 
   import * as Card from "$lib/components/ui/card"
   import { MapIcon, Copy, Check } from "lucide-svelte"
@@ -194,6 +195,7 @@
           </div>
         </button>
       </div>
+      <OperationModal />
     {/if}
   </Card.Content>
 </Card.Root>

@@ -84,6 +84,7 @@
     "shpjs": "^6.1.0",
     "stripe": "^13.3.0",
     "svelte-sonner": "^0.3.24",
+    "svelte-transition": "^0.0.17",
     "tailwind-merge": "^2.4.0",
     "tailwind-variants": "^0.2.1",
     "turf": "^3.0.14",
