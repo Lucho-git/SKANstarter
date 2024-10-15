@@ -121,7 +121,7 @@
 
 <div class="mt-0 rounded-lg bg-base-200 p-4 shadow-lg" style="z-index: 0;">
   <div class="mb-4 flex items-center justify-between">
-    <h3 class="text-2xl font-bold">Active Users</h3>
+    <h3 class="text-2xl font-bold">People</h3>
     <Tabs.Root
       value={activeTab}
       onValueChange={(value) => (activeTab = value)}
@@ -267,7 +267,7 @@
         />
       </div>
       <div class="flex-grow">
-        <h4 class="font-bold">Invite User</h4>
+        <h4 class="font-bold">Invite Person</h4>
       </div>
       <InviteModal />
     </div>

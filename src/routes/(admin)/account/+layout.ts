@@ -10,7 +10,7 @@ import { profileStore } from "../../../stores/profileStore"
 import { subscriptionStore } from '../../../stores/subscriptionStore';
 import { connectedMapStore } from '../../../stores/connectedMapStore';
 import { mapActivityStore } from '../../../stores/mapActivityStore';
-
+import { operationStore } from '$lib/stores/operationStore.js'
 
 export const load = async ({ fetch, data, depends, url }) => {
     depends("supabase:auth")
@@ -21,7 +21,6 @@ export const load = async ({ fetch, data, depends, url }) => {
         event: { fetch },
         serverSession: data.session,
     })
-    // console.log('Preload data', data)
 
     const {
         data: { session },
@@ -54,13 +53,12 @@ export const load = async ({ fetch, data, depends, url }) => {
         url.pathname !== userSurveyPath &&
         url.pathname !== selectPlanPath
     ) {
-        console.log('Redict to survey')
+        console.log('Redirect to survey')
         throw redirect(303, userSurveyPath);
     }
 
-
     //Load all the stores with data
-    data = { supabase, session, profile, subscription, connectedMap: data.connectedMap, mapActivity: data.mapActivity, masterSubscription: data.masterSubscription }
+    data = { supabase, session, profile, subscription, connectedMap: data.connectedMap, mapActivity: data.mapActivity, masterSubscription: data.masterSubscription, operations: data.operations }
 
     console.log("Loading data into stores:", data);
 
@@ -111,8 +109,15 @@ export const load = async ({ fetch, data, depends, url }) => {
             connected_profiles: data.mapActivity.connected_profiles,
             vehicle_states: data.mapActivity.vehicle_states
         });
+
+        // Load operations data
+        if (data.operations) {
+            operationStore.set(data.operations);
+        } else {
+            operationStore.set([]);
+        }
     } else {
-        // Reset connected map and map activity stores if no map is connected
+        // Reset connected map, map activity, and operations stores if no map is connected
         connectedMapStore.set({
             id: null,
             map_name: null,
@@ -128,11 +133,10 @@ export const load = async ({ fetch, data, depends, url }) => {
             connected_profiles: [],
             vehicle_states: []
         });
+        operationStore.set([]);
     }
 
-    // console.log("Loaded data:", data);
     return data;
-
 };
 
 

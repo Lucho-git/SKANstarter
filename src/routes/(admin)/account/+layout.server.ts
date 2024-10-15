@@ -12,8 +12,6 @@ export const load: LayoutServerLoad = async ({
 
     const userId = session.user.id
 
-
-
     const [profileResult, subscriptionResult] = await Promise.all([
         supabase
             .from("profiles")
@@ -27,33 +25,31 @@ export const load: LayoutServerLoad = async ({
             .single()
     ])
 
-
     const profile = profileResult.data
     const subscription = subscriptionResult.data
 
-
     if (!profile?.master_map_id) {
-        return { session, profile, subscription, connectedMap: null, mapActivity: null, masterSubscription: null }
+        return { session, profile, subscription, connectedMap: null, mapActivity: null, masterSubscription: null, operations: null }
     }
 
     // Run map-related queries in parallel
-    const [masterMapResult, mapActivityResult] = await Promise.all([
+    const [masterMapResult, mapActivityResult, operationsResult] = await Promise.all([
         supabase.from("master_maps").select("*").eq("id", profile.master_map_id).single(),
         Promise.all([
             supabase.from("map_markers").select("id", { count: "exact" }).eq("master_map_id", profile.master_map_id),
             supabase.from("trail_data").select("id", { count: "exact" }).eq("master_map_id", profile.master_map_id),
             supabase.from("profiles").select("id, full_name").eq("master_map_id", profile.master_map_id)
-        ])
+        ]),
+        supabase.from("operations").select("*").eq("master_map_id", profile.master_map_id)
     ])
-
 
     const masterMap = masterMapResult.data
     const [markerCount, trailCount, connectedProfiles] = mapActivityResult
+    const operations = operationsResult.data
 
     if (!masterMap) {
-        return { session, profile, subscription, connectedMap: null, mapActivity: null, masterSubscription: null }
+        return { session, profile, subscription, connectedMap: null, mapActivity: null, masterSubscription: null, operations: null }
     }
-
 
     // Run final queries in parallel
     const [ownerProfileResult, masterSubscriptionResult, vehicleStatesResult] = await Promise.all([
@@ -81,7 +77,7 @@ export const load: LayoutServerLoad = async ({
             connected_profiles: connectedProfiles.data || [],
             vehicle_states: vehicleStatesResult.data || []
         },
-        masterSubscription: masterSubscriptionResult.data || null
+        masterSubscription: masterSubscriptionResult.data || null,
+        operations: operations || null
     }
-
 }

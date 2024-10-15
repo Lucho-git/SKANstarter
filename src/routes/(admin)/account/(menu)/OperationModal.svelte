@@ -1,78 +1,126 @@
 <script>
   import { Plus, Pencil, Tractor } from "lucide-svelte"
   import Icon from "@iconify/svelte"
+  import {
+    operationStore,
+    selectedOperationStore,
+  } from "$lib/stores/operationStore"
+  import { toast } from "svelte-sonner"
+  import { onMount } from "svelte"
 
-  let operations = [
-    {
-      id: 1,
-      title: "Software Development",
-      year: 2023,
-      description: "Developing cutting-edge software solutions",
-    },
-    {
-      id: 2,
-      title: "Data Analysis",
-      year: 2022,
-      description: "Analyzing complex datasets to derive insights",
-    },
-    {
-      id: 3,
-      title: "Project Management",
-      year: 2024,
-      description: "Overseeing and coordinating various projects",
-    },
-  ]
-  let selectedOperation = operations[0].id.toString()
-  let newOperationTitle = ""
+  console.log("OPERATIONS!!!!!!!!!!!!!!", $operationStore)
+
+  let selectedOperation =
+    $selectedOperationStore || $operationStore[0]?.id || ""
+  let newOperationName = ""
   let newOperationYear = new Date().getFullYear()
   let newOperationDescription = ""
   let editOperationId = null
-  let editOperationTitle = ""
+  let editOperationName = ""
   let editOperationYear = null
   let editOperationDescription = ""
 
-  function addOperation() {
-    if (newOperationTitle.trim()) {
-      operations = [
-        ...operations,
-        {
-          id: operations.length + 1,
-          title: newOperationTitle.trim(),
-          year: Number(newOperationYear),
-          description: newOperationDescription.trim(),
+  $: {
+    selectedOperationStore.set(selectedOperation)
+    console.log("Selected Operation Updated:", selectedOperation)
+  }
+
+  onMount(() => {
+    if (!selectedOperation && $operationStore.length > 0) {
+      selectedOperation = $operationStore[0].id
+    }
+  })
+
+  async function addOperation() {
+    if (newOperationName.trim()) {
+      const newOperation = {
+        name: newOperationName.trim(),
+        year: Number(newOperationYear),
+        description: newOperationDescription.trim(),
+        master_map_id: $operationStore[0]?.master_map_id,
+      }
+
+      const addPromise = fetch("/api/operations/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      ]
-      newOperationTitle = ""
-      newOperationYear = new Date().getFullYear()
-      newOperationDescription = ""
-      closeModal("add-modal")
+        body: JSON.stringify(newOperation),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Failed to add operation")
+          }
+          return response.json()
+        })
+        .then((data) => {
+          operationStore.update((ops) => [...ops, data.operation])
+          selectedOperation = data.operation.id
+          selectedOperationStore.set(data.operation.id)
+          newOperationName = ""
+          newOperationYear = new Date().getFullYear()
+          newOperationDescription = ""
+          closeModal("add-modal")
+          return "Operation added successfully"
+        })
+
+      toast.promise(addPromise, {
+        loading: "Adding operation...",
+        success: (message) => message,
+        error: (err) => `Error: ${err.message}`,
+      })
     }
   }
 
   function editOperation() {
-    const operation = operations.find(
-      (op) => op.id.toString() === selectedOperation,
-    )
-    editOperationId = operation.id
-    editOperationTitle = operation.title
-    editOperationYear = Number(operation.year)
-    editOperationDescription = operation.description
-    openModal("edit-modal")
+    console.log("Operationudpate", $operationStore)
+    const operation = $operationStore.find((op) => op.id === selectedOperation)
+    if (operation) {
+      editOperationId = operation.id
+      editOperationName = operation.name
+      editOperationYear = operation.year
+      editOperationDescription = operation.description
+      openModal("edit-modal")
+    }
   }
 
-  function updateOperation() {
-    if (editOperationTitle.trim()) {
-      operations = operations.map((op) =>
-        op.id === editOperationId
-          ? {
-              ...op,
-              title: editOperationTitle.trim(),
-              year: Number(editOperationYear),
-              description: editOperationDescription.trim(),
-            }
-          : op,
-      )
-      closeModal("edit-modal")
+  async function updateOperation() {
+    if (editOperationName.trim()) {
+      const updatedOperation = {
+        id: editOperationId,
+        name: editOperationName.trim(),
+        year: Number(editOperationYear),
+        description: editOperationDescription.trim(),
+      }
+
+      const updatePromise = fetch(`/api/operations/update`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedOperation),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Failed to update operation")
+          }
+          return response.json()
+        })
+        .then((data) => {
+          operationStore.update((ops) =>
+            ops.map((op) => (op.id === editOperationId ? data.operation : op)),
+          )
+          selectedOperation = data.operation.id
+          selectedOperationStore.set(data.operation.id)
+          closeModal("edit-modal")
+          return "Operation updated successfully"
+        })
+
+      toast.promise(updatePromise, {
+        loading: "Updating operation...",
+        success: (message) => message,
+        error: (err) => `Error: ${err.message}`,
+      })
     }
   }
 
@@ -94,16 +142,16 @@
   <h2
     class="mb-4 flex items-center justify-center text-center text-xl font-bold"
   >
-    <Icon class="mr-2 " icon="ph:tractor-fill" /> Operation
+    <Icon class="mr-2" icon="ph:tractor-fill" /> Operation
   </h2>
   <div class="flex flex-col items-center gap-4 sm:flex-row">
     <select
       class="select select-bordered flex-grow bg-base-100"
       bind:value={selectedOperation}
     >
-      {#each operations as operation}
-        <option value={operation.id.toString()}>
-          {operation.title} ({operation.year})
+      {#each $operationStore as operation}
+        <option value={operation.id}>
+          {operation.name} ({operation.year})
         </option>
       {/each}
     </select>
@@ -129,15 +177,15 @@
   <div class="modal-box bg-base-200">
     <h3 class="mb-4 text-lg font-bold">Add New Operation</h3>
     <div class="form-control mb-4">
-      <label for="new-operation-title" class="label">
-        <span class="label-text">Operation Title</span>
+      <label for="new-operation-name" class="label">
+        <span class="label-text">Operation Name</span>
       </label>
       <input
-        id="new-operation-title"
+        id="new-operation-name"
         type="text"
-        placeholder="Enter title"
+        placeholder="Enter name"
         class="input input-bordered w-full bg-base-100"
-        bind:value={newOperationTitle}
+        bind:value={newOperationName}
       />
     </div>
     <div class="form-control mb-4">
@@ -180,15 +228,15 @@
   <div class="modal-box bg-base-200">
     <h3 class="mb-4 text-lg font-bold">Edit Operation</h3>
     <div class="form-control mb-4">
-      <label for="edit-operation-title" class="label">
-        <span class="label-text">Operation Title</span>
+      <label for="edit-operation-name" class="label">
+        <span class="label-text">Operation Name</span>
       </label>
       <input
-        id="edit-operation-title"
+        id="edit-operation-name"
         type="text"
-        placeholder="Enter title"
+        placeholder="Enter name"
         class="input input-bordered w-full bg-base-100"
-        bind:value={editOperationTitle}
+        bind:value={editOperationName}
       />
     </div>
     <div class="form-control mb-4">

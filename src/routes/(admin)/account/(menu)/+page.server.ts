@@ -92,6 +92,20 @@ export const actions = {
             return fail(500, { message: 'Failed to create map' });
         }
 
+        // Create the default operation for this map
+        const { error: operationError } = await locals.supabase
+            .from("operations")
+            .insert({
+                master_map_id: mapId,
+                name: 'Farm Management',
+                year: 2024,
+                description: `Completing work around '${mapName}'s farm`
+            });
+
+        if (operationError) {
+            return fail(500, { message: 'Failed to create default operation' });
+        }
+
         // Now connect to the newly created map
         const { error: updateError } = await locals.supabase
             .from("profiles")

@@ -176,30 +176,6 @@
   <Card.Content class="relative z-10 w-full space-y-4">
     {#if $connectedMapStore?.id}
       <OperationModal />
-
-      <div
-        class="tooltip w-full"
-        data-tip={copied ? "Copied!" : "Click to copy"}
-      >
-        <button
-          class="w-full rounded-lg bg-info/30 p-3 transition-colors duration-200 ease-in-out hover:bg-info/40 dark:bg-info/50 dark:hover:bg-info/60"
-          on:click={copyMapId}
-        >
-          <div class="flex w-full items-center justify-between">
-            <span class="text-sm font-medium">Map ID</span>
-            <div class="mx-2 h-4 border-l border-info-content/30"></div>
-            <span class="flex-grow break-all text-left text-xs font-semibold"
-              >{$connectedMapStore.id}</span
-            >
-            <div class="mx-2 h-4 border-l border-info-content/30"></div>
-            {#if copied}
-              <Check class="h-4 w-4 flex-shrink-0" />
-            {:else}
-              <Copy class="h-4 w-4 flex-shrink-0" />
-            {/if}
-          </div>
-        </button>
-      </div>
     {/if}
   </Card.Content>
 </Card.Root>
