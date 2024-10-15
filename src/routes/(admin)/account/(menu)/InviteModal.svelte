@@ -1,7 +1,8 @@
 <script>
-  import { Check, Copy, Share2, UserPlus } from "lucide-svelte"
+  import { Check, Copy, Share2, UserPlus, Phone, Mail } from "lucide-svelte"
   import { connectedMapStore } from "../../../../stores/connectedMapStore"
   import Icon from "@iconify/svelte"
+  import { toast } from "svelte-sonner"
 
   let copied = false
 
@@ -10,7 +11,12 @@
       navigator.clipboard.writeText($connectedMapStore.id)
       copied = true
       setTimeout(() => (copied = false), 2000)
+      toast.success("Copied to Clipboard")
     }
+  }
+
+  function comingSoon() {
+    toast.info("Coming soon")
   }
 </script>
 
@@ -53,11 +59,28 @@
       </p>
     </div>
     <div class="modal-action mt-8">
-      <label for="invite-modal" class="vibrant-button-outlined btn">Close</label
-      >
-      <button class="vibrant-button btn" on:click={copyMapId}>
-        {copied ? "Copied" : "Copy ID"}
-      </button>
+      <div class="flex w-full justify-end">
+        <div class="dropdown dropdown-end dropdown-top mr-2">
+          <label tabindex="0" class="vibrant-button btn">
+            <Share2 class="mr-2 h-5 w-5" />
+            Share
+          </label>
+          <ul
+            tabindex="0"
+            class="menu dropdown-content rounded-box w-52 bg-base-100 p-2 shadow"
+          >
+            <li>
+              <a on:click={comingSoon}><Phone class="h-5 w-5" /> Via Phone</a>
+            </li>
+            <li>
+              <a on:click={comingSoon}><Mail class="h-5 w-5" /> Via Email</a>
+            </li>
+          </ul>
+        </div>
+        <label for="invite-modal" class="vibrant-button-outlined btn"
+          >Close</label
+        >
+      </div>
     </div>
     <div class="icon absolute right-2 top-2">
       <Icon icon="mdi:leaf" width="24" height="24" />
