@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte"
   import { DateTime } from "luxon"
-
+  import InviteModal from "./InviteModal.svelte"
   import * as Avatar from "$lib/components/ui/avatar"
   import { Skeleton } from "$lib/components/ui/skeleton"
   import { toast } from "svelte-sonner"
@@ -269,19 +269,7 @@
       <div class="flex-grow">
         <h4 class="font-bold">Invite User</h4>
       </div>
-      <button
-        class="btn btn-outline btn-sm m-auto opacity-50"
-        on:click={() => {
-          // Add invite functionality here
-          console.log("Invite button clicked")
-          toast.info("Invite feature", {
-            description:
-              "Invite functionality not implemented yet, send users your Map Id for immediate connection",
-          })
-        }}
-      >
-        <Icon icon="gravity-ui:plus" width="20" height="20" />
-      </button>
+      <InviteModal />
     </div>
   </div>
 </div>

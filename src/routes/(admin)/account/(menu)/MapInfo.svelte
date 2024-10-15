@@ -177,7 +177,7 @@
     {#if $connectedMapStore?.id}
       <OperationModal />
 
-      <!-- <div
+      <div
         class="tooltip w-full"
         data-tip={copied ? "Copied!" : "Click to copy"}
       >
@@ -199,7 +199,7 @@
             {/if}
           </div>
         </button>
-      </div> -->
+      </div>
     {/if}
   </Card.Content>
 </Card.Root>
