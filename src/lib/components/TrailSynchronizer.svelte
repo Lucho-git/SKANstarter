@@ -1,73 +1,76 @@
 <!-- src/components/TrailSynchronizer.svelte -->
 <script>
-  import { onMount } from "svelte"
+  import { onMount, createEventDispatcher } from "svelte"
   import { toast } from "svelte-sonner"
   import {
     userVehicleStore,
     userVehicleTrailing,
   } from "../../stores/vehicleStore"
   import {
-    showOpenTrailModal,
-    showEndTrailModal,
     trailingButtonPressed,
+    showOpenTrailModal,
   } from "../../stores/controlStore"
-  import OpenTrailModal from "$lib/components/OpenTrailModal.svelte"
+  import { currentTrailStore } from "$lib/stores/currentTrailStore"
   import EndTrailModal from "$lib/components/EndTrailModal.svelte"
+  import OpenTrailModal from "$lib/components/OpenTrailModal.svelte"
 
   export let selectedOperation
-  let previousTrailingState = false
-  let pendingTrailCreation = null
-  let hasOpenTrail = false
-  let currentTrail = null
+  let triggerEndTrail
 
   onMount(async () => {
     console.log("Trail Synchronizer Mounted")
 
-    // Check for open trails on mount
-    const vehicleId = $userVehicleStore.vehicle_id
-    try {
-      console.log("Checking for open trails...")
-      const checkResponse = await fetch("/api/map-trails/check-open-trails", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          vehicle_id: vehicleId,
-        }),
-      })
-
-      const checkData = await checkResponse.json()
-
-      if (!checkResponse.ok) {
-        throw new Error(checkData.error || "Failed to check for open trails")
-      }
-
-      hasOpenTrail = checkData.hasOpenTrail
-      if (hasOpenTrail) {
-        console.warn("An open trail already exists for this vehicle")
-        currentTrail = {
-          ...checkData.openTrail,
-          startTime: checkData.openTrail.start_time,
-          color: checkData.openTrail.trail_color,
-          width: checkData.openTrail.trail_width,
-        }
-        showOpenTrailModal.set(true)
-      }
-    } catch (error) {
-      console.error("Error checking for open trails:", error)
-      toast.error(`Error checking for open trails: ${error.message}`)
-    }
+    // Check for open trails
+    await checkOpenTrails()
 
     return trailingButtonPressed.subscribe(async (isPressed) => {
       console.log("Trailing Button Pressed:", isPressed)
       if (isPressed && !$userVehicleTrailing) {
         await handleTrailCreation()
-      } else if (!isPressed && $userVehicleTrailing) {
-        await handleTrailEnd()
+      } else if ($userVehicleTrailing) {
+        console.log("Ending Trail Called")
+        console.log("Current trail store", $currentTrailStore)
+        triggerEndTrail()
       }
     })
   })
+
+  async function checkOpenTrails() {
+    try {
+      const response = await fetch("/api/map-trails/check-open-trails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          vehicle_id: $userVehicleStore.vehicle_id,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to check for open trails")
+      }
+
+      const { openTrail } = await response.json()
+
+      if (openTrail) {
+        console.log("Found open trail:", openTrail)
+        currentTrailStore.set({
+          ...openTrail,
+          startTime: openTrail.start_time,
+          color: openTrail.trail_color,
+          width: openTrail.trail_width,
+        })
+        toast.info("Loaded existing Trail")
+        showOpenTrailModal.set(true) // Open the modal
+      } else {
+        console.log("No open trails found")
+      }
+    } catch (error) {
+      console.error("Error checking for open trails:", error)
+      toast.error("Failed to check for open trails")
+    }
+  }
 
   async function handleTrailCreation() {
     const vehicleId = $userVehicleStore.vehicle_id
@@ -81,18 +84,10 @@
     )
 
     try {
-      if (hasOpenTrail) {
-        console.warn("An open trail already exists for this vehicle")
-        pendingTrailCreation = { vehicleId, operationId }
-        showOpenTrailModal.set(true)
-        return
-      }
-
       await createNewTrail(vehicleId, operationId)
     } catch (error) {
       console.error("Error handling trail creation:", error)
       toast.error(`Error creating trail: ${error.message}`)
-      trailingButtonPressed.set(false)
     }
   }
 
@@ -119,32 +114,13 @@
     console.log("New trail created successfully:", createData.trail)
     toast.success("New trail created successfully")
     logTrailCreationInfo(createData.trail)
-    hasOpenTrail = true
-    currentTrail = {
+    currentTrailStore.set({
       ...createData.trail,
       startTime: createData.trail.start_time,
       color: createData.trail.trail_color,
       width: createData.trail.trail_width,
-    }
+    })
     userVehicleTrailing.set(true)
-  }
-
-  async function handleTrailEnd() {
-    const vehicleId = $userVehicleStore.vehicle_id
-    console.log("Attempting to end trail for vehicle:", vehicleId)
-    console.log("Current Trail:", currentTrail)
-    if (currentTrail) {
-      const clientEndTime = new Date().toISOString()
-      currentTrail = {
-        ...currentTrail,
-        endTime: clientEndTime,
-      }
-      showEndTrailModal.set(true)
-    } else {
-      console.error("No current trail to end")
-      toast.error("No current trail to end")
-      trailingButtonPressed.set(true)
-    }
   }
 
   function logTrailCreationInfo(trail) {
@@ -164,74 +140,7 @@
     }
     console.groupEnd()
   }
-
-  function handleOpenTrailModalAction(event) {
-    const { action } = event.detail
-
-    if (action === "end") {
-      handleTrailEnd()
-      if (pendingTrailCreation) {
-        createNewTrail(
-          pendingTrailCreation.vehicleId,
-          pendingTrailCreation.operationId,
-        )
-        pendingTrailCreation = null
-      }
-    } else if (action === "continue") {
-      toast.info("Continuing with existing trail")
-      userVehicleTrailing.set(true)
-      trailingButtonPressed.set(true)
-    }
-    showOpenTrailModal.set(false)
-  }
-
-  async function handleEndTrailSubmit(event) {
-    const submittedTrailInfo = event.detail
-    console.log("Submitting trail:", submittedTrailInfo)
-
-    try {
-      const response = await fetch("/api/map-trails/close-trail", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          trail_id: currentTrail.id,
-          trail_path: submittedTrailInfo.path, // Assuming you have a path in the submitted info
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to close trail")
-      }
-
-      console.log("Trail closed successfully:", data.trail)
-      toast.success("Trail closed successfully")
-
-      // Reset trail-related states
-      currentTrail = null
-      hasOpenTrail = false
-      userVehicleTrailing.set(false)
-      trailingButtonPressed.set(false)
-    } catch (error) {
-      console.error("Error closing trail:", error)
-      toast.error(`Error closing trail: ${error.message}`)
-      // You might want to keep the trail open if there's an error
-      trailingButtonPressed.set(true)
-    }
-  }
-
-  function handleEndTrailCancel() {
-    // When cancelling, keep userVehicleTrailing true
-    trailingButtonPressed.set(true)
-  }
 </script>
 
-<OpenTrailModal on:action={handleOpenTrailModalAction} />
-<EndTrailModal
-  trailInfo={currentTrail}
-  on:submit={handleEndTrailSubmit}
-  on:cancel={handleEndTrailCancel}
-/>
+<EndTrailModal bind:triggerEndTrail />
+<OpenTrailModal />

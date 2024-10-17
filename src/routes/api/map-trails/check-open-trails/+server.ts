@@ -16,10 +16,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     }
 
     try {
-        // Check for existing open trails
         const { data: existingTrails, error: fetchError } = await locals.supabase
             .from('trails')
-            .select('*')  // Select all columns instead of just 'id'
+            .select('*')
             .eq('vehicle_id', vehicle_id)
             .is('end_time', null)
             .limit(1);
@@ -29,10 +28,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
             return json({ error: 'Failed to check for existing trails' }, { status: 500 });
         }
 
-        const hasOpenTrail = existingTrails && existingTrails.length > 0;
-        const openTrail = hasOpenTrail ? existingTrails[0] : null;
+        const openTrail = existingTrails && existingTrails.length > 0 ? existingTrails[0] : null;
 
-        return json({ hasOpenTrail, openTrail }, { status: 200 });
+        return json({ openTrail }, { status: 200 });
     } catch (error) {
         console.error('Unexpected error:', error);
         return json({ error: 'An unexpected error occurred' }, { status: 500 });

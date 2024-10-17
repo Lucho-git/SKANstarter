@@ -1,16 +1,32 @@
 <!-- src/components/OpenTrailModal.svelte -->
 <script>
-  import { showOpenTrailModal } from "../../stores/controlStore"
-  import { createEventDispatcher } from "svelte"
-
-  const dispatch = createEventDispatcher()
+  import {
+    showOpenTrailModal,
+    showEndTrailModal,
+    trailingButtonPressed,
+  } from "../../stores/controlStore"
+  import { currentTrailStore } from "$lib/stores/currentTrailStore"
+  import { userVehicleTrailing } from "../../stores/vehicleStore"
 
   function closeModal() {
     showOpenTrailModal.set(false)
   }
 
-  function handleAction(action) {
-    dispatch("action", { action })
+  function handleEndCurrentTrail() {
+    const clientEndTime = new Date().toISOString()
+    currentTrailStore.update((store) => ({
+      ...store,
+      endTime: clientEndTime,
+    }))
+    userVehicleTrailing.set(false)
+    // trailingButtonPressed.set(false)
+    showOpenTrailModal.set(false)
+    showEndTrailModal.set(true)
+  }
+
+  function handleContinueCurrentTrail() {
+    userVehicleTrailing.set(true)
+    // trailingButtonPressed.set(true)
     closeModal()
   }
 </script>
@@ -24,12 +40,12 @@
         do?
       </p>
       <div class="modal-action">
-        <button class="btn btn-primary" on:click={() => handleAction("end")}
-          >End Current Trail</button
-        >
-        <button class="btn" on:click={() => handleAction("continue")}
-          >Continue Current Trail</button
-        >
+        <button class="btn btn-primary" on:click={handleEndCurrentTrail}>
+          End Current Trail
+        </button>
+        <button class="btn" on:click={handleContinueCurrentTrail}>
+          Continue Current Trail
+        </button>
       </div>
     </div>
     <label class="modal-backdrop" on:click={closeModal}>Close</label>
