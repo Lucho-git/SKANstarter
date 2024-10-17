@@ -52,10 +52,8 @@
   }
 
   function loadFields() {
-    console.log("MapFields component: Loading fields")
-
     const fields: Field[] = get(mapFieldsStore)
-    console.log(`Loaded ${fields.length} fields from store`, fields)
+    // console.log(`Loaded ${fields.length} fields from store`, fields)
 
     if (fields.length > 0) {
       const geojson = {
@@ -102,7 +100,7 @@
         console.warn("Unable to calculate valid bounding box")
       }
     } else {
-      console.log("No fields found in store")
+      //   console.log("No fields found in store")
     }
   }
 

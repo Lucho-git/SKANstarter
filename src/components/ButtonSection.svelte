@@ -3,8 +3,10 @@
   import { createEventDispatcher, beforeUpdate, afterUpdate } from "svelte"
   import { mapStore, locationMarkerStore, syncStore } from "../stores/mapStore"
   import { userVehicleStore, userVehicleTrailing } from "../stores/vehicleStore"
+  import { selectedOperationStore } from "$lib/stores/operationStore"
+
   import { antLineConfigStore } from "../stores/trailDataStore"
-  import { controlStore } from "../stores/controlStore"
+  import { controlStore, trailingButtonPressed } from "../stores/controlStore"
   import { toast } from "svelte-sonner"
 
   import { browser } from "$app/environment"
@@ -57,18 +59,15 @@
   const DEFAULT_OUTDOORS_STYLE = "mapbox://styles/mapbox/outdoors-v12"
 
   function toggleTrailing() {
-    userVehicleTrailing.update((value) => {
-      const newValue = !value
-      console.log("Toggling isTrailing:", newValue)
+    trailingButtonPressed.update((value) => !value)
 
-      if (newValue) {
-        toast.info("Trail recording started")
-      } else {
-        toast.info("Ended trail recording")
-      }
-
-      return newValue
-    })
+    // We'll keep the toast notifications, but note that the actual trailing state
+    // might not change immediately due to the modal confirmations
+    if (!$userVehicleTrailing) {
+      toast.info("Initiating trail recording...")
+    } else {
+      toast.info("Preparing to end trail recording...")
+    }
   }
 
   function toggleVehicleMenu() {

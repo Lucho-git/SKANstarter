@@ -1,14 +1,14 @@
 // src/routes/admin/mapviewer/[type=field|vehicle|marker]/[id]/+page.ts
 import type { PageLoad } from './$types';
 import { mapFieldsStore } from '$lib/stores/mapFieldsStore';
+import { selectedOperationStore } from '$lib/stores/operationStore';
 
 export const load: PageLoad = async ({ data, url, fetch }) => {
     if (data.fields) {
         mapFieldsStore.set(data.fields);
     }
 
-    console.log('Full URL:', url.toString());
-    console.log('Query parameters:', Object.fromEntries(url.searchParams));
+
 
     let objectType: string | null = null;
     let objectId: string | null = null;
@@ -37,6 +37,8 @@ export const load: PageLoad = async ({ data, url, fetch }) => {
             console.error(`Error fetching ${objectType} location:`, error);
         }
     }
+
+
 
     return {
         fields: data.fields,

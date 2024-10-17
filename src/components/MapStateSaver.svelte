@@ -194,7 +194,7 @@
   }
 
   async function synchronizeMarkers(toasttext) {
-    console.log("Synchronizing markers...")
+    // console.log("Synchronizing markers...")
     if (synchronizationInProgress) {
       console.log("Synchronization already in progress. Skipping.")
       return

@@ -17,6 +17,7 @@
 
   // Pass through the raw location data
   $: initialLocation = data.location
+  $: selectedOperation = data.operations[0]
 
   function isAndroid() {
     return browser && /Android/.test(navigator.userAgent)
@@ -80,5 +81,5 @@
 </script>
 
 <div class="fixed left-0 top-0 h-full w-full overflow-hidden">
-  <MapViewer {handleBackToDashboard} {initialLocation} />
+  <MapViewer {handleBackToDashboard} {initialLocation} {selectedOperation} />
 </div>

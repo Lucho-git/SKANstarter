@@ -47,11 +47,11 @@
 
   function checkAndSubscribe(userId: string) {
     if (browser) {
-      console.log("Running in browser environment")
+      //   console.log("Running in browser environment")
 
       // Check if notifications are already enabled
       if (Notification.permission === "granted") {
-        console.log("Push notifications are already enabled")
+        // console.log("Push notifications are already enabled")
         return
       }
 
@@ -71,8 +71,8 @@
       )
       const currentTime = new Date().getTime()
 
-      console.log("Last checked user ID:", lastCheckedUserId)
-      console.log("Last checked time:", lastCheckedTime)
+      //   console.log("Last checked user ID:", lastCheckedUserId)
+      //   console.log("Last checked time:", lastCheckedTime)
 
       const shouldCheck =
         lastCheckedUserId !== userId ||
@@ -102,13 +102,13 @@
     console.log("Layout component mounted")
 
     const { data } = supabase.auth.onAuthStateChange((event, _session) => {
-      console.log("Auth state changed:", event)
+      //   console.log("Auth state changed:", event)
       if (event === "SIGNED_OUT") {
         console.log("User signed out, clearing last checked data")
         localStorage.removeItem("lastCheckedPushNotificationsUserId")
         localStorage.removeItem("lastCheckedPushNotificationsTime")
       } else if (_session && _session.user) {
-        console.log("User signed in, checking push notifications")
+        // console.log("User signed in, checking push notifications")
         checkAndSubscribe(_session.user.id)
       }
       if (_session?.expires_at !== session?.expires_at) {
@@ -130,26 +130,26 @@
 
 {#if showNotificationBanner}
   <div
-    class="fixed top-2 left-0 right-0 z-50 flex justify-center"
+    class="fixed left-0 right-0 top-2 z-50 flex justify-center"
     transition:fly={{ y: -100, duration: 500 }}
   >
     <div
-      class="w-full md:w-2/3 lg:w-1/3 bg-secondary text-secondary-content p-6 rounded-lg shadow-lg mx-4 md:mx-0"
+      class="mx-4 w-full rounded-lg bg-secondary p-6 text-secondary-content shadow-lg md:mx-0 md:w-2/3 lg:w-1/3"
     >
-      <div class="flex items-start mb-6">
-        <div class="flex-shrink-0 mr-6">
-          <i class="at-bell-check text-4xl p-2"></i>
+      <div class="mb-6 flex items-start">
+        <div class="mr-6 flex-shrink-0">
+          <i class="at-bell-check p-2 text-4xl"></i>
         </div>
-        <p class="text-sm md:text-base flex-grow pr-4">
+        <p class="flex-grow pr-4 text-sm md:text-base">
           We'd like to show you notifications for the latest developments to
           your farm
         </p>
         <button
-          class="text-secondary-content hover:text-primary ml-4 flex-shrink-0"
+          class="ml-4 flex-shrink-0 text-secondary-content hover:text-primary"
           on:click={closeBanner}
         >
           <svg
-            class="w-6 h-6"
+            class="h-6 w-6"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -165,7 +165,7 @@
         </button>
       </div>
       <button
-        class="btn btn-primary w-full py-3 px-6"
+        class="btn btn-primary w-full px-6 py-3"
         on:click={requestPushNotification}
       >
         Get notifications

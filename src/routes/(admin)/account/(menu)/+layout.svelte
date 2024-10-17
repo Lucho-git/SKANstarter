@@ -101,8 +101,8 @@
 
   //Logs current section changes
   $: {
-    console.log("Current section changed:", currentSection)
-    console.log($page.url.pathname)
+    // console.log("Current section changed:", currentSection)
+    // console.log($page.url.pathname)
     // console.log(data)
   }
 </script>

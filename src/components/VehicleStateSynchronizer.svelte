@@ -20,8 +20,6 @@
     const session = $page.data.session
     if (session) {
       const userId = session.user.id
-      console.log("Session:", session)
-      console.log("User ID:", userId)
 
       // Retrieve the user's profile to get the master_map_id
       const { data: profile, error: profileError } = await supabase

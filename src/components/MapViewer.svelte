@@ -8,6 +8,8 @@
     markerBoundaryStore,
   } from "$lib/stores/homeBoundaryStore"
   import { trailDataLoaded, vehicleDataLoaded } from "../stores/loadedStore"
+  import { selectedOperationStore } from "$lib/stores/operationStore"
+
   import { toast } from "svelte-sonner"
 
   import MarkerManager from "./MarkerManager.svelte"
@@ -20,10 +22,13 @@
   import MapFields from "./MapFields.svelte"
   import TrailStateSynchronizer from "./TrailStateSynchronizer.svelte"
 
+  import TrailSynchronizer from "$lib/components/TrailSynchronizer.svelte"
+
   import { db } from "./db.js"
 
   export let handleBackToDashboard
   export let initialLocation
+  export let selectedOperation
 
   let dbInstance
 
@@ -75,6 +80,8 @@
   }
 
   onMount(async () => {
+    console.log("Selected operation on mount!", selectedOperation)
+
     mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN
 
     mapOptions.container = mapContainer
@@ -184,11 +191,15 @@
     <VehicleTracker {map} disableAutoZoom={initialLocation} />
     <MapFields {map} />
 
-    {#if $vehicleDataLoaded}
+    <!-- {#if $vehicleDataLoaded}
       <TrailStateSynchronizer db={dbInstance} />
     {/if}
     {#if $trailDataLoaded && mapLoaded}
       <TrailTracker {map} />
+    {/if} -->
+
+    {#if $vehicleDataLoaded && selectedOperation}
+      <TrailSynchronizer {selectedOperation} />
     {/if}
   {/if}
 </div>
