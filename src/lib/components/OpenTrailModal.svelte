@@ -3,7 +3,6 @@
   import {
     showOpenTrailModal,
     showEndTrailModal,
-    trailingButtonPressed,
   } from "../../stores/controlStore"
   import { currentTrailStore } from "$lib/stores/currentTrailStore"
   import { userVehicleTrailing } from "../../stores/vehicleStore"
@@ -19,14 +18,12 @@
       endTime: clientEndTime,
     }))
     userVehicleTrailing.set(false)
-    // trailingButtonPressed.set(false)
     showOpenTrailModal.set(false)
     showEndTrailModal.set(true)
   }
 
   function handleContinueCurrentTrail() {
     userVehicleTrailing.set(true)
-    // trailingButtonPressed.set(true)
     closeModal()
   }
 </script>

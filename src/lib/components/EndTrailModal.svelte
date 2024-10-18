@@ -41,24 +41,27 @@
       return
     }
 
-    try {
-      const clientEndTime = new Date().toISOString()
-      currentTrailStore.update((store) => ({
-        ...store,
-        endTime: clientEndTime,
-      }))
+    console.log("Current trail store:", $currentTrailStore)
 
+    const pathData = $currentTrailStore.path.map((point) => ({
+      latitude: point.coordinates.latitude,
+      longitude: point.coordinates.longitude,
+    }))
+
+    console.log("Path data being sent:", pathData)
+
+    try {
       const response = await fetch("/api/map-trails/close-trail", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           trail_id: $currentTrailStore.id,
-          trail_path: $currentTrailStore.path,
-          end_time: clientEndTime,
+          path: pathData,
         }),
       })
 
       const data = await response.json()
+      console.log("Response from server:", data)
 
       if (!response.ok) {
         throw new Error(data.error || "Failed to close trail")

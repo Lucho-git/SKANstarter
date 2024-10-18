@@ -9,6 +9,9 @@
     otherVehiclesStore,
     otherVehiclesDataChanges,
   } from "../stores/vehicleStore"
+
+  import { coordinateBufferStore } from "$lib/stores/currentTrailStore"
+
   import UserMarker from "./UserMarker.svelte"
   import { unsavedTrailStore } from "../stores/trailDataStore"
   import { toast } from "svelte-sonner"
@@ -376,7 +379,6 @@
       const { bodyColor, swath } = vehicleData.vehicle_marker
       const { latitude, longitude } = coordinates
 
-      //TODO move this function after checking if it's a unique marker, ie. different coordinates or heading
       // Store the location data locally only if isTrailingFunction is on
       if ($userVehicleTrailing) {
         const locationData = {
@@ -387,6 +389,12 @@
         }
         console.log("Saving location data:", locationData)
         unsavedTrailStore.update((markers) => [...markers, locationData])
+
+        // Update the coordinateBufferStore with just coordinates and timestamp
+        coordinateBufferStore.set({
+          coordinates: { latitude, longitude },
+          timestamp: currentTime,
+        })
       }
 
       // Check if the coordinates or heading have changed
