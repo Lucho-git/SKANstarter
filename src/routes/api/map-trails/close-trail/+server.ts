@@ -39,25 +39,39 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
         console.log('Update data:', updateData);
 
-        const { data, error } = await locals.supabase
+        // Step 1: Update the trail
+        const { data: updatedTrail, error: updateError } = await locals.supabase
             .from('trails')
             .update(updateData)
             .eq('id', trail_id)
-            .select('*');
+            .select('*')
+            .single();
 
-        if (error) {
-            console.error("Error closing trail:", error);
+        if (updateError) {
+            console.error("Error closing trail:", updateError);
             return json({ error: 'Failed to close trail' }, { status: 500 });
         }
 
-        if (data && data.length === 0) {
+        if (!updatedTrail) {
             console.log('No trail found with id:', trail_id);
             return json({ error: 'Trail not found' }, { status: 404 });
         }
 
-        console.log('Updated trail data:', data[0]);
+        console.log('Updated trail data:', updatedTrail);
 
-        return json({ trail: data[0] }, { status: 200 });
+        // Step 2: Delete associated data from trail_stream
+        const { error: deleteError } = await locals.supabase
+            .from('trail_stream')
+            .delete()
+            .eq('trail_id', trail_id);
+
+        if (deleteError) {
+            console.error("Error deleting trail stream data:", deleteError);
+            // Note: We don't return here because the trail was successfully closed
+            // You might want to log this error or handle it in some way
+        }
+
+        return json({ trail: updatedTrail }, { status: 200 });
     } catch (error) {
         console.error('Unexpected error:', error);
         return json({ error: 'An unexpected error occurred' }, { status: 500 });
