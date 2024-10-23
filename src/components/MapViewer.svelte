@@ -199,7 +199,7 @@
     {/if} -->
 
     {#if $vehicleDataLoaded && selectedOperation}
-      <TrailSynchronizer {selectedOperation} indexedDB={dbInstance} />
+      <TrailSynchronizer {selectedOperation} db={dbInstance} />
     {/if}
   {/if}
 </div>

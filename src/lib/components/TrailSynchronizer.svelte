@@ -13,21 +13,22 @@
   import {
     currentTrailStore,
     coordinateBufferStore,
+    unsavedCoordinatesStore,
   } from "$lib/stores/currentTrailStore"
   import EndTrailModal from "$lib/components/EndTrailModal.svelte"
   import OpenTrailModal from "$lib/components/OpenTrailModal.svelte"
 
   export let selectedOperation
-  export let indexedDB
 
   let triggerEndTrail
+  let syncIntervalId = null
+  const SYNC_INTERVAL = 30000 // 1 minute
 
   onMount(async () => {
     console.log("Trail Synchronizer Mounted")
 
     await checkOpenTrails()
     await fetchOperationTrails()
-    startPeriodicSync()
 
     const unsubscribeTrailing = trailingButtonPressed.subscribe(
       async (isPressed) => {
@@ -55,26 +56,44 @@
       },
     )
 
+    const unsubscribeUnsavedCoordinates = unsavedCoordinatesStore.subscribe(
+      (coordinates) => {
+        if (coordinates.length > 0 && !syncIntervalId) {
+          startPeriodicSync()
+        } else if (coordinates.length === 0 && syncIntervalId) {
+          stopPeriodicSync()
+        }
+      },
+    )
+
     return () => {
       unsubscribeTrailing()
       unsubscribeCoordinateBuffer()
+      unsubscribeUnsavedCoordinates()
+      stopPeriodicSync()
     }
   })
 
   async function processNewCoordinate(coordinateData) {
     console.log("Processing new coordinate:", coordinateData)
-    const trailId = $currentTrailStore.id
-    const dataToSave = {
-      trail_id: trailId,
+
+    // Always update the trail path immediately
+    updateTrailPath(coordinateData)
+
+    // Prepare the data
+    const coordinateWithTimestamp = {
       coordinates: coordinateData.coordinates,
       timestamp: coordinateData.timestamp,
     }
-    console.log("save-coordinate with data", dataToSave)
+
     try {
       const response = await fetch("/api/map-trails/save-coordinate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dataToSave),
+        body: JSON.stringify({
+          trail_id: $currentTrailStore.id,
+          ...coordinateWithTimestamp,
+        }),
       })
 
       if (!response.ok) {
@@ -83,71 +102,93 @@
 
       const result = await response.json()
       console.log("Coordinate saved successfully:", result)
-      updateTrailPath(coordinateData)
     } catch (error) {
-      console.error("Error saving coordinate:", error)
-      await saveToIndexedDB(dataToSave)
-    }
+      // Handle offline errors more gracefully
+      if (
+        error.message.includes("Failed to fetch") ||
+        error.message.includes("ERR_INTERNET_DISCONNECTED")
+      ) {
+        console.log(
+          "Device appears to be offline, queuing coordinate for later sync",
+        )
+      } else {
+        console.error("Error saving coordinate:", error)
+      }
 
-    // Clear the buffer after processing
-    coordinateBufferStore.set(null)
-  }
-
-  async function saveToIndexedDB(coordinateData) {
-    console.log("Saving coordinate to IndexedDB:", coordinateData)
-    const transaction = indexedDB.transaction(["coordinates"], "readwrite")
-    const store = transaction.objectStore("coordinates")
-    const request = store.add({ ...coordinateData, synced: false })
-
-    request.onerror = (event) => {
-      console.error("Error saving to IndexedDB:", event.target.error)
-    }
-
-    request.onsuccess = (event) => {
-      console.log("Coordinate saved to IndexedDB successfully")
+      // Add to unsaved store for later sync
+      unsavedCoordinatesStore.add(coordinateWithTimestamp)
+    } finally {
+      // Always clear the buffer
+      coordinateBufferStore.set(null)
     }
   }
 
   function startPeriodicSync() {
+    if (syncIntervalId) {
+      console.log("Sync already running, skipping...")
+      return
+    }
     console.log("Starting periodic sync")
-    setInterval(syncUnsynedCoordinates, 60000) // Try to sync every minute
+    syncIntervalId = setInterval(syncUnsavedCoordinates, SYNC_INTERVAL)
+    syncUnsavedCoordinates() // Immediate first sync
   }
 
-  async function syncUnsynedCoordinates() {
-    console.log("Syncing unsynced coordinates")
-    const transaction = indexedDB.transaction(["coordinates"], "readwrite")
-    const store = transaction.objectStore("coordinates")
-    const request = store.getAll()
-
-    request.onerror = (event) => {
-      console.error("Error fetching unsynced coordinates:", event.target.error)
+  function stopPeriodicSync() {
+    if (syncIntervalId) {
+      clearInterval(syncIntervalId)
+      syncIntervalId = null
     }
+  }
 
-    request.onsuccess = async (event) => {
-      const unsynced = event.target.result.filter((coord) => !coord.synced)
-      console.log(`Found ${unsynced.length} unsynced coordinates`)
+  async function syncUnsavedCoordinates() {
+    if (!$unsavedCoordinatesStore.length) return
 
-      for (const coordinate of unsynced) {
-        try {
-          const response = await fetch("/api/map-trails/save-coordinate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(coordinate),
-          })
+    console.log(
+      "Attempting to sync unsaved coordinates:",
+      $unsavedCoordinatesStore.length,
+    )
+    const coordinates = [...$unsavedCoordinatesStore]
+    const successfulSyncs = []
 
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-          }
+    for (const coordinate of coordinates) {
+      try {
+        const response = await fetch("/api/map-trails/save-coordinate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            trail_id: $currentTrailStore.id,
+            coordinates: coordinate.coordinates,
+            timestamp: coordinate.timestamp,
+          }),
+        })
 
-          const result = await response.json()
-          console.log("Coordinate synced successfully:", result)
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
 
-          coordinate.synced = true
-          store.put(coordinate)
-        } catch (error) {
-          console.error("Error syncing coordinate:", error)
+        const result = await response.json()
+        console.log("Coordinate synced successfully:", result)
+        successfulSyncs.push(coordinate)
+      } catch (error) {
+        // Handle offline errors gracefully
+        if (
+          error.message.includes("Failed to fetch") ||
+          error.message.includes("ERR_INTERNET_DISCONNECTED")
+        ) {
+          console.log("Device offline, will retry sync later")
+          // Stop trying to sync other coordinates if we're offline
+          break
+        } else {
+          console.error(`Error syncing coordinate: ${error.message}`)
         }
       }
+    }
+
+    if (successfulSyncs.length > 0) {
+      console.log(`Successfully synced ${successfulSyncs.length} coordinates`)
+      unsavedCoordinatesStore.remove(successfulSyncs)
+    } else {
+      console.log("No coordinates were successfully synced this attempt")
     }
   }
 
@@ -188,26 +229,7 @@
       console.group("Operation Trails")
       console.log("Number of trails:", trails.length)
       trails.forEach((trail, index) => {
-        // console.group(`Trail ${index + 1}`)
-        // console.log("Trail ID:", trail.id)
-        // console.log("Vehicle ID:", trail.vehicle_id)
-        // console.log("Operation ID:", trail.operation_id)
-        // console.log("Start Time:", new Date(trail.start_time).toLocaleString())
-        // console.log(
-        //   "End Time:",
-        //   trail.end_time
-        //     ? new Date(trail.end_time).toLocaleString()
-        //     : "Ongoing",
-        // )
-        // console.log("Trail Color:", trail.trail_color)
-        // console.log("Trail Width:", trail.trail_width)
-        // console.log(
-        //   "Path Points:",
-        //   trail.path && trail.path.coordinates
-        //     ? trail.path.coordinates.length
-        //     : 0,
-        // )
-        // console.groupEnd()
+        console.log(`Trail ${index + 1}:`, trail)
       })
       console.groupEnd()
     } catch (error) {
@@ -310,7 +332,7 @@
   }
 
   function updateTrailPath(newCoordinateData) {
-    console.log("Received new coordinate data:!!!", newCoordinateData)
+    console.log("Received new coordinate data:", newCoordinateData)
 
     currentTrailStore.update((trail) => {
       if (trail) {
@@ -320,7 +342,6 @@
       }
       return trail
     })
-    console.log("Received new coordinate data:", newCoordinateData)
     console.log("Updated currentTrail", $currentTrailStore)
   }
 </script>

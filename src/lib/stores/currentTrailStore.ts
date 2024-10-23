@@ -18,6 +18,14 @@ export interface Trail {
     path: Coordinate[];
 }
 
+export interface UnsavedTrail {
+    trail_id: string;
+    path: {
+        latitude: number;
+        longitude: number;
+    }[];
+}
+
 function createCurrentTrailStore() {
     const { subscribe, set, update } = writable<Trail | null>(null);
 
@@ -48,5 +56,37 @@ function createCoordinateBufferStore() {
     };
 }
 
+function createUnsavedCoordinatesStore() {
+    const { subscribe, set, update } = writable<Coordinate[]>([]);
+
+    return {
+        subscribe,
+        set,
+        update,
+        add: (coord: Coordinate) => update(coords => [...coords, coord]),
+        remove: (coordsToRemove: Coordinate[]) =>
+            update(coords => coords.filter(coord =>
+                !coordsToRemove.some(remove => remove.timestamp === coord.timestamp)
+            )),
+        clear: () => set([]),
+    };
+}
+
+function createUnsavedTrailsStore() {
+    const { subscribe, set, update } = writable<UnsavedTrail[]>([]);
+
+    return {
+        subscribe,
+        set,
+        update,
+        add: (trail: UnsavedTrail) => update(trails => [...trails, trail]),
+        remove: (trail: UnsavedTrail) =>
+            update(trails => trails.filter(t => t.trail_id !== trail.trail_id)),
+        clear: () => set([]),
+    };
+}
+
 export const currentTrailStore = createCurrentTrailStore();
 export const coordinateBufferStore = createCoordinateBufferStore();
+export const unsavedCoordinatesStore = createUnsavedCoordinatesStore();
+export const unsavedTrailsStore = createUnsavedTrailsStore();

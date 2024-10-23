@@ -1,5 +1,6 @@
 <!-- src/components/EndTrailModal.svelte -->
-<script>
+<script lang="ts">
+  import { onMount, onDestroy } from "svelte"
   import {
     showEndTrailModal,
     trailingButtonPressed,
@@ -8,26 +9,92 @@
     userVehicleTrailing,
     userVehicleStore,
   } from "../../stores/vehicleStore"
-  import { currentTrailStore } from "$lib/stores/currentTrailStore"
+  import {
+    currentTrailStore,
+    unsavedTrailsStore,
+    unsavedCoordinatesStore,
+    type Trail,
+  } from "$lib/stores/currentTrailStore"
   import { toast } from "svelte-sonner"
 
-  let timeDifference
-  let duration
-  let currentTime
+  let timeDifference: number
+  let duration: string
+  let currentTime: Date
+  let syncInterval: number
+
+  onMount(() => {
+    if ($unsavedTrailsStore.length > 0) {
+      startPeriodicSync()
+    }
+  })
+
+  onDestroy(() => {
+    if (syncInterval) clearInterval(syncInterval)
+  })
 
   $: if ($showEndTrailModal && $currentTrailStore) {
     currentTime = new Date()
-    timeDifference = currentTime - new Date($currentTrailStore.startTime)
+    timeDifference =
+      currentTime.getTime() - new Date($currentTrailStore.startTime).getTime()
     duration = formatDuration(timeDifference)
   }
 
-  //todo do a comparison of the trail data width and color compared to the vehicles current width and color on submission, Allow the user to pick between them.
-
-  function formatDuration(ms) {
+  function formatDuration(ms: number): string {
     const hours = Math.floor(ms / 3600000)
     const minutes = Math.floor((ms % 3600000) / 60000)
     const seconds = Math.floor((ms % 60000) / 1000)
     return `${hours}h ${minutes}m ${seconds}s`
+  }
+
+  function startPeriodicSync() {
+    syncInterval = setInterval(syncUnsavedTrails, 10000)
+  }
+
+  async function syncUnsavedTrails() {
+    if (!$unsavedTrailsStore.length) {
+      clearInterval(syncInterval)
+      return
+    }
+
+    console.log(
+      "Attempting to sync unsaved trails:",
+      $unsavedTrailsStore.length,
+    )
+
+    for (const trailData of $unsavedTrailsStore) {
+      try {
+        const response = await fetch("/api/map-trails/close-trail", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(trailData),
+        })
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        await response.json()
+        unsavedTrailsStore.remove(trailData)
+        unsavedCoordinatesStore.clear()
+        toast.success(`Successfully synced trail ${trailData.trail_id}`)
+      } catch (error) {
+        console.error(`Error syncing trail: ${error.message}`)
+
+        if (
+          !error.message.includes("Failed to fetch") &&
+          !error.message.includes("ERR_INTERNET_DISCONNECTED")
+        ) {
+          unsavedTrailsStore.remove(trailData)
+          toast.error(
+            `Failed to sync trail ${trailData.trail_id}: ${error.message}`,
+          )
+        }
+      }
+    }
+
+    if ($unsavedTrailsStore.length === 0) {
+      clearInterval(syncInterval)
+    }
   }
 
   function handleEndTrailCancel() {
@@ -41,27 +108,24 @@
       return
     }
 
-    console.log("Current trail store:", $currentTrailStore)
-
     const pathData = $currentTrailStore.path.map((point) => ({
       latitude: point.coordinates.latitude,
       longitude: point.coordinates.longitude,
     }))
 
-    console.log("Path data being sent:", pathData)
+    const trailData = {
+      trail_id: $currentTrailStore.id,
+      path: pathData,
+    }
 
     try {
       const response = await fetch("/api/map-trails/close-trail", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          trail_id: $currentTrailStore.id,
-          path: pathData,
-        }),
+        body: JSON.stringify(trailData),
       })
 
       const data = await response.json()
-      console.log("Response from server:", data)
 
       if (!response.ok) {
         throw new Error(data.error || "Failed to close trail")
@@ -69,13 +133,33 @@
 
       toast.success("Trail closed successfully")
 
+      // Clear unsaved coordinates
+      unsavedCoordinatesStore.clear()
+
       // Reset trail-related states
       currentTrailStore.set(null)
       userVehicleTrailing.set(false)
       trailingButtonPressed.set(false)
     } catch (error) {
       console.error("Error closing trail:", error)
-      toast.error(`Error closing trail: ${error.message}`)
+
+      if (
+        error.message.includes("Failed to fetch") ||
+        error.message.includes("ERR_INTERNET_DISCONNECTED")
+      ) {
+        toast.error(
+          "Device appears to be offline. Trail will be saved when connection is restored.",
+        )
+        unsavedTrailsStore.add(trailData)
+        startPeriodicSync()
+      } else {
+        toast.error(`Error closing trail: ${error.message}`)
+      }
+
+      // Reset trail-related states even if save fails
+      currentTrailStore.set(null)
+      userVehicleTrailing.set(false)
+      trailingButtonPressed.set(false)
     }
 
     showEndTrailModal.set(false)
@@ -111,11 +195,19 @@
           {$currentTrailStore.color}
         </p>
         <p><strong>Trail Width:</strong> {$currentTrailStore.width}px</p>
+
+        {#if $unsavedTrailsStore.length > 0}
+          <div class="mt-4 rounded bg-yellow-100 p-4">
+            <p class="text-yellow-800">
+              There are {$unsavedTrailsStore.length} unsaved trails pending sync
+            </p>
+          </div>
+        {/if}
       </div>
       <div class="modal-action">
-        <button class="btn btn-primary" on:click={handleSubmit}
-          >Submit Trail</button
-        >
+        <button class="btn btn-primary" on:click={handleSubmit}>
+          Submit Trail
+        </button>
         <button class="btn" on:click={handleEndTrailCancel}>Continue</button>
       </div>
     </div>
