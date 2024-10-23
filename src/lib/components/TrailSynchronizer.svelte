@@ -22,7 +22,7 @@
 
   let triggerEndTrail
   let syncIntervalId = null
-  const SYNC_INTERVAL = 30000 // 1 minute
+  const SYNC_INTERVAL = 30000 // 30 seconds
 
   onMount(async () => {
     console.log("Trail Synchronizer Mounted")

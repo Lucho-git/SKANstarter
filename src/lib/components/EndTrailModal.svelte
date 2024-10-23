@@ -47,7 +47,7 @@
   }
 
   function startPeriodicSync() {
-    syncInterval = setInterval(syncUnsavedTrails, 10000)
+    syncInterval = setInterval(syncUnsavedTrails, 30000)
   }
 
   async function syncUnsavedTrails() {

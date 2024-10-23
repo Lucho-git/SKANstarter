@@ -191,16 +191,16 @@
     <VehicleTracker {map} disableAutoZoom={initialLocation} />
     <MapFields {map} />
 
-    <!-- {#if $vehicleDataLoaded}
+    {#if $vehicleDataLoaded}
       <TrailStateSynchronizer db={dbInstance} />
     {/if}
     {#if $trailDataLoaded && mapLoaded}
       <TrailTracker {map} />
-    {/if} -->
-
-    {#if $vehicleDataLoaded && selectedOperation}
-      <TrailSynchronizer {selectedOperation} db={dbInstance} />
     {/if}
+
+    <!-- {#if $vehicleDataLoaded && selectedOperation}
+      <TrailSynchronizer {selectedOperation} db={dbInstance} />
+    {/if} -->
   {/if}
 </div>
 
