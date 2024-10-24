@@ -47,10 +47,60 @@
       if ($historicalTrailStore.length > 0) {
         const currentTrail = $historicalTrailStore[currentTrailIndex]
         flyToTrail(currentTrail)
-        startAntAnimation(currentTrail)
+        startGlowAnimation(currentTrail)
       }
     }
   }
+
+  function startGlowAnimation(trail: Trail) {
+    const { sourceId, highlightBackgroundLayerId } = generateTrailIds(trail.id)
+    let opacityStep = 0
+    const baseWidth =
+      trail.trail_width * HIGHLIGHT_CONFIG.HIGHLIGHT_WIDTH_MULTIPLIER
+
+    const opacitySequence = [0.3, 0.4, 0.6, 0.8, 1, 0.8, 0.6, 0.4]
+
+    // Base electric glow
+    map.addLayer({
+      type: "line",
+      source: sourceId,
+      id: highlightBackgroundLayerId,
+      paint: {
+        "line-color": trail.trail_color,
+        "line-width": calculateZoomDependentWidth(baseWidth, 2.2),
+        "line-opacity": 0.3,
+        "line-blur": calculateZoomDependentWidth(baseWidth, 0.8),
+      },
+      layout: {
+        "line-cap": "round",
+        "line-join": "bevel",
+      },
+    })
+
+    function animate(timestamp: number) {
+      const newOpacityStep = parseInt(
+        (timestamp / 100) % opacitySequence.length,
+      )
+
+      if (
+        newOpacityStep !== opacityStep &&
+        map.getLayer(highlightBackgroundLayerId)
+      ) {
+        map.setPaintProperty(
+          highlightBackgroundLayerId,
+          "line-opacity",
+          opacitySequence[opacityStep],
+        )
+        opacityStep = newOpacityStep
+      }
+
+      if (map.getLayer(highlightBackgroundLayerId)) {
+        requestAnimationFrame(animate)
+      }
+    }
+    animate(0)
+  }
+
   function startAntAnimation(trail: Trail) {
     const { sourceId, highlightLayerId, highlightBackgroundLayerId } =
       generateTrailIds(trail.id)
@@ -88,7 +138,7 @@
       },
       layout: {
         "line-cap": "round",
-        "line-join": "bevel", // or "bevel" if you prefer
+        "line-join": "bevel",
       },
     })
 
@@ -105,7 +155,7 @@
       },
       layout: {
         "line-cap": "butt",
-        "line-join": "bevel", // or "bevel" if you prefer
+        "line-join": "bevel",
       },
     })
 
@@ -188,7 +238,7 @@
     const trail = $historicalTrailStore[currentTrailIndex]
 
     flyToTrail(trail)
-    startAntAnimation(trail)
+    startGlowAnimation(trail)
 
     await new Promise((resolve) =>
       setTimeout(resolve, HIGHLIGHT_CONFIG.FLIGHT_DURATION),
@@ -206,6 +256,7 @@
 
   export const highlighterAPI = {
     highlightTrail: startAntAnimation,
+    glowTrail: startGlowAnimation,
     removeHighlight,
     flyToTrail,
     nextTrail: handleNext,
