@@ -121,7 +121,7 @@
     $historicalTrailStore.forEach((trail) => removeTrail(trail.id))
 
     for (const trail of $historicalTrailStore) {
-      console.log(`Adding trail: ${trail.id}`)
+      //   console.log(`Adding trail: ${trail.id}`)
       addTrail(trail)
       await new Promise((resolve) =>
         setTimeout(resolve, TRAIL_CONFIG.LOAD_DELAY),
@@ -137,7 +137,7 @@
     console.log("Mounting TrailManager")
     loadHistoricalTrails()
 
-    return cleanupTrails
+    // return cleanupTrails
   })
 
   export const trailManagerAPI = {

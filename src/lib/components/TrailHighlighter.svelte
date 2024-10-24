@@ -42,9 +42,15 @@
     if (!showNavigationUI) {
       // Clean up highlights when hiding UI
       $historicalTrailStore.forEach((t) => removeHighlight(t.id))
+    } else {
+      // Start animation for current trail when showing UI
+      if ($historicalTrailStore.length > 0) {
+        const currentTrail = $historicalTrailStore[currentTrailIndex]
+        flyToTrail(currentTrail)
+        startAntAnimation(currentTrail)
+      }
     }
   }
-
   function startAntAnimation(trail: Trail) {
     const { sourceId, highlightLayerId, highlightBackgroundLayerId } =
       generateTrailIds(trail.id)
