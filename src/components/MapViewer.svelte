@@ -23,6 +23,7 @@
   import TrailStateSynchronizer from "./TrailStateSynchronizer.svelte"
 
   import TrailSynchronizer from "$lib/components/TrailSynchronizer.svelte"
+  import TrailView from "$lib/components/TrailView.svelte"
 
   import { db } from "./db.js"
 
@@ -191,16 +192,16 @@
     <VehicleTracker {map} disableAutoZoom={initialLocation} />
     <MapFields {map} />
 
-    {#if $vehicleDataLoaded}
+    <!-- {#if $vehicleDataLoaded}
       <TrailStateSynchronizer db={dbInstance} />
     {/if}
     {#if $trailDataLoaded && mapLoaded}
       <TrailTracker {map} />
-    {/if}
-
-    <!-- {#if $vehicleDataLoaded && selectedOperation}
-      <TrailSynchronizer {selectedOperation} db={dbInstance} />
     {/if} -->
+
+    {#if selectedOperation}
+      <TrailSynchronizer {selectedOperation} {map} />
+    {/if}
   {/if}
 </div>
 

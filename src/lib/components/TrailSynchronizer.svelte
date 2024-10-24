@@ -15,13 +15,22 @@
     coordinateBufferStore,
     unsavedCoordinatesStore,
   } from "$lib/stores/currentTrailStore"
+
+  import { historicalTrailStore } from "$lib/stores/otherTrailStore"
+
+  import { profileStore } from "../../stores/profileStore"
+  import { trailDataLoaded } from "../../stores/loadedStore"
+
   import EndTrailModal from "$lib/components/EndTrailModal.svelte"
   import OpenTrailModal from "$lib/components/OpenTrailModal.svelte"
+  import TrailView from "$lib/components/TrailView.svelte"
 
   export let selectedOperation
+  export let map
 
   let triggerEndTrail
   let syncIntervalId = null
+  let areTrailsLoaded = false
   const SYNC_INTERVAL = 30000 // 30 seconds
 
   onMount(async () => {
@@ -210,7 +219,7 @@
 
       try {
         const data = JSON.parse(text)
-        console.log("Parsed operation trails:", data.trails)
+        console.log("Parsed operation trails:", data.trails.length)
         return data.trails
       } catch (e) {
         console.error("Error parsing JSON:", e)
@@ -228,10 +237,24 @@
       const trails = await getOperationTrails(selectedOperation.id)
       console.group("Operation Trails")
       console.log("Number of trails:", trails.length)
-      trails.forEach((trail, index) => {
-        console.log(`Trail ${index + 1}:`, trail)
-      })
+
+      // Clear existing trails from the store
+      historicalTrailStore.set([])
+
+      // Add new trails to the store
+      historicalTrailStore.update((currentTrails) => [
+        ...currentTrails,
+        ...trails,
+      ])
+
+      // Log trails for debugging
+      //   trails.forEach((trail, index) => {
+      //     console.log(`Trail ${index + 1}:`, trail)
+      //   })
       console.groupEnd()
+
+      toast.success(`Loaded ${trails.length} trails`)
+      areTrailsLoaded = true
     } catch (error) {
       console.error("Error fetching operation trails:", error)
       toast.error(`Failed to fetch operation trails: ${error.message}`)
@@ -240,6 +263,7 @@
 
   async function checkOpenTrails() {
     console.log("Checking for open trails")
+    console.log($profileStore)
     try {
       const response = await fetch("/api/map-trails/check-open-trails", {
         method: "POST",
@@ -247,7 +271,7 @@
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          vehicle_id: $userVehicleStore.vehicle_id,
+          vehicle_id: $profileStore.id,
         }),
       })
 
@@ -348,3 +372,7 @@
 
 <EndTrailModal bind:triggerEndTrail />
 <OpenTrailModal />
+
+{#if areTrailsLoaded}
+  <TrailView {map} />
+{/if}

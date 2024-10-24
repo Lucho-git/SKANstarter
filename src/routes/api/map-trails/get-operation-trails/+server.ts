@@ -30,11 +30,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
                 path
             `)
             .eq('operation_id', operation_id)
+            .not('end_time', 'is', null)  // Only get trails with an end_time
             .order('start_time', { ascending: true });
 
         if (error) throw error;
-
-        console.log('Raw data from Supabase:', data);
 
         // Convert path to GeoJSON on the server
         const trailsWithGeoJSON = data?.map(trail => {

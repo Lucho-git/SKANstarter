@@ -3,7 +3,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
-const TRAIL_DATA_RETENTION_DAYS = 30; // Adjust as needed
+const TRAIL_DATA_RETENTION_DAYS = 300; // Adjust as needed
 
 function summarizeExplain(explainResult: string) {
     const lines = explainResult.split('\n');

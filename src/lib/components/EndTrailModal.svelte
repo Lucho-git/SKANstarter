@@ -1,6 +1,7 @@
 <!-- src/components/EndTrailModal.svelte -->
 <script lang="ts">
   import { onMount, onDestroy } from "svelte"
+  import { Trash2 } from "lucide-svelte"
   import {
     showEndTrailModal,
     trailingButtonPressed,
@@ -21,6 +22,7 @@
   let duration: string
   let currentTime: Date
   let syncInterval: number
+  let showDeleteConfirm = false
 
   onMount(() => {
     if ($unsavedTrailsStore.length > 0) {
@@ -37,6 +39,33 @@
     timeDifference =
       currentTime.getTime() - new Date($currentTrailStore.startTime).getTime()
     duration = formatDuration(timeDifference)
+  }
+
+  async function deleteTrail(trail_id: string) {
+    try {
+      const response = await fetch("/api/map-trails/delete-trail", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ trail_id }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      await response.json()
+      toast.success("Trail deleted successfully")
+
+      // Reset all states
+      currentTrailStore.set(null)
+      userVehicleTrailing.set(false)
+      trailingButtonPressed.set(false)
+      showEndTrailModal.set(false)
+      showDeleteConfirm = false
+    } catch (error) {
+      console.error("Error deleting trail:", error)
+      toast.error("Failed to delete trail")
+    }
   }
 
   function formatDuration(ms: number): string {
@@ -100,6 +129,21 @@
   function handleEndTrailCancel() {
     showEndTrailModal.set(false)
     userVehicleTrailing.set(true)
+    showDeleteConfirm = false
+  }
+
+  function handleDeleteClick() {
+    showDeleteConfirm = true
+  }
+
+  function handleDeleteCancel() {
+    showDeleteConfirm = false
+  }
+
+  async function handleConfirmDelete() {
+    if ($currentTrailStore) {
+      await deleteTrail($currentTrailStore.id)
+    }
   }
 
   async function handleSubmit() {
@@ -112,6 +156,15 @@
       latitude: point.coordinates.latitude,
       longitude: point.coordinates.longitude,
     }))
+
+    // Check if the path is empty or has only one coordinate
+    if (pathData.length === 0 || pathData.length === 1) {
+      const message =
+        pathData.length === 0 ? "empty trail" : "trail with only one coordinate"
+      toast.info(`Deleting ${message}`)
+      await deleteTrail($currentTrailStore.id)
+      return
+    }
 
     const trailData = {
       trail_id: $currentTrailStore.id,
@@ -173,44 +226,73 @@
 
 {#if $showEndTrailModal && $currentTrailStore}
   <div class="modal modal-open">
-    <div class="modal-box">
-      <h3 class="text-lg font-bold">End Trail Submission</h3>
-      <div class="py-4">
-        <p>
-          <strong>Start Time (UTC):</strong>
-          {new Date($currentTrailStore.startTime).toUTCString()}
-        </p>
-        <p>
-          <strong>Current Time (UTC):</strong>
-          {currentTime.toUTCString()}
-        </p>
-        <p><strong>Duration:</strong> {duration}</p>
-        <p><strong>Raw Time Difference (ms):</strong> {timeDifference}</p>
-        <p>
-          <strong>Trail Color:</strong>
-          <span
-            class="inline-block h-4 w-4"
-            style="background-color: {$currentTrailStore.color};"
-          ></span>
-          {$currentTrailStore.color}
-        </p>
-        <p><strong>Trail Width:</strong> {$currentTrailStore.width}px</p>
+    {#if showDeleteConfirm}
+      <div class="modal-box">
+        <h3 class="text-lg font-bold text-red-600">Confirm Delete Trail</h3>
+        <div class="py-4">
+          <p>
+            Are you sure you want to delete this trail? This action cannot be
+            undone.
+          </p>
+        </div>
+        <div class="modal-action">
+          <button class="btn btn-error" on:click={handleConfirmDelete}>
+            Confirm Delete
+          </button>
+          <button class="btn" on:click={handleDeleteCancel}>Cancel</button>
+        </div>
+      </div>
+    {:else}
+      <div class="modal-box">
+        <h3 class="text-lg font-bold">End Trail Submission</h3>
+        <div class="py-4">
+          <p>
+            <strong>Start Time (UTC):</strong>
+            {new Date($currentTrailStore.startTime).toUTCString()}
+          </p>
+          <p>
+            <strong>Current Time (UTC):</strong>
+            {currentTime.toUTCString()}
+          </p>
+          <p><strong>Duration:</strong> {duration}</p>
+          <p><strong>Raw Time Difference (ms):</strong> {timeDifference}</p>
+          <p>
+            <strong>Trail Color:</strong>
+            <span
+              class="inline-block h-4 w-4"
+              style="background-color: {$currentTrailStore.color};"
+            ></span>
+            {$currentTrailStore.color}
+          </p>
+          <p><strong>Trail Width:</strong> {$currentTrailStore.width}px</p>
+          <p>
+            <strong>Number of Coordinates:</strong>
+            {$currentTrailStore.path.length}
+          </p>
 
-        {#if $unsavedTrailsStore.length > 0}
-          <div class="mt-4 rounded bg-yellow-100 p-4">
-            <p class="text-yellow-800">
-              There are {$unsavedTrailsStore.length} unsaved trails pending sync
-            </p>
+          {#if $unsavedTrailsStore.length > 0}
+            <div class="mt-4 rounded bg-yellow-100 p-4">
+              <p class="text-yellow-800">
+                There are {$unsavedTrailsStore.length} unsaved trails pending sync
+              </p>
+            </div>
+          {/if}
+        </div>
+        <div class="modal-action flex justify-between">
+          <button class="btn btn-square btn-error" on:click={handleDeleteClick}>
+            <Trash2 size={20} />
+          </button>
+          <div>
+            <button class="btn btn-primary ml-2" on:click={handleSubmit}>
+              Submit Trail
+            </button>
+            <button class="btn ml-2" on:click={handleEndTrailCancel}
+              >Continue</button
+            >
           </div>
-        {/if}
+        </div>
       </div>
-      <div class="modal-action">
-        <button class="btn btn-primary" on:click={handleSubmit}>
-          Submit Trail
-        </button>
-        <button class="btn" on:click={handleEndTrailCancel}>Continue</button>
-      </div>
-    </div>
+    {/if}
     <label
       class="modal-backdrop"
       for="end-trail-modal"
