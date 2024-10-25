@@ -54,7 +54,6 @@
 
     const unsubscribeCoordinateBuffer = coordinateBufferStore.subscribe(
       async (newCoordinateBuffer) => {
-        console.log("BUFFER", newCoordinateBuffer)
         if (
           newCoordinateBuffer &&
           newCoordinateBuffer.coordinates &&
@@ -84,7 +83,7 @@
   })
 
   async function processNewCoordinate(coordinateData) {
-    console.log("Processing new coordinate:", coordinateData)
+    // console.log("Processing new coordinate:", coordinateData)
 
     // Always update the trail path immediately
     updateTrailPath(coordinateData)
@@ -110,7 +109,7 @@
       }
 
       const result = await response.json()
-      console.log("Coordinate saved successfully:", result)
+      //   console.log("Coordinate saved successfully:", result)
     } catch (error) {
       // Handle offline errors more gracefully
       if (
@@ -356,7 +355,7 @@
   }
 
   function updateTrailPath(newCoordinateData) {
-    console.log("Received new coordinate data:", newCoordinateData)
+    // console.log("Received new coordinate data:", newCoordinateData)
 
     currentTrailStore.update((trail) => {
       if (trail) {
@@ -366,7 +365,7 @@
       }
       return trail
     })
-    console.log("Updated currentTrail", $currentTrailStore)
+    // console.log("Updated currentTrail", $currentTrailStore)
   }
 </script>
 
