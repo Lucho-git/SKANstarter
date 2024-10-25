@@ -84,12 +84,10 @@
     let opacityStep = 0
     const baseWidth =
       trail.trail_width * HIGHLIGHT_CONFIG.HIGHLIGHT_WIDTH_MULTIPLIER
+
     const opacitySequence = [0.3, 0.4, 0.6, 0.8, 1, 0.8, 0.6, 0.4]
-    let animationFrameId: number | null = null // Add this line
 
     // Base electric glow
-    if (!map.getSource(sourceId)) return // Add this check
-
     map.addLayer({
       type: "line",
       source: sourceId,
@@ -107,49 +105,27 @@
     })
 
     function animate(timestamp: number) {
-      if (!isAnimating || !map) {
-        if (animationFrameId) {
-          cancelAnimationFrame(animationFrameId)
-        }
-        return
-      }
+      const newOpacityStep = parseInt(
+        (timestamp / 100) % opacitySequence.length,
+      )
 
-      try {
-        const newOpacityStep = parseInt(
-          (timestamp / 100) % opacitySequence.length,
+      if (
+        newOpacityStep !== opacityStep &&
+        map.getLayer(highlightBackgroundLayerId)
+      ) {
+        map.setPaintProperty(
+          highlightBackgroundLayerId,
+          "line-opacity",
+          opacitySequence[opacityStep],
         )
+        opacityStep = newOpacityStep
+      }
 
-        if (
-          newOpacityStep !== opacityStep &&
-          map.getLayer(highlightBackgroundLayerId)
-        ) {
-          map.setPaintProperty(
-            highlightBackgroundLayerId,
-            "line-opacity",
-            opacitySequence[opacityStep],
-          )
-          opacityStep = newOpacityStep
-        }
-
-        if (map.getLayer(highlightBackgroundLayerId)) {
-          animationFrameId = requestAnimationFrame(animate)
-        }
-      } catch (error) {
-        console.log("Animation stopped due to map cleanup")
-        if (animationFrameId) {
-          cancelAnimationFrame(animationFrameId)
-        }
+      if (map.getLayer(highlightBackgroundLayerId)) {
+        requestAnimationFrame(animate)
       }
     }
-
     animate(0)
-
-    // Return cleanup function
-    return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId)
-      }
-    }
   }
 
   function startAntAnimation(trail: Trail) {
