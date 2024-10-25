@@ -11,6 +11,18 @@
   export { trailManagerAPI, highlighterAPI }
 </script>
 
-<TrailManager {map} bind:trailManagerAPI>
-  <TrailHighlighter {map} bind:highlighterAPI />
+<TrailManager
+  {map}
+  bind:trailManagerAPI
+  let:calculateZoomDependentWidth
+  let:generateTrailIds
+  let:deleteTrail
+>
+  <TrailHighlighter
+    {map}
+    {calculateZoomDependentWidth}
+    {generateTrailIds}
+    {deleteTrail}
+    bind:highlighterAPI
+  />
 </TrailManager>

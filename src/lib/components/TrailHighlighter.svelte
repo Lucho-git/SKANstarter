@@ -3,15 +3,26 @@
   import type { Trail } from "$lib/types/trail"
   import { historicalTrailStore } from "$lib/stores/otherTrailStore"
   import mapboxgl from "mapbox-gl"
-  import {
-    generateTrailIds,
-    calculateZoomDependentWidth,
-  } from "./TrailManager.svelte"
+  import { onMount } from "svelte"
+  interface TrailIdentifiers {
+    sourceId: string
+    layerId: string
+    highlightLayerId: string
+    highlightBackgroundLayerId: string
+  }
+  export let calculateZoomDependentWidth: (
+    width: number,
+    multiplier: number,
+  ) => number
+  export let generateTrailIds: (trailId: string) => TrailIdentifiers
+  export let deleteTrail: (trailId: string) => Promise<boolean>
 
   export let map: Map
   let currentTrailIndex = 0
-  let isAnimating = false
+  let isAnimating = true
   let showNavigationUI = false
+  let showDeleteModal = false
+  let trailToDelete: Trail | null = null
 
   const HIGHLIGHT_CONFIG = {
     TRAIL_HIGHLIGHT_DELAY: 3000,
@@ -37,6 +48,22 @@
     [0, 3.5, 3, 0.5],
   ]
 
+  async function handleDeleteConfirm() {
+    if (trailToDelete) {
+      const success = await deleteTrail(trailToDelete.id)
+      if (success) {
+        showDeleteModal = false
+        trailToDelete = null
+        if (currentTrailIndex >= $historicalTrailStore.length) {
+          currentTrailIndex = Math.max(0, $historicalTrailStore.length - 1)
+        }
+        if ($historicalTrailStore.length > 0) {
+          navigateToTrail(currentTrailIndex)
+        }
+      }
+    }
+  }
+
   function toggleNavigationUI() {
     showNavigationUI = !showNavigationUI
     if (!showNavigationUI) {
@@ -57,10 +84,12 @@
     let opacityStep = 0
     const baseWidth =
       trail.trail_width * HIGHLIGHT_CONFIG.HIGHLIGHT_WIDTH_MULTIPLIER
-
     const opacitySequence = [0.3, 0.4, 0.6, 0.8, 1, 0.8, 0.6, 0.4]
+    let animationFrameId: number | null = null // Add this line
 
     // Base electric glow
+    if (!map.getSource(sourceId)) return // Add this check
+
     map.addLayer({
       type: "line",
       source: sourceId,
@@ -78,27 +107,49 @@
     })
 
     function animate(timestamp: number) {
-      const newOpacityStep = parseInt(
-        (timestamp / 100) % opacitySequence.length,
-      )
-
-      if (
-        newOpacityStep !== opacityStep &&
-        map.getLayer(highlightBackgroundLayerId)
-      ) {
-        map.setPaintProperty(
-          highlightBackgroundLayerId,
-          "line-opacity",
-          opacitySequence[opacityStep],
-        )
-        opacityStep = newOpacityStep
+      if (!isAnimating || !map) {
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId)
+        }
+        return
       }
 
-      if (map.getLayer(highlightBackgroundLayerId)) {
-        requestAnimationFrame(animate)
+      try {
+        const newOpacityStep = parseInt(
+          (timestamp / 100) % opacitySequence.length,
+        )
+
+        if (
+          newOpacityStep !== opacityStep &&
+          map.getLayer(highlightBackgroundLayerId)
+        ) {
+          map.setPaintProperty(
+            highlightBackgroundLayerId,
+            "line-opacity",
+            opacitySequence[opacityStep],
+          )
+          opacityStep = newOpacityStep
+        }
+
+        if (map.getLayer(highlightBackgroundLayerId)) {
+          animationFrameId = requestAnimationFrame(animate)
+        }
+      } catch (error) {
+        console.log("Animation stopped due to map cleanup")
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId)
+        }
       }
     }
+
     animate(0)
+
+    // Return cleanup function
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId)
+      }
+    }
   }
 
   function startAntAnimation(trail: Trail) {
@@ -160,34 +211,31 @@
     })
 
     function animate(timestamp: number) {
-      const newStep = parseInt((timestamp / 50) % dashArraySequence.length)
+      if (!isAnimating) return // Stop animation if flag is false
+
       const newOpacityStep = parseInt(
         (timestamp / 100) % opacitySequence.length,
       )
 
-      if (newStep !== step && map.getLayer(highlightLayerId)) {
-        map.setPaintProperty(
-          highlightLayerId,
-          "line-dasharray",
-          dashArraySequence[step],
-        )
-        step = newStep
-      }
+      try {
+        if (
+          newOpacityStep !== opacityStep &&
+          map?.getLayer(highlightBackgroundLayerId)
+        ) {
+          map.setPaintProperty(
+            highlightBackgroundLayerId,
+            "line-opacity",
+            opacitySequence[opacityStep],
+          )
+          opacityStep = newOpacityStep
+        }
 
-      if (
-        newOpacityStep !== opacityStep &&
-        map.getLayer(highlightBackgroundLayerId)
-      ) {
-        map.setPaintProperty(
-          highlightBackgroundLayerId,
-          "line-opacity",
-          opacitySequence[opacityStep],
-        )
-        opacityStep = newOpacityStep
-      }
-
-      if (map.getLayer(highlightLayerId)) {
-        requestAnimationFrame(animate)
+        if (map?.getLayer(highlightBackgroundLayerId)) {
+          requestAnimationFrame(animate)
+        }
+      } catch (error) {
+        console.log("Animation stopped due to map cleanup")
+        isAnimating = false
       }
     }
     animate(0)
@@ -224,8 +272,6 @@
   async function navigateToTrail(index: number) {
     if (false || $historicalTrailStore.length === 0) return
 
-    isAnimating = true
-
     $historicalTrailStore.forEach((t) => removeHighlight(t.id))
 
     currentTrailIndex = index
@@ -243,7 +289,6 @@
     await new Promise((resolve) =>
       setTimeout(resolve, HIGHLIGHT_CONFIG.FLIGHT_DURATION),
     )
-    isAnimating = false
   }
 
   function handlePrevious() {
@@ -263,6 +308,12 @@
     previousTrail: handlePrevious,
     navigateToTrail,
   }
+
+  onMount(() => {
+    return () => {
+      isAnimating = false // Stop animation on component cleanup
+    }
+  })
 </script>
 
 <button
@@ -288,7 +339,43 @@
     <button class="nav-button" on:click={handleNext} disabled={false}>
       →
     </button>
+
+    <button
+      class="delete-button"
+      on:click={() => {
+        trailToDelete = $historicalTrailStore[currentTrailIndex]
+        showDeleteModal = true
+      }}
+    >
+      🗑️
+    </button>
   </div>
+{/if}
+
+{#if showDeleteModal && trailToDelete}
+  <dialog class="modal modal-open">
+    <div class="modal-box">
+      <h3 class="text-lg font-bold">Delete Trail?</h3>
+      <p class="py-4">
+        Are you sure you want to delete this trail? This action cannot be
+        undone.
+      </p>
+      <div class="modal-action">
+        <button
+          class="btn btn-ghost"
+          on:click={() => (showDeleteModal = false)}
+        >
+          Cancel
+        </button>
+        <button class="btn btn-error" on:click={handleDeleteConfirm}>
+          Delete
+        </button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button on:click={() => (showDeleteModal = false)}>close</button>
+    </form>
+  </dialog>
 {/if}
 
 <style>
@@ -363,5 +450,25 @@
   .toggle-button.active {
     background: rgba(255, 255, 255, 0.9);
     color: black;
+  }
+
+  .delete-button {
+    background: #ff4444;
+    border: none;
+    border-radius: 50%;
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    color: white;
+  }
+
+  .delete-button:hover {
+    background: #ff6666;
+    transform: scale(1.1);
   }
 </style>
