@@ -193,7 +193,7 @@
       )
     }
 
-    console.log("Historical trails loading completed")
+    console.log("Historical trails loading completeds")
   }
 
   function cleanupTrails() {
