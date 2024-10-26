@@ -137,12 +137,11 @@
     }
   }
 
-  export function addTrail(trail: Trail, isCurrent: boolean = false) {
-    console.log("Adding trail:", trail, "isCurrent:", isCurrent)
+  export function addTrail(trail: Trail) {
     const { sourceId, layerId } = generateTrailIds(trail.id)
     const zoomDependentWidth = calculateZoomDependentWidth(
       trail.trail_width || 3,
-      isCurrent ? 1.2 : 1,
+      1,
     )
 
     map.addSource(sourceId, {
@@ -161,19 +160,9 @@
       paint: {
         "line-color": trail.trail_color || "#FF0000",
         "line-width": zoomDependentWidth,
-        "line-opacity": isCurrent
-          ? TRAIL_CONFIG.CURRENT_OPACITY
-          : TRAIL_CONFIG.DEFAULT_OPACITY,
+        "line-opacity": TRAIL_CONFIG.DEFAULT_OPACITY,
       },
     })
-
-    if (isCurrent) {
-      currentTrailSource = sourceId
-      currentTrailLayer = layerId
-      lastCoordinateCount = Array.isArray(trail.path)
-        ? trail.path.length
-        : trail.path.coordinates.length
-    }
   }
 
   function convertToLineString(coordinates: TrailCoordinate[]): LineString {
