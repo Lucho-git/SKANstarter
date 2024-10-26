@@ -25,6 +25,19 @@
     highlightBackgroundLayerId: string
   }
 
+  interface TrailCoordinate {
+    coordinates: {
+      latitude: number
+      longitude: number
+    }
+    timestamp: number
+  }
+
+  interface LineString {
+    type: "LineString"
+    coordinates: [number, number][]
+  }
+
   export let map: Map
   let currentTrailSource: string | null = null
   let currentTrailLayer: string | null = null
@@ -62,17 +75,16 @@
     ]
   }
 
-  function createTrailGeoJSON(coordinates: any[]) {
-    const coords = Array.isArray(coordinates)
-      ? coordinates
-      : coordinates.coordinates
+  function createTrailGeoJSON(coordinates: LineString | TrailCoordinate[]) {
+    const lineString =
+      "type" in coordinates
+        ? coordinates
+        : convertToLineString(coordinates as TrailCoordinate[])
+
     return {
       type: "Feature",
       properties: {},
-      geometry: {
-        type: "LineString",
-        coordinates: coords,
-      },
+      geometry: lineString,
     }
   }
 
@@ -126,6 +138,7 @@
   }
 
   export function addTrail(trail: Trail, isCurrent: boolean = false) {
+    console.log("Adding trail:", trail, "isCurrent:", isCurrent)
     const { sourceId, layerId } = generateTrailIds(trail.id)
     const zoomDependentWidth = calculateZoomDependentWidth(
       trail.trail_width || 3,
@@ -163,40 +176,49 @@
     }
   }
 
-  export function updateCurrentTrail(trail: Trail) {
-    console.log("Updating current trail", trail)
-    console.log("Current source:", currentTrailSource)
-    console.log("Has source:", map.getSource(currentTrailSource))
+  function convertToLineString(coordinates: TrailCoordinate[]): LineString {
+    // Sort coordinates by timestamp
+    const sortedCoords = [...coordinates].sort(
+      (a, b) => a.timestamp - b.timestamp,
+    )
 
+    return {
+      type: "LineString",
+      coordinates: sortedCoords.map((coord) => [
+        coord.coordinates.longitude,
+        coord.coordinates.latitude,
+      ]),
+    }
+  }
+
+  export function updateCurrentTrail(trail: Trail) {
     if (!currentTrailSource || !map.getSource(currentTrailSource)) {
-      console.log(
-        "When updating trail no current trail found so making new trail",
-      )
-      addTrail(trail, true)
+      // Convert to LineString before adding
+      const trailWithLineString = {
+        ...trail,
+        path: convertToLineString(trail.path as TrailCoordinate[]),
+      }
+      addTrail(trailWithLineString, true)
       return
     }
 
-    const coords = Array.isArray(trail.path)
-      ? trail.path
-      : trail.path.coordinates
-    const newCoordinateCount = coords.length
-
-    console.log("New coordinates:", coords)
-    console.log("New coordinate count:", newCoordinateCount)
-    console.log("Last coordinate count:", lastCoordinateCount)
+    // Convert and sort coordinates
+    console.log("converting to linestring", trail.path)
+    const lineString = convertToLineString(trail.path as TrailCoordinate[])
+    console.log("converted to linestring", lineString)
+    const newCoordinateCount = lineString.coordinates.length
 
     if (newCoordinateCount !== lastCoordinateCount) {
-      console.log("Updating source with new data")
       const source = map.getSource(currentTrailSource) as mapboxgl.GeoJSONSource
-      const newGeoJSON = createTrailGeoJSON(trail.path)
-      console.log("New GeoJSON data:", newGeoJSON)
+      const newGeoJSON = {
+        type: "Feature",
+        properties: {},
+        geometry: lineString,
+      }
+
       source.setData(newGeoJSON)
       lastCoordinateCount = newCoordinateCount
-    } else {
-      console.log("No coordinate count change, skipping update")
     }
-
-    console.log("Updated current trail", trail)
   }
 
   async function loadHistoricalTrails() {
