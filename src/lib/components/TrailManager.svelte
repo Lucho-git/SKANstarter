@@ -164,7 +164,14 @@
   }
 
   export function updateCurrentTrail(trail: Trail) {
+    console.log("Updating current trail", trail)
+    console.log("Current source:", currentTrailSource)
+    console.log("Has source:", map.getSource(currentTrailSource))
+
     if (!currentTrailSource || !map.getSource(currentTrailSource)) {
+      console.log(
+        "When updating trail no current trail found so making new trail",
+      )
       addTrail(trail, true)
       return
     }
@@ -174,11 +181,22 @@
       : trail.path.coordinates
     const newCoordinateCount = coords.length
 
+    console.log("New coordinates:", coords)
+    console.log("New coordinate count:", newCoordinateCount)
+    console.log("Last coordinate count:", lastCoordinateCount)
+
     if (newCoordinateCount !== lastCoordinateCount) {
+      console.log("Updating source with new data")
       const source = map.getSource(currentTrailSource) as mapboxgl.GeoJSONSource
-      source.setData(createTrailGeoJSON(trail.path))
+      const newGeoJSON = createTrailGeoJSON(trail.path)
+      console.log("New GeoJSON data:", newGeoJSON)
+      source.setData(newGeoJSON)
       lastCoordinateCount = newCoordinateCount
+    } else {
+      console.log("No coordinate count change, skipping update")
     }
+
+    console.log("Updated current trail", trail)
   }
 
   async function loadHistoricalTrails() {
