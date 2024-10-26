@@ -14,7 +14,6 @@
     MIN_POWER: -6,
     MAX_POWER: 8,
     DEFAULT_OPACITY: 0.5,
-    CURRENT_OPACITY: 0.8,
     LOAD_DELAY: 10,
   }
 
@@ -187,7 +186,7 @@
         ...trail,
         path: convertToLineString(trail.path as TrailCoordinate[]),
       }
-      addTrail(trailWithLineString, true)
+      addTrail(trailWithLineString)
       return
     }
 
