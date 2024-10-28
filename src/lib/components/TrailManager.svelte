@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte"
+  import { onMount, onDestroy } from "svelte"
   import mapboxgl from "mapbox-gl"
   import type { Map } from "mapbox-gl"
   import type { Trail } from "$lib/types/trail"
@@ -227,16 +227,27 @@
     }
   }
 
+  let cleanup = {
+    currentTrailUnsubscribe: null,
+  }
+
   onMount(() => {
     loadHistoricalTrails()
 
-    const unsubscribeCurrent = currentTrailStore.subscribe((currentTrail) => {
-      if (currentTrail && currentTrail.path) {
-        updateCurrentTrail(currentTrail)
-      }
-    })
+    cleanup.currentTrailUnsubscribe = currentTrailStore.subscribe(
+      (currentTrail) => {
+        if (currentTrail && currentTrail.path) {
+          updateCurrentTrail(currentTrail)
+        }
+      },
+    )
+  })
 
-    return unsubscribeCurrent
+  onDestroy(() => {
+    console.log("Cleaning up trail subscriptions")
+    if (cleanup.currentTrailUnsubscribe) {
+      cleanup.currentTrailUnsubscribe()
+    }
   })
 
   export const trailManagerAPI = {

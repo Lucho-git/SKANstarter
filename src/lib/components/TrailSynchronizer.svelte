@@ -1,6 +1,6 @@
 <!-- src/components/TrailSynchronizer.svelte -->
 <script>
-  import { onMount, createEventDispatcher } from "svelte"
+  import { onMount, onDestroy, createEventDispatcher } from "svelte"
   import { toast } from "svelte-sonner"
   import {
     userVehicleStore,
@@ -33,6 +33,13 @@
   let areTrailsLoaded = false
   const SYNC_INTERVAL = 30000 // 30 seconds
 
+  // Store cleanup functions
+  let cleanup = {
+    trailingUnsubscribe: null,
+    coordinateBufferUnsubscribe: null,
+    unsavedCoordinatesUnsubscribe: null,
+  }
+
   onMount(async () => {
     console.log("Trail Synchronizer Mounted")
 
@@ -41,7 +48,7 @@
 
     console.log("Trailstore after fetch:", $currentTrailStore)
 
-    const unsubscribeTrailing = trailingButtonPressed.subscribe(
+    cleanup.trailingUnsubscribe = trailingButtonPressed.subscribe(
       async (isPressed) => {
         console.log("Trailing Button Pressed:", isPressed)
         if (isPressed && !$userVehicleTrailing) {
@@ -54,7 +61,7 @@
       },
     )
 
-    const unsubscribeCoordinateBuffer = coordinateBufferStore.subscribe(
+    cleanup.coordinateBufferUnsubscribe = coordinateBufferStore.subscribe(
       async (newCoordinateBuffer) => {
         console.log("New Coordinate Buffer:", newCoordinateBuffer)
         if (
@@ -67,7 +74,7 @@
       },
     )
 
-    const unsubscribeUnsavedCoordinates = unsavedCoordinatesStore.subscribe(
+    cleanup.unsavedCoordinatesUnsubscribe = unsavedCoordinatesStore.subscribe(
       (coordinates) => {
         if (coordinates.length > 0 && !syncIntervalId) {
           startPeriodicSync()
@@ -76,12 +83,28 @@
         }
       },
     )
+  })
 
-    return () => {
-      unsubscribeTrailing()
-      unsubscribeCoordinateBuffer()
-      unsubscribeUnsavedCoordinates()
-      stopPeriodicSync()
+  onDestroy(() => {
+    console.log("Trail Synchronizer Destroying")
+    // Clean up all subscriptions
+    if (cleanup.trailingUnsubscribe) cleanup.trailingUnsubscribe()
+    if (cleanup.coordinateBufferUnsubscribe)
+      cleanup.coordinateBufferUnsubscribe()
+    if (cleanup.unsavedCoordinatesUnsubscribe)
+      cleanup.unsavedCoordinatesUnsubscribe()
+
+    // Stop any ongoing syncs
+    stopPeriodicSync()
+
+    // Reset stores if needed
+    trailingButtonPressed.set(false)
+    userVehicleTrailing.set(false)
+
+    // Clear any intervals
+    if (syncIntervalId) {
+      clearInterval(syncIntervalId)
+      syncIntervalId = null
     }
   })
 
