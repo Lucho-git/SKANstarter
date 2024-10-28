@@ -37,7 +37,7 @@
   $: if ($showEndTrailModal && $currentTrailStore) {
     currentTime = new Date()
     timeDifference =
-      currentTime.getTime() - new Date($currentTrailStore.startTime).getTime()
+      currentTime.getTime() - new Date($currentTrailStore.start_time).getTime()
     duration = formatDuration(timeDifference)
   }
 
@@ -248,7 +248,7 @@
         <div class="py-4">
           <p>
             <strong>Start Time (UTC):</strong>
-            {new Date($currentTrailStore.startTime).toUTCString()}
+            {new Date($currentTrailStore.start_time).toUTCString()}
           </p>
           <p>
             <strong>Current Time (UTC):</strong>
@@ -260,11 +260,14 @@
             <strong>Trail Color:</strong>
             <span
               class="inline-block h-4 w-4"
-              style="background-color: {$currentTrailStore.color};"
+              style="background-color: {$currentTrailStore.trail_color};"
             ></span>
-            {$currentTrailStore.color}
+            {$currentTrailStore.trail_color}
           </p>
-          <p><strong>Trail Width:</strong> {$currentTrailStore.width}px</p>
+          <p>
+            <strong>Trail Width:</strong>
+            {$currentTrailStore.trail_width}px
+          </p>
           <p>
             <strong>Number of Coordinates:</strong>
             {$currentTrailStore.path.length}

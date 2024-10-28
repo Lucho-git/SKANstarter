@@ -38,8 +38,7 @@
   }
 
   export let map: Map
-  let currentTrailSource: string | null = null
-  let currentTrailLayer: string | null = null
+
   let lastCoordinateCount = 0
 
   export function generateTrailIds(trailId: string): TrailIdentifiers {
@@ -180,32 +179,42 @@
   }
 
   export function updateCurrentTrail(trail: Trail) {
-    if (!currentTrailSource || !map.getSource(currentTrailSource)) {
-      // Convert to LineString before adding
+    // Add debugging logs
+    console.log("Updating current trail:", trail.id)
+    console.log("Current trail store:", $currentTrailStore)
+    console.log("Existing sources:", map.style.sourceCaches)
+
+    const { sourceId, layerId } = generateTrailIds(trail.id)
+
+    // If we have a different trail ID than before, clean up the old one
+    if ($currentTrailStore && $currentTrailStore.id !== trail.id) {
+      console.log("Cleaning up old trail:", $currentTrailStore.id)
+      removeTrail($currentTrailStore.id)
+    }
+
+    // Check if this specific trail's source exists
+    if (map.getSource(sourceId)) {
+      console.log("Found existing source for trail:", sourceId)
+      const source = map.getSource(sourceId) as mapboxgl.GeoJSONSource
+      const lineString = convertToLineString(trail.path as TrailCoordinate[])
+      const newCoordinateCount = lineString.coordinates.length
+
+      if (newCoordinateCount !== lastCoordinateCount) {
+        const newGeoJSON = {
+          type: "Feature",
+          properties: {},
+          geometry: lineString,
+        }
+        source.setData(newGeoJSON)
+        lastCoordinateCount = newCoordinateCount
+      }
+    } else {
+      console.log("Creating new trail source:", sourceId)
       const trailWithLineString = {
         ...trail,
         path: convertToLineString(trail.path as TrailCoordinate[]),
       }
       addTrail(trailWithLineString)
-      return
-    }
-
-    // Convert and sort coordinates
-    console.log("converting to linestring", trail.path)
-    const lineString = convertToLineString(trail.path as TrailCoordinate[])
-    console.log("converted to linestring", lineString)
-    const newCoordinateCount = lineString.coordinates.length
-
-    if (newCoordinateCount !== lastCoordinateCount) {
-      const source = map.getSource(currentTrailSource) as mapboxgl.GeoJSONSource
-      const newGeoJSON = {
-        type: "Feature",
-        properties: {},
-        geometry: lineString,
-      }
-
-      source.setData(newGeoJSON)
-      lastCoordinateCount = newCoordinateCount
     }
   }
 

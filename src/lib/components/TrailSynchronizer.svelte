@@ -39,6 +39,8 @@
     await checkOpenTrails()
     await fetchOperationTrails()
 
+    console.log("Trailstore after fetch:", $currentTrailStore)
+
     const unsubscribeTrailing = trailingButtonPressed.subscribe(
       async (isPressed) => {
         console.log("Trailing Button Pressed:", isPressed)
@@ -54,6 +56,7 @@
 
     const unsubscribeCoordinateBuffer = coordinateBufferStore.subscribe(
       async (newCoordinateBuffer) => {
+        console.log("New Coordinate Buffer:", newCoordinateBuffer)
         if (
           newCoordinateBuffer &&
           newCoordinateBuffer.coordinates &&
@@ -245,7 +248,6 @@
         ...currentTrails,
         ...trails,
       ])
-
       // Log trails for debugging
       //   trails.forEach((trail, index) => {
       //     console.log(`Trail ${index + 1}:`, trail)
@@ -286,9 +288,9 @@
 
         currentTrailStore.set({
           ...openTrail,
-          startTime: openTrail.start_time,
-          color: openTrail.trail_color,
-          width: openTrail.trail_width,
+          start_time: openTrail.start_time,
+          trail_color: openTrail.trail_color,
+          trail_width: openTrail.trail_width,
           path: trailData || [],
         })
 
@@ -346,9 +348,9 @@
     toast.success("New trail created successfully")
     currentTrailStore.set({
       ...createData.trail,
-      startTime: createData.trail.start_time,
-      color: createData.trail.trail_color,
-      width: createData.trail.trail_width,
+      start_time: createData.trail.start_time,
+      trail_color: createData.trail.trail_color,
+      trail_width: createData.trail.trail_width,
       path: [],
     })
     userVehicleTrailing.set(true)
