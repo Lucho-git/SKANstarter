@@ -16,6 +16,9 @@
     unsavedCoordinatesStore,
     type Trail,
   } from "$lib/stores/currentTrailStore"
+
+  import { historicalTrailStore } from "$lib/stores/otherTrailStore"
+
   import { toast } from "svelte-sonner"
 
   let timeDifference: number
@@ -184,7 +187,23 @@
         throw new Error(data.error || "Failed to close trail")
       }
 
+      // Convert the path data to the required GeoJSON LineString format
+      const lineStringPath = {
+        type: "LineString",
+        coordinates: pathData.map((coord) => [coord.longitude, coord.latitude]),
+      }
+
+      // Create the historical trail object
+      const historicalTrail = {
+        ...data.trail,
+        path: lineStringPath,
+      }
+
+      // Add to historical trail store
+      historicalTrailStore.update((trails) => [...trails, historicalTrail])
+
       toast.success("Trail closed successfully")
+      console.log("Trail closed successfully:", data)
 
       // Clear unsaved coordinates
       unsavedCoordinatesStore.clear()
