@@ -1,11 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'
+import { simplifyPath } from '../src/lib/utils/pathSimplification.js'
 
 dotenv.config()
 
 const supabase = createClient(process.env.PUBLIC_SUPABASE_URL, process.env.PRIVATE_SUPABASE_SERVICE_ROLE)
 
-const MASTER_MAP_ID = 'f9265c5c-2333-4601-93e0-e30b54c3c919'
+const MASTER_MAP_ID = 'a1f8c4c2-c30e-4892-a1a5-d7191ae61c77'
 
 function convertTimestamp(milliseconds) {
   return new Date(parseInt(milliseconds)).toISOString()
@@ -65,19 +66,42 @@ async function processTrailData() {
       console.log(`Swath: ${trail[0].swath}`)
       console.log(`Number of points: ${trail.length}`)
 
-      // Convert trail to PostGIS LineString
-      const lineStringCoordinates = trail.map(point => {
-        // Parse the point data type
+      // Create detailed LineStringM with timestamps
+      const detailedLineString = trail.map(point => {
         const match = point.coordinates.match(/\((.+),(.+)\)/)
         if (match) {
           const [, longitude, latitude] = match
-          return `${longitude} ${latitude}`
+          return `${longitude} ${latitude} ${point.timestamp}`
         }
         return null
       }).filter(Boolean).join(',')
 
-      const lineString = `SRID=4326;LINESTRING(${lineStringCoordinates})`
-      console.log(`Generated LineString with ${trail.length} points: ${lineString ? 'Valid' : 'Invalid'}`)
+      const detailedPath = `SRID=4326;LINESTRING M(${detailedLineString})`
+
+      // Create simplified LineString for rendering
+      const pathForSimplification = trail.map(point => {
+        const match = point.coordinates.match(/\((.+),(.+)\)/)
+        if (match) {
+          return {
+            coordinates: point.coordinates
+          }
+        }
+        return null
+      }).filter(Boolean)
+
+      const simplifiedPath = simplifyPath(pathForSimplification, 0.0000035)
+
+      const simplifiedLineString = simplifiedPath.map(point => {
+        const coords = point.coordinates.match(/\((.*?),(.*?)\)/)
+        return `${coords[1]} ${coords[2]}`
+      }).join(',')
+
+      const path = `SRID=4326;LINESTRING(${simplifiedLineString})`
+
+      console.log(`Generated LineStrings:`)
+      console.log(`Detailed points: ${trail.length}`)
+      console.log(`Simplified points: ${simplifiedPath.length}`)
+      console.log(`Reduction: ${Math.round((1 - simplifiedPath.length / trail.length) * 100)}%`)
 
       // Insert this trail into the database
       const { data, error } = await supabase
@@ -89,7 +113,8 @@ async function processTrailData() {
           end_time: convertTimestamp(trail[trail.length - 1].timestamp),
           trail_color: trail[0].color,
           trail_width: trail[0].swath,
-          path: lineString
+          detailed_path: detailedPath,
+          path: path
         })
 
       if (error) {

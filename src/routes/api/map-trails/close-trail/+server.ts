@@ -2,6 +2,7 @@
 
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { simplifyPath } from '$lib/utils/pathSimplification';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
     const session = await locals.getSession();
@@ -24,22 +25,40 @@ export const POST: RequestHandler = async ({ request, locals }) => {
             end_time: serverEndTime,
         };
 
-        // Convert path to a PostGIS LineString
         if (path && path.length > 0) {
-            console.log('Path received:', path);
-            const lineStringCoordinates = path.map((point: any) =>
-                `${point.longitude} ${point.latitude}`
+            // Create LineStringM with timestamps
+            const detailedLineString = path.map((point: any) =>
+                `${point.longitude} ${point.latitude} ${point.timestamp}`
             ).join(',');
+            updateData.detailed_path = `SRID=4326;LINESTRING M(${detailedLineString})`;
 
-            updateData.path = `SRID=4326;LINESTRING(${lineStringCoordinates})`;
-            console.log('Generated LineString:', updateData.path);
+            // Create simplified LineString for rendering
+            const pathForSimplification = path.map((point: any) => ({
+                coordinates: `(${point.longitude},${point.latitude})`
+            }));
+
+            // Apply simplification
+            const simplifiedPath = simplifyPath(pathForSimplification, 0.0001);
+
+            // Convert simplified path to LineString
+            const simplifiedLineString = simplifiedPath.map((point: any) => {
+                const coords = point.coordinates.match(/\((.*?),(.*?)\)/);
+                return `${coords[1]} ${coords[2]}`;
+            }).join(',');
+
+            updateData.path = `SRID=4326;LINESTRING(${simplifiedLineString})`;
+
+            console.log('Generated LineStrings:', {
+                detailed: updateData.detailed_path,
+                simplified: updateData.path
+            });
         } else {
             console.log('No path data received or path is empty');
         }
 
         console.log('Update data:', updateData);
 
-        // Step 1: Update the trail
+        // Update the trail with both paths
         const { data: updatedTrail, error: updateError } = await locals.supabase
             .from('trails')
             .update(updateData)
@@ -59,7 +78,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
         console.log('Updated trail data:', updatedTrail);
 
-        // Step 2: Delete associated data from trail_stream
+        // Delete associated data from trail_stream
         const { error: deleteError } = await locals.supabase
             .from('trail_stream')
             .delete()
@@ -68,7 +87,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         if (deleteError) {
             console.error("Error deleting trail stream data:", deleteError);
             // Note: We don't return here because the trail was successfully closed
-            // You might want to log this error or handle it in some way
         }
 
         return json({ trail: updatedTrail }, { status: 200 });

@@ -155,9 +155,12 @@
       return
     }
 
+    console.log("Submitting trail data:", $currentTrailStore)
+    // Modified to include timestamps
     const pathData = $currentTrailStore.path.map((point) => ({
       latitude: point.coordinates.latitude,
       longitude: point.coordinates.longitude,
+      timestamp: point.timestamp,
     }))
 
     // Check if the path is empty or has only one coordinate
@@ -172,8 +175,10 @@
     const trailData = {
       trail_id: $currentTrailStore.id,
       path: pathData,
+      // Include any other metadata that might be needed
+      trail_color: $currentTrailStore.trail_color,
+      trail_width: $currentTrailStore.trail_width,
     }
-
     try {
       const response = await fetch("/api/map-trails/close-trail", {
         method: "POST",

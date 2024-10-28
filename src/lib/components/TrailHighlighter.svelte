@@ -84,10 +84,12 @@
     let opacityStep = 0
     const baseWidth =
       trail.trail_width * HIGHLIGHT_CONFIG.HIGHLIGHT_WIDTH_MULTIPLIER
-
     const opacitySequence = [0.3, 0.4, 0.6, 0.8, 1, 0.8, 0.6, 0.4]
+    let animationFrameId: number | null = null // Add this line
 
     // Base electric glow
+    if (!map.getSource(sourceId)) return // Add this check
+
     map.addLayer({
       type: "line",
       source: sourceId,
@@ -105,27 +107,49 @@
     })
 
     function animate(timestamp: number) {
-      const newOpacityStep = parseInt(
-        (timestamp / 100) % opacitySequence.length,
-      )
-
-      if (
-        newOpacityStep !== opacityStep &&
-        map.getLayer(highlightBackgroundLayerId)
-      ) {
-        map.setPaintProperty(
-          highlightBackgroundLayerId,
-          "line-opacity",
-          opacitySequence[opacityStep],
-        )
-        opacityStep = newOpacityStep
+      if (!isAnimating || !map) {
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId)
+        }
+        return
       }
 
-      if (map.getLayer(highlightBackgroundLayerId)) {
-        requestAnimationFrame(animate)
+      try {
+        const newOpacityStep = parseInt(
+          (timestamp / 100) % opacitySequence.length,
+        )
+
+        if (
+          newOpacityStep !== opacityStep &&
+          map.getLayer(highlightBackgroundLayerId)
+        ) {
+          map.setPaintProperty(
+            highlightBackgroundLayerId,
+            "line-opacity",
+            opacitySequence[opacityStep],
+          )
+          opacityStep = newOpacityStep
+        }
+
+        if (map.getLayer(highlightBackgroundLayerId)) {
+          animationFrameId = requestAnimationFrame(animate)
+        }
+      } catch (error) {
+        console.log("Animation stopped due to map cleanup")
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId)
+        }
       }
     }
+
     animate(0)
+
+    // Return cleanup function
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId)
+      }
+    }
   }
 
   function startAntAnimation(trail: Trail) {
@@ -237,11 +261,15 @@
     const { highlightLayerId, highlightBackgroundLayerId } =
       generateTrailIds(trailId)
 
-    if (map.getLayer(highlightLayerId)) {
-      map.removeLayer(highlightLayerId)
-    }
-    if (map.getLayer(highlightBackgroundLayerId)) {
-      map.removeLayer(highlightBackgroundLayerId)
+    try {
+      if (map && map.getLayer(highlightLayerId)) {
+        map.removeLayer(highlightLayerId)
+      }
+      if (map && map.getLayer(highlightBackgroundLayerId)) {
+        map.removeLayer(highlightBackgroundLayerId)
+      }
+    } catch (error) {
+      console.log("Error removing highlight layers:", error)
     }
   }
 
@@ -286,9 +314,11 @@
   }
 
   onMount(() => {
-    return () => {
-      isAnimating = false // Stop animation on component cleanup
+    const cleanup = () => {
+      isAnimating = false
     }
+
+    return cleanup
   })
 </script>
 
