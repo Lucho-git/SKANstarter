@@ -323,41 +323,56 @@
 </script>
 
 <button
-  class="toggle-button"
+  class="btn btn-circle fixed bottom-8 left-6 z-50 h-10 w-10 border-none bg-black/70 text-white backdrop-blur transition-transform hover:scale-110 hover:bg-black/80"
+  style="background: {showNavigationUI ? 'rgba(255, 255, 255, 0.9)' : ''}"
+  class:text-black={showNavigationUI}
   on:click={toggleNavigationUI}
-  class:active={showNavigationUI}
 >
   {showNavigationUI ? "✕" : "▶"}
 </button>
 
 {#if showNavigationUI}
-  <div class="navigation-container">
-    <button class="nav-button" on:click={handlePrevious} disabled={false}>
-      ←
-    </button>
-
-    <div class="trail-counter">
-      {#if $historicalTrailStore.length > 0}
-        Trail {currentTrailIndex + 1} of {$historicalTrailStore.length}
-      {/if}
-    </div>
-
-    <button class="nav-button" on:click={handleNext} disabled={false}>
-      →
-    </button>
-
-    <button
-      class="delete-button"
-      on:click={() => {
-        trailToDelete = $historicalTrailStore[currentTrailIndex]
-        showDeleteModal = true
-      }}
+  <div
+    class="fixed bottom-4 left-1/2 flex -translate-x-1/2 items-center rounded-full bg-black/70 backdrop-blur"
+    style="max-width: calc(70vw - 2rem); min-width: min-content;"
+  >
+    <div
+      class="flex items-center justify-between gap-x-[max(0.25rem,min(1rem,1.5vw))] p-[max(0.25rem,min(1rem,1.5vw))]"
     >
-      🗑️
-    </button>
+      <button
+        class="btn btn-circle h-10 w-10 shrink-0 border-none bg-white text-lg hover:bg-gray-100"
+        on:click={handlePrevious}
+        disabled={false}
+      >
+        ←
+      </button>
+
+      <div class="mx-1 truncate text-center text-sm text-white">
+        {#if $historicalTrailStore.length > 0}
+          Trail {currentTrailIndex + 1} of {$historicalTrailStore.length}
+        {/if}
+      </div>
+
+      <button
+        class="btn btn-circle h-10 w-10 shrink-0 border-none bg-white text-lg hover:bg-gray-100"
+        on:click={handleNext}
+        disabled={false}
+      >
+        →
+      </button>
+
+      <button
+        class="btn btn-circle btn-error h-10 w-10 shrink-0 border-none hover:bg-error/90"
+        on:click={() => {
+          trailToDelete = $historicalTrailStore[currentTrailIndex]
+          showDeleteModal = true
+        }}
+      >
+        🗑️
+      </button>
+    </div>
   </div>
 {/if}
-
 {#if showDeleteModal && trailToDelete}
   <dialog class="modal modal-open">
     <div class="modal-box">
@@ -367,15 +382,12 @@
         undone.
       </p>
       <div class="modal-action">
-        <button
-          class="btn btn-ghost"
-          on:click={() => (showDeleteModal = false)}
+        <button class="btn btn-ghost" on:click={() => (showDeleteModal = false)}
+          >Cancel</button
         >
-          Cancel
-        </button>
-        <button class="btn btn-error" on:click={handleDeleteConfirm}>
-          Delete
-        </button>
+        <button class="btn btn-error" on:click={handleDeleteConfirm}
+          >Delete</button
+        >
       </div>
     </div>
     <form method="dialog" class="modal-backdrop">
@@ -383,98 +395,3 @@
     </form>
   </dialog>
 {/if}
-
-<style>
-  .navigation-container {
-    position: absolute;
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 0.5rem 1rem;
-    border-radius: 2rem;
-    backdrop-filter: blur(4px);
-  }
-
-  .nav-button {
-    background: white;
-    border: none;
-    border-radius: 50%;
-    width: 2.5rem;
-    height: 2.5rem;
-    font-size: 1.2rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-  }
-
-  .nav-button:hover:not(:disabled) {
-    background: #f0f0f0;
-    transform: scale(1.1);
-  }
-
-  .nav-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .trail-counter {
-    color: white;
-    font-size: 0.9rem;
-    min-width: 8rem;
-    text-align: center;
-  }
-
-  .toggle-button {
-    position: absolute;
-    bottom: 2rem;
-    left: 2rem;
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.7);
-    border: none;
-    color: white;
-    font-size: 1rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(4px);
-    transition: all 0.2s ease;
-  }
-
-  .toggle-button:hover {
-    transform: scale(1.1);
-  }
-
-  .toggle-button.active {
-    background: rgba(255, 255, 255, 0.9);
-    color: black;
-  }
-
-  .delete-button {
-    background: #ff4444;
-    border: none;
-    border-radius: 50%;
-    width: 2.5rem;
-    height: 2.5rem;
-    font-size: 1.2rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    color: white;
-  }
-
-  .delete-button:hover {
-    background: #ff6666;
-    transform: scale(1.1);
-  }
-</style>
