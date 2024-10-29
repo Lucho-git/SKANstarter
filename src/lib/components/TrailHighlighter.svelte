@@ -85,7 +85,56 @@
       if ($historicalTrailStore.length > 0) {
         const currentTrail = $historicalTrailStore[currentTrailIndex]
         flyToTrail(currentTrail)
-        startGlowAnimation(currentTrail)
+        startOutlineAnimation(currentTrail)
+      }
+    }
+  }
+
+  function startOutlineAnimation(trail: Trail) {
+    const { sourceId, highlightLayerId } = generateTrailIds(trail.id)
+    const baseWidth =
+      trail.trail_width * HIGHLIGHT_CONFIG.HIGHLIGHT_WIDTH_MULTIPLIER
+
+    // Add white outline layer
+    map.addLayer({
+      type: "line",
+      source: sourceId,
+      id: highlightLayerId,
+      paint: {
+        "line-color": "white",
+        "line-width": calculateZoomDependentWidth(baseWidth, 1.5),
+        "line-opacity": 0.8,
+      },
+      layout: {
+        "line-cap": "round",
+        "line-join": "round",
+      },
+    })
+
+    // Add the original trail on top with slightly smaller width
+    const innerLayerId = `${highlightLayerId}-inner`
+    map.addLayer({
+      type: "line",
+      source: sourceId,
+      id: innerLayerId,
+      paint: {
+        "line-color": trail.trail_color,
+        "line-width": calculateZoomDependentWidth(baseWidth, 0.8),
+        "line-opacity": 1,
+      },
+      layout: {
+        "line-cap": "round",
+        "line-join": "round",
+      },
+    })
+
+    // Return cleanup function
+    return () => {
+      if (map.getLayer(highlightLayerId)) {
+        map.removeLayer(highlightLayerId)
+      }
+      if (map.getLayer(innerLayerId)) {
+        map.removeLayer(innerLayerId)
       }
     }
   }
@@ -299,7 +348,7 @@
     const trail = $historicalTrailStore[currentTrailIndex]
 
     flyToTrail(trail)
-    startGlowAnimation(trail)
+    startOutlineAnimation(trail)
 
     await new Promise((resolve) =>
       setTimeout(resolve, HIGHLIGHT_CONFIG.FLIGHT_DURATION),
@@ -317,6 +366,7 @@
   export const highlighterAPI = {
     highlightTrail: startAntAnimation,
     glowTrail: startGlowAnimation,
+    outlineTrail: startOutlineAnimation,
     removeHighlight,
     flyToTrail,
     nextTrail: handleNext,
