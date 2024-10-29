@@ -28,6 +28,18 @@ export const actions = {
             return fail(404, { message: 'Map not found' });
         }
 
+        // Get the first operation for this master map
+        const { data: operationData, error: operationError } = await locals.supabase
+            .from("operations")
+            .select("id")
+            .eq("master_map_id", mapIdToJoin)
+            .limit(1)
+            .single();
+
+        if (operationError) {
+            return fail(500, { message: 'Failed to fetch operation data' });
+        }
+
         // Get the current user's profile, including recent_maps
         const { data: userData, error: userError } = await locals.supabase
             .from("profiles")
@@ -41,19 +53,17 @@ export const actions = {
 
         // Update recent_maps
         let recentMaps = userData.recent_maps || [];
-        // Remove the mapIdToJoin if it already exists
         recentMaps = recentMaps.filter(id => id !== mapIdToJoin);
-        // Add the mapIdToJoin to the front of the array
         recentMaps.unshift(mapIdToJoin);
-        // Limit the array to a certain number of recent maps (e.g., 10)
         recentMaps = recentMaps.slice(0, 10);
 
-        // Update the user's profile with the new master_map_id and recent_maps
+        // Update the user's profile with the new master_map_id, recent_maps, and selected_operation_id
         const { error: updateError } = await locals.supabase
             .from("profiles")
             .update({
                 master_map_id: mapIdToJoin,
-                recent_maps: recentMaps
+                recent_maps: recentMaps,
+                selected_operation_id: operationData?.id || null
             })
             .eq("id", session.user.id);
 
