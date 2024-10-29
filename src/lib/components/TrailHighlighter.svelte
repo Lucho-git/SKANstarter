@@ -4,6 +4,7 @@
   import { historicalTrailStore } from "$lib/stores/otherTrailStore"
   import mapboxgl from "mapbox-gl"
   import { onMount } from "svelte"
+  import { toast } from "svelte-sonner"
   interface TrailIdentifiers {
     sourceId: string
     layerId: string
@@ -54,10 +55,15 @@
       if (success) {
         showDeleteModal = false
         trailToDelete = null
-        if (currentTrailIndex >= $historicalTrailStore.length) {
-          currentTrailIndex = Math.max(0, $historicalTrailStore.length - 1)
-        }
-        if ($historicalTrailStore.length > 0) {
+
+        // If this was the last trail, close the navigation UI
+        if ($historicalTrailStore.length === 0) {
+          showNavigationUI = false
+        } else {
+          // Update currentTrailIndex only if there are remaining trails
+          if (currentTrailIndex >= $historicalTrailStore.length) {
+            currentTrailIndex = Math.max(0, $historicalTrailStore.length - 1)
+          }
           navigateToTrail(currentTrailIndex)
         }
       }
@@ -65,6 +71,11 @@
   }
 
   function toggleNavigationUI() {
+    if (!$historicalTrailStore.length) {
+      toast.error("No trails available. Create some trails first!")
+      return
+    }
+
     showNavigationUI = !showNavigationUI
     if (!showNavigationUI) {
       // Clean up highlights when hiding UI
