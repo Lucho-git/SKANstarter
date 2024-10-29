@@ -5,13 +5,10 @@
     operationStore,
     selectedOperationStore,
   } from "$lib/stores/operationStore"
-  import { toast } from "svelte-sonner"
+  import { profileStore } from "../../../../stores/profileStore"
   import { onMount } from "svelte"
+  import { toast } from "svelte-sonner"
 
-  console.log("OPERATIONS!!!!!!!!!!!!!!", $operationStore)
-
-  let selectedOperation =
-    $selectedOperationStore || $operationStore[0]?.id || ""
   let newOperationName = ""
   let newOperationYear = new Date().getFullYear()
   let newOperationDescription = ""
@@ -20,15 +17,8 @@
   let editOperationYear = null
   let editOperationDescription = ""
 
-  $: {
-    selectedOperationStore.set(selectedOperation)
-    console.log("Selected Operation Updated:", selectedOperation)
-  }
-
   onMount(() => {
-    if (!selectedOperation && $operationStore.length > 0) {
-      selectedOperation = $operationStore[0].id
-    }
+    console.log("Initial Operation Store:", $operationStore)
   })
 
   async function addOperation() {
@@ -53,10 +43,15 @@
           }
           return response.json()
         })
-        .then((data) => {
+        .then(async (data) => {
           operationStore.update((ops) => [...ops, data.operation])
-          selectedOperation = data.operation.id
-          selectedOperationStore.set(data.operation.id)
+          selectedOperationStore.set(data.operation)
+
+          // Create a synthetic event to pass to handleOperationSelect
+          await handleOperationSelect({
+            target: { value: data.operation.id },
+          })
+
           newOperationName = ""
           newOperationYear = new Date().getFullYear()
           newOperationDescription = ""
@@ -73,8 +68,7 @@
   }
 
   function editOperation() {
-    console.log("Operationudpate", $operationStore)
-    const operation = $operationStore.find((op) => op.id === selectedOperation)
+    const operation = $selectedOperationStore
     if (operation) {
       editOperationId = operation.id
       editOperationName = operation.name
@@ -91,36 +85,65 @@
         name: editOperationName.trim(),
         year: Number(editOperationYear),
         description: editOperationDescription.trim(),
+        master_map_id: $selectedOperationStore.master_map_id,
       }
 
-      const updatePromise = fetch(`/api/operations/update`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedOperation),
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Failed to update operation")
-          }
-          return response.json()
-        })
-        .then((data) => {
-          operationStore.update((ops) =>
-            ops.map((op) => (op.id === editOperationId ? data.operation : op)),
-          )
-          selectedOperation = data.operation.id
-          selectedOperationStore.set(data.operation.id)
-          closeModal("edit-modal")
-          return "Operation updated successfully"
-        })
+      console.log("Updating operation:", updatedOperation)
 
-      toast.promise(updatePromise, {
-        loading: "Updating operation...",
-        success: (message) => message,
-        error: (err) => `Error: ${err.message}`,
-      })
+      operationStore.update((ops) =>
+        ops.map((op) => (op.id === editOperationId ? updatedOperation : op)),
+      )
+
+      // Update selected operation if it's the one being edited
+      if ($selectedOperationStore.id === editOperationId) {
+        selectedOperationStore.set(updatedOperation)
+      }
+
+      closeModal("edit-modal")
+      console.log("Operation updated successfully")
+    }
+  }
+
+  async function handleOperationSelect(event) {
+    console.log("Selected New Operation:", event.target.value)
+    const selectedId = event.target.value
+    const selectedOperation = $operationStore.find((op) => op.id === selectedId)
+
+    if (selectedOperation) {
+      console.log("Selected Operation:", selectedOperation)
+      selectedOperationStore.set(selectedOperation)
+
+      try {
+        const response = await fetch(
+          "/api/profiles/update-selected-operation",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              profileId: $profileStore.id,
+              operationId: selectedId,
+            }),
+          },
+        )
+
+        const result = await response.json()
+        if (!response.ok) {
+          console.error("Failed to update selected operation:", result.error)
+          toast.error(`Failed to update selected operation: ${result.error}`)
+          return
+        }
+
+        console.log(
+          "Successfully updated selected operation in database:",
+          result.profile,
+        )
+        toast.success("Successfully updated selected operation")
+      } catch (error) {
+        console.error("Error updating selected operation:", error)
+        toast.error("Failed to update selected operation")
+      }
     }
   }
 
@@ -147,7 +170,8 @@
   <div class="flex flex-col items-center gap-4 sm:flex-row">
     <select
       class="select select-bordered flex-grow bg-base-100"
-      bind:value={selectedOperation}
+      value={$selectedOperationStore?.id}
+      on:change={handleOperationSelect}
     >
       {#each $operationStore as operation}
         <option value={operation.id}>
@@ -165,7 +189,7 @@
       </button>
 
       <label for="add-modal" class="btn btn-secondary">
-        <Plus class=" h-5 w-5" />Operation
+        <Plus class="h-5 w-5" />Operation
       </label>
     </div>
   </div>

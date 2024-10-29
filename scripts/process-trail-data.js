@@ -6,48 +6,70 @@ dotenv.config()
 
 const supabase = createClient(process.env.PUBLIC_SUPABASE_URL, process.env.PRIVATE_SUPABASE_SERVICE_ROLE)
 
-const MASTER_MAP_ID = 'a1f8c4c2-c30e-4892-a1a5-d7191ae61c77'
+// Comment/uncomment these lines to switch between single map and all maps
+const PROCESS_ALL_MAPS = false
+const SINGLE_MAP_ID = '489f8e7c-111b-4a57-ac1e-5b73df4a5167'
 
 function convertTimestamp(milliseconds) {
   return new Date(parseInt(milliseconds)).toISOString()
 }
 
-async function processTrailData() {
+async function getAllMasterMapIds() {
+  const { data, error } = await supabase
+    .from('master_maps')
+    .select('id')
+
+  if (error) throw error
+  return data.map(map => map.id)
+}
+
+async function processTrailData(masterMapId) {
   try {
-    // Find the operation associated with this master_map_id
-    const { data: operationData, error: operationError } = await supabase
+    console.log(`\n=== Processing master_map_id: ${masterMapId} ===`)
+
+    // Find the operations associated with this master_map_id
+    const { data: operationsData, error: operationError } = await supabase
       .from('operations')
       .select('*')
-      .eq('master_map_id', MASTER_MAP_ID)
-      .single()
+      .eq('master_map_id', masterMapId)
+      .order('created_at', { ascending: true })
 
     if (operationError) {
-      throw new Error(`Error fetching operation: ${operationError.message}`)
+      console.error(`Error fetching operations for ${masterMapId}: ${operationError.message}`)
+      return
     }
 
-    if (!operationData) {
-      throw new Error(`No operation found for master_map_id: ${MASTER_MAP_ID}`)
+    if (!operationsData || operationsData.length === 0) {
+      console.log(`No operation found for master_map_id: ${masterMapId}, skipping...`)
+      return
     }
 
-    console.log(`Found operation for master_map_id: ${MASTER_MAP_ID}`)
+    // Take the first operation from the results
+    const operationData = operationsData[0]
+    
+    if (operationsData.length > 1) {
+      console.log(`Note: Found ${operationsData.length} operations for this master_map_id. Using operation_id: ${operationData.id}`)
+    }
 
     // Fetch all data points for the specified master_map_id
     const { data: trailData, error } = await supabase
       .from('trail_data')
       .select('*')
-      .eq('master_map_id', MASTER_MAP_ID)
+      .eq('master_map_id', masterMapId)
       .order('vehicle_id', { ascending: true })
       .order('timestamp', { ascending: true })
 
     if (error) {
-      throw error
+      console.error(`Error fetching trail data for ${masterMapId}: ${error.message}`)
+      return
     }
 
-    console.log(`Retrieved ${trailData.length} data points for master_map_id: ${MASTER_MAP_ID}`)
+    if (!trailData || trailData.length === 0) {
+      console.log(`No trail data found for master_map_id: ${masterMapId}, skipping...`)
+      return
+    }
 
-    // Log sample data points
-    console.log('Sample data points:')
-    console.log(JSON.stringify(trailData.slice(0, 5), null, 2))
+    console.log(`Retrieved ${trailData.length} data points`)
 
     // Group the data points into trails
     const trails = groupIntoTrails(trailData)
@@ -57,7 +79,7 @@ async function processTrailData() {
     // Process each trail
     for (let index = 0; index < trails.length; index++) {
       const trail = trails[index]
-      console.log(`\nProcessing Trail ${index + 1}:`)
+      console.log(`\nProcessing Trail ${index + 1}/${trails.length}:`)
       console.log(`Operation ID: ${operationData.id}`)
       console.log(`Vehicle ID: ${trail[0].vehicle_id}`)
       console.log(`Start Time: ${convertTimestamp(trail[0].timestamp)}`)
@@ -65,7 +87,7 @@ async function processTrailData() {
       console.log(`Color: ${trail[0].color}`)
       console.log(`Swath: ${trail[0].swath}`)
       console.log(`Number of points: ${trail.length}`)
-
+      
       // Create detailed LineStringM with timestamps
       const detailedLineString = trail.map(point => {
         const match = point.coordinates.match(/\((.+),(.+)\)/)
@@ -104,7 +126,7 @@ async function processTrailData() {
       console.log(`Reduction: ${Math.round((1 - simplifiedPath.length / trail.length) * 100)}%`)
 
       // Insert this trail into the database
-      const { data, error } = await supabase
+      const { error: insertError } = await supabase
         .from('trails')
         .insert({
           operation_id: operationData.id,
@@ -117,21 +139,18 @@ async function processTrailData() {
           path: path
         })
 
-      if (error) {
-        console.error(`Error inserting trail ${index + 1}:`, error)
+      if (insertError) {
+        console.error(`Error inserting trail ${index + 1}:`, insertError)
       } else {
-        console.log(`Successfully inserted trail ${index + 1}`)
+        console.log(`Successfully inserted trail ${index + 1}/${trails.length}`)
       }
     }
 
-    console.log(`\nTotal trails processed: ${trails.length}`)
-
-    // Log out the operation details
-    console.log('\nOperation Details:')
-    console.log(JSON.stringify(operationData, null, 2))
+    console.log(`\nCompleted processing for master_map_id: ${masterMapId}`)
+    console.log(`Total trails processed: ${trails.length}`)
 
   } catch (error) {
-    console.error('Error processing trail data:', error)
+    console.error(`Error processing master_map_id ${masterMapId}:`, error)
   }
 }
 
@@ -164,6 +183,24 @@ function groupIntoTrails(dataPoints) {
   return trails
 }
 
-processTrailData()
-  .then(() => console.log('Finished processing trail data'))
-  .catch(console.error)
+async function main() {
+  try {
+    if (!PROCESS_ALL_MAPS) {
+      // Process single map
+      await processTrailData(SINGLE_MAP_ID)
+    } else {
+      // Process all maps
+      const masterMapIds = await getAllMasterMapIds()
+      console.log(`Found ${masterMapIds.length} master maps to process`)
+      
+      for (const mapId of masterMapIds) {
+        await processTrailData(mapId)
+      }
+    }
+    console.log('\nFinished processing all trail data')
+  } catch (error) {
+    console.error('Fatal error:', error)
+  }
+}
+
+main()

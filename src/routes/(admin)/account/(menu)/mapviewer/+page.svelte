@@ -6,6 +6,7 @@
   import { browser } from "$app/environment"
   import MapViewer from "../../../../../components/MapViewer.svelte"
   import type { PageData } from "./$types"
+  import { selectedOperationStore } from "$lib/stores/operationStore"
 
   export let data: PageData
 
@@ -17,8 +18,7 @@
 
   // Pass through the raw location data
   $: initialLocation = data.location
-  $: selectedOperation = data.operations[0]
-
+  let selectedOperation = $selectedOperationStore
   function isAndroid() {
     return browser && /Android/.test(navigator.userAgent)
   }

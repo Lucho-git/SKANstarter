@@ -10,7 +10,7 @@ import { profileStore } from "../../../stores/profileStore"
 import { subscriptionStore } from '../../../stores/subscriptionStore';
 import { connectedMapStore } from '../../../stores/connectedMapStore';
 import { mapActivityStore } from '../../../stores/mapActivityStore';
-import { operationStore } from '$lib/stores/operationStore.js'
+import { operationStore, selectedOperationStore } from '$lib/stores/operationStore.js'
 
 export const load = async ({ fetch, data, depends, url }) => {
     depends("supabase:auth")
@@ -63,15 +63,19 @@ export const load = async ({ fetch, data, depends, url }) => {
     console.log("Loading data into stores:", data);
 
     // Load profile data
-    profileStore.set({
+    const profileData = {
         id: data.profile.id,
         full_name: data.profile.full_name,
         company_name: data.profile.company_name,
         website: data.profile.website,
         survey_completed: data.profile.survey_completed,
         master_map_id: data.profile.master_map_id,
-        recent_maps: data.profile.recent_maps
-    });
+        recent_maps: data.profile.recent_maps,
+        selected_operation_id: typeof data.profile.selected_operation_id === 'string'
+            ? data.profile.selected_operation_id
+            : null
+    };
+    profileStore.set(profileData);
 
     // Load user's subscription data
     subscriptionStore.set({
@@ -113,8 +117,26 @@ export const load = async ({ fetch, data, depends, url }) => {
         // Load operations data
         if (data.operations) {
             operationStore.set(data.operations);
+
+            // Set selected operation if it exists in profile
+            if (profileData.selected_operation_id && typeof profileData.selected_operation_id === 'string') {
+                const selectedOperation = data.operations.find(op => op.id === profileData.selected_operation_id);
+                if (selectedOperation) {
+                    console.log('Setting selected operation as', selectedOperation)
+                    selectedOperationStore.set(selectedOperation);
+                } else {
+                    selectedOperationStore.set(null);
+                    profileStore.update(profile => ({
+                        ...profile,
+                        selected_operation_id: null
+                    }));
+                }
+            } else {
+                selectedOperationStore.set(null);
+            }
         } else {
             operationStore.set([]);
+            selectedOperationStore.set(null);
         }
     } else {
         // Reset connected map, map activity, and operations stores if no map is connected
@@ -134,12 +156,11 @@ export const load = async ({ fetch, data, depends, url }) => {
             vehicle_states: []
         });
         operationStore.set([]);
+        selectedOperationStore.set(null);
     }
 
     return data;
 };
-
-
 
 //Required Fields
 export const _hasFullProfile = (
@@ -157,7 +178,6 @@ export const _hasFullProfile = (
 
     return true
 }
-
 
 export const _hasSurveyCompleted = (
     profile: Database["public"]["Tables"]["profiles"]["Row"] | null,
