@@ -37,10 +37,20 @@
       initialValue: profile?.website ?? "",
     },
   ]}
-  editButtonTitle="Edit Profile"
-  editLink="/account/settings/edit_profile"
-/>
-
+>
+  <div class="flex flex-col gap-2" slot="buttons">
+    <a href="/account/settings/edit_profile">
+      <button class="btn btn-outline btn-sm min-w-[145px]">
+        Edit Profile
+      </button>
+    </a>
+    <a href="/account/sign_out">
+      <button class="btn btn-error btn-outline btn-sm min-w-[145px]">
+        Sign Out
+      </button>
+    </a>
+  </div>
+</SettingsModule>
 <SettingsModule
   title="Email"
   editable={false}

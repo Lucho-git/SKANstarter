@@ -136,6 +136,8 @@
               {/if}
             </button>
           </div>
+        {:else if $$slots.buttons}
+          <slot name="buttons" />
         {:else}
           <a href={editLink} class="mt-1">
             <button
