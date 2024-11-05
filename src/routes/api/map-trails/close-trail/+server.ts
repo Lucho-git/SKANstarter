@@ -89,6 +89,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
             // Note: We don't return here because the trail was successfully closed
         }
 
+        //check for and delete any additional open trail_streams which may have been left behind
+
         return json({ trail: updatedTrail }, { status: 200 });
     } catch (error) {
         console.error('Unexpected error:', error);
