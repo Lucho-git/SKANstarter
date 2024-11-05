@@ -8,7 +8,7 @@
   import { toast } from "svelte-sonner"
 
   export const TRAIL_CONFIG = {
-    MULTIPLIER: 2.5,
+    MULTIPLIER: 1,
     MIN_ZOOM: 10,
     MAX_ZOOM: 24,
     MIN_POWER: -6,
