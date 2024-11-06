@@ -223,13 +223,13 @@
 
   // Add new function similar to updateCurrentTrail
   export function updateOtherActiveTrail(trail: Trail) {
-    console.log("Updating other active trail:", trail.id)
+    // console.log("Updating other active trail:", trail.id)
 
     const { sourceId, layerId } = generateTrailIds(trail.id)
 
     // Check if this specific trail's source exists
     if (map.getSource(sourceId)) {
-      console.log("Found existing source for trail:", sourceId)
+      //   console.log("Found existing source for trail:", sourceId)
       const source = map.getSource(sourceId) as mapboxgl.GeoJSONSource
       const lineString = convertToLineString(trail.path as TrailCoordinate[])
 

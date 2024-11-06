@@ -1,6 +1,8 @@
 <!-- src/components/TrailSynchronizer.svelte -->
 <script>
   import { onMount, onDestroy, createEventDispatcher } from "svelte"
+  import { supabase } from "$lib/supabaseClient"
+
   import { toast } from "svelte-sonner"
   import {
     userVehicleStore,
@@ -30,6 +32,8 @@
 
   export let selectedOperation
   export let map
+
+  let supabaseChannel
 
   let triggerEndTrail
   let syncIntervalId = null
@@ -91,6 +95,8 @@
         }
       },
     )
+
+    await subscribeToTrailStreams()
   })
 
   onDestroy(() => {
@@ -101,6 +107,10 @@
       cleanup.coordinateBufferUnsubscribe()
     if (cleanup.unsavedCoordinatesUnsubscribe)
       cleanup.unsavedCoordinatesUnsubscribe()
+
+    if (supabaseChannel) {
+      supabaseChannel.unsubscribe()
+    }
 
     // Stop any ongoing syncs
     stopPeriodicSync()
@@ -115,6 +125,52 @@
       syncIntervalId = null
     }
   })
+
+  async function subscribeToTrailStreams() {
+    supabaseChannel = supabase
+      .channel("trail_stream_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "trail_stream",
+        },
+        (payload) => {
+          if (!payload.new) {
+            return
+          }
+
+          const { trail_id, coordinate, timestamp } = payload.new
+
+          if (payload.new.trail_id === $currentTrailStore?.id) {
+            return
+          }
+
+          otherActiveTrailStore.update((trails) => {
+            return trails.map((trail) => {
+              if (trail.id === trail_id) {
+                return {
+                  ...trail,
+                  path: [
+                    ...trail.path,
+                    {
+                      coordinates: {
+                        latitude: coordinate.coordinates[1],
+                        longitude: coordinate.coordinates[0],
+                      },
+                      timestamp,
+                    },
+                  ],
+                }
+              }
+              return trail
+            })
+          })
+        },
+      )
+      .subscribe()
+  }
 
   async function processNewCoordinate(coordinateData) {
     // console.log("Processing new coordinate:", coordinateData)
