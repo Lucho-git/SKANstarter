@@ -3,7 +3,10 @@
   import mapboxgl from "mapbox-gl"
   import type { Map } from "mapbox-gl"
   import type { Trail } from "$lib/types/trail"
-  import { historicalTrailStore } from "$lib/stores/otherTrailStore"
+  import {
+    historicalTrailStore,
+    otherActiveTrailStore,
+  } from "$lib/stores/otherTrailStore"
   import { currentTrailStore } from "$lib/stores/currentTrailStore"
   import { toast } from "svelte-sonner"
 
@@ -218,6 +221,34 @@
     }
   }
 
+  // Add new function similar to updateCurrentTrail
+  export function updateOtherActiveTrail(trail: Trail) {
+    console.log("Updating other active trail:", trail.id)
+
+    const { sourceId, layerId } = generateTrailIds(trail.id)
+
+    // Check if this specific trail's source exists
+    if (map.getSource(sourceId)) {
+      console.log("Found existing source for trail:", sourceId)
+      const source = map.getSource(sourceId) as mapboxgl.GeoJSONSource
+      const lineString = convertToLineString(trail.path as TrailCoordinate[])
+
+      const newGeoJSON = {
+        type: "Feature",
+        properties: {},
+        geometry: lineString,
+      }
+      source.setData(newGeoJSON)
+    } else {
+      console.log("Creating new trail source:", sourceId)
+      const trailWithLineString = {
+        ...trail,
+        path: convertToLineString(trail.path as TrailCoordinate[]),
+      }
+      addTrail(trailWithLineString)
+    }
+  }
+
   async function loadHistoricalTrails() {
     for (const trail of $historicalTrailStore) {
       addTrail(trail)
@@ -229,6 +260,7 @@
 
   let cleanup = {
     currentTrailUnsubscribe: null,
+    otherActiveTrailsUnsubscribe: null, // Add this
   }
 
   onMount(() => {
@@ -241,12 +273,29 @@
         }
       },
     )
+
+    // Add subscription for other active trails
+    cleanup.otherActiveTrailsUnsubscribe = otherActiveTrailStore.subscribe(
+      (activeTrails) => {
+        if (activeTrails) {
+          activeTrails.forEach((trail) => {
+            if (trail && trail.path) {
+              updateOtherActiveTrail(trail)
+            }
+          })
+        }
+      },
+    )
   })
 
+  // Add cleanup for the new subscription
   onDestroy(() => {
     console.log("Cleaning up trail subscriptions")
     if (cleanup.currentTrailUnsubscribe) {
       cleanup.currentTrailUnsubscribe()
+    }
+    if (cleanup.otherActiveTrailsUnsubscribe) {
+      cleanup.otherActiveTrailsUnsubscribe()
     }
   })
 

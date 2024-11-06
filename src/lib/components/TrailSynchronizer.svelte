@@ -16,7 +16,10 @@
     unsavedCoordinatesStore,
   } from "$lib/stores/currentTrailStore"
 
-  import { historicalTrailStore } from "$lib/stores/otherTrailStore"
+  import {
+    historicalTrailStore,
+    otherActiveTrailStore,
+  } from "$lib/stores/otherTrailStore"
 
   import { profileStore } from "../../stores/profileStore"
   import { trailDataLoaded } from "../../stores/loadedStore"
@@ -43,7 +46,12 @@
   onMount(async () => {
     console.log("Trail Synchronizer Mounted")
 
+    //Get users active trail if it exists
     await checkOpenTrails()
+    //Get other users active trails
+    await checkOtherActiveTrails() // Add this line
+
+    //Get all histroical operational trails
     await fetchOperationTrails()
 
     console.log("Trailstore after fetch:", $currentTrailStore)
@@ -240,7 +248,7 @@
       }
 
       const text = await response.text()
-      console.log("Raw response:", text)
+      //   console.log("Raw response:", text)
 
       try {
         const data = JSON.parse(text)
@@ -316,6 +324,7 @@
           trail_width: openTrail.trail_width,
           path: trailData || [],
         })
+        console.log("Current trail store:", $currentTrailStore)
 
         toast.info("Loaded existing Trail")
         showOpenTrailModal.set(true)
@@ -325,6 +334,58 @@
     } catch (error) {
       console.error("Error checking for open trails:", error)
       toast.error("Failed to check for open trails")
+    }
+  }
+
+  async function checkOtherActiveTrails() {
+    console.log("Checking for other active trails")
+    try {
+      const response = await fetch(
+        "/api/map-trails/check-other-active-trails",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            operation_id: selectedOperation.id,
+            current_vehicle_id: $profileStore.id,
+          }),
+        },
+      )
+
+      if (!response.ok) {
+        throw new Error("Failed to check for other active trails")
+      }
+
+      const { activeTrails } = await response.json()
+      console.log("Raw active trails response:", activeTrails)
+
+      if (activeTrails && activeTrails.length > 0) {
+        console.log("Found other active trails:", activeTrails.length)
+
+        const formattedTrails = activeTrails.map((trail) => ({
+          id: trail.id,
+          vehicle_id: trail.vehicle_id,
+          operation_id: trail.operation_id,
+          task_id: trail.task_id || null,
+          start_time: trail.start_time,
+          end_time: trail.end_time,
+          trail_color: trail.trail_color,
+          trail_width: trail.trail_width,
+          path: trail.trailData || [],
+          detailed_path: null,
+        }))
+
+        console.log("Formatted active trails:", formattedTrails)
+        otherActiveTrailStore.set(formattedTrails)
+      } else {
+        console.log("No other active trails found")
+        otherActiveTrailStore.set([])
+      }
+    } catch (error) {
+      console.error("Error checking for other active trails:", error)
+      toast.error("Failed to check for other active trails")
     }
   }
 
