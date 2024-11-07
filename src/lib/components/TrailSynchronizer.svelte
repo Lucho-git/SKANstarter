@@ -34,7 +34,7 @@
   let triggerEndTrail
   let syncIntervalId = null
   let areTrailsLoaded = false
-  const SYNC_INTERVAL = 10000
+  const SYNC_INTERVAL = 5000
 
   let cleanup = {
     trailingUnsubscribe: null,

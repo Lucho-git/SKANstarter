@@ -38,7 +38,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
             }));
 
             // Apply simplification
-            const simplifiedPath = simplifyPath(pathForSimplification, 0.0001);
+            const simplifiedPath = simplifyPath(pathForSimplification, 0.00005);
 
             // Convert simplified path to LineString
             const simplifiedLineString = simplifiedPath.map((point: any) => {
