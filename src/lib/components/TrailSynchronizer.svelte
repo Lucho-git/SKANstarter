@@ -1,9 +1,9 @@
 <!-- src/components/TrailSynchronizer.svelte -->
 <script>
-  import { onMount, onDestroy, createEventDispatcher } from "svelte"
+  import { onMount, onDestroy } from "svelte"
   import { supabase } from "$lib/supabaseClient"
-
   import { toast } from "svelte-sonner"
+
   import {
     userVehicleStore,
     userVehicleTrailing,
@@ -17,14 +17,11 @@
     coordinateBufferStore,
     unsavedCoordinatesStore,
   } from "$lib/stores/currentTrailStore"
-
   import {
     historicalTrailStore,
     otherActiveTrailStore,
   } from "$lib/stores/otherTrailStore"
-
   import { profileStore } from "../../stores/profileStore"
-  import { trailDataLoaded } from "../../stores/loadedStore"
 
   import EndTrailModal from "$lib/components/EndTrailModal.svelte"
   import OpenTrailModal from "$lib/components/OpenTrailModal.svelte"
@@ -34,13 +31,11 @@
   export let map
 
   let supabaseChannel
-
   let triggerEndTrail
   let syncIntervalId = null
   let areTrailsLoaded = false
-  const SYNC_INTERVAL = 30000 // 30 seconds
+  const SYNC_INTERVAL = 10000
 
-  // Store cleanup functions
   let cleanup = {
     trailingUnsubscribe: null,
     coordinateBufferUnsubscribe: null,
@@ -48,40 +43,29 @@
   }
 
   onMount(async () => {
-    console.log("Trail Synchronizer Mounted")
-
-    //Get users active trail if it exists
+    console.log("🚀 TrailSynchronizer: Initializing...")
     await checkOpenTrails()
-    //Get other users active trails
-    await checkOtherActiveTrails() // Add this line
-
-    //Get all histroical operational trails
+    await checkOtherActiveTrails()
     await fetchOperationTrails()
-
-    console.log("Trailstore after fetch:", $currentTrailStore)
 
     cleanup.trailingUnsubscribe = trailingButtonPressed.subscribe(
       async (isPressed) => {
-        console.log("Trailing Button Pressed:", isPressed)
         if (isPressed && !$userVehicleTrailing) {
           await handleTrailCreation()
         } else if ($userVehicleTrailing) {
-          console.log("Ending Trail Called")
-          console.log("Current trail store", $currentTrailStore)
           triggerEndTrail()
         }
       },
     )
 
     cleanup.coordinateBufferUnsubscribe = coordinateBufferStore.subscribe(
-      async (newCoordinateBuffer) => {
-        console.log("New Coordinate Buffer:", newCoordinateBuffer)
+      (newCoordinateBuffer) => {
         if (
           newCoordinateBuffer &&
           newCoordinateBuffer.coordinates &&
           $userVehicleTrailing
         ) {
-          await processNewCoordinate(newCoordinateBuffer)
+          processNewCoordinate(newCoordinateBuffer)
         }
       },
     )
@@ -97,11 +81,11 @@
     )
 
     await subscribeToTrailStreams()
+    console.log("✅ TrailSynchronizer: Setup completed")
   })
 
   onDestroy(() => {
-    console.log("Trail Synchronizer Destroying")
-    // Clean up all subscriptions
+    console.log("🧹 TrailSynchronizer: Cleaning up resources")
     if (cleanup.trailingUnsubscribe) cleanup.trailingUnsubscribe()
     if (cleanup.coordinateBufferUnsubscribe)
       cleanup.coordinateBufferUnsubscribe()
@@ -112,21 +96,13 @@
       supabaseChannel.unsubscribe()
     }
 
-    // Stop any ongoing syncs
     stopPeriodicSync()
-
-    // Reset stores if needed
     trailingButtonPressed.set(false)
     userVehicleTrailing.set(false)
-
-    // Clear any intervals
-    if (syncIntervalId) {
-      clearInterval(syncIntervalId)
-      syncIntervalId = null
-    }
   })
 
   async function subscribeToTrailStreams() {
+    console.log("📡 TrailSynchronizer: Subscribing to trail streams")
     supabaseChannel = supabase
       .channel("trail_stream_changes")
       .on(
@@ -143,7 +119,7 @@
 
           const { trail_id, coordinate, timestamp } = payload.new
 
-          if (payload.new.trail_id === $currentTrailStore?.id) {
+          if (trail_id === $currentTrailStore?.id) {
             return
           }
 
@@ -172,126 +148,89 @@
       .subscribe()
   }
 
-  async function processNewCoordinate(coordinateData) {
-    // console.log("Processing new coordinate:", coordinateData)
-
-    // Always update the trail path immediately
+  function processNewCoordinate(coordinateData) {
     updateTrailPath(coordinateData)
 
-    // Prepare the data
     const coordinateWithTimestamp = {
       coordinates: coordinateData.coordinates,
       timestamp: coordinateData.timestamp,
     }
 
+    unsavedCoordinatesStore.update((coords) => [
+      ...coords,
+      coordinateWithTimestamp,
+    ])
+    coordinateBufferStore.set(null)
+  }
+
+  function startPeriodicSync() {
+    if (syncIntervalId) return
+
+    console.log("🔄 TrailSynchronizer: Starting periodic sync")
+    syncIntervalId = setInterval(() => {
+      syncUnsavedCoordinates()
+    }, SYNC_INTERVAL)
+  }
+
+  async function syncUnsavedCoordinates() {
+    await sendBatch()
+  }
+
+  async function sendBatch() {
+    const unsavedCoordinates = $unsavedCoordinatesStore
+
+    if (unsavedCoordinates.length === 0) {
+      return
+    }
+
+    const coordinatesToSend = [...unsavedCoordinates]
+    unsavedCoordinatesStore.set([])
+
     try {
+      const payload = {
+        trail_id: $currentTrailStore.id,
+        coordinates_batch: coordinatesToSend.map((coord) => ({
+          coordinates: coord.coordinates,
+          timestamp: coord.timestamp,
+        })),
+      }
+
+      console.log(
+        `📤 TrailSynchronizer: Sending batch of ${coordinatesToSend.length} coordinates`,
+      )
+
       const response = await fetch("/api/map-trails/save-coordinate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          trail_id: $currentTrailStore.id,
-          ...coordinateWithTimestamp,
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      const result = await response.json()
-      //   console.log("Coordinate saved successfully:", result)
+      await response.json()
+      console.log(
+        `✅ TrailSynchronizer: Successfully synced ${coordinatesToSend.length} coordinates`,
+      )
     } catch (error) {
-      // Handle offline errors more gracefully
-      if (
-        error.message.includes("Failed to fetch") ||
-        error.message.includes("ERR_INTERNET_DISCONNECTED")
-      ) {
-        console.log(
-          "Device appears to be offline, queuing coordinate for later sync",
-        )
-      } else {
-        console.error("Error saving coordinate:", error)
-      }
-
-      // Add to unsaved store for later sync
-      unsavedCoordinatesStore.add(coordinateWithTimestamp)
-    } finally {
-      // Always clear the buffer
-      coordinateBufferStore.set(null)
+      console.log("❌ TrailSynchronizer: Failed to sync coordinates:", error)
+      unsavedCoordinatesStore.update((coords) => [
+        ...coordinatesToSend,
+        ...coords,
+      ])
     }
-  }
-
-  function startPeriodicSync() {
-    if (syncIntervalId) {
-      console.log("Sync already running, skipping...")
-      return
-    }
-    console.log("Starting periodic sync")
-    syncIntervalId = setInterval(syncUnsavedCoordinates, SYNC_INTERVAL)
-    syncUnsavedCoordinates() // Immediate first sync
   }
 
   function stopPeriodicSync() {
     if (syncIntervalId) {
+      console.log("⏹️ TrailSynchronizer: Stopping periodic sync")
       clearInterval(syncIntervalId)
       syncIntervalId = null
     }
   }
 
-  async function syncUnsavedCoordinates() {
-    if (!$unsavedCoordinatesStore.length) return
-
-    console.log(
-      "Attempting to sync unsaved coordinates:",
-      $unsavedCoordinatesStore.length,
-    )
-    const coordinates = [...$unsavedCoordinatesStore]
-    const successfulSyncs = []
-
-    for (const coordinate of coordinates) {
-      try {
-        const response = await fetch("/api/map-trails/save-coordinate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            trail_id: $currentTrailStore.id,
-            coordinates: coordinate.coordinates,
-            timestamp: coordinate.timestamp,
-          }),
-        })
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-
-        const result = await response.json()
-        console.log("Coordinate synced successfully:", result)
-        successfulSyncs.push(coordinate)
-      } catch (error) {
-        // Handle offline errors gracefully
-        if (
-          error.message.includes("Failed to fetch") ||
-          error.message.includes("ERR_INTERNET_DISCONNECTED")
-        ) {
-          console.log("Device offline, will retry sync later")
-          // Stop trying to sync other coordinates if we're offline
-          break
-        } else {
-          console.error(`Error syncing coordinate: ${error.message}`)
-        }
-      }
-    }
-
-    if (successfulSyncs.length > 0) {
-      console.log(`Successfully synced ${successfulSyncs.length} coordinates`)
-      unsavedCoordinatesStore.remove(successfulSyncs)
-    } else {
-      console.log("No coordinates were successfully synced this attempt")
-    }
-  }
-
   async function getOperationTrails(operation_id) {
-    console.log("Fetching operation trails for operation:", operation_id)
     try {
       const response = await fetch("/api/map-trails/get-operation-trails", {
         method: "POST",
@@ -304,54 +243,43 @@
       }
 
       const text = await response.text()
-      //   console.log("Raw response:", text)
 
       try {
         const data = JSON.parse(text)
-        console.log("Parsed operation trails:", data.trails.length)
         return data.trails
       } catch (e) {
-        console.error("Error parsing JSON:", e)
         throw new Error("Invalid JSON response from server")
       }
     } catch (error) {
-      console.error("Error in getOperationTrails:", error)
       throw error
     }
   }
 
   async function fetchOperationTrails() {
-    console.log("Fetching operation trails")
     try {
+      console.log("📥 TrailSynchronizer: Fetching operation trails")
       const trails = await getOperationTrails(selectedOperation.id)
-      console.group("Operation Trails")
-      console.log("Number of trails:", trails.length)
-
-      // Clear existing trails from the store
       historicalTrailStore.set([])
-
-      // Add new trails to the store
       historicalTrailStore.update((currentTrails) => [
         ...currentTrails,
         ...trails,
       ])
-      // Log trails for debugging
-      //   trails.forEach((trail, index) => {
-      //     console.log(`Trail ${index + 1}:`, trail)
-      //   })
-      console.groupEnd()
 
       toast.success(`Loaded ${trails.length} trails`)
       areTrailsLoaded = true
+      console.log(
+        `✅ TrailSynchronizer: Loaded ${trails.length} historical trails`,
+      )
     } catch (error) {
-      console.error("Error fetching operation trails:", error)
+      console.error(
+        "❌ TrailSynchronizer: Failed to fetch operation trails:",
+        error,
+      )
       toast.error(`Failed to fetch operation trails: ${error.message}`)
     }
   }
 
   async function checkOpenTrails() {
-    console.log("Checking for open trails")
-    console.log($profileStore)
     try {
       const response = await fetch("/api/map-trails/check-open-trails", {
         method: "POST",
@@ -370,9 +298,7 @@
       const { openTrail, trailData } = await response.json()
 
       if (openTrail) {
-        console.log("Found open trail:", openTrail)
-        console.log("Associated trail data:", trailData)
-
+        console.log("🔄 TrailSynchronizer: Found existing open trail")
         currentTrailStore.set({
           ...openTrail,
           start_time: openTrail.start_time,
@@ -380,21 +306,17 @@
           trail_width: openTrail.trail_width,
           path: trailData || [],
         })
-        console.log("Current trail store:", $currentTrailStore)
 
         toast.info("Loaded existing Trail")
         showOpenTrailModal.set(true)
-      } else {
-        console.log("No open trails found")
       }
     } catch (error) {
-      console.error("Error checking for open trails:", error)
+      console.error("❌ TrailSynchronizer: Failed to check open trails:", error)
       toast.error("Failed to check for open trails")
     }
   }
 
   async function checkOtherActiveTrails() {
-    console.log("Checking for other active trails")
     try {
       const response = await fetch(
         "/api/map-trails/check-other-active-trails",
@@ -415,11 +337,11 @@
       }
 
       const { activeTrails } = await response.json()
-      console.log("Raw active trails response:", activeTrails)
 
       if (activeTrails && activeTrails.length > 0) {
-        console.log("Found other active trails:", activeTrails.length)
-
+        console.log(
+          `📍 TrailSynchronizer: Found ${activeTrails.length} other active trails`,
+        )
         const formattedTrails = activeTrails.map((trail) => ({
           id: trail.id,
           vehicle_id: trail.vehicle_id,
@@ -433,14 +355,15 @@
           detailed_path: null,
         }))
 
-        console.log("Formatted active trails:", formattedTrails)
         otherActiveTrailStore.set(formattedTrails)
       } else {
-        console.log("No other active trails found")
         otherActiveTrailStore.set([])
       }
     } catch (error) {
-      console.error("Error checking for other active trails:", error)
+      console.error(
+        "❌ TrailSynchronizer: Failed to check other active trails:",
+        error,
+      )
       toast.error("Failed to check for other active trails")
     }
   }
@@ -449,23 +372,16 @@
     const vehicleId = $userVehicleStore.vehicle_id
     const operationId = selectedOperation.id
 
-    console.log(
-      "Attempting to create trail for vehicle:",
-      vehicleId,
-      "in operation:",
-      operationId,
-    )
-
     try {
       await createNewTrail(vehicleId, operationId)
     } catch (error) {
-      console.error("Error handling trail creation:", error)
+      console.error("❌ TrailSynchronizer: Error creating trail:", error)
       toast.error(`Error creating trail: ${error.message}`)
     }
   }
 
   async function createNewTrail(vehicleId, operationId) {
-    console.log("Creating new trail...")
+    console.log("🆕 TrailSynchronizer: Creating new trail")
     const createResponse = await fetch("/api/map-trails/open-new-trail", {
       method: "POST",
       headers: {
@@ -484,7 +400,7 @@
       throw new Error(createData.error || "Failed to create trail")
     }
 
-    console.log("New trail created successfully:", createData.trail)
+    console.log("✅ TrailSynchronizer: New trail created successfully")
     toast.success("New trail created successfully")
     currentTrailStore.set({
       ...createData.trail,
@@ -497,17 +413,13 @@
   }
 
   function updateTrailPath(newCoordinateData) {
-    // console.log("Received new coordinate data:", newCoordinateData)
-
     currentTrailStore.update((trail) => {
       if (trail) {
         const updatedPath = [...(trail.path || []), newCoordinateData]
-        console.log("Updated path:", updatedPath)
         return { ...trail, path: updatedPath }
       }
       return trail
     })
-    // console.log("Updated currentTrail", $currentTrailStore)
   }
 </script>
 
