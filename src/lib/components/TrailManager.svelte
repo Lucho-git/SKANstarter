@@ -279,6 +279,7 @@
       (activeTrails) => {
         if (activeTrails) {
           activeTrails.forEach((trail) => {
+            console.log("Updating other active trail:", trail.id, activeTrails)
             if (trail && trail.path) {
               updateOtherActiveTrail(trail)
             }

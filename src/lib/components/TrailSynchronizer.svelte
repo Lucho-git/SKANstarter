@@ -80,6 +80,9 @@
       },
     )
 
+    console.log("active trials", $otherActiveTrailStore)
+    await subscribeToTrailChanges()
+
     await subscribeToTrailStreams()
     console.log("✅ TrailSynchronizer: Setup completed")
   })
@@ -101,6 +104,139 @@
     userVehicleTrailing.set(false)
   })
 
+  async function subscribeToTrailChanges() {
+    const operationId = selectedOperation.id
+    const currentVehicleId = $userVehicleStore.vehicle_id
+    console.log(
+      "📡 TrailSynchronizer: Subscribing to trail changes of operation",
+      operationId,
+      "and not vehicle:",
+      currentVehicleId,
+    )
+
+    supabaseChannel = supabase
+      .channel("trail_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "trails",
+          filter: `operation_id=eq.${operationId}`,
+        },
+        handleTrailInsert,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "trails",
+          filter: `operation_id=eq.${operationId}`,
+        },
+        handleTrailUpdate,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "trails",
+          // Filters dont work for delete until we upgrade our supabase version to the latest,
+        },
+        handleTrailDelete,
+      )
+      .subscribe()
+
+    function handleTrailInsert(payload) {
+      console.log("🆕 New trail detected:", payload)
+      if (!payload.new) return
+      const trailData = payload.new
+
+      console.log(
+        "Trail vehicle ID:",
+        trailData.vehicle_id,
+        "Current vehicle ID:",
+        currentVehicleId,
+      )
+      // Filter out our own vehicle's trails
+      if (trailData.vehicle_id === currentVehicleId) return
+
+      console.log("🆕 New trail detected:", trailData.id)
+
+      // Safety check for undefined or empty store
+      if (!$otherActiveTrailStore?.length) {
+        otherActiveTrailStore.set([])
+      }
+
+      otherActiveTrailStore.update((trails = []) => {
+        return [
+          ...trails,
+          {
+            id: trailData.id,
+            vehicle_id: trailData.vehicle_id,
+            operation_id: trailData.operation_id,
+            start_time: trailData.start_time,
+            end_time: trailData.end_time,
+            task_id: trailData.task_id,
+            trail_color: trailData.trail_color,
+            trail_width: trailData.trail_width,
+            path: [],
+            detailed_path: trailData.detailed_path,
+          },
+        ]
+      })
+    }
+
+    function handleTrailUpdate(payload) {
+      console.log("🔄 Trail update detected:", payload)
+      if (!payload.new) return
+      const trailData = payload.new
+
+      // Filter out our own vehicle's trails
+      if (trailData.vehicle_id === currentVehicleId) return
+
+      console.log("🔄 Trail update detected:", trailData.id)
+
+      // Safety check for undefined or empty store
+      if (!$otherActiveTrailStore?.length) {
+        otherActiveTrailStore.set([])
+      }
+
+      otherActiveTrailStore.update((trails = []) => {
+        const existingTrailIndex = trails.findIndex(
+          (t) => t.id === trailData.id,
+        )
+        if (existingTrailIndex === -1) {
+          return trails
+        }
+
+        console.log("Updating existing trail:", trailData.id)
+        return trails
+        // return trails.map(trail =>
+        //   trail.id === trailData.id
+        //     ? {
+        //         ...trail,
+        //         end_time: trailData.end_time,
+        //         trail_color: trailData.trail_color,
+        //         trail_width: trailData.trail_width,
+        //         detailed_path: trailData.detailed_path
+        //       }
+        //     : trail
+        // )
+      })
+    }
+
+    function handleTrailDelete(payload) {
+      console.log("🗑️ Trail deletion detected:", payload)
+      if (!payload.old) return
+
+      const trailData = payload
+
+      console.log("🗑️ Trail deletion detected:", trailData)
+    }
+  }
+
   async function subscribeToTrailStreams() {
     console.log("📡 TrailSynchronizer: Subscribing to trail streams")
     supabaseChannel = supabase
@@ -119,7 +255,16 @@
 
           const { trail_id, coordinate, timestamp } = payload.new
 
-          if (trail_id === $currentTrailStore?.id) {
+          // Safety check for undefined or empty store
+          if (!$otherActiveTrailStore?.length) {
+            return
+          }
+
+          // Check if trail_id exists in otherActiveTrailStore
+          const isActiveTrail = $otherActiveTrailStore.some(
+            (trail) => trail.id === trail_id,
+          )
+          if (!isActiveTrail) {
             return
           }
 
