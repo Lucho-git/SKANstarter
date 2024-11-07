@@ -142,25 +142,17 @@
           event: "DELETE",
           schema: "public",
           table: "trails",
+          filter: `operation_id=eq.${operationId}`,
         },
         handleTrailDelete,
       )
       .subscribe()
 
     function handleTrailInsert(payload) {
-      console.log("🆕 New trail detected:", payload)
       if (!payload.new) return
       const trailData = payload.new
-
-      console.log(
-        "Trail vehicle ID:",
-        trailData.vehicle_id,
-        "Current vehicle ID:",
-        currentVehicleId,
-      )
       // Filter out our own vehicle's trails
       if (trailData.vehicle_id === currentVehicleId) return
-
       console.log("🆕 New trail detected:", trailData.id)
 
       // Safety check for undefined or empty store
@@ -185,6 +177,7 @@
           },
         ]
       })
+      console.log("active trails", $otherActiveTrailStore)
     }
 
     function handleTrailUpdate(payload) {
@@ -221,7 +214,7 @@
         //         trail_width: trailData.trail_width,
         //         detailed_path: trailData.detailed_path
         //       }
-        //     : trai
+        //     : trail
         // )
       })
     }
@@ -230,9 +223,23 @@
       console.log("🗑️ Trail deletion detected:", payload)
       if (!payload.old) return
 
-      const trailData = payload
+      const trailData = payload.old
 
-      console.log("🗑️ Trail deletion detected:", trailData)
+      // Filter out our own vehicle's trails
+      console.log(trailData.vehicle_id === currentVehicleId)
+      if (trailData.vehicle_id === currentVehicleId) return
+
+      console.log("🗑️ Trail deletion detected:", trailData.id)
+
+      // Safety check for undefined or empty store
+      if (!$otherActiveTrailStore?.length) {
+        return
+      }
+
+      otherActiveTrailStore.update((trails = []) => {
+        return trails.filter((trail) => trail.id !== trailData.id)
+      })
+      console.log("active trails", $otherActiveTrailStore)
     }
   }
 

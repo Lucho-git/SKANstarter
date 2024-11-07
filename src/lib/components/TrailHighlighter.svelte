@@ -85,7 +85,7 @@
       if ($historicalTrailStore.length > 0) {
         const currentTrail = $historicalTrailStore[currentTrailIndex]
         flyToTrail(currentTrail)
-        startOutlineAnimation(currentTrail)
+        startGlowAnimation(currentTrail)
       }
     }
   }
@@ -348,7 +348,7 @@
     const trail = $historicalTrailStore[currentTrailIndex]
 
     flyToTrail(trail)
-    startOutlineAnimation(trail)
+    startGlowAnimation(trail)
 
     await new Promise((resolve) =>
       setTimeout(resolve, HIGHLIGHT_CONFIG.FLIGHT_DURATION),
