@@ -142,7 +142,6 @@
           event: "DELETE",
           schema: "public",
           table: "trails",
-          // Filters dont work for delete until we upgrade our supabase version to the latest,
         },
         handleTrailDelete,
       )
@@ -222,7 +221,7 @@
         //         trail_width: trailData.trail_width,
         //         detailed_path: trailData.detailed_path
         //       }
-        //     : trail
+        //     : trai
         // )
       })
     }
