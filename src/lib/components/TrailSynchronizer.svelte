@@ -203,20 +203,41 @@
           return trails
         }
 
+        const existingTrail = trails[existingTrailIndex]
         console.log("Updating existing trail:", trailData.id)
-        return trails
-        // return trails.map(trail =>
-        //   trail.id === trailData.id
-        //     ? {
-        //         ...trail,
-        //         end_time: trailData.end_time,
-        //         trail_color: trailData.trail_color,
-        //         trail_width: trailData.trail_width,
-        //         detailed_path: trailData.detailed_path
-        //       }
-        //     : trail
-        // )
+
+        // Convert the path data to GeoJSON LineString format
+        const lineStringPath = {
+          type: "LineString",
+          coordinates: existingTrail.path.map((point) => [
+            point.coordinates.longitude,
+            point.coordinates.latitude,
+          ]),
+        }
+
+        // Create the historical trail object
+        const historicalTrail = {
+          id: trailData.id,
+          vehicle_id: trailData.vehicle_id,
+          operation_id: trailData.operation_id,
+          start_time: trailData.start_time,
+          end_time: trailData.end_time,
+          trail_color: trailData.trail_color,
+          trail_width: trailData.trail_width,
+          path: lineStringPath,
+          detailed_path: trailData.detailed_path,
+        }
+
+        // Add to historical trail store
+        historicalTrailStore.update((historicalTrails) => [
+          ...historicalTrails,
+          historicalTrail,
+        ])
+
+        // Remove from active trails
+        return trails.filter((trail) => trail.id !== trailData.id)
       })
+      console.log("active trails", $otherActiveTrailStore)
     }
 
     function handleTrailDelete(payload) {
@@ -231,14 +252,36 @@
 
       console.log("🗑️ Trail deletion detected:", trailData.id)
 
-      // Safety check for undefined or empty store
-      if (!$otherActiveTrailStore?.length) {
-        return
+      // Calculate duration in seconds
+      const startTime = new Date(trailData.start_time)
+      const endTime = new Date(trailData.end_time)
+      const durationSeconds = Math.round((endTime - startTime) / 1000)
+
+      // Add toast notification with more details
+      toast.info(`Trail deleted by another user`, {
+        description: `${trailData.trail_width}m ${trailData.trail_color.toLowerCase()} trail`,
+      })
+
+      // Check and remove from otherActiveTrailStore if present
+      if ($otherActiveTrailStore?.length) {
+        otherActiveTrailStore.update((trails = []) => {
+          return trails.filter((trail) => trail.id !== trailData.id)
+        })
       }
 
-      otherActiveTrailStore.update((trails = []) => {
-        return trails.filter((trail) => trail.id !== trailData.id)
-      })
+      // Check and remove from historicalTrailStore if present
+      if ($historicalTrailStore?.length) {
+        const isInHistorical = $historicalTrailStore.some(
+          (trail) => trail.id === trailData.id,
+        )
+
+        if (isInHistorical) {
+          historicalTrailStore.update((trails) =>
+            trails.filter((trail) => trail.id !== trailData.id),
+          )
+        }
+      }
+
       console.log("active trails", $otherActiveTrailStore)
     }
   }

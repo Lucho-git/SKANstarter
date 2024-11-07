@@ -124,7 +124,7 @@
         throw new Error("Failed to delete trail")
       }
 
-      removeTrail(trailId)
+      //   removeTrail(trailId)
       historicalTrailStore.update((trails) =>
         trails.filter((t) => t.id !== trailId),
       )
@@ -260,7 +260,8 @@
 
   let cleanup = {
     currentTrailUnsubscribe: null,
-    otherActiveTrailsUnsubscribe: null, // Add this
+    otherActiveTrailsUnsubscribe: null,
+    historicalTrailsUnsubscribe: null, // Add this
   }
 
   onMount(() => {
@@ -287,9 +288,29 @@
         }
       },
     )
+
+    // Add subscription for historical trails to detect deletions
+    let previousTrails = $historicalTrailStore
+    cleanup.historicalTrailsUnsubscribe = historicalTrailStore.subscribe(
+      (currentTrails) => {
+        if (previousTrails && currentTrails) {
+          // Find trails that were in previous but not in current (deleted trails)
+          const deletedTrails = previousTrails.filter(
+            (prevTrail) =>
+              !currentTrails.some((currTrail) => currTrail.id === prevTrail.id),
+          )
+
+          // Remove each deleted trail from the map
+          deletedTrails.forEach((trail) => {
+            console.log("Deleting historical trail:", trail.id)
+            removeTrail(trail.id)
+          })
+        }
+        previousTrails = currentTrails
+      },
+    )
   })
 
-  // Add cleanup for the new subscription
   onDestroy(() => {
     console.log("Cleaning up trail subscriptions")
     if (cleanup.currentTrailUnsubscribe) {
@@ -297,6 +318,9 @@
     }
     if (cleanup.otherActiveTrailsUnsubscribe) {
       cleanup.otherActiveTrailsUnsubscribe()
+    }
+    if (cleanup.historicalTrailsUnsubscribe) {
+      cleanup.historicalTrailsUnsubscribe()
     }
   })
 
