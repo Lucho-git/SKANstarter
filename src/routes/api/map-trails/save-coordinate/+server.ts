@@ -8,9 +8,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         return json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { trail_id, coordinates_batch } = await request.json();
+    const { operation_id, trail_id, coordinates_batch } = await request.json();
 
-    console.log('Received coordinate batch:', { trail_id, count: coordinates_batch.length });
+    console.log('Received coordinate batch:', { operation_id, trail_id, count: coordinates_batch.length });
 
     if (!trail_id || !coordinates_batch || !coordinates_batch.length) {
         return json({ error: 'Missing required fields' }, { status: 400 });
@@ -19,6 +19,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     try {
         // Prepare the batch of coordinates for insertion
         const coordinatesForInsert = coordinates_batch.map(({ coordinates, timestamp }) => ({
+            operation_id,
             trail_id,
             coordinate: `POINT(${coordinates.longitude} ${coordinates.latitude})`,
             timestamp: new Date(timestamp).toISOString()

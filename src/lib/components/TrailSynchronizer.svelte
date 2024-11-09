@@ -382,6 +382,7 @@
 
     try {
       const payload = {
+        operation_id: selectedOperation.id,
         trail_id: $currentTrailStore.id,
         coordinates_batch: coordinatesToSend.map((coord) => ({
           coordinates: coord.coordinates,
