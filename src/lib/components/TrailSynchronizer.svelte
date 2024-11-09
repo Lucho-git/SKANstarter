@@ -105,11 +105,10 @@
   })
 
   async function subscribeToTrailChanges() {
-    const operationId = selectedOperation.id
     const currentVehicleId = $userVehicleStore.vehicle_id
     console.log(
       "📡 TrailSynchronizer: Subscribing to trail changes of operation",
-      operationId,
+      selectedOperation.id,
       "and not vehicle:",
       currentVehicleId,
     )
@@ -122,7 +121,7 @@
           event: "INSERT",
           schema: "public",
           table: "trails",
-          filter: `operation_id=eq.${operationId}`,
+          filter: `operation_id=eq.${selectedOperation.id}`,
         },
         handleTrailInsert,
       )
@@ -132,7 +131,7 @@
           event: "UPDATE",
           schema: "public",
           table: "trails",
-          filter: `operation_id=eq.${operationId}`,
+          filter: `operation_id=eq.${selectedOperation.id}`,
         },
         handleTrailUpdate,
       )
@@ -142,7 +141,7 @@
           event: "DELETE",
           schema: "public",
           table: "trails",
-          filter: `operation_id=eq.${operationId}`,
+          filter: `operation_id=eq.${selectedOperation.id}`,
         },
         handleTrailDelete,
       )
@@ -296,6 +295,7 @@
           event: "INSERT",
           schema: "public",
           table: "trail_stream",
+          filter: `operation_id=eq.${selectedOperation.id}`,
         },
         (payload) => {
           if (!payload.new) {
@@ -565,17 +565,16 @@
 
   async function handleTrailCreation() {
     const vehicleId = $userVehicleStore.vehicle_id
-    const operationId = selectedOperation.id
 
     try {
-      await createNewTrail(vehicleId, operationId)
+      await createNewTrail(vehicleId)
     } catch (error) {
       console.error("❌ TrailSynchronizer: Error creating trail:", error)
       toast.error(`Error creating trail: ${error.message}`)
     }
   }
 
-  async function createNewTrail(vehicleId, operationId) {
+  async function createNewTrail(vehicleId) {
     console.log("🆕 TrailSynchronizer: Creating new trail")
     const createResponse = await fetch("/api/map-trails/open-new-trail", {
       method: "POST",
@@ -584,7 +583,7 @@
       },
       body: JSON.stringify({
         vehicle_id: vehicleId,
-        operation_id: operationId,
+        operation_id: selectedOperation.id,
         vehicle_info: $userVehicleStore,
       }),
     })

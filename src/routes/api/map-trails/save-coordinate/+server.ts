@@ -10,7 +10,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
     const { operation_id, trail_id, coordinates_batch } = await request.json();
 
-    console.log('Received coordinate batch:', { operation_id, trail_id, count: coordinates_batch.length });
+    // console.log('Received coordinate batch:', { operation_id, trail_id, count: coordinates_batch.length });
 
     if (!trail_id || !coordinates_batch || !coordinates_batch.length) {
         return json({ error: 'Missing required fields' }, { status: 400 });
