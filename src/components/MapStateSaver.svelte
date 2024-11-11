@@ -7,6 +7,8 @@
     markerActionsStore,
     syncStore,
   } from "../stores/mapStore"
+
+  import { mapActivityStore } from "../stores/mapActivityStore"
   import { profileStore } from "../stores/profileStore"
   import { LngLatBounds } from "mapbox-gl"
   import { markerBoundaryStore } from "$lib/stores/homeBoundaryStore"
@@ -18,44 +20,69 @@
   let debouncedSynchronizeMarkers
   let synchronizationInProgress = false
   let channel
+  let masterMapId
+  let userId
   export let map
 
   onMount(() => {
+    masterMapId = $profileStore.master_map_id
+    userId = $profileStore.id
     debouncedSynchronizeMarkers = debounce(synchronizeMarkers, 500)
 
     channel = supabase
       .channel("map_markers_changes")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "map_markers" },
+        {
+          event: "*",
+          schema: "public",
+          table: "map_markers",
+          filter: `master_map_id=eq.${masterMapId}`, // Add filter for specific map
+        },
         async (payload) => {
-          if (payload.new.update_user_id !== $profileStore.id) {
+          // First check if it's current user's change
+          if (payload.new.update_user_id === userId) {
+            console.log("Skipping synchronization, update made by current user")
+            return
+          }
+
+          // Try to find user in connected profiles
+          let username = "Another user"
+          const connectedUser = $mapActivityStore.connected_profiles.find(
+            (profile) => profile.id === payload.new.update_user_id,
+          )
+
+          if (connectedUser) {
+            username = connectedUser.full_name
+          } else {
+            // Only query database if user not found locally
             const { data: user } = await supabase
               .from("profiles")
               .select("full_name")
               .eq("id", payload.new.update_user_id)
               .single()
 
-            const username = user?.full_name || "Another user"
-            const changeType = payload.eventType
-            const iconClass =
-              payload.new.marker_data?.properties?.icon || "unknown"
-            const coordinates = payload.new.marker_data.geometry.coordinates
-            const isDeleted = payload.new.deleted === true
-
-            showChangeToast(
-              username,
-              changeType,
-              iconClass,
-              isDeleted,
-              coordinates,
-            )
-
-            if (!synchronizationInProgress) {
-              debouncedSynchronizeMarkers()
+            if (user) {
+              username = user.full_name
             }
-          } else {
-            console.log("Skipping synchronization, update made by current user")
+          }
+
+          const changeType = payload.eventType
+          const iconClass =
+            payload.new.marker_data?.properties?.icon || "unknown"
+          const coordinates = payload.new.marker_data.geometry.coordinates
+          const isDeleted = payload.new.deleted === true
+
+          showChangeToast(
+            username,
+            changeType,
+            iconClass,
+            isDeleted,
+            coordinates,
+          )
+
+          if (!synchronizationInProgress) {
+            debouncedSynchronizeMarkers()
           }
         },
       )
@@ -188,7 +215,7 @@
     synchronizationInProgress = true
     syncStore.update((store) => ({ ...store, spinning: true }))
 
-    if (!$profileStore.id) {
+    if (!userId) {
       console.error("User not authenticated")
       toast.error("User not authenticated")
       return
@@ -364,8 +391,6 @@
     serverMarkersToBeUpdated,
     serverMarkersToBeDeleted,
   }) {
-    const masterMapId = $profileStore.master_map_id
-
     if (!masterMapId) {
       throw new Error("No master map assigned")
     }
@@ -393,7 +418,7 @@
           id: id,
           marker_data: feature,
           last_confirmed: last_confirmed,
-          update_user_id: $profileStore.id,
+          update_user_id: userId,
         }
       })
 
@@ -428,7 +453,7 @@
           id: id,
           marker_data: feature,
           last_confirmed: last_confirmed,
-          update_user_id: $profileStore.id,
+          update_user_id: userId,
         }
       })
 
@@ -469,8 +494,6 @@
   }
 
   async function retrieveLatestMarkersFromServer() {
-    const masterMapId = $profileStore.master_map_id
-
     if (!masterMapId) {
       throw new Error("No master map assigned")
     }
