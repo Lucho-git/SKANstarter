@@ -20,7 +20,6 @@
   import VehicleStateSynchronizer from "./VehicleStateSynchronizer.svelte"
   import TrailTracker from "./TrailTracker.svelte"
   import MapFields from "./MapFields.svelte"
-  import TrailStateSynchronizer from "./TrailStateSynchronizer.svelte"
 
   import TrailSynchronizer from "$lib/components/TrailSynchronizer.svelte"
   import TrailView from "$lib/components/TrailView.svelte"
@@ -191,13 +190,6 @@
     <VehicleStateSynchronizer />
     <VehicleTracker {map} disableAutoZoom={initialLocation} />
     <MapFields {map} />
-
-    <!-- {#if $vehicleDataLoaded}
-      <TrailStateSynchronizer db={dbInstance} />
-    {/if}
-    {#if $trailDataLoaded && mapLoaded}
-      <TrailTracker {map} />
-    {/if} -->
 
     {#if selectedOperation}
       <TrailSynchronizer {selectedOperation} {map} />
