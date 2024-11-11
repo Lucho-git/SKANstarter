@@ -183,9 +183,9 @@
 
   export function updateCurrentTrail(trail: Trail) {
     // Add debugging logs
-    console.log("Updating current trail:", trail.id)
-    console.log("Current trail store:", $currentTrailStore)
-    console.log("Existing sources:", map.style.sourceCaches)
+    // console.log("Updating current trail:", trail.id)
+    // console.log("Current trail store:", $currentTrailStore)
+    // console.log("Existing sources:", map.style.sourceCaches)
 
     const { sourceId, layerId } = generateTrailIds(trail.id)
 
@@ -197,7 +197,7 @@
 
     // Check if this specific trail's source exists
     if (map.getSource(sourceId)) {
-      console.log("Found existing source for trail:", sourceId)
+      //   console.log("Found existing source for trail:", sourceId)
       const source = map.getSource(sourceId) as mapboxgl.GeoJSONSource
       const lineString = convertToLineString(trail.path as TrailCoordinate[])
       const newCoordinateCount = lineString.coordinates.length
@@ -280,7 +280,7 @@
       (activeTrails) => {
         if (activeTrails) {
           activeTrails.forEach((trail) => {
-            console.log("Updating other active trail:", trail.id, activeTrails)
+            // console.log("Updating other active trail:", trail.id, activeTrails)
             if (trail && trail.path) {
               updateOtherActiveTrail(trail)
             }

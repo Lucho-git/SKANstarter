@@ -9,6 +9,7 @@
     otherVehiclesDataChanges,
     userVehicleTrailing,
   } from "../stores/vehicleStore"
+  import { profileStore } from "../stores/profileStore"
   import { vehicleDataLoaded } from "../stores/loadedStore"
   import { page } from "$app/stores"
 
@@ -17,108 +18,92 @@
 
   onMount(async () => {
     console.log("Initializing VehicleStateSynchronizer")
-    const session = $page.data.session
-    if (session) {
-      const userId = session.user.id
+    const userId = $profileStore.id
 
-      // Retrieve the user's profile to get the master_map_id
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("master_map_id")
-        .eq("id", userId)
-        .single()
+    // Retrieve the user's profile to get the master_map_id
+    const masterMapId = $profileStore.master_map_id
 
-      if (profileError) {
-        console.error("Error retrieving user profile:", profileError)
-        return
-      }
+    // Fetch the user's vehicle data from the server
+    const userVehicle = await fetchUserVehicleData(userId)
+    if (userVehicle) {
+      // Parse the coordinates string into latitude and longitude values
+      const [longitude, latitude] = userVehicle.coordinates
+        .slice(1, -1)
+        .split(",")
+        .map(parseFloat)
 
-      const masterMapId = profile.master_map_id
-      //   console.log("User Profile:", profile)
-      //   console.log("Master Map ID:", profile.master_map_id)
-
-      // Fetch the user's vehicle data from the server
-      const userVehicle = await fetchUserVehicleData(userId)
-      if (userVehicle) {
-        // Parse the coordinates string into latitude and longitude values
-        const [longitude, latitude] = userVehicle.coordinates
-          .slice(1, -1)
-          .split(",")
-          .map(parseFloat)
-
-        // Update the userVehicleStore with the fetched data and parsed coordinates
-        userVehicleStore.update((vehicle) => {
-          return {
-            ...vehicle,
-            ...userVehicle,
-            coordinates: { latitude, longitude },
-          }
-        })
-      }
-
-      // Fetch initial vehicle data from the server
-      const initialVehicles = await fetchInitialVehicleData(masterMapId, userId)
-      console.log("Initial vehicle data:", initialVehicles)
-      serverOtherVehiclesData.set(initialVehicles)
-
-      // Compare the serverOtherVehiclesData with the otherVehiclesStore and store the changes
-      const changes = compareData($serverOtherVehiclesData, $otherVehiclesStore)
-      otherVehiclesDataChanges.set(changes)
-
-      //Subscribe to realtime updates from other vehicles
-      channel = supabase
-        .channel("vehicle_state_changes")
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "vehicle_state",
-            filter: `master_map_id=eq.${masterMapId}`,
-          },
-          (payload) => {
-            if (payload.new.vehicle_id !== userId) {
-              // Update was made by another vehicle
-
-              // Update the serverOtherVehiclesData store with the received vehicle state
-              serverOtherVehiclesData.update((vehicles) => {
-                const existingVehicleIndex = vehicles.findIndex(
-                  (vehicle) => vehicle.vehicle_id === payload.new.vehicle_id,
-                )
-                if (existingVehicleIndex !== -1) {
-                  // Vehicle already exists, update its data while preserving the full_name
-                  vehicles[existingVehicleIndex] = {
-                    ...vehicles[existingVehicleIndex],
-                    ...payload.new,
-                    full_name: vehicles[existingVehicleIndex].full_name,
-                  }
-                } else {
-                  // Vehicle doesn't exist, add it to the store
-                  console.log("pushing new vehicle", payload.new)
-                  vehicles.push(payload.new)
-                }
-                return vehicles
-              })
-
-              // Compare the serverOtherVehiclesData with the otherVehiclesStore and store the changes
-              const changes = compareData(
-                $serverOtherVehiclesData,
-                $otherVehiclesStore,
-              )
-              otherVehiclesDataChanges.set(changes)
-            } else {
-              //   console.log("Updated vehicle state from self:", payload.new)
-            }
-          },
-        )
-        .subscribe()
-
-      // Subscribe to changes in the userVehicleStore which are sent to the database
-      unsubscribe = userVehicleStore.subscribe(async (vehicleData) => {
-        console.log("Updating vehicle state in the database:", vehicleData)
-        await sendVehicleStateToDatabase(vehicleData)
+      // Update the userVehicleStore with the fetched data and parsed coordinates
+      userVehicleStore.update((vehicle) => {
+        return {
+          ...vehicle,
+          ...userVehicle,
+          coordinates: { latitude, longitude },
+        }
       })
     }
+
+    // Fetch initial vehicle data from the server
+    const initialVehicles = await fetchInitialVehicleData(masterMapId, userId)
+    console.log("Initial vehicle data:", initialVehicles)
+    serverOtherVehiclesData.set(initialVehicles)
+
+    // Compare the serverOtherVehiclesData with the otherVehiclesStore and store the changes
+    const changes = compareData($serverOtherVehiclesData, $otherVehiclesStore)
+    otherVehiclesDataChanges.set(changes)
+
+    //Subscribe to realtime updates from other vehicles
+    channel = supabase
+      .channel("vehicle_state_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "vehicle_state",
+          filter: `master_map_id=eq.${masterMapId}`,
+        },
+        (payload) => {
+          if (payload.new.vehicle_id !== userId) {
+            // Update was made by another vehicle
+
+            // Update the serverOtherVehiclesData store with the received vehicle state
+            serverOtherVehiclesData.update((vehicles) => {
+              const existingVehicleIndex = vehicles.findIndex(
+                (vehicle) => vehicle.vehicle_id === payload.new.vehicle_id,
+              )
+              if (existingVehicleIndex !== -1) {
+                // Vehicle already exists, update its data while preserving the full_name
+                vehicles[existingVehicleIndex] = {
+                  ...vehicles[existingVehicleIndex],
+                  ...payload.new,
+                  full_name: vehicles[existingVehicleIndex].full_name,
+                }
+              } else {
+                // Vehicle doesn't exist, add it to the store
+                console.log("pushing new vehicle", payload.new)
+                vehicles.push(payload.new)
+              }
+              return vehicles
+            })
+
+            // Compare the serverOtherVehiclesData with the otherVehiclesStore and store the changes
+            const changes = compareData(
+              $serverOtherVehiclesData,
+              $otherVehiclesStore,
+            )
+            otherVehiclesDataChanges.set(changes)
+          } else {
+            //   console.log("Updated vehicle state from self:", payload.new)
+          }
+        },
+      )
+      .subscribe()
+
+    // Subscribe to changes in the userVehicleStore which are sent to the database
+    unsubscribe = userVehicleStore.subscribe(async (vehicleData) => {
+      console.log("Updating vehicle state in the database:", vehicleData)
+      await sendVehicleStateToDatabase(vehicleData)
+    })
 
     vehicleDataLoaded.set(true)
   })
@@ -235,27 +220,8 @@
   }
 
   async function sendVehicleStateToDatabase(vehicleData) {
-    const session = $page.data.session
-    if (!session) {
-      console.error("User not authenticated")
-      return
-    }
-
-    const userId = session.user.id
-
-    // Retrieve the user's profile to get the master_map_id
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("master_map_id")
-      .eq("id", userId)
-      .single()
-
-    if (profileError) {
-      console.error("Error retrieving user profile:", profileError)
-      return
-    }
-
-    const masterMapId = profile.master_map_id
+    const userId = $profileStore.id
+    const masterMapId = $profileStore.master_map_id
 
     const { coordinates, last_update, heading, vehicle_marker } = vehicleData
 

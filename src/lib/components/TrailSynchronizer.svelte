@@ -475,6 +475,7 @@
   }
 
   async function checkOpenTrails() {
+    console.log("ProfileStore!!!", $profileStore)
     try {
       const response = await fetch("/api/map-trails/check-open-trails", {
         method: "POST",
