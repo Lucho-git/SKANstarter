@@ -17,6 +17,7 @@ export const DELETE: RequestHandler = async ({ locals, request }) => {
         }
 
         // First, check if the field belongs to the user's master map
+        console.log(('Fetching profile data to delete field'));
         const { data: profileData, error: profileError } = await locals.supabase
             .from('profiles')
             .select('master_map_id')

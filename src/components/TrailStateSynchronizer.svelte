@@ -46,16 +46,16 @@
     userId = session.user.id
 
     // Retrieve the user's profile to get the master_map_id
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("master_map_id")
-      .eq("id", userId)
-      .single()
+    // const { data: profile, error: profileError } = await supabase
+    //   .from("profiles")
+    //   .select("master_map_id")
+    //   .eq("id", userId)
+    //   .single()
 
-    if (profileError) {
-      console.error("Error retrieving user profile:", profileError)
-      return
-    }
+    // if (profileError) {
+    //   console.error("Error retrieving user profile:", profileError)
+    //   return
+    // }
 
     masterMapId = profile.master_map_id
     // Load initial trail data
