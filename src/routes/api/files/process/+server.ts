@@ -1,13 +1,9 @@
 import { error } from '@sveltejs/kit';
-import { createClient } from '@supabase/supabase-js';
-import { PUBLIC_SUPABASE_URL } from "$env/static/public";
-import { PRIVATE_SUPABASE_SERVICE_ROLE } from "$env/static/private";
+import { supabaseServiceRole } from '$lib/supabaseAdmin.server';
 import JSZip from 'jszip';
 import shapefile from 'shapefile';
 import { DOMParser } from '@xmldom/xmldom';
 import { kml } from '@tmcw/togeojson';
-
-const supabase = createClient(PUBLIC_SUPABASE_URL, PRIVATE_SUPABASE_SERVICE_ROLE);
 
 export async function POST({ request, locals }) {
     const session = await locals.getSession();
@@ -26,7 +22,7 @@ export async function POST({ request, locals }) {
         const filePath = `user_${userId}/${fileName}`;
 
         // Download the file
-        const { data, error: downloadError } = await supabase
+        const { data, error: downloadError } = await supabaseServiceRole
             .storage
             .from('user_files_bucket')
             .download(filePath);
@@ -47,7 +43,11 @@ export async function POST({ request, locals }) {
         }
 
         // Return the extracted paddock data
-        return new Response(JSON.stringify({ message: result.message, paddocks: result.paddocks || [], geojson: result.geojson }), {
+        return new Response(JSON.stringify({
+            message: result.message,
+            paddocks: result.paddocks || [],
+            geojson: result.geojson
+        }), {
             headers: { 'Content-Type': 'application/json' }
         });
     } catch (err) {

@@ -1,12 +1,7 @@
 // src/routes/api/files/download/+server.ts
 
 import { error } from '@sveltejs/kit'
-import { createClient } from '@supabase/supabase-js'
-import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from "$env/static/public"
-import { PRIVATE_SUPABASE_SERVICE_ROLE } from "$env/static/private"
-
-// Use the service role key for server-side operations
-const supabase = createClient(PUBLIC_SUPABASE_URL, PRIVATE_SUPABASE_SERVICE_ROLE)
+import { supabaseServiceRole } from '$lib/supabaseAdmin.server'
 
 export async function GET({ url, locals }) {
     const fileName = url.searchParams.get('fileName')
@@ -27,7 +22,7 @@ export async function GET({ url, locals }) {
         // Construct the full path including the user-specific folder
         const filePath = `user_${userId}/${fileName}`
 
-        const { data, error: supabaseError } = await supabase
+        const { data, error: supabaseError } = await supabaseServiceRole
             .storage
             .from('user_files_bucket')
             .download(filePath)
