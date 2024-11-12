@@ -1,5 +1,3 @@
-// src/routes/api/map-trails/close-trail/+server.ts
-
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { simplifyPath } from '$lib/utils/pathSimplification';
@@ -10,12 +8,12 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         return json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { trail_id, path } = await request.json();
+    const { trail_id, vehicle_id, operation_id, path } = await request.json();
 
-    console.log('Received request:', { trail_id, path });
+    console.log('Received request:', { trail_id, vehicle_id, operation_id, path });
 
-    if (!trail_id) {
-        return json({ error: 'Missing required field: trail_id' }, { status: 400 });
+    if (!trail_id || !vehicle_id || !operation_id) {
+        return json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     try {
@@ -86,10 +84,42 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
         if (deleteError) {
             console.error("Error deleting trail stream data:", deleteError);
-            // Note: We don't return here because the trail was successfully closed
         }
 
-        //check for and delete any additional open trail_streams which may have been left behind
+        // Check for and close any additional open trails for this vehicle and operation
+        const { data: otherOpenTrails, error: openTrailsError } = await locals.supabase
+            .from('trails')
+            .select('id')
+            .eq('vehicle_id', vehicle_id)
+            .eq('operation_id', operation_id)
+            .is('end_time', null)
+            .neq('id', trail_id);
+
+        if (openTrailsError) {
+            console.error("Error checking for other open trails:", openTrailsError);
+        } else if (otherOpenTrails && otherOpenTrails.length > 0) {
+            console.log(`Found ${otherOpenTrails.length} additional open trails to close`);
+
+            // Close all other open trails
+            const { error: bulkCloseError } = await locals.supabase
+                .from('trails')
+                .update({ end_time: serverEndTime })
+                .in('id', otherOpenTrails.map(trail => trail.id));
+
+            if (bulkCloseError) {
+                console.error("Error closing additional trails:", bulkCloseError);
+            }
+
+            // Delete associated trail_stream data for all other trails
+            const { error: bulkDeleteError } = await locals.supabase
+                .from('trail_stream')
+                .delete()
+                .in('trail_id', otherOpenTrails.map(trail => trail.id));
+
+            if (bulkDeleteError) {
+                console.error("Error deleting additional trail stream data:", bulkDeleteError);
+            }
+        }
 
         return json({ trail: updatedTrail }, { status: 200 });
     } catch (error) {

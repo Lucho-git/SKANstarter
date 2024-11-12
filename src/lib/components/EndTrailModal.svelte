@@ -174,11 +174,13 @@
 
     const trailData = {
       trail_id: $currentTrailStore.id,
+      vehicle_id: $currentTrailStore.vehicle_id,
+      operation_id: $currentTrailStore.operation_id,
       path: pathData,
-      // Include any other metadata that might be needed
       trail_color: $currentTrailStore.trail_color,
       trail_width: $currentTrailStore.trail_width,
     }
+
     try {
       const response = await fetch("/api/map-trails/close-trail", {
         method: "POST",
