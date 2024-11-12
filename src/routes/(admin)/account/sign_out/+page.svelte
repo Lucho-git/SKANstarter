@@ -40,7 +40,7 @@
       console.log("Final session check:", finalCheck)
 
       // 5. Redirect
-      setTimeout(() => goto("/"), 2000)
+      setTimeout(() => goto("/login"), 2000)
     } catch (error) {
       console.error("Signout error:", error)
       message = `Sign-out failed: ${error.message || "Unknown error"}`
