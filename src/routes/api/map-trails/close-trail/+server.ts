@@ -87,39 +87,39 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         }
 
         // Check for and close any additional open trails for this vehicle and operation
-        const { data: otherOpenTrails, error: openTrailsError } = await locals.supabase
-            .from('trails')
-            .select('id')
-            .eq('vehicle_id', vehicle_id)
-            .eq('operation_id', operation_id)
-            .is('end_time', null)
-            .neq('id', trail_id);
+        // const { data: otherOpenTrails, error: openTrailsError } = await locals.supabase
+        //     .from('trails')
+        //     .select('id')
+        //     .eq('vehicle_id', vehicle_id)
+        //     .eq('operation_id', operation_id)
+        //     .is('end_time', null)
+        //     .neq('id', trail_id);
 
-        if (openTrailsError) {
-            console.error("Error checking for other open trails:", openTrailsError);
-        } else if (otherOpenTrails && otherOpenTrails.length > 0) {
-            console.log(`Found ${otherOpenTrails.length} additional open trails to close`);
+        // if (openTrailsError) {
+        //     console.error("Error checking for other open trails:", openTrailsError);
+        // } else if (otherOpenTrails && otherOpenTrails.length > 0) {
+        //     console.log(`Found ${otherOpenTrails.length} additional open trails to close`);
 
-            // Close all other open trails
-            const { error: bulkCloseError } = await locals.supabase
-                .from('trails')
-                .update({ end_time: serverEndTime })
-                .in('id', otherOpenTrails.map(trail => trail.id));
+        //     // Close all other open trails
+        //     const { error: bulkCloseError } = await locals.supabase
+        //         .from('trails')
+        //         .update({ end_time: serverEndTime })
+        //         .in('id', otherOpenTrails.map(trail => trail.id));
 
-            if (bulkCloseError) {
-                console.error("Error closing additional trails:", bulkCloseError);
-            }
+        //     if (bulkCloseError) {
+        //         console.error("Error closing additional trails:", bulkCloseError);
+        //     }
 
-            // Delete associated trail_stream data for all other trails
-            const { error: bulkDeleteError } = await locals.supabase
-                .from('trail_stream')
-                .delete()
-                .in('trail_id', otherOpenTrails.map(trail => trail.id));
+        //     // Delete associated trail_stream data for all other trails
+        //     const { error: bulkDeleteError } = await locals.supabase
+        //         .from('trail_stream')
+        //         .delete()
+        //         .in('trail_id', otherOpenTrails.map(trail => trail.id));
 
-            if (bulkDeleteError) {
-                console.error("Error deleting additional trail stream data:", bulkDeleteError);
-            }
-        }
+        //     if (bulkDeleteError) {
+        //         console.error("Error deleting additional trail stream data:", bulkDeleteError);
+        //     }
+        // }
 
         return json({ trail: updatedTrail }, { status: 200 });
     } catch (error) {
