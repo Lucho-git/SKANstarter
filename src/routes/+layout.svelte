@@ -14,13 +14,8 @@
   import { Toaster, toast } from "svelte-sonner"
 
   import { onMount } from "svelte"
-  import { getAuthState } from "../stores/user"
   import "../app.pcss"
   import { ModeWatcher } from "mode-watcher"
-
-  onMount(async () => {
-    await getAuthState()
-  })
 
   $: if ($updated) {
     toast.info("An update is available. Refresh to see the latest version.", {
