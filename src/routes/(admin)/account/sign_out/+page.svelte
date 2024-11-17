@@ -22,7 +22,7 @@
     console.log("Removed local storage keys:", keysToRemove)
   }
 
-  onMount(async () => {
+  const handleSignOut = async () => {
     console.log("Starting sign-out process...")
 
     try {
@@ -42,35 +42,55 @@
       // 2. Clear local storage REGARDLESS of error
       clearLocalStorage()
 
-      // 3. Only throw if it's not a 403
-      if (error && error.status !== 403) {
-        throw error
+      // 3. Check if session is actually gone
+      const { data: sessionCheck } = await supabase.auth.getSession()
+      console.log("Current session state:", sessionCheck)
+
+      if (sessionCheck?.session) {
+        console.log("Session still exists, attempting force cleanup...")
+        // Force remove the session
+        await supabase.auth.setSession(null)
+        clearLocalStorage() // Clear again just to be sure
       }
 
       message = "Successfully signed out. Redirecting..."
       console.log("Sign-out successful, preparing to redirect...")
       toast.success("Successfully signed out")
 
-      // 4. Final session check for debugging
+      // 4. Final verification
       const { data: finalSession } = await supabase.auth.getSession()
       console.log("Final session state:", finalSession)
 
-      // 5. Force a complete page refresh
-      console.log("Redirecting to login...")
-      window.location.href = "/login"
+      if (!finalSession?.session) {
+        console.log("Session successfully cleared, redirecting...")
+        window.location.href = "/login"
+      } else {
+        throw new Error("Failed to clear session")
+      }
     } catch (error) {
       console.error("Sign-out error details:", error)
       console.log("Error type:", typeof error)
       console.log("Error message:", error.message)
       console.log("Error stack:", error.stack)
 
-      // Still clear local storage even on error
+      // Try one last force cleanup
+      await supabase.auth.setSession(null)
       clearLocalStorage()
 
-      toast.error("Sign-out failed, redirecting anyway...")
-      window.location.href = "/login"
+      const { data: emergencySessionCheck } = await supabase.auth.getSession()
+      if (emergencySessionCheck?.session) {
+        toast.error(
+          "Critical: Unable to clear session. Please clear your browser data.",
+        )
+        // Optionally provide UI guidance for manual cleanup
+        message = "Please clear your browser data and try again"
+      } else {
+        window.location.href = "/login"
+      }
     }
-  })
+  }
+
+  onMount(handleSignOut)
 </script>
 
 <h1 class="m-6 text-2xl font-bold">{message}</h1>
