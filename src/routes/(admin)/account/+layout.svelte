@@ -102,17 +102,23 @@
     console.log("Layout component mounted")
 
     const { data } = supabase.auth.onAuthStateChange((event, _session) => {
-      //   console.log("Auth state changed:", event)
+      console.log("Auth state change event:", event)
+
       if (event === "SIGNED_OUT") {
         console.log("User signed out, clearing last checked data")
         localStorage.removeItem("lastCheckedPushNotificationsUserId")
         localStorage.removeItem("lastCheckedPushNotificationsTime")
       } else if (_session && _session.user) {
-        // console.log("User signed in, checking push notifications")
         checkAndSubscribe(_session.user.id)
       }
-      if (_session?.expires_at !== session?.expires_at) {
-        console.log("Session changed, invalidating auth")
+
+      // Only invalidate on specific auth events, not just session changes
+      if (
+        ["SIGNED_IN", "SIGNED_OUT", "USER_UPDATED", "TOKEN_REFRESHED"].includes(
+          event,
+        )
+      ) {
+        console.log("Significant auth event occurred, invalidating auth")
         invalidate("supabase:auth")
       }
     })
