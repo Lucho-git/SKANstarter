@@ -250,14 +250,51 @@
   }
 
   async function loadHistoricalTrails() {
-    for (const trail of $historicalTrailStore) {
-      addTrail(trail)
-      await new Promise((resolve) =>
-        setTimeout(resolve, TRAIL_CONFIG.LOAD_DELAY),
-      )
-    }
-  }
+    console.log("Starting to load historical trails", {
+      totalTrails: $historicalTrailStore.length,
+      trails: $historicalTrailStore,
+    })
 
+    for (let i = 0; i < $historicalTrailStore.length; i++) {
+      const trail = $historicalTrailStore[i]
+      try {
+        console.log(
+          `Attempting to load trail [${i + 1}/${$historicalTrailStore.length}]:`,
+          {
+            trailId: trail.id || "unknown",
+            trailData: trail,
+          },
+        )
+
+        await addTrail(trail)
+        console.log(
+          `Successfully loaded trail [${i + 1}/${$historicalTrailStore.length}]: ${trail.id || "unknown"}`,
+        )
+
+        await new Promise((resolve) =>
+          setTimeout(resolve, TRAIL_CONFIG.LOAD_DELAY),
+        )
+      } catch (error) {
+        console.error(
+          `Failed to load trail [${i + 1}/${$historicalTrailStore.length}]:`,
+          {
+            trailId: trail.id || "unknown",
+            error: error,
+            trailData: trail,
+          },
+        )
+
+        toast.error(
+          `Failed to load corrupt trail data. Please try refreshing.`,
+          {
+            description: `Trail ${i + 1}/${$historicalTrailStore.length} (ID: ${trail.id || "unknown"})`,
+          },
+        )
+      }
+    }
+
+    console.log("Finished loading historical trails")
+  }
   let cleanup = {
     currentTrailUnsubscribe: null,
     otherActiveTrailsUnsubscribe: null,
