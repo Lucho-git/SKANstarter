@@ -5,6 +5,7 @@ import {
 import { createSupabaseLoadClient } from "@supabase/auth-helpers-sveltekit"
 import type { Database } from "../../../DatabaseDefinitions.js"
 import { redirect } from "@sveltejs/kit"
+import { browser } from '$app/environment'
 
 import { profileStore } from "../../../stores/profileStore"
 import { subscriptionStore } from '../../../stores/subscriptionStore';
@@ -34,24 +35,24 @@ export const load = async ({ fetch, data, depends, url }) => {
         error: sessionError
     } = await supabase.auth.getSession()
 
-    // Log client-side auth state
-    console.log('Client Auth State:', {
-        hasClientSession: !!session,
-        clientAccessToken: session?.access_token?.substring(0, 10) + '...',
-        clientTokenExpiry: session?.expires_at,
-        hasUser: !!session?.user,
-        userId: session?.user?.id,
-        // Check if refresh token exists in cookies
-        hasRefreshToken: document.cookie.includes('sb-refresh-token'),
-        sessionError,
-        // Compare server and client tokens
-        tokensMatch: session?.access_token === data.session?.access_token,
-        serverClientTimeDiff: session?.expires_at && data.session?.expires_at ?
-            new Date(session.expires_at).getTime() - new Date(data.session.expires_at).getTime() :
-            null
-    })
-
-
+    // Log client-side auth state only in browser environment
+    if (browser) {
+        console.log('Client Auth State:', {
+            hasClientSession: !!session,
+            clientAccessToken: session?.access_token?.substring(0, 10) + '...',
+            clientTokenExpiry: session?.expires_at,
+            hasUser: !!session?.user,
+            userId: session?.user?.id,
+            // Check if refresh token exists in cookies only in browser
+            hasRefreshToken: document.cookie.includes('sb-refresh-token'),
+            sessionError,
+            // Compare server and client tokens
+            tokensMatch: session?.access_token === data.session?.access_token,
+            serverClientTimeDiff: session?.expires_at && data.session?.expires_at ?
+                new Date(session.expires_at).getTime() - new Date(data.session.expires_at).getTime() :
+                null
+        })
+    }
     const subscription = data.subscription
 
     const profile: Database["public"]["Tables"]["profiles"]["Row"] | null =
