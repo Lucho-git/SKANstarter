@@ -7,90 +7,112 @@
   export let data
   let { supabase } = data
   let message = "Signing out..."
+  let isSigningOut = false
 
   const clearLocalStorage = () => {
     console.log("Starting local storage cleanup...")
-    const keysToRemove = []
+    const keysToRemove: string[] = []
 
-    for (const key of Object.keys(localStorage)) {
-      if (key.startsWith("sb-") || key.includes("supabase")) {
-        keysToRemove.push(key)
-        localStorage.removeItem(key)
+    try {
+      for (const key of Object.keys(localStorage)) {
+        if (key.startsWith("sb-") || key.includes("supabase")) {
+          keysToRemove.push(key)
+          localStorage.removeItem(key)
+        }
       }
+      console.log("Removed storage keys:", keysToRemove)
+    } catch (error) {
+      console.error("Error clearing localStorage:", error)
     }
 
-    console.log("Removed local storage keys:", keysToRemove)
+    // Additional cleanup
+    localStorage.removeItem("lastCheckedPushNotificationsUserId")
+    localStorage.removeItem("lastCheckedPushNotificationsTime")
+    localStorage.removeItem("notificationBannerInteraction")
   }
 
   const handleSignOut = async () => {
+    if (isSigningOut) {
+      console.log("Sign-out already in progress")
+      return
+    }
+
+    isSigningOut = true
     console.log("Starting sign-out process...")
 
     try {
-      // 1. Attempt Supabase signout
-      console.log("Attempting Supabase signOut...")
-      const { error } = await supabase.auth.signOut({
+      // 1. Clear storage first
+      clearLocalStorage()
+
+      // 2. Check current session
+      const { data: currentSession, error: sessionError } =
+        await supabase.auth.getSession()
+      if (sessionError) {
+        console.warn("Error getting session:", sessionError)
+      }
+      console.log("Current session state:", currentSession)
+
+      // 3. Try to kill session
+      if (currentSession?.session) {
+        try {
+          await supabase.auth.setSession(null)
+        } catch (error) {
+          console.log("Expected setSession error:", error)
+        }
+      }
+
+      // 4. Attempt signOut
+      const { error: signOutError } = await supabase.auth.signOut({
         scope: "global",
       })
 
-      if (error) {
-        console.log("SignOut response error:", error)
-        console.log("Error status:", error.status)
-      } else {
-        console.log("Supabase signOut completed without error")
+      if (signOutError) {
+        console.warn("SignOut error:", signOutError)
+        if (signOutError.status !== 403) {
+          throw signOutError
+        }
       }
 
-      // 2. Clear local storage REGARDLESS of error
+      // 5. Double-check storage
       clearLocalStorage()
 
-      // 3. Check if session is actually gone
-      const { data: sessionCheck } = await supabase.auth.getSession()
-      console.log("Current session state:", sessionCheck)
+      // 6. Verify session state
+      const { data: finalCheck } = await supabase.auth.getSession()
 
-      if (sessionCheck?.session) {
-        console.log("Session still exists, attempting force cleanup...")
-        // Force remove the session
-        await supabase.auth.setSession(null)
-        clearLocalStorage() // Clear again just to be sure
-      }
-
-      message = "Successfully signed out. Redirecting..."
-      console.log("Sign-out successful, preparing to redirect...")
-      toast.success("Successfully signed out")
-
-      // 4. Final verification
-      const { data: finalSession } = await supabase.auth.getSession()
-      console.log("Final session state:", finalSession)
-
-      if (!finalSession?.session) {
-        console.log("Session successfully cleared, redirecting...")
-        window.location.href = "/login"
+      if (finalCheck?.session) {
+        console.warn("Session persists after cleanup")
+        window.location.href = "/login?force_logout=true"
       } else {
-        throw new Error("Failed to clear session")
+        console.log("Session cleared successfully")
+        window.location.href = "/login"
       }
     } catch (error) {
-      console.error("Sign-out error details:", error)
-      console.log("Error type:", typeof error)
-      console.log("Error message:", error.message)
-      console.log("Error stack:", error.stack)
+      console.error("Sign-out failed:", error)
+      console.log({
+        type: typeof error,
+        message: error.message,
+        stack: error.stack,
+      })
 
-      // Try one last force cleanup
-      await supabase.auth.setSession(null)
+      // Force cleanup
       clearLocalStorage()
-
-      const { data: emergencySessionCheck } = await supabase.auth.getSession()
-      if (emergencySessionCheck?.session) {
-        toast.error(
-          "Critical: Unable to clear session. Please clear your browser data.",
-        )
-        // Optionally provide UI guidance for manual cleanup
-        message = "Please clear your browser data and try again"
-      } else {
-        window.location.href = "/login"
-      }
+      window.location.href = "/login?error=true"
+    } finally {
+      isSigningOut = false
     }
   }
 
-  onMount(handleSignOut)
+  onMount(() => {
+    console.log("Sign-out page mounted")
+    handleSignOut()
+  })
 </script>
 
-<h1 class="m-6 text-2xl font-bold">{message}</h1>
+<div class="flex min-h-screen items-center justify-center">
+  <div class="text-center">
+    <h1 class="m-6 text-2xl font-bold">{message}</h1>
+    {#if isSigningOut}
+      <div class="loading loading-spinner loading-lg"></div>
+    {/if}
+  </div>
+</div>

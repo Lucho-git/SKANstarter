@@ -258,18 +258,18 @@
     for (let i = 0; i < $historicalTrailStore.length; i++) {
       const trail = $historicalTrailStore[i]
       try {
-        console.log(
-          `Attempting to load trail [${i + 1}/${$historicalTrailStore.length}]:`,
-          {
-            trailId: trail.id || "unknown",
-            trailData: trail,
-          },
-        )
+        // console.log(
+        //   `Attempting to load trail [${i + 1}/${$historicalTrailStore.length}]:`,
+        //   {
+        //     trailId: trail.id || "unknown",
+        //     trailData: trail,
+        //   },
+        // )
 
         await addTrail(trail)
-        console.log(
-          `Successfully loaded trail [${i + 1}/${$historicalTrailStore.length}]: ${trail.id || "unknown"}`,
-        )
+        // console.log(
+        //   `Successfully loaded trail [${i + 1}/${$historicalTrailStore.length}]: ${trail.id || "unknown"}`,
+        // )
 
         await new Promise((resolve) =>
           setTimeout(resolve, TRAIL_CONFIG.LOAD_DELAY),
