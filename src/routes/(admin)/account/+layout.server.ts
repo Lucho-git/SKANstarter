@@ -6,12 +6,29 @@ export const load: LayoutServerLoad = async ({
 }) => {
     const session = await getSession()
 
+    // Log server-side auth state
+    console.log('Server Auth State:', {
+        hasSession: !!session,
+        hasAccessToken: !!session?.access_token,
+        accessToken: session?.access_token?.substring(0, 10) + '...', // First 10 chars for debugging
+        tokenExpiry: session?.expires_at,
+        hasUser: !!session?.user,
+        userId: session?.user?.id,
+        userEmail: session?.user?.email,
+        authProvider: session?.user?.app_metadata?.provider,
+        lastSignIn: session?.user?.last_sign_in_at,
+        aud: session?.user?.aud, // Audience claim from JWT
+        role: session?.user?.role // User's role if any
+    })
+
     if (!session) {
+        console.log('Server: No session found, redirecting to login')
         throw redirect(303, "/login")
     }
 
     const userId = session.user.id
 
+    // Rest of your existing code without additional logging
     const [profileResult, subscriptionResult] = await Promise.all([
         supabase
             .from("profiles")
@@ -32,7 +49,6 @@ export const load: LayoutServerLoad = async ({
         return { session, profile, subscription, connectedMap: null, mapActivity: null, masterSubscription: null, operations: null }
     }
 
-    // Run map-related queries in parallel
     const [masterMapResult, mapActivityResult, operationsResult] = await Promise.all([
         supabase.from("master_maps").select("*").eq("id", profile.master_map_id).single(),
         Promise.all([
@@ -51,7 +67,6 @@ export const load: LayoutServerLoad = async ({
         return { session, profile, subscription, connectedMap: null, mapActivity: null, masterSubscription: null, operations: null }
     }
 
-    // Run final queries in parallel
     const [ownerProfileResult, masterSubscriptionResult, vehicleStatesResult] = await Promise.all([
         supabase.from("profiles").select("full_name").eq("id", masterMap.master_user_id).single(),
         supabase.from('user_subscriptions').select('*').eq('user_id', masterMap.master_user_id).single(),

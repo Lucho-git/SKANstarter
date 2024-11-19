@@ -15,6 +15,13 @@ import { operationStore, selectedOperationStore } from '$lib/stores/operationSto
 export const load = async ({ fetch, data, depends, url }) => {
     depends("supabase:auth")
 
+    // Log server-provided session data
+    console.log('Client Load - Server Session:', {
+        hasServerSession: !!data.session,
+        serverAccessToken: data.session?.access_token?.substring(0, 10) + '...',
+        serverTokenExpiry: data.session?.expires_at,
+    })
+
     const supabase = createSupabaseLoadClient({
         supabaseUrl: PUBLIC_SUPABASE_URL,
         supabaseKey: PUBLIC_SUPABASE_ANON_KEY,
@@ -24,7 +31,26 @@ export const load = async ({ fetch, data, depends, url }) => {
 
     const {
         data: { session },
+        error: sessionError
     } = await supabase.auth.getSession()
+
+    // Log client-side auth state
+    console.log('Client Auth State:', {
+        hasClientSession: !!session,
+        clientAccessToken: session?.access_token?.substring(0, 10) + '...',
+        clientTokenExpiry: session?.expires_at,
+        hasUser: !!session?.user,
+        userId: session?.user?.id,
+        // Check if refresh token exists in cookies
+        hasRefreshToken: document.cookie.includes('sb-refresh-token'),
+        sessionError,
+        // Compare server and client tokens
+        tokensMatch: session?.access_token === data.session?.access_token,
+        serverClientTimeDiff: session?.expires_at && data.session?.expires_at ?
+            new Date(session.expires_at).getTime() - new Date(data.session.expires_at).getTime() :
+            null
+    })
+
 
     const subscription = data.subscription
 

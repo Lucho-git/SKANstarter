@@ -12,6 +12,20 @@
   let { supabase, session } = data
   $: ({ supabase, session } = data)
 
+  // Log initial auth state
+  $: {
+    console.log("Layout Auth State Update:", {
+      hasSession: !!session,
+      accessToken: session?.access_token?.substring(0, 10) + "...",
+      tokenExpiry: session?.expires_at,
+      timeUntilExpiry: session?.expires_at
+        ? new Date(session.expires_at).getTime() - new Date().getTime()
+        : null,
+      userId: session?.user?.id,
+      provider: session?.user?.app_metadata?.provider,
+    })
+  }
+
   const TWO_DAYS_MS = 24 * 60 * 60 * 1000
   let showNotificationBanner = false
   let authStateUnsubscribe: (() => void) | null = null
@@ -26,9 +40,14 @@
 
   async function requestPushNotification() {
     if (!session?.user) {
-      console.log("No active session for push notification request")
+      console.log("Auth Error: No active session for push notification request")
       return
     }
+
+    console.log("Requesting push notification for user:", {
+      userId: session.user.id,
+      currentPermission: Notification.permission,
+    })
 
     toast.promise(subscribeToPushNotifications(session.user.id), {
       loading: "Enabling notifications...",
@@ -39,33 +58,37 @@
             "notificationBannerInteraction",
             new Date().getTime().toString(),
           )
+          console.log("Push notification subscription successful")
           return "Notifications enabled successfully!"
         }
         throw new Error("Failed to enable notifications")
       },
-      error: (error) => `Error: ${error.message}`,
+      error: (error) => {
+        console.error("Push notification subscription failed:", error)
+        return `Error: ${error.message}`
+      },
     })
   }
 
   function checkAndSubscribe(userId: string) {
     if (!browser) {
-      console.log("Not running in browser environment")
+      console.log("Auth Environment: Not running in browser")
       return
     }
 
     if (Notification.permission === "granted") {
-      console.log("Push notifications already enabled")
+      console.log("Auth State: Push notifications already enabled")
       return
     }
 
     const isStandalone = window.matchMedia("(display-mode: standalone)").matches
     const isHomepage = $page.url.pathname === "/account"
-    console.log(
-      "Environment check - Standalone:",
+    console.log("Auth Environment Check:", {
       isStandalone,
-      "Homepage:",
       isHomepage,
-    )
+      notificationPermission: Notification.permission,
+      userId,
+    })
 
     const lastCheckedUserId = localStorage.getItem(
       "lastCheckedPushNotificationsUserId",
@@ -81,15 +104,16 @@
       !lastCheckedTime ||
       timeSinceLastCheck > TWO_DAYS_MS
 
-    console.log(
-      "Check conditions - Should check:",
+    console.log("Auth Notification Check:", {
       shouldCheck,
-      "Time since last check:",
       timeSinceLastCheck,
-    )
+      lastCheckedUserId,
+      currentUserId: userId,
+      lastCheckAge: `${Math.round(timeSinceLastCheck / (1000 * 60 * 60))} hours`,
+    })
 
     if (isStandalone && isHomepage && shouldCheck) {
-      console.log("Showing notification banner")
+      console.log("Auth UI: Showing notification banner")
       setTimeout(() => {
         showNotificationBanner = true
       }, 2000)
@@ -102,13 +126,17 @@
   }
 
   function handleAuthStateChange(event: string, _session: any) {
-    console.log(
-      `Auth state change: ${event}`,
-      _session ? "Session exists" : "No session",
-    )
+    console.log("Auth State Change:", {
+      event,
+      hasSession: !!_session,
+      userId: _session?.user?.id,
+      accessToken: _session?.access_token?.substring(0, 10) + "...",
+      tokenExpiry: _session?.expires_at,
+      provider: _session?.user?.app_metadata?.provider,
+    })
 
     if (event === "SIGNED_OUT") {
-      console.log("Clearing notification check data")
+      console.log("Auth Cleanup: Clearing notification check data")
       localStorage.removeItem("lastCheckedPushNotificationsUserId")
       localStorage.removeItem("lastCheckedPushNotificationsTime")
       showNotificationBanner = false
@@ -121,13 +149,17 @@
         event,
       )
     ) {
-      console.log(`Invalidating auths due to ${event}`)
+      console.log(`Auth Revalidation: Invalidating auth due to ${event}`)
       invalidate("supabase:auth")
     }
   }
 
   onMount(() => {
-    console.log("Layout mounted", session ? "With session" : "No session")
+    console.log("Auth Lifecycle: Layout mounted", {
+      hasSession: !!session,
+      userId: session?.user?.id,
+      currentPath: $page.url.pathname,
+    })
 
     const { data: authSubscription } = supabase.auth.onAuthStateChange(
       handleAuthStateChange,
@@ -139,7 +171,9 @@
     }
 
     return () => {
-      console.log("Layout unmounting, cleaning up subscriptions")
+      console.log("Auth Lifecycle: Layout unmounting", {
+        hasUnsubscribe: !!authStateUnsubscribe,
+      })
       if (authStateUnsubscribe) {
         authStateUnsubscribe()
       }
