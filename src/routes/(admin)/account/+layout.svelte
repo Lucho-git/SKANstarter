@@ -121,7 +121,7 @@
         event,
       )
     ) {
-      console.log(`Invalidating auth due to ${event}`)
+      console.log(`Invalidating auths due to ${event}`)
       invalidate("supabase:auth")
     }
   }
