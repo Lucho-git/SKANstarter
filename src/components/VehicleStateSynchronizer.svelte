@@ -15,73 +15,23 @@
 
   let channel = null
   let unsubscribe
+  let lastDatabaseUpdate = 0
+  const DATABASE_UPDATE_INTERVAL = 10000 // 10 seconds
 
-  onMount(async () => {
-    console.log("Initializing VehicleStateSynchronizer")
-    const userId = $profileStore.id
-    const masterMapId = $profileStore.master_map_id
+  async function fetchUserVehicleData(userId) {
+    const { data, error } = await supabase
+      .from("vehicle_state")
+      .select("*")
+      .eq("vehicle_id", userId)
+      .single()
 
-    // Fetch initial vehicle data from the server
-    const initialVehicles = await fetchInitialVehicleData(masterMapId, userId)
-    console.log("Initial vehicle data:", initialVehicles)
-    serverOtherVehiclesData.set(initialVehicles)
-
-    // Compare the serverOtherVehiclesData with the otherVehiclesStore and store the changes
-    const changes = compareData($serverOtherVehiclesData, $otherVehiclesStore)
-    otherVehiclesDataChanges.set(changes)
-
-    // Subscribe to realtime updates from other vehicles
-    channel = supabase
-      .channel(`vehicle_updates_${masterMapId}`)
-      .on("broadcast", { event: "vehicle_update" }, (payload) => {
-        if (payload.payload.vehicle_id !== userId) {
-          // Update was made by another vehicle
-          serverOtherVehiclesData.update((vehicles) => {
-            const existingVehicleIndex = vehicles.findIndex(
-              (vehicle) => vehicle.vehicle_id === payload.payload.vehicle_id,
-            )
-            if (existingVehicleIndex !== -1) {
-              // Vehicle already exists, update its data while preserving the full_name
-              vehicles[existingVehicleIndex] = {
-                ...vehicles[existingVehicleIndex],
-                ...payload.payload,
-                full_name: vehicles[existingVehicleIndex].full_name,
-              }
-            } else {
-              // Vehicle doesn't exist, add it to the store
-              console.log("pushing new vehicle", payload.payload)
-              vehicles.push(payload.payload)
-            }
-            return vehicles
-          })
-
-          // Compare the serverOtherVehiclesData with the otherVehiclesStore and store the changes
-          const changes = compareData(
-            $serverOtherVehiclesData,
-            $otherVehiclesStore,
-          )
-          otherVehiclesDataChanges.set(changes)
-        }
-      })
-      .subscribe()
-
-    // Subscribe to changes in the userVehicleStore which are broadcast to other clients
-    unsubscribe = userVehicleStore.subscribe(async (vehicleData) => {
-      console.log("Broadcasting vehicle state:", vehicleData)
-      await broadcastVehicleState(vehicleData)
-    })
-
-    vehicleDataLoaded.set(true)
-  })
-
-  onDestroy(() => {
-    if (channel) {
-      supabase.removeChannel(channel)
+    if (error) {
+      console.error("Error fetching user vehicle data:", error)
+      return null
     }
-    if (unsubscribe) {
-      unsubscribe()
-    }
-  })
+
+    return data
+  }
 
   async function fetchInitialVehicleData(masterMapId, userId) {
     const { data: vehicles, error: vehiclesError } = await supabase
@@ -175,8 +125,6 @@
       heading: heading !== null ? heading : null,
     }
 
-    console.log("Broadcasting vehicle state:", vehicleStateData)
-
     try {
       await channel.send({
         type: "broadcast",
@@ -187,4 +135,136 @@
       console.error("Error broadcasting vehicle state:", error)
     }
   }
+
+  async function updateDatabaseVehicleState(vehicleData) {
+    const userId = $profileStore.id
+    const masterMapId = $profileStore.master_map_id
+
+    const { coordinates, last_update, heading, vehicle_marker } = vehicleData
+
+    if (!coordinates) {
+      console.warn("Coordinates not available. Skipping database update.")
+      return
+    }
+
+    const vehicleStateData = {
+      vehicle_id: userId,
+      master_map_id: masterMapId,
+      coordinates: `(${coordinates.longitude},${coordinates.latitude})`,
+      last_update: new Date(last_update).toISOString(),
+      is_trailing: $userVehicleTrailing,
+      vehicle_marker,
+      heading: heading !== null ? heading : null,
+    }
+
+    const { data, error } = await supabase
+      .from("vehicle_state")
+      .upsert(vehicleStateData)
+      .single()
+
+    if (error) {
+      console.error("Error updating vehicle state in database:", error)
+    } else {
+      console.log("Database updated successfully")
+    }
+  }
+
+  onMount(async () => {
+    console.log("Initializing VehicleStateSynchronizer")
+    const userId = $profileStore.id
+    const masterMapId = $profileStore.master_map_id
+
+    // First fetch the user's own vehicle data
+    const userVehicle = await fetchUserVehicleData(userId)
+    if (userVehicle) {
+      // Parse the coordinates string into latitude and longitude values
+      const [longitude, latitude] = userVehicle.coordinates
+        .slice(1, -1)
+        .split(",")
+        .map(parseFloat)
+
+      // Update the userVehicleStore with the fetched data and parsed coordinates
+      userVehicleStore.update((vehicle) => {
+        return {
+          ...vehicle,
+          ...userVehicle,
+          coordinates: { latitude, longitude },
+        }
+      })
+    }
+
+    // Then fetch initial vehicle data from the server
+    const initialVehicles = await fetchInitialVehicleData(masterMapId, userId)
+    console.log("Initial vehicle data:", initialVehicles)
+    serverOtherVehiclesData.set(initialVehicles)
+
+    // Compare the serverOtherVehiclesData with the otherVehiclesStore and store the changes
+    const changes = compareData($serverOtherVehiclesData, $otherVehiclesStore)
+    otherVehiclesDataChanges.set(changes)
+
+    // Subscribe to realtime updates from other vehicles
+    channel = supabase
+      .channel(`vehicle_updates_${masterMapId}`)
+      .on("broadcast", { event: "vehicle_update" }, (payload) => {
+        if (payload.payload.vehicle_id !== userId) {
+          // Update was made by another vehicle
+          serverOtherVehiclesData.update((vehicles) => {
+            const existingVehicleIndex = vehicles.findIndex(
+              (vehicle) => vehicle.vehicle_id === payload.payload.vehicle_id,
+            )
+            if (existingVehicleIndex !== -1) {
+              // Vehicle already exists, update its data while preserving the full_name
+              vehicles[existingVehicleIndex] = {
+                ...vehicles[existingVehicleIndex],
+                ...payload.payload,
+                full_name: vehicles[existingVehicleIndex].full_name,
+              }
+            } else {
+              // Vehicle doesn't exist, add it to the store
+              console.log("pushing new vehicle", payload.payload)
+              vehicles.push(payload.payload)
+            }
+            return vehicles
+          })
+
+          // Compare the serverOtherVehiclesData with the otherVehiclesStore and store the changes
+          const changes = compareData(
+            $serverOtherVehiclesData,
+            $otherVehiclesStore,
+          )
+          otherVehiclesDataChanges.set(changes)
+        }
+      })
+      .subscribe()
+
+    // Subscribe to changes in the userVehicleStore
+    unsubscribe = userVehicleStore.subscribe(async (vehicleData) => {
+      const currentTime = Date.now()
+
+      // Always broadcast the update
+      console.log("Broadcasting vehicle state:", vehicleData)
+      await broadcastVehicleState(vehicleData)
+
+      // Update database immediately on first update or if enough time has passed
+      if (
+        lastDatabaseUpdate === 0 ||
+        currentTime - lastDatabaseUpdate >= DATABASE_UPDATE_INTERVAL
+      ) {
+        console.log("Updating database with vehicle state:", vehicleData)
+        await updateDatabaseVehicleState(vehicleData)
+        lastDatabaseUpdate = currentTime
+      }
+    })
+
+    vehicleDataLoaded.set(true)
+  })
+
+  onDestroy(() => {
+    if (channel) {
+      supabase.removeChannel(channel)
+    }
+    if (unsubscribe) {
+      unsubscribe()
+    }
+  })
 </script>
