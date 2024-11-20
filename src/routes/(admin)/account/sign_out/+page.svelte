@@ -8,12 +8,44 @@
   let { supabase } = data
   let message = "Signing out..."
   let isSigningOut = false
+  const REDIRECT_DELAY = 9000 // 3 seconds delay
+
+  const logAuthState = async (stage: string) => {
+    try {
+      const { data: session } = await supabase.auth.getSession()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      console.group(`Auth State - ${stage}`)
+      console.log("Session:", {
+        sessionId: session?.session?.id,
+        accessToken: session?.session?.access_token?.substring(0, 20) + "...",
+        refreshToken: session?.session?.refresh_token?.substring(0, 20) + "...",
+        expiresAt: session?.session?.expires_at,
+        userId: session?.session?.user?.id,
+      })
+      console.log("User:", {
+        id: user?.id,
+        email: user?.email,
+        lastSignInAt: user?.last_sign_in_at,
+      })
+      console.groupEnd()
+      return session
+    } catch (error) {
+      console.error(`Error logging auth state at ${stage}:`, error)
+      return null
+    }
+  }
 
   const clearLocalStorage = () => {
-    console.log("Starting local storage cleanup...")
+    console.group("Local Storage Cleanup")
     const keysToRemove: string[] = []
 
     try {
+      // Log all existing keys first
+      console.log("Existing localStorage keys:", Object.keys(localStorage))
+
       for (const key of Object.keys(localStorage)) {
         if (key.startsWith("sb-") || key.includes("supabase")) {
           keysToRemove.push(key)
@@ -21,14 +53,43 @@
         }
       }
       console.log("Removed storage keys:", keysToRemove)
+
+      // Clear specific items
+      const specificKeys = [
+        "lastCheckedPushNotificationsUserId",
+        "lastCheckedPushNotificationsTime",
+        "notificationBannerInteraction",
+      ]
+      specificKeys.forEach((key) => {
+        if (localStorage.getItem(key)) {
+          localStorage.removeItem(key)
+          console.log(`Removed specific key: ${key}`)
+        }
+      })
+
+      // Clear all cookies
+      document.cookie.split(";").forEach((cookie) => {
+        const name = cookie.split("=")[0].trim()
+        if (name.startsWith("sb-")) {
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`
+          console.log(`Cleared cookie: ${name}`)
+        }
+      })
     } catch (error) {
       console.error("Error clearing localStorage:", error)
     }
+    console.groupEnd()
+  }
 
-    // Additional cleanup
-    localStorage.removeItem("lastCheckedPushNotificationsUserId")
-    localStorage.removeItem("lastCheckedPushNotificationsTime")
-    localStorage.removeItem("notificationBannerInteraction")
+  const delayedRedirect = (url: string) => {
+    message = "Logout complete. Redirecting in 3 seconds..."
+    console.log(`Will redirect to ${url} in ${REDIRECT_DELAY}ms`)
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        window.location.href = url
+        resolve(null)
+      }, REDIRECT_DELAY)
+    })
   }
 
   const handleSignOut = async () => {
@@ -38,30 +99,37 @@
     }
 
     isSigningOut = true
-    console.log("Starting sign-out process...")
+    console.group("Sign-out Process")
+    console.time("Total Sign-out Duration")
 
     try {
-      // 1. Clear storage first
+      // 1. Initial state logging
+      console.log("Step 1: Checking initial state")
+      await logAuthState("Initial State")
+
+      // 2. Clear storage first
+      console.log("Step 2: Clearing local storage")
       clearLocalStorage()
 
-      // 2. Check current session
-      const { data: currentSession, error: sessionError } =
-        await supabase.auth.getSession()
-      if (sessionError) {
-        console.warn("Error getting session:", sessionError)
-      }
-      console.log("Current session state:", currentSession)
+      // 3. Get and log current session
+      console.log("Step 3: Getting current session")
+      const currentSession = await logAuthState("Pre-Signout")
 
-      // 3. Try to kill session
+      // 4. Try to kill session
+      console.log("Step 4: Killing session")
       if (currentSession?.session) {
         try {
-          await supabase.auth.setSession(null)
+          const { error: killError } = await supabase.auth.setSession(null)
+          if (killError) {
+            console.warn("Error killing session:", killError)
+          }
         } catch (error) {
-          console.log("Expected setSession error:", error)
+          console.warn("Expected setSession error:", error)
         }
       }
 
-      // 4. Attempt signOut
+      // 5. Attempt global signOut
+      console.log("Step 5: Executing global sign-out")
       const { error: signOutError } = await supabase.auth.signOut({
         scope: "global",
       })
@@ -73,31 +141,35 @@
         }
       }
 
-      // 5. Double-check storage
+      // 6. Second storage cleanup
+      console.log("Step 6: Secondary storage cleanup")
       clearLocalStorage()
 
-      // 6. Verify session state
-      const { data: finalCheck } = await supabase.auth.getSession()
+      // 7. Final session check
+      console.log("Step 7: Final session verification")
+      const finalState = await logAuthState("Post-Signout")
 
-      if (finalCheck?.session) {
-        console.warn("Session persists after cleanup")
-        window.location.href = "/login?force_logout=true"
+      if (finalState?.session) {
+        console.warn("Warning: Session still persists after cleanup")
+        await delayedRedirect("/login?force_logout=true")
       } else {
-        console.log("Session cleared successfully")
-        window.location.href = "/login"
+        console.log("Success: Session cleared successfully")
+        await delayedRedirect("/login")
       }
     } catch (error) {
+      console.group("Sign-out Error Details")
       console.error("Sign-out failed:", error)
-      console.log({
-        type: typeof error,
-        message: error.message,
-        stack: error.stack,
-      })
+      console.log("Error type:", typeof error)
+      console.log("Error message:", error.message)
+      console.log("Error stack:", error.stack)
+      console.groupEnd()
 
-      // Force cleanup
+      // Force cleanup and redirect
       clearLocalStorage()
-      window.location.href = "/login?error=true"
+      await delayedRedirect("/login?error=true")
     } finally {
+      console.timeEnd("Total Sign-out Duration")
+      console.groupEnd()
       isSigningOut = false
     }
   }
