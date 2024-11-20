@@ -13,6 +13,37 @@ import { connectedMapStore } from '../../../stores/connectedMapStore';
 import { mapActivityStore } from '../../../stores/mapActivityStore';
 import { operationStore, selectedOperationStore } from '$lib/stores/operationStore.js'
 
+function isTokenValid(session: any) {
+    if (!session?.expires_at) return false;
+
+    // Log the expires_at value to understand its format
+    console.log('Token expiry debug:', {
+        raw_expires_at: session.expires_at,
+        type: typeof session.expires_at,
+        length: String(session.expires_at).length
+    });
+
+    // Convert expires_at to milliseconds if it's in seconds
+    const expiryTime = String(session.expires_at).length === 10
+        ? session.expires_at * 1000  // Convert seconds to milliseconds
+        : new Date(session.expires_at).getTime();
+
+    const currentTime = Date.now();
+    const fiveMinutesInMs = 5 * 60 * 1000;
+
+    const isValid = expiryTime > (currentTime + fiveMinutesInMs);
+
+    // Log the calculation details
+    console.log('Token validation debug:', {
+        expiryTime,
+        currentTime,
+        timeUntilExpiry: expiryTime - currentTime,
+        isValid
+    });
+
+    return isValid;
+}
+
 export const load = async ({ fetch, data, depends, url }) => {
     depends("supabase:auth")
 
@@ -36,23 +67,65 @@ export const load = async ({ fetch, data, depends, url }) => {
     } = await supabase.auth.getSession()
 
     // Log client-side auth state only in browser environment
+
     if (browser) {
+        const hasRefreshToken = () => {
+            const cookies = document.cookie.split(';');
+            return cookies.some(cookie =>
+                cookie.trim().startsWith('sb-') &&
+                cookie.includes('-auth-token')
+            );
+        };
+
+        // First log the initial session state
+        console.log('Initial session state:', {
+            session,
+            expires_at: session?.expires_at
+        });
+
+        const isValid = isTokenValid(session);
+
+        // Only attempt refresh if we have a session but it's invalid
+        if (session && !isValid) {
+            console.log('Attempting to refresh invalid token...');
+            try {
+                const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+                console.log('Refresh attempt result:', { refreshData, refreshError });
+
+                if (refreshError) {
+                    console.error('Failed to refresh token:', refreshError);
+                } else if (refreshData?.session) {
+                    console.log('Successfully refreshed session');
+                    session = refreshData.session;
+                }
+            } catch (error) {
+                console.error('Error during refresh:', error);
+            }
+        }
+
+        const timeUntilExpiry = session?.expires_at ?
+            (String(session.expires_at).length === 10
+                ? session.expires_at * 1000
+                : new Date(session.expires_at).getTime()) - Date.now()
+            : null;
+
         console.log('Client Auth State:', {
             hasClientSession: !!session,
             clientAccessToken: session?.access_token?.substring(0, 10) + '...',
             clientTokenExpiry: session?.expires_at,
+            timeUntilExpiryMs: timeUntilExpiry,
+            isTokenValid: isValid,
             hasUser: !!session?.user,
             userId: session?.user?.id,
-            // Check if refresh token exists in cookies only in browser
-            hasRefreshToken: document.cookie.includes('sb-refresh-token'),
+            hasRefreshToken: hasRefreshToken(),
             sessionError,
-            // Compare server and client tokens
             tokensMatch: session?.access_token === data.session?.access_token,
             serverClientTimeDiff: session?.expires_at && data.session?.expires_at ?
                 new Date(session.expires_at).getTime() - new Date(data.session.expires_at).getTime() :
                 null
-        })
+        });
     }
+
     const subscription = data.subscription
 
     const profile: Database["public"]["Tables"]["profiles"]["Row"] | null =
@@ -199,10 +272,6 @@ export const _hasFullProfile = (
     if (!profile.full_name) {
         return false
     }
-    //   if (!profile.company_name) {
-    //     return false
-    //   }
-
     return true
 }
 

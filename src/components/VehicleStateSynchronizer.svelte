@@ -16,6 +16,7 @@
   let channel = null
   let unsubscribe
   let lastDatabaseUpdate = 0
+  let previousVehicleData = null
   const DATABASE_UPDATE_INTERVAL = 10000 // 10 seconds
 
   async function fetchUserVehicleData(userId) {
@@ -136,7 +137,7 @@
     }
   }
 
-  async function updateDatabaseVehicleState(vehicleData) {
+  async function updateDatabaseVehicleState(vehicleData, forceUpdate = false) {
     const userId = $profileStore.id
     const masterMapId = $profileStore.master_map_id
 
@@ -144,6 +145,25 @@
 
     if (!coordinates) {
       console.warn("Coordinates not available. Skipping database update.")
+      return
+    }
+
+    // Check if any non-movement properties have changed
+    const hasNonMovementChanges =
+      previousVehicleData &&
+      (JSON.stringify(vehicleData.vehicle_marker) !==
+        JSON.stringify(previousVehicleData.vehicle_marker) ||
+        vehicleData.is_trailing !== previousVehicleData.is_trailing)
+      // Add any other properties that should trigger immediate updates
+
+    const currentTime = Date.now()
+    const shouldUpdate =
+      forceUpdate ||
+      hasNonMovementChanges ||
+      lastDatabaseUpdate === 0 ||
+      currentTime - lastDatabaseUpdate >= DATABASE_UPDATE_INTERVAL
+
+    if (!shouldUpdate) {
       return
     }
 
@@ -166,7 +186,11 @@
       console.error("Error updating vehicle state in database:", error)
     } else {
       console.log("Database updated successfully")
+      lastDatabaseUpdate = currentTime
     }
+
+    // Update previous vehicle data after successful update
+    previousVehicleData = { ...vehicleData }
   }
 
   onMount(async () => {
@@ -239,21 +263,12 @@
 
     // Subscribe to changes in the userVehicleStore
     unsubscribe = userVehicleStore.subscribe(async (vehicleData) => {
-      const currentTime = Date.now()
-
       // Always broadcast the update
       console.log("Broadcasting vehicle state:", vehicleData)
       await broadcastVehicleState(vehicleData)
 
-      // Update database immediately on first update or if enough time has passed
-      if (
-        lastDatabaseUpdate === 0 ||
-        currentTime - lastDatabaseUpdate >= DATABASE_UPDATE_INTERVAL
-      ) {
-        console.log("Updating database with vehicle state:", vehicleData)
-        await updateDatabaseVehicleState(vehicleData)
-        lastDatabaseUpdate = currentTime
-      }
+      // Update database with new logic
+      await updateDatabaseVehicleState(vehicleData)
     })
 
     vehicleDataLoaded.set(true)
