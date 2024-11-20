@@ -6,6 +6,7 @@
 
   import FloatingChat from "../../../../../components/FloatingChat.svelte"
   import EdgeFunction from "../../../../../components/EdgeFunction.svelte"
+  import TestButton from "./test_button.svelte"
 
   let adminSection: Writable<string> = getContext("adminSection")
   adminSection.set("settings")
@@ -124,4 +125,6 @@
 />
 
 <FloatingChat />
+<TestButton {data} />
+
 <!-- <EdgeFunction /> -->
