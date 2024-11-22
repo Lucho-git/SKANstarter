@@ -105,31 +105,10 @@
     try {
       // 1. Initial state logging
       console.log("Step 1: Checking initial state")
-      await logAuthState("Initial State")
+      const initialSession = await logAuthState("Initial State")
 
-      // 2. Clear storage first
-      console.log("Step 2: Clearing local storage")
-      clearLocalStorage()
-
-      // 3. Get and log current session
-      console.log("Step 3: Getting current session")
-      const currentSession = await logAuthState("Pre-Signout")
-
-      // 4. Try to kill session
-      console.log("Step 4: Killing session")
-      if (currentSession?.session) {
-        try {
-          const { error: killError } = await supabase.auth.setSession(null)
-          if (killError) {
-            console.warn("Error killing session:", killError)
-          }
-        } catch (error) {
-          console.warn("Expected setSession error:", error)
-        }
-      }
-
-      // 5. Attempt global signOut
-      console.log("Step 5: Executing global sign-out")
+      // 2. Attempt global signOut first, while we still have valid tokens
+      console.log("Step 2: Executing global sign-out")
       const { error: signOutError } = await supabase.auth.signOut({
         scope: "global",
       })
@@ -141,12 +120,12 @@
         }
       }
 
-      // 6. Second storage cleanup
-      console.log("Step 6: Secondary storage cleanup")
+      // 3. Now clear storage after sign-out attempt
+      console.log("Step 3: Clearing local storage")
       clearLocalStorage()
 
-      // 7. Final session check
-      console.log("Step 7: Final session verification")
+      // 4. Final session check
+      console.log("Step 4: Final session verification")
       const finalState = await logAuthState("Post-Signout")
 
       if (finalState?.session) {
@@ -164,7 +143,7 @@
       console.log("Error stack:", error.stack)
       console.groupEnd()
 
-      // Force cleanup and redirect
+      // Force cleanup and redirect only after sign-out attempt
       clearLocalStorage()
       await delayedRedirect("/login?error=true")
     } finally {
@@ -173,7 +152,6 @@
       isSigningOut = false
     }
   }
-
   onMount(() => {
     console.log("Sign-out page mounted")
     handleSignOut()

@@ -21,6 +21,9 @@
     historicalTrailStore,
     otherActiveTrailStore,
   } from "$lib/stores/otherTrailStore"
+
+  import { mapActivityStore } from "../../stores/mapActivityStore"
+
   import { profileStore } from "../../stores/profileStore"
 
   import EndTrailModal from "$lib/components/EndTrailModal.svelte"
@@ -451,27 +454,38 @@
   }
 
   async function fetchOperationTrails() {
-    try {
-      console.log("📥 TrailSynchronizer: Fetching operation trails")
-      const trails = await getOperationTrails(selectedOperation.id)
-      historicalTrailStore.set([])
-      historicalTrailStore.update((currentTrails) => [
-        ...currentTrails,
-        ...trails,
-      ])
+    toast.promise(
+      (async () => {
+        console.log("📥 TrailSynchronizer: Fetching operation trails")
 
-      toast.success(`Loaded ${trails.length} trails`)
-      areTrailsLoaded = true
-      console.log(
-        `✅ TrailSynchronizer: Loaded ${trails.length} historical trails`,
-      )
-    } catch (error) {
-      console.error(
-        "❌ TrailSynchronizer: Failed to fetch operation trails:",
-        error,
-      )
-      toast.error(`Failed to fetch operation trails: ${error.message}`)
-    }
+        // Start both promises simultaneously
+        const trailsPromise = getOperationTrails(selectedOperation.id)
+        const minDelay = new Promise((resolve) => setTimeout(resolve, 2000))
+
+        // Wait for both promises - the trails data and the minimum delay
+        const [trails] = await Promise.all([trailsPromise, minDelay])
+
+        historicalTrailStore.set([])
+        historicalTrailStore.update((currentTrails) => [
+          ...currentTrails,
+          ...trails,
+        ])
+
+        areTrailsLoaded = true
+        console.log(
+          `✅ TrailSynchronizer: Loaded ${trails.length} historical trails`,
+        )
+        console.log("Operation", selectedOperation)
+        return trails
+      })(),
+      {
+        loading: `Loading trails from ${selectedOperation.name} (${selectedOperation.year})...`,
+        success: (trails) =>
+          `Loaded ${trails.length} trails from ${selectedOperation.name} (${selectedOperation.year})`,
+        error: (error) =>
+          `Failed to fetch trails from ${selectedOperation.name}: ${error.message}`,
+      },
+    )
   }
 
   async function checkOpenTrails() {

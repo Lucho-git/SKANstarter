@@ -88,7 +88,7 @@
       )
       .subscribe()
 
-    synchronizeMarkers("Loaded from server")
+    synchronizeMarkers()
 
     confirmedMarkersUnsubscribe = confirmedMarkersStore.subscribe((markers) => {
       if (!synchronizationInProgress) {

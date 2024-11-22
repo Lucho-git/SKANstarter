@@ -154,7 +154,7 @@
       (JSON.stringify(vehicleData.vehicle_marker) !==
         JSON.stringify(previousVehicleData.vehicle_marker) ||
         vehicleData.is_trailing !== previousVehicleData.is_trailing)
-      // Add any other properties that should trigger immediate updates
+    // Add any other properties that should trigger immediate updates
 
     const currentTime = Date.now()
     const shouldUpdate =
@@ -232,6 +232,7 @@
       .on("broadcast", { event: "vehicle_update" }, (payload) => {
         if (payload.payload.vehicle_id !== userId) {
           // Update was made by another vehicle
+          //   console.log("Received vehicle update from another vehicle:", payload)
           serverOtherVehiclesData.update((vehicles) => {
             const existingVehicleIndex = vehicles.findIndex(
               (vehicle) => vehicle.vehicle_id === payload.payload.vehicle_id,
