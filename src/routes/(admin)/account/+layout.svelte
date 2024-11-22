@@ -140,15 +140,16 @@
       localStorage.removeItem("lastCheckedPushNotificationsUserId")
       localStorage.removeItem("lastCheckedPushNotificationsTime")
       showNotificationBanner = false
-    } else if (_session?.user) {
+
+      // Don't invalidate on SIGNED_OUT to prevent session restoration
+      return
+    }
+
+    if (_session?.user) {
       checkAndSubscribe(_session.user.id)
     }
 
-    if (
-      ["SIGNED_IN", "SIGNED_OUT", "USER_UPDATED", "TOKEN_REFRESHED"].includes(
-        event,
-      )
-    ) {
+    if (["SIGNED_IN", "USER_UPDATED", "TOKEN_REFRESHED"].includes(event)) {
       console.log(`Auth Revalidation: Invalidating auth due to ${event}`)
       invalidate("supabase:auth")
     }
