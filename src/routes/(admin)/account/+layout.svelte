@@ -19,7 +19,7 @@
       accessToken: session?.access_token?.substring(0, 10) + "...",
       tokenExpiry: session?.expires_at,
       timeUntilExpiry: session?.expires_at
-        ? new Date(session.expires_at).getTime() - new Date().getTime()
+        ? new Date(session.expires_at * 1000).getTime() - new Date().getTime()
         : null,
       userId: session?.user?.id,
       provider: session?.user?.app_metadata?.provider,
