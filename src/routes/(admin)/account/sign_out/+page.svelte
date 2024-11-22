@@ -8,7 +8,7 @@
   let { supabase } = data
   let message = "Signing out..."
   let isSigningOut = false
-  const REDIRECT_DELAY = 9000 // 3 seconds delay
+  const REDIRECT_DELAY = 3000 // 3 seconds delay
 
   const logAuthState = async (stage: string) => {
     try {
