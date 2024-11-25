@@ -51,6 +51,7 @@
     "@fontsource/archivo": "^5.0.17",
     "@fontsource/roboto": "^5.0.13",
     "@lottiefiles/svelte-lottie-player": "^0.3.1",
+    "@mapbox/mapbox-gl-draw": "^1.4.3",
     "@sendbird/chat": "^4.13.0",
     "@supabase/auth-helpers-sveltekit": "^0.10.2",
     "@supabase/auth-ui-svelte": "^0.2.2",

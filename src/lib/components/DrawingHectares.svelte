@@ -1,150 +1,209 @@
 <script>
   import { onMount } from "svelte"
-  import mapboxgl from "mapbox-gl"
+  import MapboxDraw from "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.js"
   import { drawingModeEnabled } from "../../stores/controlStore"
+  import * as turf from "@turf/turf"
+  import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css"
+  import { Ruler } from "lucide-svelte"
 
   export let map
   let draw
-  let calculatedAreaDiv
+  let area = { hectares: 0, squareMeters: 0 }
+  let isDrawing = false
+  let hasEnoughPoints = false
 
-  // Function to format area in both units
   function formatArea(areaInSquareMeters) {
-    const roundedSquareMeters = Math.round(areaInSquareMeters * 100) / 100
-    const hectares = Math.round((areaInSquareMeters / 10000) * 100) / 100
     return {
-      squareMeters: roundedSquareMeters,
-      hectares: hectares,
+      squareMeters: Math.round(areaInSquareMeters * 100) / 100,
+      hectares: Math.round((areaInSquareMeters / 10000) * 100) / 100,
     }
   }
 
-  onMount(() => {
-    const script = document.createElement("script")
-    script.src =
-      "https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.3/mapbox-gl-draw.js"
-    document.head.appendChild(script)
-
-    const turfScript = document.createElement("script")
-    turfScript.src = "https://unpkg.com/@turf/turf@6/turf.min.js"
-    document.head.appendChild(turfScript)
-
-    const linkEl = document.createElement("link")
-    linkEl.rel = "stylesheet"
-    linkEl.href =
-      "https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.3/mapbox-gl-draw.css"
-    document.head.appendChild(linkEl)
-
-    script.onload = () => {
-      draw = new MapboxDraw({
-        displayControlsDefault: false,
-        controls: {
-          polygon: true,
-          trash: true,
-        },
-        defaultMode: "draw_polygon",
-      })
-
-      map.addControl(draw)
-
-      map.on("draw.create", (e) => {
-        console.log("Draw create:", e)
-        updateArea()
-      })
-
-      map.on("draw.delete", (e) => {
-        console.log("Draw delete:", e)
-        updateArea()
-      })
-
-      map.on("draw.update", (e) => {
-        console.log("Draw update:", e)
-        updateArea()
-      })
-
-      map.on("draw.action", (e) => {
-        console.log("Draw action:", e.action)
-        if (e.action === "addition") {
-          console.log("Point added!")
-          const data = draw.getAll()
-          console.log("Current features:", data.features)
-          calculatePartialArea()
-        }
-      })
-
-      map.on("draw.modechange", (e) => {
-        console.log("Mode changed:", e)
-      })
-    }
-
-    return () => {
-      if (map && draw) {
-        map.removeControl(draw)
+  const eventHandlers = {
+    create: () => updateArea(),
+    delete: () => updateArea(),
+    update: () => updateArea(),
+    action: (e) => {
+      if (e.action === "addition") {
+        calculatePartialArea()
       }
-    }
+    },
+  }
+
+  onMount(() => {
+    draw = new MapboxDraw({
+      displayControlsDefault: false,
+      controls: {},
+      defaultMode: "draw_polygon",
+      clickBuffer: 6,
+      touchBuffer: 6,
+      snapToFinish: true,
+      finishDrawingOnSnapToFinish: true,
+      touchEnabled: true,
+      boxSelect: false,
+      translateEnabled: false,
+      rotateEnabled: false,
+      // Add custom styling
+      styles: [
+        // Styling for the polygon being drawn (active)
+        {
+          id: "gl-draw-polygon-fill-active",
+          type: "fill",
+          filter: ["all", ["==", "active", "true"], ["==", "$type", "Polygon"]],
+          paint: {
+            "fill-color": "#0ea5e9", // sky-500
+            "fill-opacity": 0.25,
+          },
+        },
+        // Styling for completed polygon (inactive)
+        {
+          id: "gl-draw-polygon-fill-inactive",
+          type: "fill",
+          filter: [
+            "all",
+            ["==", "active", "false"],
+            ["==", "$type", "Polygon"],
+          ],
+          paint: {
+            "fill-color": "#0ea5e9", // sky-500
+            "fill-opacity": 0.4,
+          },
+        },
+        // Styling for the polygon stroke while drawing
+        {
+          id: "gl-draw-polygon-stroke-active",
+          type: "line",
+          filter: ["all", ["==", "active", "true"], ["==", "$type", "Polygon"]],
+          layout: {
+            "line-cap": "round",
+            "line-join": "round",
+          },
+          paint: {
+            "line-color": "#0ea5e9", // sky-500
+            "line-width": 2,
+            "line-dasharray": [2, 2],
+          },
+        },
+        // Styling for completed polygon stroke
+        {
+          id: "gl-draw-polygon-stroke-inactive",
+          type: "line",
+          filter: [
+            "all",
+            ["==", "active", "false"],
+            ["==", "$type", "Polygon"],
+          ],
+          layout: {
+            "line-cap": "round",
+            "line-join": "round",
+          },
+          paint: {
+            "line-color": "#0ea5e9", // sky-500
+            "line-width": 3,
+          },
+        },
+        // Styling for vertices
+        {
+          id: "gl-draw-polygon-and-line-vertex-active",
+          type: "circle",
+          filter: ["all", ["==", "meta", "vertex"], ["==", "$type", "Point"]],
+          paint: {
+            "circle-radius": 6,
+            "circle-color": "#fff",
+            "circle-stroke-color": "#0ea5e9", // sky-500
+            "circle-stroke-width": 2,
+          },
+        },
+        // Styling for the midpoints
+        {
+          id: "gl-draw-polygon-and-line-midpoint-active",
+          type: "circle",
+          filter: ["all", ["==", "meta", "midpoint"], ["==", "$type", "Point"]],
+          paint: {
+            "circle-radius": 4,
+            "circle-color": "#0ea5e9", // sky-500
+            "circle-stroke-color": "#fff",
+            "circle-stroke-width": 2,
+          },
+        },
+      ],
+    })
+
+    map.addControl(draw)
+
+    // Listen for when user is close to the starting point
+    map.on("draw.selectionchange", (e) => {
+      if (draw.getMode() === "draw_polygon") {
+        const features = draw.getAll().features
+        if (features.length > 0) {
+          const currentFeature = features[features.length - 1]
+          if (currentFeature.geometry.coordinates[0].length >= 3) {
+            const points = currentFeature.geometry.coordinates[0]
+            const start = points[0]
+            const current = points[points.length - 1]
+
+            // Calculate distance between start and current point
+            const distance = turf.distance(
+              turf.point(start),
+              turf.point(current),
+              { units: "meters" },
+            )
+
+            // If within 10 meters of start point and we have at least 3 points
+            if (distance < 10 && points.length >= 3) {
+              draw.changeMode("simple_select")
+            }
+          }
+        }
+      }
+    })
+
+    map.on("draw.create", eventHandlers.create)
+    map.on("draw.delete", eventHandlers.delete)
+    map.on("draw.update", eventHandlers.update)
+    map.on("draw.action", eventHandlers.action)
   })
 
   function calculatePartialArea() {
-    if (!calculatedAreaDiv) return
+    if (!draw) return
 
     const data = draw.getAll()
-    console.log("Calculating partial area, features:", data.features)
+    if (!data.features.length) return
 
-    if (data.features.length > 0) {
-      const feature = data.features[data.features.length - 1]
-      console.log("Current feature:", feature)
+    const feature = data.features[data.features.length - 1]
 
-      if (
-        feature.geometry &&
-        feature.geometry.coordinates &&
-        feature.geometry.coordinates[0] &&
-        feature.geometry.coordinates[0].length >= 3
-      ) {
-        const coordinates = feature.geometry.coordinates[0]
-        const polygon = {
-          type: "Feature",
-          properties: {},
-          geometry: {
-            type: "Polygon",
-            coordinates: [[...coordinates, coordinates[0]]],
-          },
-        }
-
-        console.log("Created polygon for calculation:", polygon)
-        const area = turf.area(polygon)
-        const formattedArea = formatArea(area)
-        console.log("Calculated area:", formattedArea)
-        calculatedAreaDiv.innerHTML = `
-            <div class="divider my-1"></div>
-            <div class="text-lg font-bold">${formattedArea.hectares}</div>
-            <div class="text-sm">hectares</div>
-            <div class="text-sm text-gray-500">(${formattedArea.squareMeters} m²)</div>
-          `
-      } else {
-        console.log("Not enough points for area calculation")
-        calculatedAreaDiv.innerHTML = `
-            <div class="text-sm">Add more points to calculate area</div>
-          `
+    if (feature.geometry?.coordinates?.[0]?.length >= 3) {
+      const coordinates = feature.geometry.coordinates[0]
+      const polygon = {
+        type: "Feature",
+        properties: {},
+        geometry: {
+          type: "Polygon",
+          coordinates: [[...coordinates, coordinates[0]]],
+        },
       }
+
+      area = formatArea(turf.area(polygon))
+      hasEnoughPoints = true
+      isDrawing = true
+    } else {
+      hasEnoughPoints = false
+      isDrawing = true
     }
   }
 
   function updateArea() {
-    if (!calculatedAreaDiv) return
+    if (!draw) return
 
     const data = draw.getAll()
-    console.log("Update area called, features:", data.features)
-
     if (data.features.length > 0) {
-      const area = turf.area(data)
-      const formattedArea = formatArea(area)
-      console.log("Final area calculated:", formattedArea)
-      calculatedAreaDiv.innerHTML = `
-          <div class="divider my-1"></div>
-          <div class="text-lg font-bold">${formattedArea.hectares}</div>
-          <div class="text-sm">hectares</div>
-          <div class="text-sm text-gray-500">(${formattedArea.squareMeters} m²)</div>
-        `
+      area = formatArea(turf.area(data))
+      isDrawing = true
+      hasEnoughPoints = true
     } else {
-      calculatedAreaDiv.innerHTML = ""
+      isDrawing = false
+      hasEnoughPoints = false
+      area = { hectares: 0, squareMeters: 0 }
     }
   }
 
@@ -154,24 +213,42 @@
     } else {
       draw.deleteAll()
       draw.changeMode("simple_select")
-      if (calculatedAreaDiv) calculatedAreaDiv.innerHTML = ""
+      isDrawing = false
+      hasEnoughPoints = false
     }
   }
 </script>
 
 {#if $drawingModeEnabled}
-  <div class="absolute left-1/2 top-4 z-10 -translate-x-1/2 transform">
-    <div class="card bg-base-100 shadow-xl">
-      <div class="card-body p-4 text-center">
-        <h2 class="card-title justify-center text-sm">Area Calculation</h2>
-        <div bind:this={calculatedAreaDiv}>
-          <div class="text-sm">Click the map to draw a polygon</div>
+  <div class="absolute left-1/2 top-3 z-10 -translate-x-1/2 transform">
+    <div
+      class="min-w-[180px] rounded-lg border border-gray-200 bg-white/90 p-3 backdrop-blur-sm"
+    >
+      <div class="flex flex-col items-center gap-2">
+        <div
+          class="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-gray-600"
+        >
+          <Ruler class="h-3.5 w-3.5" />
+          <span>Measured Area</span>
         </div>
+        {#if !isDrawing}
+          <div class="text-sm text-gray-600">Click to start measuring</div>
+        {:else if !hasEnoughPoints}
+          <div class="text-sm text-gray-600">Complete the shape</div>
+        {:else}
+          <div class="flex flex-col items-center">
+            <div
+              class="flex items-baseline gap-1 text-2xl font-bold text-gray-800"
+            >
+              {area.hectares}
+              <span class="text-xs font-normal">ha</span>
+            </div>
+            <div class="text-xs text-gray-500">
+              {area.squareMeters.toLocaleString()} m²
+            </div>
+          </div>
+        {/if}
       </div>
     </div>
   </div>
 {/if}
-
-<style>
-  /* Add any additional custom styles here if needed */
-</style>
