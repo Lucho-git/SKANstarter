@@ -17,88 +17,7 @@
   let confirmedMarkers = []
   let confirmedMarkersUnsubscribe
   let controlsEnabled = true
-  let eventListenersActive = true
-
-  // Subscribe to drawingModeEnabled store
-  $: if ($drawingModeEnabled !== undefined) {
-    controlsEnabled = !$drawingModeEnabled
-    updateEventListeners(controlsEnabled)
-  }
-
-  function updateEventListeners(enabled) {
-    if (!map) return
-
-    if (enabled && !eventListenersActive) {
-      map.on("mousedown", handleMouseDown)
-      map.on("touchstart", handleMouseDown)
-      map.on("drag", handleMapDrag)
-      map.on("mouseup", handleMouseUp)
-      eventListenersActive = true
-    } else if (!enabled && eventListenersActive) {
-      map.off("mousedown", handleMouseDown)
-      map.off("touchstart", handleMouseDown)
-      map.off("drag", handleMapDrag)
-      map.off("mouseup", handleMouseUp)
-      eventListenersActive = false
-    }
-  }
-
-  onMount(() => {
-    document.addEventListener(
-      "handleUpdateMarkerListeners",
-      handleUpdateMarkerListeners,
-    )
-
-    if (controlsEnabled) {
-      updateEventListeners(true)
-    }
-  })
-
-  onDestroy(() => {
-    console.log("Destroying MapControls")
-
-    if (confirmedMarkersUnsubscribe) {
-      console.log("Unsubscribing from confirmedMarkersStore, mapcontrols 1")
-      confirmedMarkersUnsubscribe()
-      console.log("Unsubscribed from confirmedMarkersStore, mapcontrols 2")
-    }
-    console.log("Out")
-
-    document.removeEventListener(
-      "handleUpdateMarkerListeners",
-      handleUpdateMarkerListeners,
-    )
-
-    updateEventListeners(false)
-  })
-
-  function updateMarkerListeners(marker, id) {
-    const markerElement = marker.getElement()
-
-    markerElement.removeEventListener("mouseenter", handleMarkerMouseEnter)
-    markerElement.removeEventListener("mouseleave", handleMarkerMouseLeave)
-    markerElement.removeEventListener("click", handleMarkerClick)
-    markerElement.removeAttribute("data-listeners-added")
-
-    markerElement.addEventListener("mouseenter", handleMarkerMouseEnter)
-    markerElement.addEventListener("mouseleave", handleMarkerMouseLeave)
-    markerElement.addEventListener("click", handleMarkerClick)
-    markerElement.setAttribute("data-listeners-added", "true")
-
-    const existingMarkerIndex = confirmedMarkers.findIndex((m) => m.id === id)
-    if (existingMarkerIndex !== -1) {
-      confirmedMarkers = confirmedMarkers.map((m, index) =>
-        index === existingMarkerIndex ? { marker, id } : m,
-      )
-    } else {
-      confirmedMarkers = [...confirmedMarkers, { marker, id }]
-    }
-  }
-
-  function handleUpdateMarkerListeners(event) {
-    const { marker, id } = event.detail
-    updateMarkerListeners(marker, id)
-  }
+  let initialized = false
 
   function handleMarkerMouseEnter(event) {
     if (!controlsEnabled) return
@@ -134,6 +53,31 @@
     }
   }
 
+  function handleMarkerTouchStart(event) {
+    if (!controlsEnabled) return
+
+    // Prevent the map's touch events from firing
+    event.stopPropagation()
+
+    // Prevent default to stop unwanted behaviors
+    event.preventDefault()
+
+    // Clear any existing long press timer
+    clearTimeout(longPressTimer)
+
+    const markerElement = event.target.closest(".mapboxgl-marker")
+    if (markerElement) {
+      const foundMarker = confirmedMarkers.find(
+        (m) => m.marker.getElement() === markerElement,
+      )
+
+      if (foundMarker) {
+        const { marker, id } = foundMarker
+        dispatch("markerClick", { marker, id })
+      }
+    }
+  }
+
   function handleMarkerPlacement(event) {
     if (!controlsEnabled) return
 
@@ -148,6 +92,12 @@
 
   function handleMouseDown(event) {
     if (!controlsEnabled) return
+
+    // Check if the click/touch is on a marker
+    const target = event.originalEvent.target
+    if (target.closest(".mapboxgl-marker")) {
+      return // Don't start long press if touching a marker
+    }
 
     isDragging = false
     longPressOccurred = false
@@ -190,4 +140,93 @@
     longPressTimer = null
     longPressStartPosition = null
   }
+
+  function updateMarkerListeners(marker, id) {
+    const markerElement = marker.getElement()
+
+    // Remove all existing listeners
+    markerElement.removeEventListener("mouseenter", handleMarkerMouseEnter)
+    markerElement.removeEventListener("mouseleave", handleMarkerMouseLeave)
+    markerElement.removeEventListener("click", handleMarkerClick)
+    markerElement.removeEventListener("touchstart", handleMarkerTouchStart)
+    markerElement.removeAttribute("data-listeners-added")
+
+    // Add listeners
+    markerElement.addEventListener("mouseenter", handleMarkerMouseEnter)
+    markerElement.addEventListener("mouseleave", handleMarkerMouseLeave)
+    markerElement.addEventListener("click", handleMarkerClick)
+    markerElement.addEventListener("touchstart", handleMarkerTouchStart)
+    markerElement.setAttribute("data-listeners-added", "true")
+
+    const existingMarkerIndex = confirmedMarkers.findIndex((m) => m.id === id)
+    if (existingMarkerIndex !== -1) {
+      confirmedMarkers = confirmedMarkers.map((m, index) =>
+        index === existingMarkerIndex ? { marker, id } : m,
+      )
+    } else {
+      confirmedMarkers = [...confirmedMarkers, { marker, id }]
+    }
+  }
+
+  function handleUpdateMarkerListeners(event) {
+    const { marker, id } = event.detail
+    updateMarkerListeners(marker, id)
+  }
+
+  function initializeEventListeners() {
+    if (!map || initialized) return
+
+    map.on("mousedown", handleMouseDown)
+    map.on("touchstart", handleMouseDown)
+    map.on("drag", handleMapDrag)
+    map.on("mouseup", handleMouseUp)
+
+    document.addEventListener(
+      "handleUpdateMarkerListeners",
+      handleUpdateMarkerListeners,
+    )
+
+    initialized = true
+  }
+
+  function removeEventListeners() {
+    if (!map || !initialized) return
+
+    map.off("mousedown", handleMouseDown)
+    map.off("touchstart", handleMouseDown)
+    map.off("drag", handleMapDrag)
+    map.off("mouseup", handleMouseUp)
+
+    document.removeEventListener(
+      "handleUpdateMarkerListeners",
+      handleUpdateMarkerListeners,
+    )
+
+    initialized = false
+  }
+
+  // Watch for drawingModeEnabled changes
+  $: {
+    if ($drawingModeEnabled !== undefined) {
+      controlsEnabled = !$drawingModeEnabled
+      if (controlsEnabled && !initialized) {
+        initializeEventListeners()
+      } else if (!controlsEnabled && initialized) {
+        removeEventListeners()
+      }
+    }
+  }
+
+  onMount(() => {
+    if (controlsEnabled && !initialized) {
+      initializeEventListeners()
+    }
+  })
+
+  onDestroy(() => {
+    if (confirmedMarkersUnsubscribe) {
+      confirmedMarkersUnsubscribe()
+    }
+    removeEventListeners()
+  })
 </script>

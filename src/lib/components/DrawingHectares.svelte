@@ -222,9 +222,29 @@
 {#if $drawingModeEnabled}
   <div class="absolute left-1/2 top-3 z-10 -translate-x-1/2 transform">
     <div
-      class="min-w-[180px] rounded-lg border border-gray-200 bg-white/90 p-3 backdrop-blur-sm"
+      class="relative min-w-[180px] rounded-lg border border-gray-200 bg-white/90 p-3 backdrop-blur-sm"
     >
+      <!-- Add close button -->
+      <button
+        class="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 hover:bg-gray-50"
+        on:click={() => ($drawingModeEnabled = false)}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-3 w-3"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+            clip-rule="evenodd"
+          />
+        </svg>
+      </button>
+
       <div class="flex flex-col items-center gap-2">
+        <!-- Rest of the content remains the same -->
         <div
           class="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-gray-600"
         >
