@@ -7,5 +7,7 @@ export const menuStore = writable({
     showDeleteConfirmationModal: false,
     showSettingsModal: false,
     showRenameModal: false,
-    showMapCarouselModal: false  // Add this new property
+    showMapCarouselModal: false,  // Add this new property
+    showAddOperationModal: false,
+    showEditOperationModal: false
 });

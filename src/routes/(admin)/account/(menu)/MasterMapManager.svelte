@@ -4,12 +4,13 @@
   import ConnectToMapModal from "./ConnectToMapModal.svelte"
   import MapSettingsModal from "./MapSettingsModal.svelte"
   import DeleteConfirmationModal from "./DeleteConfirmationModal.svelte"
+  import AddOperationModal from "./AddOperationModal.svelte"
+  import EditOperationModal from "./EditOperationModal.svelte"
 
   import { menuStore } from "../../../../stores/menuStore"
 </script>
 
-<div class=" py-2">
-  <!-- <div class="mb-4 text-center font-bold">Selected Map</div> -->
+<div class="py-2">
   <MapInfo />
 </div>
 
@@ -27,4 +28,12 @@
 
 {#if $menuStore.showDeleteConfirmationModal}
   <DeleteConfirmationModal />
+{/if}
+
+{#if $menuStore.showAddOperationModal}
+  <AddOperationModal />
+{/if}
+
+{#if $menuStore.showEditOperationModal}
+  <EditOperationModal />
 {/if}

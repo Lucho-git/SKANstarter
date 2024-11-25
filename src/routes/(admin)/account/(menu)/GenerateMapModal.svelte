@@ -14,7 +14,7 @@
   }
 </script>
 
-<div class="modal modal-open z-50">
+<div class="modal modal-open">
   <div class="modal-box mx-auto w-11/12 max-w-xl px-6 py-4">
     <h3 class="mb-6 text-center text-2xl font-bold text-primary">
       Generate New Map
