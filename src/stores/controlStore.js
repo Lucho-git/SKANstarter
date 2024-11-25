@@ -11,3 +11,5 @@ export const showEndTrailModal = writable(false)
 export const trailingButtonPressed = writable(false);
 
 export const crispVisibility = writable(false);
+
+export const drawingModeEnabled = writable(false);

@@ -6,7 +6,11 @@
   import { selectedOperationStore } from "$lib/stores/operationStore"
 
   import { antLineConfigStore } from "../stores/trailDataStore"
-  import { controlStore, trailingButtonPressed } from "../stores/controlStore"
+  import {
+    controlStore,
+    trailingButtonPressed,
+    drawingModeEnabled,
+  } from "../stores/controlStore"
   import { toast } from "svelte-sonner"
 
   import { browser } from "$app/environment"
@@ -14,7 +18,7 @@
   import VehicleSelectionMenu from "./VehicleSelectionMenu.svelte"
   import SVGComponents from "$lib/vehicles/index.js"
   import Icons from "$lib/icons"
-  import { Home } from "lucide-svelte"
+  import { Home, PencilRuler, PenOff } from "lucide-svelte"
 
   let isCircular = true
   let currentStyle = "skan"
@@ -156,6 +160,10 @@
   function handleLocateHome() {
     dispatch("locateHome")
   }
+
+  function toggleDrawingMode() {
+    $drawingModeEnabled = !$drawingModeEnabled
+  }
 </script>
 
 <div>
@@ -240,6 +248,20 @@
         </svg>
       </button>
 
+      <!-- Drawing Mode Toggle Button -->
+      <button
+        class="menu-button {currentStyle} btn {isCircular
+          ? 'btn-circle'
+          : 'btn-square'} btn-lg bg-white hover:bg-opacity-90"
+        on:click={toggleDrawingMode}
+      >
+        {#if $drawingModeEnabled}
+          <PenOff size={24} />
+        {:else}
+          <PencilRuler size={24} />
+        {/if}
+      </button>
+
       <!-- <button
         class="menu-button {currentStyle} btn {isCircular
           ? 'btn-circle'
@@ -258,6 +280,38 @@
         on:click={handleLocationClick}
       >
         <Icons.location_drop width="48" height="48" fill="currentColor" />
+      </button>
+
+      <!-- Locate Home Button -->
+
+      <button
+        class="menu-button {currentStyle} btn {isCircular
+          ? 'btn-circle'
+          : 'btn-square'} btn-lg bg-white hover:bg-opacity-90"
+        on:click={handleLocateHome}
+      >
+        <Icons.locate_home width="40" height="40" fill="currentColor" />
+      </button>
+
+      <!-- Vehicle Selection Button -->
+      <button
+        class="menu-button {currentStyle} btn {isCircular
+          ? 'btn-circle'
+          : 'btn-square'} btn-lg bg-white hover:bg-opacity-90"
+        on:click={toggleVehicleMenu}
+      >
+        <div class="flex h-full w-full items-center justify-center">
+          {#if VehicleIcon}
+            <svelte:component
+              this={VehicleIcon}
+              bodyColor={$userVehicleStore.vehicle_marker.bodyColor}
+              size={$userVehicleStore.vehicle_marker.size}
+              swath={$userVehicleStore.vehicle_marker.swath}
+            />
+          {:else}
+            Loading...
+          {/if}
+        </div>
       </button>
 
       <!-- Toggle Trailing Button -->
@@ -297,36 +351,6 @@
             ></path>
           </svg>
         {/if}
-      </button>
-
-      <!-- Vehicle Selection Button -->
-      <button
-        class="menu-button {currentStyle} btn {isCircular
-          ? 'btn-circle'
-          : 'btn-square'} btn-lg bg-white hover:bg-opacity-90"
-        on:click={toggleVehicleMenu}
-      >
-        <div class="flex h-full w-full items-center justify-center">
-          {#if VehicleIcon}
-            <svelte:component
-              this={VehicleIcon}
-              bodyColor={$userVehicleStore.vehicle_marker.bodyColor}
-              size={$userVehicleStore.vehicle_marker.size}
-              swath={$userVehicleStore.vehicle_marker.swath}
-            />
-          {:else}
-            Loading...
-          {/if}
-        </div>
-      </button>
-
-      <button
-        class="menu-button {currentStyle} btn {isCircular
-          ? 'btn-circle'
-          : 'btn-square'} btn-lg bg-white hover:bg-opacity-90"
-        on:click={handleLocateHome}
-      >
-        <Icons.locate_home width="40" height="40" fill="currentColor" />
       </button>
     </div>
   </div>

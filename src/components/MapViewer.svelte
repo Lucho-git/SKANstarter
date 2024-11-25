@@ -9,7 +9,6 @@
   } from "$lib/stores/homeBoundaryStore"
   import { trailDataLoaded, vehicleDataLoaded } from "../stores/loadedStore"
   import { selectedOperationStore } from "$lib/stores/operationStore"
-
   import { toast } from "svelte-sonner"
 
   import MarkerManager from "./MarkerManager.svelte"
@@ -23,6 +22,7 @@
 
   import TrailSynchronizer from "$lib/components/TrailSynchronizer.svelte"
   import TrailView from "$lib/components/TrailView.svelte"
+  import DrawingHectares from "$lib/components/DrawingHectares.svelte"
 
   import { db } from "./db.js"
 
@@ -190,7 +190,7 @@
     <VehicleStateSynchronizer />
     <VehicleTracker {map} disableAutoZoom={initialLocation} />
     <MapFields {map} />
-
+    <DrawingHectares {map} />
     {#if selectedOperation}
       <TrailSynchronizer {selectedOperation} {map} />
     {/if}
