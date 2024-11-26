@@ -542,11 +542,20 @@
         },
       )
 
+      const data = await response.json()
+
       if (!response.ok) {
-        throw new Error("Failed to check for other active trails")
+        throw new Error(data.error || "Failed to check for other active trails")
       }
 
-      const { activeTrails } = await response.json()
+      // Handle any errors returned from the API
+      if (data.errors) {
+        data.errors.forEach((error) => {
+          toast.error(error, { duration: 6000 })
+        })
+      }
+
+      const { activeTrails } = data
 
       if (activeTrails && activeTrails.length > 0) {
         console.log(
@@ -565,7 +574,34 @@
           detailed_path: null,
         }))
 
+        // Get connected profiles from mapActivityStore
+        const connectedProfiles = $mapActivityStore?.connected_profiles || []
+
+        // Match active trails with connected profiles
+        const activeUsers = activeTrails
+          .map((trail) => {
+            const profile = connectedProfiles.find(
+              (p) => p.id === trail.vehicle_id,
+            )
+            return profile ? profile.full_name : null
+          })
+          .filter((name) => name !== null)
+
         otherActiveTrailStore.set(formattedTrails)
+
+        if (activeUsers.length > 0) {
+          const userList = activeUsers.join(", ")
+          toast.info(`Active trails from: ${userList}`, {
+            duration: 6000,
+          })
+        } else {
+          toast.info(
+            `Found ${activeTrails.length} active ${activeTrails.length === 1 ? "trail" : "trails"} from unknown vehicles`,
+            {
+              duration: 6000,
+            },
+          )
+        }
       } else {
         otherActiveTrailStore.set([])
       }
@@ -574,7 +610,11 @@
         "❌ TrailSynchronizer: Failed to check other active trails:",
         error,
       )
-      toast.error("Failed to check for other active trails")
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to check for other active trails",
+      )
     }
   }
 

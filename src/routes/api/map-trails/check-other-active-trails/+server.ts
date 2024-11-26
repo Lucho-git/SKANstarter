@@ -33,7 +33,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
         if (error) throw error;
 
-        // Get only the most recent trail for each vehicle_id
         const uniqueVehicleTrails = data.reduce((acc, trail) => {
             if (!acc[trail.vehicle_id]) {
                 acc[trail.vehicle_id] = trail;
@@ -42,8 +41,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         }, {});
 
         const activeTrails = Object.values(uniqueVehicleTrails);
+        const errors: string[] = [];
 
-        // Fetch trail points for each active trail
         const trailsWithPoints = await Promise.all(activeTrails.map(async (trail) => {
             const { data: trailData, error: trailDataError } = await locals.supabase
                 .from('trail_stream')
@@ -52,14 +51,19 @@ export const POST: RequestHandler = async ({ request, locals }) => {
                 .order('timestamp', { ascending: true });
 
             if (trailDataError) {
-                console.error(`Error fetching trail data for trail ${trail.id}:`, trailDataError);
+                // Check for timeout error
+                if (trailDataError.code === '57014') {
+                    errors.push(`Timeout error while loading trail data. Some trails may be incomplete.`);
+                } else {
+                    errors.push(`Error loading trail data: ${trailDataError.message}`);
+                }
+
                 return {
                     ...trail,
                     trailData: []
                 };
             }
 
-            // Transform the coordinate data
             const transformedTrailData = trailData.map(point => ({
                 coordinates: {
                     latitude: point.coordinate.coordinates[1],
@@ -74,9 +78,17 @@ export const POST: RequestHandler = async ({ request, locals }) => {
             };
         }));
 
-        return json({ activeTrails: trailsWithPoints });
+        return json({
+            activeTrails: trailsWithPoints,
+            errors: errors.length > 0 ? errors : undefined
+        });
+
     } catch (error) {
         console.error('Error fetching active trails:', error);
-        return json({ error: 'Failed to fetch active trails' }, { status: 500 });
+        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch active trails';
+        return json({
+            error: errorMessage,
+            code: error?.code
+        }, { status: 500 });
     }
 };
