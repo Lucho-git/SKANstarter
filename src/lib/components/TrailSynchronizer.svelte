@@ -527,93 +527,103 @@
   }
 
   async function checkOtherActiveTrails() {
-    try {
-      const response = await fetch(
-        "/api/map-trails/check-other-active-trails",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            operation_id: selectedOperation.id,
-            current_vehicle_id: $profileStore.id,
-          }),
-        },
-      )
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to check for other active trails")
-      }
-
-      // Handle any errors returned from the API
-      if (data.errors) {
-        data.errors.forEach((error) => {
-          toast.error(error, { duration: 6000 })
-        })
-      }
-
-      const { activeTrails } = data
-
-      if (activeTrails && activeTrails.length > 0) {
-        console.log(
-          `📍 TrailSynchronizer: Found ${activeTrails.length} other active trails`,
-        )
-        const formattedTrails = activeTrails.map((trail) => ({
-          id: trail.id,
-          vehicle_id: trail.vehicle_id,
-          operation_id: trail.operation_id,
-          task_id: trail.task_id || null,
-          start_time: trail.start_time,
-          end_time: trail.end_time,
-          trail_color: trail.trail_color,
-          trail_width: trail.trail_width,
-          path: trail.trailData || [],
-          detailed_path: null,
-        }))
-
-        // Get connected profiles from mapActivityStore
-        const connectedProfiles = $mapActivityStore?.connected_profiles || []
-
-        // Match active trails with connected profiles
-        const activeUsers = activeTrails
-          .map((trail) => {
-            const profile = connectedProfiles.find(
-              (p) => p.id === trail.vehicle_id,
-            )
-            return profile ? profile.full_name : null
-          })
-          .filter((name) => name !== null)
-
-        otherActiveTrailStore.set(formattedTrails)
-
-        if (activeUsers.length > 0) {
-          const userList = activeUsers.join(", ")
-          toast.info(`Active trails from: ${userList}`, {
-            duration: 6000,
-          })
-        } else {
-          toast.info(
-            `Found ${activeTrails.length} active ${activeTrails.length === 1 ? "trail" : "trails"} from unknown vehicles`,
-            {
-              duration: 6000,
+    const toastPromise = toast.promise(
+      (async () => {
+        const response = await fetch(
+          "/api/map-trails/check-other-active-trails",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
             },
+            body: JSON.stringify({
+              operation_id: selectedOperation.id,
+              current_vehicle_id: $profileStore.id,
+            }),
+          },
+        )
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(
+            data.error || "Failed to check for other active trails",
           )
         }
-      } else {
-        otherActiveTrailStore.set([])
-      }
+
+        // Handle any errors returned from the API
+        if (data.errors) {
+          data.errors.forEach((error) => {
+            toast.error(error, { duration: 6000 })
+          })
+        }
+
+        const { activeTrails } = data
+
+        if (activeTrails && activeTrails.length > 0) {
+          console.log(
+            `📍 TrailSynchronizer: Found ${activeTrails.length} other active trails`,
+          )
+          const formattedTrails = activeTrails.map((trail) => ({
+            id: trail.id,
+            vehicle_id: trail.vehicle_id,
+            operation_id: trail.operation_id,
+            task_id: trail.task_id || null,
+            start_time: trail.start_time,
+            end_time: trail.end_time,
+            trail_color: trail.trail_color,
+            trail_width: trail.trail_width,
+            path: trail.trailData || [],
+            detailed_path: null,
+          }))
+
+          // Get connected profiles from mapActivityStore
+          const connectedProfiles = $mapActivityStore?.connected_profiles || []
+
+          // Match active trails with connected profiles
+          const activeUsers = activeTrails
+            .map((trail) => {
+              const profile = connectedProfiles.find(
+                (p) => p.id === trail.vehicle_id,
+              )
+              return profile ? profile.full_name : null
+            })
+            .filter((name) => name !== null)
+
+          otherActiveTrailStore.set(formattedTrails)
+
+          if (activeUsers.length > 0) {
+            const userList = activeUsers.join(", ")
+            return `Active trails from: ${userList}`
+          } else {
+            return `Found ${activeTrails.length} active ${
+              activeTrails.length === 1 ? "trail" : "trails"
+            } from unknown vehicles`
+          }
+        } else {
+          otherActiveTrailStore.set([])
+          return "No active trails found"
+        }
+      })(),
+      {
+        loading: "Checking for active trails...",
+        success: (message) => message,
+        error: (error) =>
+          error instanceof Error
+            ? error.message
+            : "Failed to check for other active trails",
+      },
+      {
+        duration: 6000,
+      },
+    )
+
+    try {
+      await toastPromise
     } catch (error) {
       console.error(
         "❌ TrailSynchronizer: Failed to check other active trails:",
         error,
-      )
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to check for other active trails",
       )
     }
   }

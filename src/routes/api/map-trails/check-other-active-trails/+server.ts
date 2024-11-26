@@ -1,7 +1,7 @@
 // src/routes/api/map-trails/check-other-active-trails/+server.ts
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { closeTrailWithPath } from '$lib/services/closeTrailsService';
+import { processAndCloseTrail } from '$lib/services/closeTrailsService';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
     const session = await locals.getSession();
@@ -54,20 +54,19 @@ export const POST: RequestHandler = async ({ request, locals }) => {
                 console.log(`Found ${olderTrails.length} additional open trails for vehicle ${vehicleId}`);
 
                 for (const trail of olderTrails) {
-                    console.log(`Closing old trail ${trail.id} for vehicle ${vehicleId} (started at ${trail.start_time})`);
+                    console.log(`Processing trail ${trail.id} for vehicle ${vehicleId} (started at ${trail.start_time})`);
 
-                    const { error: closeError } = await closeTrailWithPath(
-                        locals.supabase,
-                        trail.id,
-                        new Date().toISOString()
-                    );
-
-                    if (closeError) {
-                        const errorMsg = `Error closing old trail ${trail.id} for vehicle ${vehicleId}: ${closeError.message}`;
+                    try {
+                        const result = await processAndCloseTrail(locals.supabase, trail.id);
+                        if (result.deleted) {
+                            console.log(`Deleted trail ${trail.id} - ${result.reason}`);
+                        } else {
+                            console.log(`Successfully closed trail ${trail.id}`);
+                        }
+                    } catch (error) {
+                        const errorMsg = `Error processing trail ${trail.id}: ${error.message}`;
                         console.error(errorMsg);
                         errors.push(errorMsg);
-                    } else {
-                        console.log(`Successfully closed trail ${trail.id} for vehicle ${vehicleId}`);
                     }
                 }
             }
