@@ -334,7 +334,7 @@
       // Center the screen on the placed marker
       map.flyTo({
         center: lngLat,
-        zoom: 15, // Adjust the zoom level as needed
+        // zoom: 15, // Adjust the zoom level as needed
         duration: 1000, // Adjust the duration of the animation as needed
       })
       controlStore.update((controls) => ({
@@ -549,13 +549,13 @@
 
 <!-- Marker Menu -->
 {#if $controlStore.showMarkerMenu}
-  <div class="fixed bottom-0 left-0 right-0 flex justify-center mb-8 z-10">
+  <div class="fixed bottom-0 left-0 right-0 z-10 mb-8 flex justify-center">
     <div
-      class="bg-white bg-opacity-90 rounded-lg shadow-lg text-black w-11/12 sm:w-1/2 overflow-hidden border-2 border-gray-300"
+      class="w-11/12 overflow-hidden rounded-lg border-2 border-gray-300 bg-white bg-opacity-90 text-black shadow-lg sm:w-1/2"
     >
       <div class="grid grid-cols-2 bg-gray-200">
         <button
-          class="p-4 hover:bg-green-300 transition duration-200 flex justify-center items-center border-r border-gray-300"
+          class="flex items-center justify-center border-r border-gray-300 p-4 transition duration-200 hover:bg-green-300"
           on:click={confirmMarker}
         >
           <svg
@@ -574,7 +574,7 @@
           </svg>
         </button>
         <button
-          class="p-4 hover:bg-red-300 transition duration-200 flex justify-center items-center"
+          class="flex items-center justify-center p-4 transition duration-200 hover:bg-red-300"
           on:click={removeMarker}
         >
           <svg
@@ -593,15 +593,15 @@
           </svg>
         </button>
       </div>
-      <div class="p-2 overflow-auto max-h-64">
-        <div class="grid grid-auto-flow grid-auto-columns gap-2">
+      <div class="max-h-64 overflow-auto p-2">
+        <div class="grid-auto-flow grid-auto-columns grid gap-2">
           {#each markerIcons as icon}
             <button
               class="marker-icon focus:outline-none"
               on:click={() => handleIconSelection(icon)}
             >
               <div
-                class="bg-gray-200 hover:bg-gray-300 rounded-lg p-3 transition duration-200 transform hover:scale-125 flex items-center justify-center"
+                class="flex transform items-center justify-center rounded-lg bg-gray-200 p-3 transition duration-200 hover:scale-125 hover:bg-gray-300"
                 style="width: 50px; height: 45px;"
               >
                 {#if icon.class.startsWith("custom-svg")}

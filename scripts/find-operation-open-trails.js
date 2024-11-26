@@ -5,7 +5,7 @@ dotenv.config()
 
 const supabase = createClient(process.env.PUBLIC_SUPABASE_URL, process.env.PRIVATE_SUPABASE_SERVICE_ROLE)
 
-const OPERATION_ID = 'f71bc4cb-7328-4fb7-9bbb-668a645775bf'
+const OPERATION_ID = '341c8237-07be-45fc-84b5-343fb723fbd6'
 
 async function analyzeOperationTrails() {
     try {

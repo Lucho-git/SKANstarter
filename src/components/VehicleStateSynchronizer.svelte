@@ -271,10 +271,10 @@
         (payload) => {
           // Check if the update is from another vehicle
           if (payload.new.vehicle_id !== userId) {
-            console.log(
-              "Received vehicle update from another vehicle direct from server:",
-              payload,
-            )
+            // console.log(
+            //   "Received vehicle update from another vehicle direct from server:",
+            //   payload,
+            // )
             serverOtherVehiclesData.update((vehicles) => {
               const existingVehicleIndex = vehicles.findIndex(
                 (vehicle) => vehicle.vehicle_id === payload.new.vehicle_id,
