@@ -226,7 +226,7 @@
     const changes = compareData($serverOtherVehiclesData, $otherVehiclesStore)
     otherVehiclesDataChanges.set(changes)
 
-    // Subscribe to realtime updates from other vehicles
+    // Subscribe to realtime updates from other vehicles (broadcast)
     channel = supabase
       .channel(`vehicle_updates_${masterMapId}`)
       .on("broadcast", { event: "vehicle_update" }, (payload) => {
@@ -260,6 +260,49 @@
           otherVehiclesDataChanges.set(changes)
         }
       })
+      .on(
+        "postgres_changes",
+        {
+          event: "*", // Listen to all changes (INSERT, UPDATE, DELETE)
+          schema: "public",
+          table: "vehicle_state",
+          filter: `master_map_id=eq.${masterMapId}`, // Filter for your master map id
+        },
+        (payload) => {
+          // Check if the update is from another vehicle
+          if (payload.new.vehicle_id !== userId) {
+            console.log(
+              "Received vehicle update from another vehicle direct from server:",
+              payload,
+            )
+            serverOtherVehiclesData.update((vehicles) => {
+              const existingVehicleIndex = vehicles.findIndex(
+                (vehicle) => vehicle.vehicle_id === payload.new.vehicle_id,
+              )
+              if (existingVehicleIndex !== -1) {
+                // Vehicle already exists, update its data while preserving the full_name
+                vehicles[existingVehicleIndex] = {
+                  ...vehicles[existingVehicleIndex],
+                  ...payload.new,
+                  full_name: vehicles[existingVehicleIndex].full_name,
+                }
+              } else {
+                // Vehicle doesn't exist, add it to the store
+                console.log("pushing new vehicle from DB change", payload.new)
+                vehicles.push(payload.new)
+              }
+              return vehicles
+            })
+
+            // Compare the serverOtherVehiclesData with the otherVehiclesStore and store the changes
+            const changes = compareData(
+              $serverOtherVehiclesData,
+              $otherVehiclesStore,
+            )
+            otherVehiclesDataChanges.set(changes)
+          }
+        },
+      )
       .subscribe()
 
     // Subscribe to changes in the userVehicleStore
