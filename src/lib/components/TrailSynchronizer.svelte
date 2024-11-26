@@ -108,14 +108,13 @@
   })
 
   async function subscribeToTrailChanges() {
-    const currentVehicleId = $userVehicleStore.vehicle_id
+    const currentVehicleId = $profileStore.id
     console.log(
       "📡 TrailSynchronizer: Subscribing to trail changes of operation",
       selectedOperation.id,
       "and not vehicle:",
       currentVehicleId,
     )
-
     supabaseChannel = supabase
       .channel("trail_changes")
       .on(
@@ -454,16 +453,11 @@
   }
 
   async function fetchOperationTrails() {
+    console.log("📥 TrailSynchronizer: Fetching operation trails")
+
     toast.promise(
       (async () => {
-        console.log("📥 TrailSynchronizer: Fetching operation trails")
-
-        // Start both promises simultaneously
-        const trailsPromise = getOperationTrails(selectedOperation.id)
-        const minDelay = new Promise((resolve) => setTimeout(resolve, 2000))
-
-        // Wait for both promises - the trails data and the minimum delay
-        const [trails] = await Promise.all([trailsPromise, minDelay])
+        const trails = await getOperationTrails(selectedOperation.id)
 
         historicalTrailStore.set([])
         historicalTrailStore.update((currentTrails) => [
@@ -484,6 +478,9 @@
           `Loaded ${trails.length} trails from ${selectedOperation.name} (${selectedOperation.year})`,
         error: (error) =>
           `Failed to fetch trails from ${selectedOperation.name}: ${error.message}`,
+      },
+      {
+        duration: 4000, // Optional: Adjust the toast duration as needed
       },
     )
   }
@@ -563,6 +560,7 @@
         if (activeTrails && activeTrails.length > 0) {
           console.log(
             `📍 TrailSynchronizer: Found ${activeTrails.length} other active trails`,
+            activeTrails,
           )
           const formattedTrails = activeTrails.map((trail) => ({
             id: trail.id,
