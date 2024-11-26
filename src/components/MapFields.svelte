@@ -4,6 +4,7 @@
   import { mapFieldsStore } from "$lib/stores/mapFieldsStore"
   import { fieldBoundaryStore } from "$lib/stores/homeBoundaryStore"
   import mapboxgl from "mapbox-gl"
+  import * as turf from "@turf/turf"
 
   export let map: mapboxgl.Map
 
@@ -13,6 +14,7 @@
       type: "Polygon" | "MultiPolygon"
       coordinates: number[][][] | number[][][][]
     }
+    name: string
   }
 
   function calculateBoundingBox(fields: Field[]): mapboxgl.LngLatBounds | null {
@@ -53,23 +55,52 @@
 
   function loadFields() {
     const fields: Field[] = get(mapFieldsStore)
-    // console.log(`Loaded ${fields.length} fields from store`, fields)
-
+    console.log("Loading fields from", $mapFieldsStore)
     if (fields.length > 0) {
-      const geojson = {
+      // Create polygons GeoJSON
+      const fieldsGeojson = {
         type: "FeatureCollection",
         features: fields.map((field, index) => ({
           type: "Feature",
           geometry: field.boundary,
-          properties: { id: index, area: field.area },
+          properties: {
+            id: index,
+            area: field.area,
+            name: field.name,
+          },
         })),
       }
 
+      // Create centroids GeoJSON
+      const centroidsGeojson = {
+        type: "FeatureCollection",
+        features: fields.map((field, index) => {
+          const polygon = turf.polygon(field.boundary.coordinates)
+          const centroid = turf.centroid(polygon)
+          return {
+            type: "Feature",
+            geometry: centroid.geometry,
+            properties: {
+              id: index,
+              name: field.name,
+            },
+          }
+        }),
+      }
+
+      // Add the fields source
       map.addSource("fields", {
         type: "geojson",
-        data: geojson,
+        data: fieldsGeojson,
       })
 
+      // Add the centroids source
+      map.addSource("centroids", {
+        type: "geojson",
+        data: centroidsGeojson,
+      })
+
+      // Add filled polygons
       map.addLayer({
         id: "fields-fill",
         type: "fill",
@@ -80,6 +111,7 @@
         },
       })
 
+      // Add field outlines
       map.addLayer({
         id: "fields-outline",
         type: "line",
@@ -91,6 +123,38 @@
         },
       })
 
+      // Add field labels using centroids
+      map.addLayer({
+        id: "fields-labels",
+        type: "symbol",
+        source: "centroids",
+        layout: {
+          "text-field": ["get", "name"],
+          "text-anchor": "center",
+          // Scale text size based on zoom level
+          "text-size": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            10,
+            0, // At zoom level 10 and below, text size is 0 (hidden)
+            11,
+            8, // At zoom level 11, text size is 8
+            13,
+            10, // At zoom level 13, text size is 10
+            15,
+            12, // At zoom level 15, text size is 12
+            17,
+            14, // At zoom level 17 and above, text size is 14
+          ],
+          "text-allow-overlap": true,
+          "text-ignore-placement": true,
+        },
+        paint: {
+          "text-color": "#ffffff",
+        },
+      })
+
       // Calculate bounding box and store it
       const bounds = calculateBoundingBox(fields)
       if (bounds) {
@@ -99,8 +163,6 @@
       } else {
         console.warn("Unable to calculate valid bounding box")
       }
-    } else {
-      //   console.log("No fields found in store")
     }
   }
 
