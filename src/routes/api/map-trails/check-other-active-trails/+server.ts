@@ -1,6 +1,7 @@
 // src/routes/api/map-trails/check-other-active-trails/+server.ts
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { closeTrailWithPath } from '$lib/services/closeTrailsService';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
     const session = await locals.getSession();
@@ -15,7 +16,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     }
 
     try {
-        const { data, error } = await locals.supabase
+        const { data: openTrails, error: trailsError } = await locals.supabase
             .from('trails')
             .select(`
                 id,
@@ -31,55 +32,81 @@ export const POST: RequestHandler = async ({ request, locals }) => {
             .is('end_time', null)
             .order('start_time', { ascending: false });
 
-        if (error) throw error;
+        if (trailsError) throw trailsError;
 
-        const uniqueVehicleTrails = data.reduce((acc, trail) => {
+        const trailsByVehicle = openTrails.reduce((acc, trail) => {
             if (!acc[trail.vehicle_id]) {
-                acc[trail.vehicle_id] = trail;
+                acc[trail.vehicle_id] = [];
             }
+            acc[trail.vehicle_id].push(trail);
             return acc;
         }, {});
 
-        const activeTrails = Object.values(uniqueVehicleTrails);
         const errors: string[] = [];
+        const activeTrails = [];
 
-        const trailsWithPoints = await Promise.all(activeTrails.map(async (trail) => {
-            const { data: trailData, error: trailDataError } = await locals.supabase
-                .from('trail_stream')
-                .select('coordinate, timestamp')
-                .eq('trail_id', trail.id)
-                .order('timestamp', { ascending: true });
+        for (const [vehicleId, trails] of Object.entries(trailsByVehicle)) {
+            if (trails.length === 0) continue;
 
-            if (trailDataError) {
-                // Check for timeout error
-                if (trailDataError.code === '57014') {
-                    errors.push(`Timeout error while loading trail data. Some trails may be incomplete.`);
-                } else {
-                    errors.push(`Error loading trail data: ${trailDataError.message}`);
+            const [mostRecentTrail, ...olderTrails] = trails;
+
+            if (olderTrails.length > 0) {
+                console.log(`Found ${olderTrails.length} additional open trails for vehicle ${vehicleId}`);
+
+                for (const trail of olderTrails) {
+                    console.log(`Closing old trail ${trail.id} for vehicle ${vehicleId} (started at ${trail.start_time})`);
+
+                    const { error: closeError } = await closeTrailWithPath(
+                        locals.supabase,
+                        trail.id,
+                        new Date().toISOString()
+                    );
+
+                    if (closeError) {
+                        const errorMsg = `Error closing old trail ${trail.id} for vehicle ${vehicleId}: ${closeError.message}`;
+                        console.error(errorMsg);
+                        errors.push(errorMsg);
+                    } else {
+                        console.log(`Successfully closed trail ${trail.id} for vehicle ${vehicleId}`);
+                    }
                 }
-
-                return {
-                    ...trail,
-                    trailData: []
-                };
             }
 
-            const transformedTrailData = trailData.map(point => ({
-                coordinates: {
-                    latitude: point.coordinate.coordinates[1],
-                    longitude: point.coordinate.coordinates[0]
-                },
-                timestamp: new Date(point.timestamp).getTime()
-            }));
+            try {
+                const { data: trailData, error: trailDataError } = await locals.supabase
+                    .from('trail_stream')
+                    .select('coordinate, timestamp')
+                    .eq('trail_id', mostRecentTrail.id)
+                    .order('timestamp', { ascending: true });
 
-            return {
-                ...trail,
-                trailData: transformedTrailData
-            };
-        }));
+                if (trailDataError) {
+                    if (trailDataError.code === '57014') {
+                        errors.push(`Timeout error while loading trail data for vehicle ${vehicleId}`);
+                    } else {
+                        errors.push(`Error loading trail data for vehicle ${vehicleId}: ${trailDataError.message}`);
+                    }
+                    continue;
+                }
+
+                const transformedTrailData = trailData.map(point => ({
+                    coordinates: {
+                        latitude: point.coordinate.coordinates[1],
+                        longitude: point.coordinate.coordinates[0]
+                    },
+                    timestamp: new Date(point.timestamp).getTime()
+                }));
+
+                activeTrails.push({
+                    ...mostRecentTrail,
+                    trailData: transformedTrailData
+                });
+            } catch (error) {
+                errors.push(`Error processing trail data for vehicle ${vehicleId}: ${error.message}`);
+            }
+        }
 
         return json({
-            activeTrails: trailsWithPoints,
+            activeTrails,
             errors: errors.length > 0 ? errors : undefined
         });
 
