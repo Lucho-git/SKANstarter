@@ -53,6 +53,51 @@
     }
   }
 
+  function readdLabels() {
+    if (map.getLayer("fields-labels")) {
+      const currentZoom = map.getZoom()
+      map.removeLayer("fields-labels")
+      map.addLayer({
+        id: "fields-labels",
+        type: "symbol",
+        source: "label-points",
+        layout: {
+          "text-field": ["get", "name"],
+          "text-anchor": "center",
+          "symbol-sort-key": -1,
+          "text-font": ["DIN Pro Bold", "Arial Unicode MS Bold"],
+          "text-size": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            10,
+            0,
+            11,
+            8,
+            13,
+            12,
+            15,
+            28,
+            17,
+            48,
+            19,
+            96,
+            20,
+            120,
+          ],
+          "text-allow-overlap": true,
+          "text-ignore-placement": false,
+        },
+        paint: {
+          "text-color": "#ffffff",
+          "text-halo-color": "#000000",
+          "text-halo-width": 2,
+        },
+      })
+      map.setZoom(currentZoom)
+    }
+  }
+
   function loadFields() {
     const fields: Field[] = get(mapFieldsStore)
     console.log("Loading fields from", $mapFieldsStore)
@@ -216,51 +261,15 @@
         },
       })
 
-      // Set timeout to re-add labels after 10 seconds
+      // Re-add labels at 10 seconds
       setTimeout(() => {
-        if (map.getLayer("fields-labels")) {
-          const currentZoom = map.getZoom()
-          map.removeLayer("fields-labels")
-          map.addLayer({
-            id: "fields-labels",
-            type: "symbol",
-            source: "label-points",
-            layout: {
-              "text-field": ["get", "name"],
-              "text-anchor": "center",
-              "symbol-sort-key": -1,
-              "text-font": ["DIN Pro Bold", "Arial Unicode MS Bold"],
-              "text-size": [
-                "interpolate",
-                ["linear"],
-                ["zoom"],
-                10,
-                0,
-                11,
-                8,
-                13,
-                12,
-                15,
-                28,
-                17,
-                48,
-                19,
-                96,
-                20,
-                120,
-              ],
-              "text-allow-overlap": true,
-              "text-ignore-placement": false,
-            },
-            paint: {
-              "text-color": "#ffffff",
-              "text-halo-color": "#000000",
-              "text-halo-width": 2,
-            },
-          })
-          map.setZoom(currentZoom)
-        }
+        readdLabels()
       }, 10000)
+
+      // Re-add labels at 20 seconds
+      setTimeout(() => {
+        readdLabels()
+      }, 20000)
 
       // Calculate bounding box and store it
       const bounds = calculateBoundingBox(fields)
