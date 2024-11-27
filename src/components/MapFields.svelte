@@ -190,15 +190,17 @@
             ["linear"],
             ["zoom"],
             10,
-            0,
+            0, // At zoom level 10 and below, size 0
             11,
-            8,
+            8, // At zoom level 11, size 8
             13,
-            10,
+            12, // At zoom level 13, size 12
             15,
-            12,
+            16, // At zoom level 15, size 16
             17,
-            14,
+            20, // At zoom level 17, size 20
+            19,
+            26, // At zoom level 19, size 24
           ],
           "text-allow-overlap": true,
           "text-ignore-placement": true,
