@@ -74,18 +74,48 @@
       // Create centroids GeoJSON
       const centroidsGeojson = {
         type: "FeatureCollection",
-        features: fields.map((field, index) => {
-          const polygon = turf.polygon(field.boundary.coordinates)
-          const centroid = turf.centroid(polygon)
-          return {
-            type: "Feature",
-            geometry: centroid.geometry,
-            properties: {
-              id: index,
-              name: field.name,
-            },
-          }
-        }),
+        features: fields
+          .map((field, index) => {
+            try {
+              let feature
+              if (field.boundary.type === "Polygon") {
+                feature = turf.polygon(field.boundary.coordinates)
+              } else if (field.boundary.type === "MultiPolygon") {
+                feature = turf.multiPolygon(field.boundary.coordinates)
+              } else {
+                console.warn(
+                  `Invalid geometry type for field ${index}: ${field.boundary.type}`,
+                )
+                return null
+              }
+
+              // Validate coordinates
+              if (
+                !feature.geometry.coordinates ||
+                (field.boundary.type === "Polygon" &&
+                  feature.geometry.coordinates[0].length < 4)
+              ) {
+                console.warn(
+                  `Invalid coordinates for field ${index}: insufficient points`,
+                )
+                return null
+              }
+
+              const centroid = turf.centroid(feature)
+              return {
+                type: "Feature",
+                geometry: centroid.geometry,
+                properties: {
+                  id: index,
+                  name: field.name,
+                },
+              }
+            } catch (error) {
+              console.warn(`Error processing field ${index}:`, error)
+              return null
+            }
+          })
+          .filter((feature) => feature !== null), // Remove null features
       }
 
       // Add the fields source

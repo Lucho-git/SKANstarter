@@ -54,20 +54,8 @@
       }
       console.log("Removed storage keys:", keysToRemove)
 
-      // Clear specific items
-      const specificKeys = [
-        "lastCheckedPushNotificationsUserId",
-        "lastCheckedPushNotificationsTime",
-        "notificationBannerInteraction",
-      ]
-      specificKeys.forEach((key) => {
-        if (localStorage.getItem(key)) {
-          localStorage.removeItem(key)
-          console.log(`Removed specific key: ${key}`)
-        }
-      })
-
       // Clear all cookies
+      console.log("Clearing all cookies...")
       document.cookie.split(";").forEach((cookie) => {
         const name = cookie.split("=")[0].trim()
         if (name.startsWith("sb-")) {
@@ -109,9 +97,7 @@
 
       // 2. Attempt global signOut first, while we still have valid tokens
       console.log("Step 2: Executing global sign-out")
-      const { error: signOutError } = await supabase.auth.signOut({
-        scope: "global",
-      })
+      const { error: signOutError } = await supabase.auth.signOut()
 
       if (signOutError) {
         console.warn("SignOut error:", signOutError)
