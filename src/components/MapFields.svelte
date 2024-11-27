@@ -177,7 +177,7 @@
         },
       })
 
-      // Add field labels using label points
+      // Add initial labels layer
       map.addLayer({
         id: "fields-labels",
         type: "symbol",
@@ -185,30 +185,82 @@
         layout: {
           "text-field": ["get", "name"],
           "text-anchor": "center",
+          "symbol-sort-key": -1,
+          "text-font": ["DIN Pro Bold", "Arial Unicode MS Bold"],
           "text-size": [
             "interpolate",
             ["linear"],
             ["zoom"],
             10,
-            0, // At zoom level 10 and below, size 0
+            0,
             11,
-            8, // At zoom level 11, size 8
+            8,
             13,
-            12, // At zoom level 13, size 12
+            12,
             15,
-            16, // At zoom level 15, size 16
+            28,
             17,
-            20, // At zoom level 17, size 20
+            48,
             19,
-            26, // At zoom level 19, size 24
+            96,
+            20,
+            120,
           ],
           "text-allow-overlap": true,
-          "text-ignore-placement": true,
+          "text-ignore-placement": false,
         },
         paint: {
           "text-color": "#ffffff",
+          "text-halo-color": "#000000",
+          "text-halo-width": 2,
         },
       })
+
+      // Set timeout to re-add labels after 10 seconds
+      setTimeout(() => {
+        if (map.getLayer("fields-labels")) {
+          const currentZoom = map.getZoom()
+          map.removeLayer("fields-labels")
+          map.addLayer({
+            id: "fields-labels",
+            type: "symbol",
+            source: "label-points",
+            layout: {
+              "text-field": ["get", "name"],
+              "text-anchor": "center",
+              "symbol-sort-key": -1,
+              "text-font": ["DIN Pro Bold", "Arial Unicode MS Bold"],
+              "text-size": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                10,
+                0,
+                11,
+                8,
+                13,
+                12,
+                15,
+                28,
+                17,
+                48,
+                19,
+                96,
+                20,
+                120,
+              ],
+              "text-allow-overlap": true,
+              "text-ignore-placement": false,
+            },
+            paint: {
+              "text-color": "#ffffff",
+              "text-halo-color": "#000000",
+              "text-halo-width": 2,
+            },
+          })
+          map.setZoom(currentZoom)
+        }
+      }, 10000)
 
       // Calculate bounding box and store it
       const bounds = calculateBoundingBox(fields)
