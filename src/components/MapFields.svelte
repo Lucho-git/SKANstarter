@@ -79,7 +79,19 @@
             try {
               if (field.boundary.type === "Polygon") {
                 const feature = turf.polygon(field.boundary.coordinates)
-                const labelPoint = turf.center(feature)
+                const centerPoint = turf.center(feature)
+
+                // Check if center point is inside polygon
+                const isInside = turf.booleanPointInPolygon(
+                  centerPoint.geometry.coordinates,
+                  feature,
+                )
+
+                // Use pointOnFeature if center is outside
+                const labelPoint = isInside
+                  ? centerPoint
+                  : turf.pointOnFeature(feature)
+
                 return [
                   {
                     type: "Feature",
@@ -94,7 +106,19 @@
                 // Create a center point for each polygon in the MultiPolygon
                 return field.boundary.coordinates.map((polygonCoords) => {
                   const polygonFeature = turf.polygon(polygonCoords)
-                  const labelPoint = turf.center(polygonFeature)
+                  const centerPoint = turf.center(polygonFeature)
+
+                  // Check if center point is inside polygon
+                  const isInside = turf.booleanPointInPolygon(
+                    centerPoint.geometry.coordinates,
+                    polygonFeature,
+                  )
+
+                  // Use pointOnFeature if center is outside
+                  const labelPoint = isInside
+                    ? centerPoint
+                    : turf.pointOnFeature(polygonFeature)
+
                   return {
                     type: "Feature",
                     geometry: labelPoint.geometry,
