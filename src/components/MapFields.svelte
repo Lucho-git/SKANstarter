@@ -71,51 +71,51 @@
         })),
       }
 
-      // Create centroids GeoJSON
-      const centroidsGeojson = {
+      // Create label points GeoJSON
+      const labelPointsGeojson = {
         type: "FeatureCollection",
         features: fields
-          .map((field, index) => {
+          .flatMap((field, index) => {
             try {
-              let feature
               if (field.boundary.type === "Polygon") {
-                feature = turf.polygon(field.boundary.coordinates)
+                const feature = turf.polygon(field.boundary.coordinates)
+                const labelPoint = turf.center(feature)
+                return [
+                  {
+                    type: "Feature",
+                    geometry: labelPoint.geometry,
+                    properties: {
+                      id: index,
+                      name: field.name,
+                    },
+                  },
+                ]
               } else if (field.boundary.type === "MultiPolygon") {
-                feature = turf.multiPolygon(field.boundary.coordinates)
+                // Create a center point for each polygon in the MultiPolygon
+                return field.boundary.coordinates.map((polygonCoords) => {
+                  const polygonFeature = turf.polygon(polygonCoords)
+                  const labelPoint = turf.center(polygonFeature)
+                  return {
+                    type: "Feature",
+                    geometry: labelPoint.geometry,
+                    properties: {
+                      id: index,
+                      name: field.name,
+                    },
+                  }
+                })
               } else {
                 console.warn(
                   `Invalid geometry type for field ${index}: ${field.boundary.type}`,
                 )
-                return null
-              }
-
-              // Validate coordinates
-              if (
-                !feature.geometry.coordinates ||
-                (field.boundary.type === "Polygon" &&
-                  feature.geometry.coordinates[0].length < 4)
-              ) {
-                console.warn(
-                  `Invalid coordinates for field ${index}: insufficient points`,
-                )
-                return null
-              }
-
-              const centroid = turf.centroid(feature)
-              return {
-                type: "Feature",
-                geometry: centroid.geometry,
-                properties: {
-                  id: index,
-                  name: field.name,
-                },
+                return []
               }
             } catch (error) {
               console.warn(`Error processing field ${index}:`, error)
-              return null
+              return []
             }
           })
-          .filter((feature) => feature !== null), // Remove null features
+          .filter((feature) => feature !== null),
       }
 
       // Add the fields source
@@ -124,10 +124,10 @@
         data: fieldsGeojson,
       })
 
-      // Add the centroids source
-      map.addSource("centroids", {
+      // Add the label points source
+      map.addSource("label-points", {
         type: "geojson",
-        data: centroidsGeojson,
+        data: labelPointsGeojson,
       })
 
       // Add filled polygons
@@ -153,29 +153,28 @@
         },
       })
 
-      // Add field labels using centroids
+      // Add field labels using label points
       map.addLayer({
         id: "fields-labels",
         type: "symbol",
-        source: "centroids",
+        source: "label-points",
         layout: {
           "text-field": ["get", "name"],
           "text-anchor": "center",
-          // Scale text size based on zoom level
           "text-size": [
             "interpolate",
             ["linear"],
             ["zoom"],
             10,
-            0, // At zoom level 10 and below, text size is 0 (hidden)
+            0,
             11,
-            8, // At zoom level 11, text size is 8
+            8,
             13,
-            10, // At zoom level 13, text size is 10
+            10,
             15,
-            12, // At zoom level 15, text size is 12
+            12,
             17,
-            14, // At zoom level 17 and above, text size is 14
+            14,
           ],
           "text-allow-overlap": true,
           "text-ignore-placement": true,
