@@ -2,61 +2,98 @@
   import { onMount } from "svelte"
   import { getContext } from "svelte"
   import { browser } from "$app/environment"
+  import mapboxgl from "mapbox-gl"
 
   let map
   let isTrackingUser = false
   let watchId = null
+  let compassClicks = 0
+  let clickTimeout = null
 
   const { getMap } = getContext("map")
 
-  function toggleTracking() {
-    if (!browser || !map) return
-
-    isTrackingUser = !isTrackingUser
-
-    if (isTrackingUser && navigator.geolocation) {
-      watchId = navigator.geolocation.watchPosition(
-        (position) => {
-          map?.easeTo({
-            center: [position.coords.longitude, position.coords.latitude],
-            bearing: position.coords.heading || 0,
-            duration: 1000,
-          })
-        },
-        null,
-        { enableHighAccuracy: true },
-      )
-    } else if (watchId) {
-      navigator.geolocation.clearWatch(watchId)
-      watchId = null
+  class CustomNavigationControl extends mapboxgl.NavigationControl {
+    constructor(options) {
+      super(options)
+      this._trackingEnabled = false
     }
-  }
 
-  // Only run this in the browser, not during SSR
-  $: if (browser && map) {
-    const control = new DynamicControl()
-    map.addControl(control, "bottom-right")
-  }
+    onAdd(map) {
+      const container = super.onAdd(map)
 
-  class DynamicControl {
-    onAdd() {
-      // Create elements only when running in browser
-      if (!browser) return null
-
-      const container = document.createElement("div")
-      const button = document.createElement("button")
-
-      container.className = "mapboxgl-ctrl mapboxgl-ctrl-group"
-      button.className = "tracking-toggle mapboxgl-ctrl-icon"
-      button.innerHTML = "🎯"
-      button.addEventListener("click", toggleTracking)
-
-      if (isTrackingUser) {
-        button.classList.add("active")
+      // Find the compass button
+      const compassButton = container.querySelector(".mapboxgl-ctrl-compass")
+      if (compassButton) {
+        // Override the default click handler
+        compassButton.addEventListener("click", (e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          this._handleCompassClick(map)
+        })
       }
 
-      container.appendChild(button)
       return container
+    }
+
+    _handleCompassClick(map) {
+      if (clickTimeout) clearTimeout(clickTimeout)
+
+      compassClicks++
+
+      clickTimeout = setTimeout(() => {
+        compassClicks = 0
+      }, 500)
+
+      if (compassClicks === 1) {
+        // First click - reset bearing to north
+        map.resetNorth()
+        if (this._trackingEnabled) {
+          this._disableTracking()
+        }
+      } else if (compassClicks === 2) {
+        // Second click - toggle tracking
+        compassClicks = 0
+        this._toggleTracking(map)
+      }
+    }
+
+    _toggleTracking(map) {
+      this._trackingEnabled = !this._trackingEnabled
+
+      const compassButton = document.querySelector(".mapboxgl-ctrl-compass")
+
+      if (this._trackingEnabled && navigator.geolocation) {
+        watchId = navigator.geolocation.watchPosition(
+          (position) => {
+            map.easeTo({
+              center: [position.coords.longitude, position.coords.latitude],
+              bearing: position.coords.heading || 0,
+              duration: 1000,
+            })
+          },
+          null,
+          { enableHighAccuracy: true },
+        )
+
+        if (compassButton) {
+          compassButton.classList.add("tracking-active")
+        }
+      } else {
+        this._disableTracking()
+      }
+    }
+
+    _disableTracking() {
+      this._trackingEnabled = false
+      if (watchId) {
+        navigator.geolocation.clearWatch(watchId)
+        watchId = null
+      }
+
+      const compassButton = document.querySelector(".mapboxgl-ctrl-compass")
+      if (compassButton) {
+        compassButton.classList.remove("tracking-active")
+      }
     }
   }
 
@@ -65,6 +102,14 @@
 
     try {
       map = await getMap()
+
+      const nav = new CustomNavigationControl({
+        showZoom: false,
+        showCompass: true,
+        visualizePitch: true,
+      })
+
+      map.addControl(nav, "bottom-right")
     } catch (err) {
       console.warn("Map initialization error:", err)
     }
@@ -72,20 +117,34 @@
 </script>
 
 <style>
-  :global(.tracking-toggle) {
-    width: 30px;
-    height: 30px;
-    border: none;
-    border-radius: 4px;
-    background: white;
-    cursor: pointer;
-    padding: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  /* Increase size of all mapbox controls */
+  :global(.mapboxgl-ctrl-group > button) {
+    width: 40px !important;
+    height: 40px !important;
   }
 
-  :global(.tracking-toggle.active) {
-    background: #ccc;
+  /* Adjust compass icon */
+  :global(.mapboxgl-ctrl-compass .mapboxgl-ctrl-icon) {
+    background-size: 20px !important;
+  }
+
+  /* Tracking active state */
+  :global(.mapboxgl-ctrl-compass.tracking-active) {
+    background-color: #e0e0e0 !important;
+  }
+
+  :global(.mapboxgl-ctrl-compass.tracking-active .mapboxgl-ctrl-icon) {
+    background-color: #e0e0e0 !important;
+  }
+
+  @media (max-width: 768px) {
+    :global(.mapboxgl-ctrl-group > button) {
+      width: 48px !important;
+      height: 48px !important;
+    }
+
+    :global(.mapboxgl-ctrl-compass .mapboxgl-ctrl-icon) {
+      background-size: 24px !important;
+    }
   }
 </style>

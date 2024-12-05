@@ -90,12 +90,6 @@
     map = new mapboxgl.Map(mapOptions)
     map.setMaxPitch(0)
     map.setMinPitch(0)
-    const nav = new mapboxgl.NavigationControl({
-      showZoom: false,
-      showCompass: true,
-      visualizePitch: true,
-    })
-    map.addControl(nav, "bottom-right")
 
     mapStore.set(map)
     mapInitialized = true
