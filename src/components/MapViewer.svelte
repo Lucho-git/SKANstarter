@@ -47,12 +47,6 @@
   let mapControls
   let mapInitialized = false
 
-  const nav = new mapboxgl.NavigationControl({
-    showZoom: false,
-    showCompass: true,
-    visualizePitch: true,
-  })
-
   setContext("map", {
     getMap: () => Promise.resolve(map),
   })
@@ -95,8 +89,6 @@
     map = new mapboxgl.Map(mapOptions)
     map.setMaxPitch(0)
     map.setMinPitch(0)
-    map.addControl(nav, "bottom-right")
-
     mapStore.set(map)
     mapInitialized = true
 

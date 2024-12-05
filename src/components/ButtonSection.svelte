@@ -320,7 +320,7 @@
           ? 'btn-circle'
           : 'btn-square'} btn-lg bg-white hover:bg-opacity-90 {$userVehicleTrailing
           ? 'trailing-active'
-          : ''}"
+          : ''} relative"
         on:click={toggleTrailing}
       >
         {#if $userVehicleTrailing}
@@ -561,5 +561,68 @@
     animation:
       draw 10s linear infinite,
       fillUnfill 3s linear infinite;
+  }
+
+  /* Add to your existing styles */
+  .trailing-active {
+    position: relative;
+    overflow: visible !important;
+  }
+
+  /* Pulsing ring effect */
+  .pulse-ring {
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border-radius: 50%;
+    border: 2px solid #ff0000;
+    animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+  }
+
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(1);
+      opacity: 0.5;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 0.5;
+    }
+  }
+
+  /* Tracing outline effect */
+  .trace-outline {
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: 50%;
+    border: 2px solid #ff0000;
+    animation: trace 2s linear infinite;
+  }
+
+  @keyframes trace {
+    0% {
+      clip-path: polygon(0% 0%, 0% 0%, 0% 0%);
+    }
+    25% {
+      clip-path: polygon(0% 0%, 100% 0%, 100% 0%);
+    }
+    50% {
+      clip-path: polygon(0% 0%, 100% 0%, 100% 100%);
+    }
+    75% {
+      clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+    }
+    100% {
+      clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+    }
   }
 </style>
