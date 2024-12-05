@@ -318,7 +318,9 @@
       <button
         class="menu-button {currentStyle} btn {isCircular
           ? 'btn-circle'
-          : 'btn-square'} btn-lg bg-white hover:bg-opacity-90"
+          : 'btn-square'} btn-lg bg-white hover:bg-opacity-90 {$userVehicleTrailing
+          ? 'trailing-active'
+          : ''}"
         on:click={toggleTrailing}
       >
         {#if $userVehicleTrailing}
@@ -487,6 +489,19 @@
     border: 2px solid #000000;
     color: #000000;
   }
+
+  /* Add this condition */
+  .menu-button.skan.trailing-active {
+    background-color: #ff0000;
+    border: 2px solid #000000;
+    color: f7db5c;
+  }
+
+  .menu-button.skan.trailing-active:hover {
+    background-color: #dc0000;
+    color: f7db5c;
+  }
+
   .menu-button.skan:hover,
   .top-button.skan:hover {
     background-color: rgb(0, 0, 0, 0.5);
