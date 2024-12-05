@@ -23,6 +23,7 @@
   import TrailSynchronizer from "$lib/components/TrailSynchronizer.svelte"
   import TrailView from "$lib/components/TrailView.svelte"
   import DrawingHectares from "$lib/components/DrawingHectares.svelte"
+  import NavigationControl from "$lib/components/NavigationControl.svelte"
 
   import { db } from "./db.js"
 
@@ -89,6 +90,13 @@
     map = new mapboxgl.Map(mapOptions)
     map.setMaxPitch(0)
     map.setMinPitch(0)
+    const nav = new mapboxgl.NavigationControl({
+      showZoom: false,
+      showCompass: true,
+      visualizePitch: true,
+    })
+    map.addControl(nav, "bottom-right")
+
     mapStore.set(map)
     mapInitialized = true
 
@@ -177,6 +185,7 @@
       on:backToDashboard={handleBackToDashboard}
       on:locateHome={handleLocateHome}
     />
+    <NavigationControl />
 
     <MarkerManager {markerPlacementEvent} {markerClickEvent} />
     <MapStateSaver {map} />

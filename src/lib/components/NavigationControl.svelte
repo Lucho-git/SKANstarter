@@ -35,7 +35,7 @@
   // Only run this in the browser, not during SSR
   $: if (browser && map) {
     const control = new DynamicControl()
-    map.addControl(control, "bottom-left")
+    map.addControl(control, "bottom-right")
   }
 
   class DynamicControl {
