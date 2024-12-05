@@ -526,6 +526,12 @@
   async function checkOtherActiveTrails() {
     const toastPromise = toast.promise(
       (async () => {
+        console.log(
+          "Getting other active trails... from operation:",
+          selectedOperation.id,
+          "and profile:",
+          $profileStore.id,
+        )
         const response = await fetch(
           "/api/map-trails/check-other-active-trails",
           {

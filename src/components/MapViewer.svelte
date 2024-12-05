@@ -87,6 +87,8 @@
     mapOptions.container = mapContainer
 
     map = new mapboxgl.Map(mapOptions)
+    map.setMaxPitch(0)
+    map.setMinPitch(0)
 
     mapStore.set(map)
     mapInitialized = true

@@ -14,7 +14,7 @@
 
   function formatArea(areaInSquareMeters) {
     return {
-      squareMeters: Math.round(areaInSquareMeters * 100) / 100,
+      squareMeters: Math.round(areaInSquareMeters),
       hectares: Math.round((areaInSquareMeters / 10000) * 100) / 100,
     }
   }
@@ -23,11 +23,6 @@
     create: () => updateArea(),
     delete: () => updateArea(),
     update: () => updateArea(),
-    action: (e) => {
-      if (e.action === "addition") {
-        calculatePartialArea()
-      }
-    },
   }
 
   onMount(() => {
@@ -43,19 +38,16 @@
       boxSelect: false,
       translateEnabled: false,
       rotateEnabled: false,
-      // Add custom styling
       styles: [
-        // Styling for the polygon being drawn (active)
         {
           id: "gl-draw-polygon-fill-active",
           type: "fill",
           filter: ["all", ["==", "active", "true"], ["==", "$type", "Polygon"]],
           paint: {
-            "fill-color": "#0ea5e9", // sky-500
+            "fill-color": "#0ea5e9",
             "fill-opacity": 0.25,
           },
         },
-        // Styling for completed polygon (inactive)
         {
           id: "gl-draw-polygon-fill-inactive",
           type: "fill",
@@ -65,11 +57,10 @@
             ["==", "$type", "Polygon"],
           ],
           paint: {
-            "fill-color": "#0ea5e9", // sky-500
+            "fill-color": "#0ea5e9",
             "fill-opacity": 0.4,
           },
         },
-        // Styling for the polygon stroke while drawing
         {
           id: "gl-draw-polygon-stroke-active",
           type: "line",
@@ -79,12 +70,11 @@
             "line-join": "round",
           },
           paint: {
-            "line-color": "#0ea5e9", // sky-500
+            "line-color": "#0ea5e9",
             "line-width": 2,
             "line-dasharray": [2, 2],
           },
         },
-        // Styling for completed polygon stroke
         {
           id: "gl-draw-polygon-stroke-inactive",
           type: "line",
@@ -98,11 +88,10 @@
             "line-join": "round",
           },
           paint: {
-            "line-color": "#0ea5e9", // sky-500
+            "line-color": "#0ea5e9",
             "line-width": 3,
           },
         },
-        // Styling for vertices
         {
           id: "gl-draw-polygon-and-line-vertex-active",
           type: "circle",
@@ -110,18 +99,17 @@
           paint: {
             "circle-radius": 6,
             "circle-color": "#fff",
-            "circle-stroke-color": "#0ea5e9", // sky-500
+            "circle-stroke-color": "#0ea5e9",
             "circle-stroke-width": 2,
           },
         },
-        // Styling for the midpoints
         {
           id: "gl-draw-polygon-and-line-midpoint-active",
           type: "circle",
           filter: ["all", ["==", "meta", "midpoint"], ["==", "$type", "Point"]],
           paint: {
             "circle-radius": 4,
-            "circle-color": "#0ea5e9", // sky-500
+            "circle-color": "#0ea5e9",
             "circle-stroke-color": "#fff",
             "circle-stroke-width": 2,
           },
@@ -131,66 +119,10 @@
 
     map.addControl(draw)
 
-    // Listen for when user is close to the starting point
-    map.on("draw.selectionchange", (e) => {
-      if (draw.getMode() === "draw_polygon") {
-        const features = draw.getAll().features
-        if (features.length > 0) {
-          const currentFeature = features[features.length - 1]
-          if (currentFeature.geometry.coordinates[0].length >= 3) {
-            const points = currentFeature.geometry.coordinates[0]
-            const start = points[0]
-            const current = points[points.length - 1]
-
-            // Calculate distance between start and current point
-            const distance = turf.distance(
-              turf.point(start),
-              turf.point(current),
-              { units: "meters" },
-            )
-
-            // If within 10 meters of start point and we have at least 3 points
-            if (distance < 10 && points.length >= 3) {
-              draw.changeMode("simple_select")
-            }
-          }
-        }
-      }
-    })
-
     map.on("draw.create", eventHandlers.create)
     map.on("draw.delete", eventHandlers.delete)
     map.on("draw.update", eventHandlers.update)
-    map.on("draw.action", eventHandlers.action)
   })
-
-  function calculatePartialArea() {
-    if (!draw) return
-
-    const data = draw.getAll()
-    if (!data.features.length) return
-
-    const feature = data.features[data.features.length - 1]
-
-    if (feature.geometry?.coordinates?.[0]?.length >= 3) {
-      const coordinates = feature.geometry.coordinates[0]
-      const polygon = {
-        type: "Feature",
-        properties: {},
-        geometry: {
-          type: "Polygon",
-          coordinates: [[...coordinates, coordinates[0]]],
-        },
-      }
-
-      area = formatArea(turf.area(polygon))
-      hasEnoughPoints = true
-      isDrawing = true
-    } else {
-      hasEnoughPoints = false
-      isDrawing = true
-    }
-  }
 
   function updateArea() {
     if (!draw) return
@@ -224,7 +156,6 @@
     <div
       class="relative min-w-[180px] rounded-lg border border-gray-200 bg-white/90 p-3 backdrop-blur-sm"
     >
-      <!-- Add close button -->
       <button
         class="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 hover:bg-gray-50"
         on:click={() => ($drawingModeEnabled = false)}
@@ -244,7 +175,6 @@
       </button>
 
       <div class="flex flex-col items-center gap-2">
-        <!-- Rest of the content remains the same -->
         <div
           class="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-gray-600"
         >
