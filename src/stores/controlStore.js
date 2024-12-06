@@ -6,9 +6,8 @@ export const controlStore = writable({
   showVehicleMenu: false,
 });
 
-export const showOpenTrailModal = writable(false)
 export const showEndTrailModal = writable(false)
-export const trailingButtonPressed = writable(false);
+export const trailingButtonPressed = writable();
 
 export const crispVisibility = writable(false);
 

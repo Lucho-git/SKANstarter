@@ -2,10 +2,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte"
   import { Trash2 } from "lucide-svelte"
-  import {
-    showEndTrailModal,
-    trailingButtonPressed,
-  } from "../../stores/controlStore"
+  import { showEndTrailModal } from "../../stores/controlStore"
   import {
     userVehicleTrailing,
     userVehicleStore,
@@ -62,7 +59,6 @@
       // Reset all states
       currentTrailStore.set(null)
       userVehicleTrailing.set(false)
-      trailingButtonPressed.set(false)
       showEndTrailModal.set(false)
       showDeleteConfirm = false
     } catch (error) {
@@ -218,7 +214,6 @@
       // Reset trail-related states
       currentTrailStore.set(null)
       userVehicleTrailing.set(false)
-      trailingButtonPressed.set(false)
     } catch (error) {
       console.error("Error closing trail:", error)
 
@@ -238,7 +233,6 @@
       // Reset trail-related states even if save fails
       currentTrailStore.set(null)
       userVehicleTrailing.set(false)
-      trailingButtonPressed.set(false)
     }
 
     showEndTrailModal.set(false)

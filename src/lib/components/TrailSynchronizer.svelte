@@ -8,10 +8,7 @@
     userVehicleStore,
     userVehicleTrailing,
   } from "../../stores/vehicleStore"
-  import {
-    trailingButtonPressed,
-    showOpenTrailModal,
-  } from "../../stores/controlStore"
+  import { trailingButtonPressed } from "../../stores/controlStore"
   import {
     currentTrailStore,
     coordinateBufferStore,
@@ -27,7 +24,6 @@
   import { profileStore } from "../../stores/profileStore"
 
   import EndTrailModal from "$lib/components/EndTrailModal.svelte"
-  import OpenTrailModal from "$lib/components/OpenTrailModal.svelte"
   import TrailView from "$lib/components/TrailView.svelte"
 
   export let selectedOperation
@@ -53,9 +49,16 @@
 
     cleanup.trailingUnsubscribe = trailingButtonPressed.subscribe(
       async (isPressed) => {
-        if (isPressed && !$userVehicleTrailing) {
+        console.log(
+          "🚀 TrailSynchronizer: Trailing button pressed:",
+          isPressed,
+          "And userVehicleTrailing",
+          $userVehicleTrailing,
+        )
+        if (!$userVehicleTrailing && isPressed != null) {
           await handleTrailCreation()
-        } else if ($userVehicleTrailing) {
+        } else if ($userVehicleTrailing && isPressed != null) {
+          // Add isPressed check here
           triggerEndTrail()
         }
       },
@@ -103,7 +106,6 @@
     }
 
     stopPeriodicSync()
-    trailingButtonPressed.set(false)
     userVehicleTrailing.set(false)
   })
 
@@ -486,7 +488,6 @@
   }
 
   async function checkOpenTrails() {
-    console.log("ProfileStore!!!", $profileStore)
     try {
       const response = await fetch("/api/map-trails/check-open-trails", {
         method: "POST",
@@ -513,9 +514,22 @@
           trail_width: openTrail.trail_width,
           path: trailData || [],
         })
+        // Automatically continue the trail
+        userVehicleTrailing.set(true)
 
-        toast.info("Loaded existing Trail")
-        showOpenTrailModal.set(true)
+        // Calculate time since trail started
+        const startTime = new Date(openTrail.start_time)
+        const timeElapsed = Math.round(
+          (Date.now() - startTime.getTime()) / (1000 * 60),
+        ) // in minutes
+
+        toast.info(
+          `Found existing ${openTrail.trail_width}m ${openTrail.trail_color.toLowerCase()} trail`,
+          {
+            description: `Started ${timeElapsed} minutes ago. Trailing will continue automatically.`,
+            duration: 5000,
+          },
+        )
       }
     } catch (error) {
       console.error("❌ TrailSynchronizer: Failed to check open trails:", error)
@@ -687,7 +701,6 @@
 </script>
 
 <EndTrailModal bind:triggerEndTrail />
-<OpenTrailModal />
 
 {#if areTrailsLoaded}
   <TrailView {map} />
