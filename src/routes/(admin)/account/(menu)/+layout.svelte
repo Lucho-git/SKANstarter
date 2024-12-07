@@ -27,8 +27,12 @@
     isExpanded = !isExpanded
   }
 
+  let crispComponent: any // Add this at the top with other declarations
+
   function handleChatClick() {
-    mobileChat.set(!$mobileChat)
+    if (crispComponent) {
+      crispComponent.toggleChat()
+    }
   }
 
   // Stub variables
@@ -132,7 +136,7 @@
         </div>
         <button
           on:click={handleChatClick}
-          class="rounded-full bg-neutral-focus p-1 transition-colors duration-200"
+          class="bg-neutral-focus rounded-full p-1 transition-colors duration-200"
         >
           <Icon
             icon="solar:chat-round-line-bold-duotone"
@@ -349,7 +353,7 @@
   {/if}
 </div>
 
-<CrispChatWidget />
+<CrispChatWidget bind:this={crispComponent} />
 
 <style>
   .menu :focus {

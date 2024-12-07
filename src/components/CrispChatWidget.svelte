@@ -2,96 +2,65 @@
   import { onMount, onDestroy } from "svelte"
   import { userStore } from "../stores/userStore"
   import { Crisp } from "crisp-sdk-web"
-  import { screenSize } from "../stores/screenSizeStore"
-  import { crispVisibility } from "../stores/crispVisibilityStore"
-
-  let previousScreenSize: string
-
-  $: if ($crispVisibility !== visible) {
-    setVisibility($crispVisibility)
-    visible = $crispVisibility
-  }
-
-  export let visible = true
 
   const WEBSITE_ID = "961bded6-4b5a-45e3-8a71-a57bcc27934a"
   let isInitialized = false
+  export let visible = false
 
-  function initCrispChat() {
-    if (!isInitialized) {
-      console.log("Initializing Crisp Chat")
-      Crisp.configure(WEBSITE_ID, {
-        autoload: false,
-      })
-      isInitialized = true
-
-      // Wait for Crisp to be fully loaded
-      const crispInterval = setInterval(() => {
-        if (window.$crisp) {
-          clearInterval(crispInterval)
-          setupCrispEvents()
-        }
-      }, 100)
-    }
-
-    if (isInitialized) {
-      setVisibility($crispVisibility)
-      Crisp.chat.show()
-    }
-
-    setUserInfo()
-  }
-
-  function setupCrispEvents() {
-    window.$crisp.push(["on", "session:loaded", handleNewMessage])
-  }
-
-  function handleNewMessage() {
+  function setupCrispEventListeners() {
     window.$crisp.push([
       "on",
-      "message:received",
-      (message) => {
-        console.log("New message received:", message, visible)
-        if (!visible) {
-          // Show a toast notification
-          console.log("New message received! Check your chat.")
+      "chat:closed",
+      () => {
+        console.log("Crisp chat closed by widget")
+        if (visible) {
+          toggleChat()
         }
       },
     ])
   }
 
-  let crispObserver: MutationObserver | null = null
+  function initCrispChat() {
+    if (!isInitialized) {
+      console.log("Initializing Crisp Chat")
+      Crisp.configure(WEBSITE_ID, {
+        autoload: true,
+      })
 
-  //Changes the visibility of crisp component by making the component visible or invisible, and uses a dom watcher to ensure the the component is avaliable before applying it on load
-  //This keeps the crisp chat in the background even when not visible to allow for tracking and message sounds
-  function setVisibility(isVisible: boolean) {
-    if (isInitialized) {
-      const applyVisibility = () => {
-        const crispElement = document.querySelector(".crisp-client")
-        if (crispElement) {
-          crispElement.style.display = isVisible ? "block" : "none"
-          if (crispObserver) {
-            crispObserver.disconnect()
-            crispObserver = null
-          }
+      // Wait for Crisp to load then hide it and setup listeners
+      const crispInterval = setInterval(() => {
+        if (window.$crisp) {
+          clearInterval(crispInterval)
+          Crisp.chat.hide()
+          setupCrispEventListeners()
         }
-      }
+      }, 100)
 
-      applyVisibility()
-
-      if (!document.querySelector(".crisp-client")) {
-        crispObserver = new MutationObserver((mutations, observer) => {
-          if (document.querySelector(".crisp-client")) {
-            applyVisibility()
-          }
-        })
-
-        crispObserver.observe(document.body, {
-          childList: true,
-          subtree: true,
-        })
-      }
+      isInitialized = true
     }
+  }
+
+  export function toggleChat() {
+    console.log("Toggle chat called. Current visible state:", visible)
+
+    if (!isInitialized) {
+      console.log("Initializing chat first...")
+      initCrispChat()
+    }
+
+    const newVisibility = !visible
+    visible = newVisibility
+
+    if (!newVisibility) {
+      console.log("Closing chat")
+      Crisp.chat.hide()
+    } else {
+      console.log("Opening chat")
+      Crisp.chat.show()
+      Crisp.chat.open()
+    }
+
+    console.log("New visible state:", visible)
   }
 
   function setUserInfo() {
@@ -109,23 +78,18 @@
   }
 
   onMount(() => {
+    console.log("Component mounted")
     initCrispChat()
   })
 
   onDestroy(() => {
     if (isInitialized) {
-      console.log("Hiding Crisp Chat on component destroy")
+      console.log("Hiding chat on destroy")
       Crisp.chat.hide()
-    }
-
-    if (crispObserver) {
-      crispObserver.disconnect()
     }
   })
 
-  $: {
-    if (isInitialized && $userStore.id) {
-      setUserInfo()
-    }
+  $: if (isInitialized && $userStore.id) {
+    setUserInfo()
   }
 </script>
