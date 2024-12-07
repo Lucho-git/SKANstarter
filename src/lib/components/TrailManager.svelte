@@ -275,6 +275,14 @@
           setTimeout(resolve, TRAIL_CONFIG.LOAD_DELAY),
         )
       } catch (error) {
+        console.log(
+          `Failed to load trail [${i + 1}/${$historicalTrailStore.length}]:`,
+          {
+            trailId: trail.id || "unknown",
+            error: error,
+            trailData: trail,
+          },
+        )
         console.error(
           `Failed to load trail [${i + 1}/${$historicalTrailStore.length}]:`,
           {

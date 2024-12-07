@@ -2,7 +2,7 @@
 
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { closeTrailWithPath, handleOpenTrails } from '$lib/services/closeTrailsService';
+import { closeTrailWithPath } from '$lib/services/closeTrailsService';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
     const session = await locals.getSession();
@@ -35,16 +35,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
             return json({ error: result.errors || result.error }, { status: 400 });
         }
 
-        // Handle any other open trails for this vehicle/operation
-        const { processedTrails } = await handleOpenTrails(
-            locals.supabase,
-            vehicle_id,
-            operation_id
-        );
+
 
         return json({
             result,
-            processedTrails,
             message: 'All trails processed successfully'
         }, { status: 200 });
 

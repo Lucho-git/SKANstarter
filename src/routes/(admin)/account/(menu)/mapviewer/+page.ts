@@ -2,13 +2,69 @@
 import type { PageLoad } from './$types';
 import { mapFieldsStore } from '$lib/stores/mapFieldsStore';
 import { selectedOperationStore } from '$lib/stores/operationStore';
+import {
+    controlStore,
+    showEndTrailModal,
+    trailingButtonPressed,
+    crispVisibility,
+    drawingModeEnabled
+} from '../../../../../stores/controlStore';
+import {
+    currentTrailStore,
+    coordinateBufferStore,
+    unsavedCoordinatesStore,
+    unsavedTrailsStore
+} from '$lib/stores/currentTrailStore';
+import {
+    historicalTrailStore,
+    otherActiveTrailStore
+} from '$lib/stores/otherTrailStore';
+
+// Define default values
+const defaultStoreValues = {
+    controls: {
+        showMarkerMenu: false,
+        showVehicleMenu: false,
+    },
+    showEndTrailModal: false,
+    trailingButtonPressed: false,
+    crispVisibility: false,
+    drawingModeEnabled: false,
+    currentTrail: null,
+    coordinateBuffer: [],
+    unsavedCoordinates: [],
+    unsavedTrails: [],
+    historicalTrails: [],
+    otherActiveTrails: []
+};
+
+function initializeStores() {
+    // Initialize all control-related stores with default values
+    controlStore.set(defaultStoreValues.controls);
+    showEndTrailModal.set(defaultStoreValues.showEndTrailModal);
+    trailingButtonPressed.set(defaultStoreValues.trailingButtonPressed);
+    crispVisibility.set(defaultStoreValues.crispVisibility);
+    drawingModeEnabled.set(defaultStoreValues.drawingModeEnabled);
+
+    // Initialize trail-related stores
+    currentTrailStore.set(defaultStoreValues.currentTrail);
+    coordinateBufferStore.set(defaultStoreValues.coordinateBuffer);
+    unsavedCoordinatesStore.set(defaultStoreValues.unsavedCoordinates);
+    unsavedTrailsStore.set(defaultStoreValues.unsavedTrails);
+
+    // Initialize historical and other active trail stores
+    historicalTrailStore.set(defaultStoreValues.historicalTrails);
+    otherActiveTrailStore.set(defaultStoreValues.otherActiveTrails);
+}
 
 export const load: PageLoad = async ({ data, url, fetch }) => {
+    // Initialize stores with default values first
+    initializeStores();
+
+    // Then override with actual data if available
     if (data.fields) {
         mapFieldsStore.set(data.fields);
     }
-
-
 
     let objectType: string | null = null;
     let objectId: string | null = null;
@@ -37,8 +93,6 @@ export const load: PageLoad = async ({ data, url, fetch }) => {
             console.error(`Error fetching ${objectType} location:`, error);
         }
     }
-
-
 
     return {
         fields: data.fields,

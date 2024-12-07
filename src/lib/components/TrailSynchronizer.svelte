@@ -47,22 +47,31 @@
     await checkOtherActiveTrails()
     await fetchOperationTrails()
 
-    cleanup.trailingUnsubscribe = trailingButtonPressed.subscribe(
-      async (isPressed) => {
+    cleanup.trailingUnsubscribe = (() => {
+      let initial = true
+
+      return trailingButtonPressed.subscribe(async (isPressed) => {
+        if (initial) {
+          initial = false
+          return
+        }
+
         console.log(
-          "🚀 TrailSynchronizer: Trailing button pressed:",
+          "Pressed trailing button",
           isPressed,
-          "And userVehicleTrailing",
+          "Trailing State:",
           $userVehicleTrailing,
         )
-        if (!$userVehicleTrailing && isPressed != null) {
+
+        if (!$userVehicleTrailing) {
+          console.log("Handling trail creation")
           await handleTrailCreation()
-        } else if ($userVehicleTrailing && isPressed != null) {
-          // Add isPressed check here
+        } else if ($userVehicleTrailing) {
+          console.log("Triggering end trail")
           triggerEndTrail()
         }
-      },
-    )
+      })
+    })()
 
     cleanup.coordinateBufferUnsubscribe = coordinateBufferStore.subscribe(
       (newCoordinateBuffer) => {
@@ -504,6 +513,7 @@
       }
 
       const { openTrail, trailData } = await response.json()
+      console.log("Opentrail", openTrail, "data", trailData)
 
       if (openTrail) {
         console.log("🔄 TrailSynchronizer: Found existing open trail")
