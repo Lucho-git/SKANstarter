@@ -31,12 +31,19 @@
       const crispInterval = setInterval(() => {
         if (window.$crisp) {
           clearInterval(crispInterval)
-          Crisp.chat.hide()
+          updateCrispVisibility(false)
           setupCrispEventListeners()
         }
       }, 100)
 
       isInitialized = true
+    }
+  }
+
+  function updateCrispVisibility(isVisible: boolean) {
+    const crispFrame = document.querySelector(".crisp-client")
+    if (crispFrame) {
+      crispFrame.classList.toggle("crisp-hidden", !isVisible)
     }
   }
 
@@ -53,10 +60,10 @@
 
     if (!newVisibility) {
       console.log("Closing chat")
-      Crisp.chat.hide()
+      updateCrispVisibility(false)
     } else {
       console.log("Opening chat")
-      Crisp.chat.show()
+      updateCrispVisibility(true)
       Crisp.chat.open()
     }
 
@@ -85,7 +92,7 @@
   onDestroy(() => {
     if (isInitialized) {
       console.log("Hiding chat on destroy")
-      Crisp.chat.hide()
+      updateCrispVisibility(false)
     }
   })
 
@@ -93,3 +100,9 @@
     setUserInfo()
   }
 </script>
+
+<style>
+  :global(.crisp-hidden) {
+    display: none !important;
+  }
+</style>
