@@ -6,7 +6,7 @@
 
 <div class="min-h-screen bg-background">
   <Navbar />
-  <div class="mx-auto max-w-[1400px]">
+  <div>
     <slot />
   </div>
   <Footer />

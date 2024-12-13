@@ -4,18 +4,18 @@
 
 <div class="flex-grow"></div>
 <div class="bg-base-200">
-  <div class="border-t max-w-[1000px] mx-auto"></div>
+  <div class="mx-auto max-w-[1000px] border-t"></div>
   <footer
-    class="footer p-16 gap-x-48 lg:gap-x-64 xl:gap-x-96 place-content-center text-base text-base-content"
+    class="footer place-content-center gap-x-48 p-16 text-base text-base-content lg:gap-x-64 xl:gap-x-96"
   >
-    <nav class="flex justify-center items-center pt-3">
+    <nav class="flex items-center justify-center pt-3">
       <div class="flex items-center">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="64"
           height="64"
           viewBox="0 0 1280 1278"
-          class="fill-current mr-4"
+          class="mr-4 fill-current"
         >
           <g
             transform="translate(0.000000,1278.000000) scale(0.100000,-0.100000)"
@@ -64,8 +64,8 @@
           </g>
         </svg>
         <div class="flex flex-col text-center">
-          <p class="font-bold text-sm">SKAN Farming Logistics Pty Ltd</p>
-          <p class="text-sm text-black-500">
+          <p class="text-sm font-bold">SKAN Farming Logistics Pty Ltd</p>
+          <p class="text-black-500 text-sm">
             Copyright © 2024 - ABN: 26 675 693 464
           </p>
           <p class="text-xs"></p>
@@ -126,16 +126,16 @@
       <div class="mt-4">
         <nav class="footer-center grid grid-flow-col gap-4">
           <a
-            class="link link-hover"
+            class="link-hover link"
             href="/docs/terms_of_service.pdf"
             target="_blank">Terms of Service</a
           >
           <a
-            class="link link-hover"
+            class="link-hover link"
             href="/docs/SKAN-Privacy-Policy.pdf"
             target="_blank">Privacy Policy</a
           >
-          <a class="link link-hover" href="/">Data Security</a>
+          <a class="link-hover link" href="/">Data Security</a>
         </nav>
       </div>
     </aside>

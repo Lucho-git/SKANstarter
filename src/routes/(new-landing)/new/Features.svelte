@@ -1,4 +1,3 @@
-<!-- Features.svelte -->
 <script lang="ts">
   import {
     Map,
@@ -60,9 +59,7 @@
 </script>
 
 <!-- Mission Statement Section -->
-<section
-  class="bg-gradient-to-br from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))]"
->
+<section class="bg-base-100">
   <div class="mx-auto max-w-[1400px] px-4 py-20 sm:px-6 sm:py-32 lg:px-8">
     <div class="mx-auto max-w-2xl text-center">
       <h2 class="text-3xl font-bold text-base-content">
@@ -78,7 +75,7 @@
 </section>
 
 <!-- AgSKAN Section -->
-<section class="bg-base-100">
+<section class="bg-base-200">
   <div class="mx-auto max-w-[1400px] px-4 py-20 sm:px-6 sm:py-32 lg:px-8">
     <div class="grid gap-12 lg:grid-cols-2">
       <div class="space-y-8">
@@ -86,7 +83,7 @@
         <div class="grid gap-6 sm:grid-cols-2">
           {#each agskanFeatures as feature}
             <div
-              class="group rounded-lg bg-base-200 p-6 transition-all hover:bg-primary hover:text-primary-content"
+              class="group rounded-lg bg-base-100 p-6 transition-all hover:bg-primary hover:text-primary-content"
             >
               <div class="flex items-start space-x-4">
                 <svelte:component
@@ -105,7 +102,7 @@
 
       <div class="relative flex items-center justify-center">
         <div class="w-[90%] max-w-md">
-          <div class="aspect-[4/3] w-full rounded-lg bg-base-200">
+          <div class="aspect-[4/3] w-full rounded-lg bg-base-100">
             <svg
               class="h-full w-full text-base-content/20"
               xmlns="http://www.w3.org/2000/svg"
@@ -127,12 +124,12 @@
 </section>
 
 <!-- PaddockPath Section -->
-<section class="bg-base-200">
+<section class="bg-base-100">
   <div class="mx-auto max-w-[1400px] px-4 py-20 sm:px-6 sm:py-32 lg:px-8">
     <div class="grid gap-12 lg:grid-cols-2">
       <div class="relative order-2 flex items-center justify-center lg:order-1">
         <div class="w-[90%] max-w-md">
-          <div class="aspect-[4/3] w-full rounded-lg bg-base-100">
+          <div class="aspect-[4/3] w-full rounded-lg bg-base-200">
             <svg
               class="h-full w-full text-base-content/20"
               xmlns="http://www.w3.org/2000/svg"
@@ -160,7 +157,7 @@
         <div class="grid gap-6 sm:grid-cols-2">
           {#each paddockFeatures as feature}
             <div
-              class="group rounded-lg bg-base-100 p-6 transition-all hover:bg-primary hover:text-primary-content"
+              class="group rounded-lg bg-base-200 p-6 transition-all hover:bg-primary hover:text-primary-content"
             >
               <div class="flex items-start space-x-4">
                 <svelte:component
