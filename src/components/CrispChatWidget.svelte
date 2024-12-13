@@ -1,86 +1,125 @@
 <script lang="ts">
-  import { onMount, onDestroy } from "svelte"
-  import { userStore } from "../stores/userStore"
+  import { onMount } from "svelte"
   import { Crisp } from "crisp-sdk-web"
+  import { screenSize } from "../stores/screenSizeStore"
+  import { page } from "$app/stores"
+  import { derived } from "svelte/store"
 
   const WEBSITE_ID = "961bded6-4b5a-45e3-8a71-a57bcc27934a"
   let isInitialized = false
   export let visible = false
 
-  function setupCrispEventListeners() {
-    window.$crisp.push([
-      "on",
-      "chat:closed",
-      () => {
-        console.log("Crisp chat closed by widget")
-        if (visible) {
-          toggleChat()
-        }
-      },
-    ])
+  const shouldShowDrawer = derived(
+    page,
+    ($page) => !$page.url.pathname.includes("/account/mapviewer"),
+  )
+
+  // Only handle route changes after initial setup
+  let previousDrawerState = $shouldShowDrawer
+  $: if (isInitialized && $shouldShowDrawer !== previousDrawerState) {
+    previousDrawerState = $shouldShowDrawer
+    if (!$shouldShowDrawer) {
+      visible = false
+      updateCrispVisibility(false)
+    }
   }
 
-  function initCrispChat() {
+  function waitForCrispElement(): Promise<Element> {
+    return new Promise((resolve) => {
+      const check = () => {
+        const element = document.querySelector(".crisp-client")
+        if (element) {
+          console.log("Crisp element found")
+          resolve(element)
+        } else {
+          console.log("Waiting for Crisp element...")
+          setTimeout(check, 100)
+        }
+      }
+      check()
+    })
+  }
+
+  async function initCrispChat() {
+    console.log("initCrispChat called, isInitialized:", isInitialized)
     if (!isInitialized) {
-      console.log("Initializing Crisp Chat")
+      console.log("Configuring Crisp...")
       Crisp.configure(WEBSITE_ID, {
         autoload: true,
       })
 
-      // Wait for Crisp to load then hide it and setup listeners
-      const crispInterval = setInterval(() => {
-        if (window.$crisp) {
-          clearInterval(crispInterval)
-          updateCrispVisibility(false)
-          setupCrispEventListeners()
-        }
-      }, 100)
+      console.log("Waiting for Crisp to initialize...")
+      await new Promise<void>((resolve) => {
+        const interval = setInterval(() => {
+          if (window.$crisp) {
+            clearInterval(interval)
+            resolve()
+          }
+        }, 100)
+      })
+
+      console.log("$crisp loaded, waiting for DOM element...")
+      await waitForCrispElement()
+
+      console.log("Crisp fully initialized, setting up initial state")
+
+      // Only hide initially if we're on small screen
+      visible = $screenSize === "lg"
+      updateCrispVisibility(visible)
+
+      if (!visible) {
+        window.$crisp.push(["do", "chat:hide"])
+      }
+
+      window.$crisp.push([
+        "on",
+        "chat:closed",
+        () => {
+          console.log("Chat closed by Crisp UI")
+          visible = false
+          // Only update visibility if on small screen
+          if ($screenSize === "sm") {
+            updateCrispVisibility(false)
+          }
+        },
+      ])
 
       isInitialized = true
+      console.log("Initialization complete")
     }
   }
 
   function updateCrispVisibility(isVisible: boolean) {
+    console.log("updateCrispVisibility called with:", isVisible)
     const crispFrame = document.querySelector(".crisp-client")
     if (crispFrame) {
+      console.log("Updating Crisp visibility:", isVisible)
       crispFrame.classList.toggle("crisp-hidden", !isVisible)
+      if (!isVisible) {
+        window.$crisp.push(["do", "chat:hide"])
+      }
     }
   }
 
   export function toggleChat() {
-    console.log("Toggle chat called. Current visible state:", visible)
-
+    console.log("toggleChat called, current visible state:", visible)
     if (!isInitialized) {
-      console.log("Initializing chat first...")
+      console.log("Not initialized, calling initCrispChat")
       initCrispChat()
+      return
     }
 
-    const newVisibility = !visible
-    visible = newVisibility
-
-    if (!newVisibility) {
-      console.log("Closing chat")
-      updateCrispVisibility(false)
-    } else {
-      console.log("Opening chat")
-      updateCrispVisibility(true)
-      Crisp.chat.open()
+    if (!$shouldShowDrawer) {
+      return
     }
 
+    visible = !visible
     console.log("New visible state:", visible)
-  }
+    updateCrispVisibility(visible)
 
-  function setUserInfo() {
-    if (isInitialized && $userStore.id) {
-      Crisp.user.setEmail($userStore.email)
-      Crisp.user.setNickname($userStore.fullName)
-      if ($userStore.phone) {
-        Crisp.user.setPhone($userStore.phone)
-      }
-      Crisp.session.setData({
-        company: $userStore.companyName,
-        website: $userStore.website,
-      })
+    if (visible) {
+      console.log("Opening chat")
+      Crisp.chat.open()
     }
   }
 
@@ -88,17 +127,6 @@
     console.log("Component mounted")
     initCrispChat()
   })
-
-  onDestroy(() => {
-    if (isInitialized) {
-      console.log("Hiding chat on destroy")
-      updateCrispVisibility(false)
-    }
-  })
-
-  $: if (isInitialized && $userStore.id) {
-    setUserInfo()
-  }
 </script>
 
 <style>

@@ -9,7 +9,7 @@ const config: Config = {
             center: true,
             padding: "2rem",
             screens: {
-                "2xl": "1400px",
+                "2xl": "1500",
             },
         },
         extend: {
@@ -77,12 +77,17 @@ const config: Config = {
                     "neutral": "#102030",
                     "neutral-content": "#fefbf6",
 
+                    "base-100": "#ffffff",
+                    "base-200": "#f8fafc", // Lighter, more subtle gray
+                    "base-300": "#f1f5f9", // Slightly darker but still subtle
                     "base-content": "#232322",
-                    "base-100": "#DEE3E7",
 
-                    "focus": "#FF00FF", // Bright magenta
-                    "focus-content": "#FFFFFF", // White text for contrast
+                    // Add gradient colors
+                    "--gradient-start": "var(--base-200)", // Uses your existing base-200 color
+                    "--gradient-end": "var(--base-100)",   // Uses your existing base-100 color
 
+                    "focus": "#FF00FF",
+                    "focus-content": "#FFFFFF",
                 },
             },
             {

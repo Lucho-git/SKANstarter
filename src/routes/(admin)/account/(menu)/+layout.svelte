@@ -7,7 +7,6 @@
   import Icon from "@iconify/svelte"
   import { toast } from "svelte-sonner"
 
-  import { mobileChat } from "../../../../stores/crispVisibilityStore"
   import CrispChatWidget from "../../../../components/CrispChatWidget.svelte"
 
   const adminSectionStore = writable("")
