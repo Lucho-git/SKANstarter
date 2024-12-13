@@ -21,6 +21,10 @@
     if (!$shouldShowDrawer) {
       visible = false
       updateCrispVisibility(false)
+    } else {
+      // When returning to a screen where drawer should show
+      visible = $screenSize === "lg"
+      updateCrispVisibility(visible)
     }
   }
 
