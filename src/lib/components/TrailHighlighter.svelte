@@ -5,6 +5,8 @@
   import mapboxgl from "mapbox-gl"
   import { onMount } from "svelte"
   import { toast } from "svelte-sonner"
+  import { X, Play, ArrowLeft, ArrowRight, Trash2 } from "lucide-svelte"
+
   interface TrailIdentifiers {
     sourceId: string
     layerId: string
@@ -29,7 +31,7 @@
     TRAIL_HIGHLIGHT_DELAY: 3000,
     FLIGHT_DURATION: 2000,
     HIGHLIGHT_WIDTH_MULTIPLIER: 1.2,
-    MAX_FLIGHT_ZOOM: 16,
+    MAX_FLIGHT_ZOOM: 19,
   }
 
   const dashArraySequence = [
@@ -389,7 +391,11 @@
   class:text-black={showNavigationUI}
   on:click={toggleNavigationUI}
 >
-  {showNavigationUI ? "✕" : "▶"}
+  {#if showNavigationUI}
+    <X size={20} color="black" />
+  {:else}
+    <Play size={20} />
+  {/if}
 </button>
 
 {#if showNavigationUI}
@@ -405,7 +411,7 @@
         on:click={handlePrevious}
         disabled={false}
       >
-        ←
+        <ArrowLeft size={20} />
       </button>
 
       <div class="mx-1 truncate text-center text-sm text-white">
@@ -419,7 +425,7 @@
         on:click={handleNext}
         disabled={false}
       >
-        →
+        <ArrowRight size={20} />
       </button>
 
       <button
@@ -429,11 +435,12 @@
           showDeleteModal = true
         }}
       >
-        🗑️
+        <Trash2 size={20} />
       </button>
     </div>
   </div>
 {/if}
+
 {#if showDeleteModal && trailToDelete}
   <dialog class="modal modal-open">
     <div class="modal-box">
