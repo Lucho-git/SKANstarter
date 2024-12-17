@@ -4,6 +4,7 @@
   import { screenSize } from "../stores/screenSizeStore"
   import { page } from "$app/stores"
   import { derived } from "svelte/store"
+  import { userStore } from "../stores/userStore"
 
   const WEBSITE_ID = "961bded6-4b5a-45e3-8a71-a57bcc27934a"
   let isInitialized = false
@@ -13,6 +14,25 @@
     page,
     ($page) => !$page.url.pathname.includes("/account/mapviewer"),
   )
+
+  // Handle user information updates
+  $: if (isInitialized && $userStore.id) {
+    setUserInfo()
+  }
+
+  function setUserInfo() {
+    if (isInitialized && $userStore.id) {
+      Crisp.user.setEmail($userStore.email)
+      Crisp.user.setNickname($userStore.fullName)
+      if ($userStore.phone) {
+        Crisp.user.setPhone($userStore.phone)
+      }
+      Crisp.session.setData({
+        company: $userStore.companyName,
+        website: $userStore.website,
+      })
+    }
+  }
 
   // Only handle route changes after initial setup
   let previousDrawerState = $shouldShowDrawer
@@ -66,9 +86,10 @@
       await waitForCrispElement()
 
       console.log("Crisp fully initialized, setting up initial state")
+      console.log("Should show drawer:", $shouldShowDrawer)
 
-      // Only hide initially if we're on small screen
-      visible = $screenSize === "lg"
+      // Set initial visibility based on both screen size AND drawer state
+      visible = $screenSize === "lg" && $shouldShowDrawer
       updateCrispVisibility(visible)
 
       if (!visible) {
@@ -90,6 +111,11 @@
 
       isInitialized = true
       console.log("Initialization complete")
+
+      // Initialize user info after Crisp is fully initialized
+      if ($userStore.id) {
+        setUserInfo()
+      }
     }
   }
 
