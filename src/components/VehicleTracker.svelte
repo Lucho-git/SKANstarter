@@ -58,7 +58,7 @@
       showUserLocation: false,
       className: "custom-geolocate-control",
       fitBoundsOptions: {
-        maxZoom: 20, // Set your desired maximum zoom level here
+        maxZoom: 16, // Set your desired maximum zoom level here
       },
     })
 
