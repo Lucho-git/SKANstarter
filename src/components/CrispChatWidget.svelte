@@ -22,11 +22,9 @@
 
   function setUserInfo() {
     if (isInitialized && $userStore.id) {
+      console.log("Setting user info in Crisp", $userStore)
       Crisp.user.setEmail($userStore.email)
       Crisp.user.setNickname($userStore.fullName)
-      if ($userStore.phone) {
-        Crisp.user.setPhone($userStore.phone)
-      }
       Crisp.session.setData({
         company: $userStore.companyName,
         website: $userStore.website,
