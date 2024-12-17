@@ -40,7 +40,7 @@
     if (message.from === "operator" && !visible) {
       toast.message("New Message", {
         description: `${from}: ${content}`,
-        duration: 30000,
+        duration: 90000,
         action: {
           label: "Open Chat",
           onClick: () => toggleChat(true), // Pass true to force open

@@ -27,6 +27,7 @@
   let lastRecordedTime = 0
   let lastClientTime = 0
   let otherVehicleMarkers = []
+  let currentSpeed = 0 // Add this new variable
 
   const LOCATION_TRACKING_INTERVAL_MIN = 30
   const REJOIN_THRESHOLD = 5 * 60 * 1000 // 5 minutes in milliseconds
@@ -71,6 +72,7 @@
 
     // Update the user location marker on geolocate event
     geolocateControl.on("geolocate", (e) => {
+      console.log("Received geolocate event:", e)
       const { coords } = e
       //   console.log("Received heading from geolocate event:", coords.heading)
       streamMarkerPosition(coords)
@@ -330,7 +332,9 @@
   }
 
   function streamMarkerPosition(coords) {
-    const { latitude, longitude, heading } = coords
+    const { latitude, longitude, heading, speed } = coords
+    currentSpeed = speed ? Math.round(speed * 3.6) : 0 // Convert m/s to km/h
+
     // console.log("Client-side heading before processing:", heading);
 
     const currentTime = Date.now()
@@ -429,8 +433,36 @@
   }
 </script>
 
+<div class="speed-overlay">
+  <div class="speed-value">{currentSpeed}</div>
+  <div class="speed-unit">km/h</div>
+</div>
+
 <style>
   .mapboxgl-ctrl-group {
     border-radius: 1px;
+  }
+
+  .speed-overlay {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px 20px;
+    border-radius: 8px;
+    color: white;
+    text-align: center;
+    z-index: 1000;
+  }
+
+  .speed-value {
+    font-size: 24px;
+    font-weight: bold;
+  }
+
+  .speed-unit {
+    font-size: 12px;
+    opacity: 0.8;
   }
 </style>
