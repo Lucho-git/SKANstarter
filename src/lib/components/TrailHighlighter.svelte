@@ -5,7 +5,7 @@
   import mapboxgl from "mapbox-gl"
   import { onMount } from "svelte"
   import { toast } from "svelte-sonner"
-  import { X, Play, ArrowLeft, ArrowRight, Trash2 } from "lucide-svelte"
+  import { X, Route, ArrowLeft, ArrowRight, Trash2 } from "lucide-svelte"
 
   interface TrailIdentifiers {
     sourceId: string
@@ -394,7 +394,7 @@
   {#if showNavigationUI}
     <X size={20} color="black" />
   {:else}
-    <Play size={20} />
+    <Route size={20} />
   {/if}
 </button>
 

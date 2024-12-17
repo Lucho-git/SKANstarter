@@ -27,7 +27,7 @@
   let lastClientTime = 0
   let otherVehicleMarkers = []
   let currentSpeed = 0
-  let showSpeedometer = true
+  let showSpeedometer = false
 
   const LOCATION_TRACKING_INTERVAL_MIN = 30
   const REJOIN_THRESHOLD = 5 * 60 * 1000
