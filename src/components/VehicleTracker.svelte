@@ -203,33 +203,6 @@
           const oldVehicle = vehicles[index]
 
           if (
-            update_types.includes("last_update_changed") &&
-            !update_types.includes("new_vehicle")
-          ) {
-            //Toast for a vehicle rejoining the map after a given period of time, removed because many calculations required not sure if it's too intensive
-            // const timeDifference =
-            //   new Date(last_update) - new Date(oldVehicle.last_update)
-            // console.log(
-            //   `Time difference for vehicle ${vehicle_id}: ${timeDifference} ms`,
-            // )
-            // if (timeDifference > REJOIN_THRESHOLD) {
-            //   toast.info(`Vehicle Rejoined`, {
-            //     description: `${full_name}'s ${vehicle_marker.type} has joined the map`,
-            //     action: {
-            //       label: "Locate",
-            //       onClick: () => {
-            //         map.flyTo({
-            //           center: [longitude, latitude],
-            //           zoom: 15,
-            //           duration: 1000,
-            //         })
-            //       },
-            //     },
-            //   })
-            // }
-          }
-
-          if (
             update_types.includes("trailing_status_changed") &&
             !update_types.includes("new_vehicle")
           ) {
