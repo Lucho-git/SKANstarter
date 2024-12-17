@@ -5,6 +5,7 @@
   import { page } from "$app/stores"
   import { derived } from "svelte/store"
   import { userStore } from "../stores/userStore"
+  import { toast } from "svelte-sonner"
 
   const WEBSITE_ID = "961bded6-4b5a-45e3-8a71-a57bcc27934a"
   let isInitialized = false
@@ -22,12 +23,28 @@
 
   function setUserInfo() {
     if (isInitialized && $userStore.id) {
-      console.log("Setting user info in Crisp", $userStore)
       Crisp.user.setEmail($userStore.email)
       Crisp.user.setNickname($userStore.fullName)
       Crisp.session.setData({
         company: $userStore.companyName,
         website: $userStore.website,
+      })
+    }
+  }
+
+  function handleNewMessage(message: any) {
+    const from = message.from === "operator" ? "Support Team" : "You"
+    const content = message.content
+
+    // Only show notification for messages from operator and when chat is not visible
+    if (message.from === "operator" && !visible) {
+      toast.message("New Message", {
+        description: `${from}: ${content}`,
+        duration: 30000,
+        action: {
+          label: "Open Chat",
+          onClick: () => toggleChat(true), // Pass true to force open
+        },
       })
     }
   }
@@ -84,7 +101,6 @@
       await waitForCrispElement()
 
       console.log("Crisp fully initialized, setting up initial state")
-      console.log("Should show drawer:", $shouldShowDrawer)
 
       // Set initial visibility based on both screen size AND drawer state
       visible = $screenSize === "lg" && $shouldShowDrawer
@@ -94,6 +110,7 @@
         window.$crisp.push(["do", "chat:hide"])
       }
 
+      // Set up event listeners
       window.$crisp.push([
         "on",
         "chat:closed",
@@ -106,6 +123,9 @@
           }
         },
       ])
+
+      // Add message received listener
+      window.$crisp.push(["on", "message:received", handleNewMessage])
 
       isInitialized = true
       console.log("Initialization complete")
@@ -129,7 +149,7 @@
     }
   }
 
-  export function toggleChat() {
+  export function toggleChat(forceOpen = false) {
     console.log("toggleChat called, current visible state:", visible)
     if (!isInitialized) {
       console.log("Not initialized, calling initCrispChat")
@@ -137,11 +157,16 @@
       return
     }
 
-    if (!$shouldShowDrawer) {
+    // If forceOpen is true, bypass the shouldShowDrawer check
+    if (!$shouldShowDrawer && !forceOpen) {
       return
     }
 
     visible = !visible
+    if (forceOpen) {
+      visible = true
+    }
+
     console.log("New visible state:", visible)
     updateCrispVisibility(visible)
 
