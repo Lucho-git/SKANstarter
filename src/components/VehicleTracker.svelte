@@ -9,14 +9,13 @@
     otherVehiclesStore,
     otherVehiclesDataChanges,
   } from "../stores/vehicleStore"
-
   import { coordinateBufferStore } from "$lib/stores/currentTrailStore"
-
   import UserMarker from "./UserMarker.svelte"
   import { unsavedTrailStore } from "../stores/trailDataStore"
   import { toast } from "svelte-sonner"
   import { page } from "$app/stores"
   import "../styles/global.css"
+  import { Gauge, X } from "lucide-svelte"
 
   export let map
   export let disableAutoZoom = false
@@ -27,10 +26,11 @@
   let lastRecordedTime = 0
   let lastClientTime = 0
   let otherVehicleMarkers = []
-  let currentSpeed = 0 // Add this new variable
+  let currentSpeed = 0
+  let showSpeedometer = true
 
   const LOCATION_TRACKING_INTERVAL_MIN = 30
-  const REJOIN_THRESHOLD = 5 * 60 * 1000 // 5 minutes in milliseconds
+  const REJOIN_THRESHOLD = 5 * 60 * 1000
 
   let otherVehiclesUnsubscribe
   let userVehicleUnsubscribe
@@ -40,9 +40,11 @@
   let lastClientHeading = null
   let previousVehicleMarker = null
 
+  function toggleSpeedometer() {
+    showSpeedometer = !showSpeedometer
+  }
+
   onMount(() => {
-    // Create the geolocateControl and add it to the map
-    // console.log("Adding geolocateControl to the map")
     console.log("Mounting VehicleTracker")
 
     const session = $page.data.session
@@ -59,7 +61,7 @@
       showUserLocation: false,
       className: "custom-geolocate-control",
       fitBoundsOptions: {
-        maxZoom: 16, // Set your desired maximum zoom level here
+        maxZoom: 16,
       },
     })
 
@@ -70,43 +72,32 @@
       }
     })
 
-    // Update the user location marker on geolocate event
     geolocateControl.on("geolocate", (e) => {
       console.log("Received geolocate event:", e)
       const { coords } = e
-      //   console.log("Received heading from geolocate event:", coords.heading)
       streamMarkerPosition(coords)
     })
 
-    // Subscribe to userVehicleStore updates
     userVehicleUnsubscribe = userVehicleStore.subscribe((value) => {
       userCoordinates = value.coordinates
       updateUserMarker(value.vehicle_marker)
     })
 
-    // Subscribe to the otherVehiclesDataChanges store
     unsubscribeOtherVehiclesDataChanges =
       otherVehiclesDataChanges.subscribe(processChanges)
   })
 
   onDestroy(() => {
     console.log("Unmounting VehicleTracker")
-    // Clean up the geolocateControl and userMarker
     if (userMarker) {
       userMarker.remove()
     }
-
-    // Unsubscribe from userVehicleupdates
     if (userVehicleUnsubscribe) {
       userVehicleUnsubscribe()
     }
-
-    // Unsubscribe from otherVehiclesStore updates
     if (otherVehiclesUnsubscribe) {
       otherVehiclesUnsubscribe()
     }
-
-    // Unsubscribe from the otherVehiclesDataChanges store
     if (unsubscribeOtherVehiclesDataChanges) {
       unsubscribeOtherVehiclesDataChanges()
     }
@@ -433,36 +424,43 @@
   }
 </script>
 
-<div class="speed-overlay">
-  <div class="speed-value">{currentSpeed}</div>
-  <div class="speed-unit">km/h</div>
-</div>
+<button
+  class="btn btn-circle fixed bottom-20 left-6 z-50 flex h-10 w-10 items-center justify-center border-none bg-black/70 text-white backdrop-blur transition-all hover:scale-110 hover:bg-black/90"
+  style="background: {showSpeedometer ? 'rgba(255, 255, 255, 0.9)' : ''}"
+  class:text-black={showSpeedometer}
+  on:click={toggleSpeedometer}
+  aria-label={showSpeedometer ? "Hide speed" : "Show speed"}
+>
+  {#if showSpeedometer}
+    <X size={20} color="black" />
+  {:else}
+    <Gauge size={20} />
+  {/if}
+</button>
+
+{#if showSpeedometer}
+  <div
+    class="speed-fade-in fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center rounded-lg bg-black/70 px-5 py-2.5 text-white backdrop-blur"
+    style="min-width: min-content"
+  >
+    <div class="text-2xl font-bold">{currentSpeed}</div>
+    <div class="text-xs opacity-80">km/h</div>
+  </div>
+{/if}
 
 <style>
-  .mapboxgl-ctrl-group {
-    border-radius: 1px;
+  .speed-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
   }
 
-  .speed-overlay {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(0, 0, 0, 0.7);
-    padding: 10px 20px;
-    border-radius: 8px;
-    color: white;
-    text-align: center;
-    z-index: 1000;
-  }
-
-  .speed-value {
-    font-size: 24px;
-    font-weight: bold;
-  }
-
-  .speed-unit {
-    font-size: 12px;
-    opacity: 0.8;
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translate(-50%, 20px);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
   }
 </style>

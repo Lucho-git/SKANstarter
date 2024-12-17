@@ -400,7 +400,7 @@
 
 {#if showNavigationUI}
   <div
-    class="fixed bottom-4 left-1/2 flex -translate-x-1/2 items-center rounded-full bg-black/70 backdrop-blur"
+    class="navigation-fade-in fixed bottom-4 left-1/2 flex -translate-x-1/2 items-center rounded-full bg-black/70 backdrop-blur"
     style="max-width: calc(70vw - 2rem); min-width: min-content;"
   >
     <div
@@ -463,3 +463,20 @@
     </form>
   </dialog>
 {/if}
+
+<style>
+  .navigation-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translate(-50%, 20px);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+  }
+</style>
