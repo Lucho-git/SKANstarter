@@ -139,12 +139,16 @@
 
   @media (max-width: 768px) {
     :global(.mapboxgl-ctrl-group > button) {
-      width: 48px !important;
-      height: 48px !important;
+      width: 60px !important;
+      height: 60px !important;
     }
 
     :global(.mapboxgl-ctrl-compass .mapboxgl-ctrl-icon) {
-      background-size: 24px !important;
+      background-size: 44px !important;
+    }
+
+    :global(.mapboxgl-ctrl-geolocate .mapboxgl-ctrl-icon) {
+      background-size: 44px !important;
     }
   }
 </style>
