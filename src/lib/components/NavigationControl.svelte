@@ -137,18 +137,16 @@
     background-color: #e0e0e0 !important;
   }
 
-  @media (max-width: 768px) {
-    :global(.mapboxgl-ctrl-group > button) {
-      width: 60px !important;
-      height: 60px !important;
-    }
+  :global(.mapboxgl-ctrl-group > button) {
+    width: 60px !important;
+    height: 60px !important;
+  }
 
-    :global(.mapboxgl-ctrl-compass .mapboxgl-ctrl-icon) {
-      background-size: 44px !important;
-    }
+  :global(.mapboxgl-ctrl-compass .mapboxgl-ctrl-icon) {
+    background-size: 44px !important;
+  }
 
-    :global(.mapboxgl-ctrl-geolocate .mapboxgl-ctrl-icon) {
-      background-size: 44px !important;
-    }
+  :global(.mapboxgl-ctrl-geolocate .mapboxgl-ctrl-icon) {
+    background-size: 44px !important;
   }
 </style>

@@ -55,7 +55,7 @@
           class="px-6 py-6 text-2xl font-bold text-secondary-content"
         >
           <KeySquare class="mr-2 h-6 w-6" />
-          Get Started
+          Login
         </Button>
       </nav>
 
