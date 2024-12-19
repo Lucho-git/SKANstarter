@@ -64,7 +64,7 @@
   class="relative flex h-32 w-full flex-col items-center justify-center overflow-hidden rounded-lg
       border border-base-300 bg-base-300 md:shadow-xl"
 >
-  <Marquee reverse pauseOnHover class="[--duration:20s]">
+  <Marquee reverse pauseOnHover class="[--duration:30s]">
     {#each partners as partner}
       <div class="mx-8 flex items-center justify-center">
         <img
