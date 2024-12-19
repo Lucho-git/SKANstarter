@@ -6,10 +6,7 @@
   let isMenuOpen = false
 </script>
 
-<!-- Add a spacer div to push content down -->
-<div class="h-24"></div>
-
-<nav class="fixed top-0 z-50 w-full bg-neutral shadow-sm">
+<nav class="z-50 w-full bg-neutral shadow-sm">
   <div class="container">
     <div class="flex h-24 items-center justify-between">
       <a href="/" class="flex items-center gap-2">
@@ -22,13 +19,10 @@
             />
           </div>
         </div>
-        <div class="flex flex-col">
+        <div class="flex flex-col justify-center">
           <span
-            class="font-archivo text-3xl font-black leading-none text-neutral-content"
+            class="font-archivo text-5xl font-black leading-none text-neutral-content"
             >SKAN</span
-          >
-          <span class="text-sm font-medium text-neutral-content/80"
-            >Farming</span
           >
         </div>
       </a>
@@ -120,7 +114,7 @@
             on:click={() => (isMenuOpen = false)}
           >
             <KeySquare class="mr-2 h-6 w-6" />
-            Get Started
+            Login
           </Button>
         </nav>
       </div>

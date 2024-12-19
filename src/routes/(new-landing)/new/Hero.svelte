@@ -1,5 +1,46 @@
 <script lang="ts">
   import { ArrowRight } from "lucide-svelte"
+  import { Button } from "$lib/components/ui/button"
+  import {
+    Root,
+    Content,
+    Item,
+    Previous,
+    Next,
+  } from "$lib/components/ui/carousel"
+  import { cn } from "$lib/utils"
+  import { onMount } from "svelte"
+  import type { EmblaCarouselType } from "embla-carousel"
+
+  // Images array for carousel
+  const images = [
+    { src: "/images/Hero1.png", alt: "Farm Management Hero 1" },
+    { src: "/images/Hero2.png", alt: "Farm Management Hero 2" },
+  ]
+
+  let mounted = false
+  let selectedIndex = 0
+  let carousel: EmblaCarouselType
+
+  const scrollTo = (index: number) => {
+    if (carousel) {
+      carousel.scrollTo(index)
+    }
+  }
+
+  function onSelect() {
+    if (carousel) {
+      selectedIndex = carousel.selectedScrollSnap()
+    }
+  }
+
+  onMount(() => {
+    mounted = true
+  })
+
+  $: if (carousel) {
+    carousel.on("select", onSelect)
+  }
 </script>
 
 <div class="relative bg-base-200">
@@ -16,31 +57,61 @@
           optimization
         </p>
         <div class="flex space-x-4">
-          <a
-            href="#contact"
-            class="inline-flex items-center rounded-lg bg-primary px-6 py-3 text-primary-content transition-colors hover:bg-primary/90"
-          >
-            Get Started
-            <ArrowRight class="ml-2 h-5 w-5" />
-          </a>
+          <Button variant="default" asChild>
+            <a href="#contact" class="inline-flex items-center">
+              Get Started
+              <ArrowRight class="ml-2 h-5 w-5" />
+            </a>
+          </Button>
         </div>
       </div>
       <div class="relative">
-        <div class="aspect-[4/3] w-full rounded-lg bg-base-100 shadow-xl">
-          <svg
-            class="h-full w-full text-base-content/20"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <rect width="18" height="14" x="3" y="5" rx="2" />
-            <path d="M7 15h0M3 10h18" />
-          </svg>
-        </div>
+        {#if mounted}
+          <Root bind:api={carousel} opts={{ loop: true }} class="w-full">
+            <Content>
+              {#each images as { src, alt }}
+                <Item>
+                  <div
+                    class="aspect-[4/3] w-full overflow-hidden rounded-lg shadow-xl"
+                  >
+                    <img {src} {alt} class="h-full w-full object-cover" />
+                  </div>
+                </Item>
+              {/each}
+            </Content>
+
+            <Previous />
+            <Next />
+
+            <div
+              class="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-2"
+            >
+              {#each images as _, i}
+                <button
+                  on:click={() => scrollTo(i)}
+                  aria-label="Navigate"
+                  class={cn(
+                    "h-2.5 w-2.5 rounded-full transition-all",
+                    selectedIndex === i
+                      ? "scale-125 bg-white"
+                      : "bg-white/50 hover:bg-white/75",
+                  )}
+                  aria-selected={selectedIndex === i}
+                  data-carouselbutton={i}
+                />
+              {/each}
+            </div>
+          </Root>
+        {:else}
+          <!-- Fallback while client-side code is loading -->
+          <div class="aspect-[4/3] w-full overflow-hidden rounded-lg shadow-xl">
+            <img
+              src={images[0].src}
+              alt={images[0].alt}
+              class="h-full w-full object-cover"
+            />
+          </div>
+        {/if}
       </div>
     </div>
   </div>
