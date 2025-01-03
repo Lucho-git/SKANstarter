@@ -14,8 +14,10 @@
 
   // Images array for carousel
   const images = [
-    { src: "/images/Hero1.png", alt: "Farm Management Hero 1" },
-    { src: "/images/Hero2.png", alt: "Farm Management Hero 2" },
+    { src: "/images/landing-pics/WEB01.png", alt: "Farm Management Hero 1" },
+    { src: "/images/landing-pics/WEB03.png", alt: "Farm Management Hero 1" },
+    { src: "/images/landing-pics/WEB05.png", alt: "Farm Management Hero 1" },
+    { src: "/images/landing-pics/WEB06.png", alt: "Farm Management Hero 1" },
   ]
 
   let mounted = false
@@ -52,10 +54,12 @@
         >
           Your Farming Co-Pilot
         </h1>
-        <p class="text-xl leading-relaxed text-base-content/80">
-          Transforming paddock operations through smart tracking and
-          optimization
-        </p>
+        <div class="space-y-4">
+          <p class="text-xl leading-relaxed text-base-content/80">
+            Practical employee tracking and operator navigation. Google Maps for
+            the paddock.
+          </p>
+        </div>
         <div class="flex space-x-4">
           <Button variant="default" asChild>
             <a href="#contact" class="inline-flex items-center">
@@ -65,6 +69,7 @@
           </Button>
         </div>
       </div>
+
       <div class="relative">
         {#if mounted}
           <Root bind:api={carousel} opts={{ loop: true }} class="w-full">
