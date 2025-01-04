@@ -9,7 +9,7 @@
 <nav class="z-50 w-full bg-neutral shadow-sm">
   <div class="container">
     <div class="flex h-24 items-center justify-between">
-      <a href="/" class="flex items-center gap-2">
+      <a href="/new" class="flex items-center gap-2">
         <div class="flex items-center rounded-2xl bg-secondary px-3 py-2">
           <div class="flex h-14 w-14 items-center justify-center">
             <img
@@ -30,19 +30,14 @@
       <!-- Desktop Menu -->
       <nav class="hidden items-center gap-12 lg:flex">
         <a
-          href="#features"
+          href="/new/support"
           class="text-xl font-semibold text-neutral-content hover:text-secondary"
-          >Features</a
+          >Support</a
         >
         <a
-          href="#team"
+          href="/new/team"
           class="text-xl font-semibold text-neutral-content hover:text-secondary"
           >Team</a
-        >
-        <a
-          href="#pricing"
-          class="text-xl font-semibold text-neutral-content hover:text-secondary"
-          >Pricing</a
         >
         <Button
           variant="secondary"
@@ -88,25 +83,18 @@
       <div class="container py-4">
         <nav class="flex flex-col gap-6">
           <a
-            href="#features"
+            href="/new/support"
             class="p-3 text-2xl font-semibold text-neutral-content hover:text-secondary"
             on:click={() => (isMenuOpen = false)}
           >
-            Features
+            Support
           </a>
           <a
-            href="#team"
+            href="/new/team"
             class="p-3 text-2xl font-semibold text-neutral-content hover:text-secondary"
             on:click={() => (isMenuOpen = false)}
           >
             Team
-          </a>
-          <a
-            href="#pricing"
-            class="p-3 text-2xl font-semibold text-neutral-content hover:text-secondary"
-            on:click={() => (isMenuOpen = false)}
-          >
-            Pricing
           </a>
           <Button
             variant="secondary"
