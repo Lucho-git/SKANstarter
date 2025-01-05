@@ -9,7 +9,7 @@
 <nav class="z-50 w-full bg-neutral shadow-sm">
   <div class="container">
     <div class="flex h-24 items-center justify-between">
-      <a href="/new" class="flex items-center gap-2">
+      <a href="/" class="flex items-center gap-2">
         <div class="flex items-center rounded-2xl bg-secondary px-3 py-2">
           <div class="flex h-14 w-14 items-center justify-center">
             <img
@@ -30,22 +30,22 @@
       <!-- Desktop Menu -->
       <nav class="hidden items-center gap-12 lg:flex">
         <a
-          href="/new/support"
+          href="/support"
           class="text-xl font-semibold text-neutral-content hover:text-secondary"
           >Support</a
         >
         <a
-          href="/new/team"
+          href="/team"
           class="text-xl font-semibold text-neutral-content hover:text-secondary"
           >Team</a
         >
         <a
-          href="/new/pricing"
+          href="/pricing"
           class="text-xl font-semibold text-neutral-content hover:text-secondary"
           >Pricing</a
         >
         <Button
-          href="/new/login"
+          href="/login"
           variant="secondary"
           class="px-6 py-6 text-2xl font-bold text-secondary-content"
         >
@@ -89,21 +89,21 @@
       <div class="container py-4">
         <nav class="flex flex-col gap-6">
           <a
-            href="/new/support"
+            href="/support"
             class="p-3 text-2xl font-semibold text-neutral-content hover:text-secondary"
             on:click={() => (isMenuOpen = false)}
           >
             Support
           </a>
           <a
-            href="/new/team"
+            href="/team"
             class="p-3 text-2xl font-semibold text-neutral-content hover:text-secondary"
             on:click={() => (isMenuOpen = false)}
           >
             Team
           </a>
           <a
-            href="/new/pricing"
+            href="/pricing"
             class="p-3 text-2xl font-semibold text-neutral-content hover:text-secondary"
             on:click={() => (isMenuOpen = false)}
           >
