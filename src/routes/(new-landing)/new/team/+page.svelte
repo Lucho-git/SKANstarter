@@ -70,8 +70,8 @@
         >
           <MagicCard
             gradientColor={member.gradientColor}
-            gradientOpacity={0.15}
-            gradientSize={400}
+            gradientOpacity={0.1}
+            gradientSize={300}
           >
             <div class="group w-full p-6">
               <div class="mb-4 flex items-start justify-between">

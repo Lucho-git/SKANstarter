@@ -39,7 +39,13 @@
           class="text-xl font-semibold text-neutral-content hover:text-secondary"
           >Team</a
         >
+        <a
+          href="/new/pricing"
+          class="text-xl font-semibold text-neutral-content hover:text-secondary"
+          >Pricing</a
+        >
         <Button
+          href="/new/login"
           variant="secondary"
           class="px-6 py-6 text-2xl font-bold text-secondary-content"
         >
@@ -95,6 +101,13 @@
             on:click={() => (isMenuOpen = false)}
           >
             Team
+          </a>
+          <a
+            href="/new/pricing"
+            class="p-3 text-2xl font-semibold text-neutral-content hover:text-secondary"
+            on:click={() => (isMenuOpen = false)}
+          >
+            Pricing
           </a>
           <Button
             variant="secondary"
