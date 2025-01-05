@@ -14,16 +14,16 @@
 
   const teamMembers: TeamMember[] = [
     {
-      name: "Lachie",
-      role: "Technical Founder",
-      bio: "Lachie is a Software Engineer and has been involved in multiple <strong>startup's</strong> and <strong>tech innovations</strong>. His dad grew up on a farm in WA, Lachie may be removed from agriculture but it's certainly in his history, he is striving for a better agriculture industry for the future.",
-      linkedIn: "https://www.linkedin.com/company/skan-australia/",
+      name: "Lachie Ross",
+      role: "CTO",
+      bio: "Lachie is a software engineer with a degree in Computer Science from Curtin University. He has been involved in many startups and innovations, he brings a wealth of technical knowledge to SKAN. His dad grew up on a farm in regional WA, Lachie may be removed from agriculture but it is certainly in his blood.",
+      linkedIn: "https://www.linkedin.com/in/lachlan-f-ross/",
       gradientColor: "#2EFFBD",
     },
     {
-      name: "Ryan",
-      role: "Managing Founder",
-      bio: "Ryan is a <strong>carpenter</strong> by trade, growing up in Perth, WA he had a calling for greener pastures in his early 20's. He has now been working full time in the <strong>agricultural industry</strong> for the past 5 years and has countless machine operating hours under his belt. This is a problem he lives and breathes every day, and that's why he is so energised to fix it.",
+      name: "Ryan Skamp",
+      role: "CEO",
+      bio: "Ryan has over 5000+ hours of machinery operating experience after spending 5+ years working in the Agricultural industry. He is applying these industry insights to build a program that will make farmers' lives easier. He has lived and breathed this issue and is energised to fix it.",
       linkedIn: "https://www.linkedin.com/in/ryan-skamp-a3b41a2b2/",
       gradientColor: "#FF7700",
     },
@@ -39,10 +39,9 @@
     <Card class="mb-12 p-6">
       <p class="text-lg leading-relaxed text-base-content/90">
         Ryan and Lachie grew up together and have been mates for over 20 years.
-        We both chose vastly different career paths but somehow ended up right
-        back together all these years later. We are combining the life skills
-        and knowledge we have acquired since entering the workforce to solve an
-        immense, real world problem that hits home for both of us.
+        They bring their life experience and skills together to solve an immense
+        problem in the agricultural industry. Innovation and teamwork are at the
+        heart of SKAN.
       </p>
     </Card>
 
@@ -97,10 +96,9 @@
       <h2 class="mb-8 text-center text-4xl font-bold">Our Vision</h2>
       <Card class="p-6">
         <p class="text-lg leading-relaxed text-base-content/90">
-          It's simple, we want to reduce input costs for farmers, we want to
-          reduce machine hours every year, reduce carbon emissions and make
-          genuine, real world improvements for the farmers who work tirelessly
-          to feed the world.
+          To reduce input costs for farmers. We want to reduce machine hours and
+          carbon emissions to make a genuine real world impact on modern day
+          agriculture, one paddock at a time. SKAN the horizon.
         </p>
       </Card>
     </div>
