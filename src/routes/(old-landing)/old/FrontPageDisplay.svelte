@@ -84,36 +84,36 @@
 </script>
 
 <div
-  class="carousel w-full relative"
+  class="carousel relative w-full"
   on:touchstart={handleTouchStart}
   on:touchmove={handleTouchMove}
   on:touchend={handleTouchEnd}
 >
   <div
-    class="carousel-inner relative w-full h-[900px] overflow-hidden flex justify-center items-center"
+    class="carousel-inner relative flex h-[900px] w-full items-center justify-center overflow-hidden"
   >
     <div
-      class="carousel-items absolute top-0 left-0 w-full h-full flex transition-transform duration-500 ease-in-out"
+      class="carousel-items absolute left-0 top-0 flex h-full w-full transition-transform duration-500 ease-in-out"
       style="transform: translateX(-{currentSlide * 100}%);"
     >
       {#each images as image}
-        <div class="carousel-item relative w-full h-full flex-shrink-0">
+        <div class="carousel-item relative h-full w-full flex-shrink-0">
           <div
-            class="hero w-full h-full relative"
+            class="hero relative h-full w-full"
             style="background-image: url('{image}'); background-size: cover;"
           >
             <div
-              class="hero-overlay bg-opacity-45 bg-black absolute inset-0"
+              class="hero-overlay absolute inset-0 bg-black bg-opacity-45"
             ></div>
           </div>
         </div>
       {/each}
     </div>
-    <div class="hero-content text-center text-secondary absolute z-10">
-      <div class="max-w-6xl w-full">
+    <div class="hero-content absolute z-10 text-center text-secondary">
+      <div class="w-full max-w-6xl">
         <h1 class="mb-5 text-7xl font-bold">Unlock Your Farm's Potential</h1>
         <div class="flex justify-center">
-          <a href="/login?tab=sign_up">
+          <a href="/old/login?tab=sign_up">
             <button class="btn btn-primary mr-4">Get Started</button>
           </a>
           <button on:click={handleLearnMoreClick}>Learn More</button>
@@ -122,17 +122,17 @@
     </div>
   </div>
   <div
-    class="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2 z-20"
+    class="absolute left-5 right-5 top-1/2 z-20 flex -translate-y-1/2 transform justify-between"
   >
     <button class="btn btn-circle" on:click={previousSlide}>❮</button>
     <button class="btn btn-circle" on:click={nextSlide}>❯</button>
   </div>
 </div>
 
-<div class="flex justify-center mt-4">
+<div class="mt-4 flex justify-center">
   {#each images as _, index}
     <button
-      class="w-3 h-3 rounded-full mx-1"
+      class="mx-1 h-3 w-3 rounded-full"
       class:bg-primary={currentSlide === index}
       class:bg-gray-300={currentSlide !== index}
       on:click={() => goToSlide(index)}

@@ -5,8 +5,8 @@
   import FrontPageNew_1 from "./FrontPageNew_1.svelte"
   import FrontPageNew_2 from "./FrontPageNew_2.svelte"
   import FrontPageNew_3 from "./FrontPageNew_3.svelte"
-  import FrontPage_4 from "../../components/FrontPage_4.svelte"
-  import ThemeSwitcher from "../../components/ThemeSwitcher.svelte"
+  //   import FrontPage_4 from "../../components/FrontPage_4.svelte"
+  //   import ThemeSwitcher from "../../components/ThemeSwitcher.svelte" No use for these can delete
 
   let frontPageNew1
 

@@ -14,32 +14,32 @@
 </script>
 
 <div class="hero min-h-[60vh]">
-  <div class="py-12 w-full">
-    <div class="max-w-6xl mx-auto">
+  <div class="w-full py-12">
+    <div class="mx-auto max-w-6xl">
       <div
-        class="text-lg md:text-3xl font-bold text-base-content mb-8 md:mb-12 text-center space-y-6"
+        class="mb-8 space-y-6 text-center text-lg font-bold text-base-content md:mb-12 md:text-3xl"
       >
         <p class="mb-2 md:mb-4">
           <span
-            class="decoration-secondary decoration-4 md:decoration-[6px] bg-clip-text text-transparent bg-gradient-to-r from-primary to-base-content"
+            class="bg-gradient-to-r from-primary to-base-content bg-clip-text text-transparent decoration-secondary decoration-4 md:decoration-[6px]"
             >Operating Expenses</span
           > getting out of hand?
         </p>
         <p class="mb-2 md:mb-4">
           <span
-            class="decoration-secondary decoration-4 md:decoration-[6px] bg-clip-text text-transparent bg-gradient-to-r from-primary to-base-content"
+            class="bg-gradient-to-r from-primary to-base-content bg-clip-text text-transparent decoration-secondary decoration-4 md:decoration-[6px]"
             >Fuel</span
           > Prices hitting home?
         </p>
         <p class="mb-2 md:mb-4">
           <span
-            class="decoration-secondary decoration-4 md:decoration-[6px] bg-clip-text text-transparent bg-gradient-to-r from-primary to-base-content"
+            class="bg-gradient-to-r from-primary to-base-content bg-clip-text text-transparent decoration-secondary decoration-4 md:decoration-[6px]"
             >Skilled</span
           > Labour hard to find?
         </p>
         <p>
           You <span
-            class="decoration-secondary decoration-4 md:decoration-[6px] bg-clip-text text-transparent bg-gradient-to-r from-primary to-base-content"
+            class="bg-gradient-to-r from-primary to-base-content bg-clip-text text-transparent decoration-secondary decoration-4 md:decoration-[6px]"
             >are not alone</span
           >
         </p>
@@ -47,12 +47,12 @@
       </div>
       <div class="flex flex-col lg:flex-row">
         <div
-          class="text-3xl md:text-4xl font-bold text-base-content px-2 mb-8 md:mb-12 lg:mr-8 lg:w-1/2"
+          class="mb-8 px-2 text-3xl font-bold text-base-content md:mb-12 md:text-4xl lg:mr-8 lg:w-1/2"
           style="line-height: 1.2;"
         >
           <p class="mb-2 md:mb-4">
             <span
-              class="   decoration-secondary decoration-4 md:decoration-[6px] bg-clip-text text-transparent bg-gradient-to-r from-primary to-base-content"
+              class="   bg-gradient-to-r from-primary to-base-content bg-clip-text text-transparent decoration-secondary decoration-4 md:decoration-[6px]"
               >SKAN</span
             > will save you
           </p>
@@ -60,7 +60,7 @@
           <div class="flex flex-col items-start space-y-6">
             <div class="flex items-center">
               <svg
-                class="h-6 w-6 mr-2"
+                class="mr-2 h-6 w-6"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -76,7 +76,7 @@
             </div>
             <div class="flex items-center">
               <svg
-                class="h-6 w-6 mr-2"
+                class="mr-2 h-6 w-6"
                 viewBox="0 0 122.88 95.45"
                 fill="currentColor"
                 stroke="currentColor"
@@ -87,7 +87,7 @@
             </div>
             <div class="flex items-center">
               <svg
-                class="h-6 w-6 mr-2"
+                class="mr-2 h-6 w-6"
                 viewBox="0 0 964.000000 1280.000000"
                 fill="currentColor"
               >
@@ -97,7 +97,7 @@
             </div>
             <div class="flex items-center">
               <svg
-                class="h-6 w-6 mr-2"
+                class="mr-2 h-6 w-6"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -113,7 +113,7 @@
             </div>
             <div class="flex items-center">
               <svg
-                class="h-6 w-6 mr-2"
+                class="mr-2 h-6 w-6"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -132,12 +132,12 @@
 
         <div class="lg:w-1/2">
           <a
-            href="/login?tab=sign_up"
-            class="card bg-base-100 shadow-xl hover:bg-base-200 transition duration-300"
+            href="old/login?tab=sign_up"
+            class="card bg-base-100 shadow-xl transition duration-300 hover:bg-base-200"
           >
             <div class="card-body">
               <!-- Animation container -->
-              <div class="min-h-4/5 w-4/5 mx-auto">
+              <div class="min-h-4/5 mx-auto w-4/5">
                 {#if browser && LottiePlayer}
                   <svelte:component
                     this={LottiePlayer}
@@ -150,9 +150,9 @@
                   />
                 {/if}
               </div>
-              <div class="card-actions justify-center mt-4">
+              <div class="card-actions mt-4 justify-center">
                 <span
-                  class="btn btn-ghost btn-lg text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent mt-4"
+                  class="btn btn-ghost btn-lg mt-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-3xl font-bold text-transparent md:text-5xl"
                 >
                   PaddockPath
                 </span>

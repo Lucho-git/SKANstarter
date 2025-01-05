@@ -1,12 +1,12 @@
 <script>
-  import "../../app.css"
-  import ThemeSwitcher from "../../components/ThemeSwitcher.svelte"
-  import Error from "../+error.svelte"
-  import LogoCard from "../../components/LogoCard.svelte"
-  import FloatingContact from "../../components/FloatingContact.svelte"
+  import "../../../app.css"
+  import ThemeSwitcher from "../../../components/ThemeSwitcher.svelte"
+  import Error from "../../+error.svelte"
+  import LogoCard from "../../../components/LogoCard.svelte"
+  import FloatingContact from "../../../components/FloatingContact.svelte"
   import Footer from "./Footer.svelte"
   import Footer2 from "./Footer2.svelte"
-  import { deviceStore } from "../../stores/deviceStore"
+  import { deviceStore } from "../../../stores/deviceStore"
   import { onMount } from "svelte"
 
   let innerWidth = 0
@@ -18,14 +18,14 @@
 <svelte:window bind:innerWidth />
 
 <div class="container navbar mx-auto bg-base-100">
-  <LogoCard href="/" />
+  <LogoCard href="/old" />
   <div class="flex-none">
     <ul class="menu menu-horizontal hidden px-1 text-lg font-bold sm:flex">
-      <li class="md:mx-2"><a href="/features">Features</a></li>
-      <li class="md:mx-2"><a href="/team">Team</a></li>
-      <li class="md:mx-2"><a href="/pricing">Pricing</a></li>
+      <li class="md:mx-2"><a href="/old/features">Features</a></li>
+      <li class="md:mx-2"><a href="/old/team">Team</a></li>
+      <li class="md:mx-2"><a href="/old/pricing">Pricing</a></li>
       <li class="md:mx-4">
-        <a href="/login" class="border border-primary">★ Enter</a>
+        <a href="/old/login" class="border border-primary">★ Enter</a>
       </li>
     </ul>
     <div class="dropdown dropdown-end sm:hidden">
@@ -51,13 +51,13 @@
       <!-- mobile/smallscreen dropdown menu -->
       <ul
         tabindex="0"
-        class="menu dropdown-content rounded-box menu-lg z-[1] mt-3 w-52 bg-base-100 p-2 font-bold shadow"
+        class="menu dropdown-content menu-lg z-[1] mt-3 w-52 rounded-box bg-base-100 p-2 font-bold shadow"
       >
-        <li><a href="/features">Features</a></li>
-        <li><a href="/team">Team</a></li>
-        <li><a href="/pricing">Pricing</a></li>
+        <li><a href="/old/features">Features</a></li>
+        <li><a href="/old/team">Team</a></li>
+        <li><a href="/old/pricing">Pricing</a></li>
         <li>
-          <a href="/login" class="border border-primary">★ Enter</a>
+          <a href="/old/login" class="border border-primary">★ Enter</a>
         </li>
       </ul>
     </div>

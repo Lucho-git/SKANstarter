@@ -1,25 +1,25 @@
 <script>
-  export let href = "/"
+  export let href = "/old"
 </script>
 
 <div class="flex-1">
-  <a {href} class="inline-block mt-4">
+  <a {href} class="mt-4 inline-block">
     <div
-      class="card card-side bg-secondary shadow-md hover:bg-secondary-focus rounded-3xl"
+      class="hover:bg-secondary-focus card card-side rounded-3xl bg-secondary shadow-md"
     >
       <div class="card-body flex flex-row">
         <div class="flex items-center pl-0">
-          <div class="w-16 h-16 flex justify-center items-center">
+          <div class="flex h-16 w-16 items-center justify-center">
             <img
               src="/images/gear_2.svg"
               alt="Gear"
-              class="max-w-full max-h-full"
+              class="max-h-full max-w-full"
             />
           </div>
         </div>
         <div class="flex-1 text-secondary-content">
-          <div class="card-title font-black font-archivo text-4xl">SKAN</div>
-          <p class="font-medium text-base whitespace-nowrap">
+          <div class="card-title font-archivo text-4xl font-black">SKAN</div>
+          <p class="whitespace-nowrap text-base font-medium">
             Farming Logistics
           </p>
         </div>

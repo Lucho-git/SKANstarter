@@ -18,7 +18,7 @@
   <div class="hero-content flex-col-reverse lg:flex-row">
     <div class="mt-8 w-full lg:mt-0 lg:w-5/12">
       <a
-        href="/features"
+        href="/old/features"
         class="card bg-base-100 shadow-xl transition duration-300 hover:bg-base-200"
       >
         <div class="card-body">
