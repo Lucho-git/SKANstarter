@@ -36,7 +36,7 @@
   <!-- Our Story Section -->
   <div class="mx-auto max-w-4xl">
     <h1 class="mb-8 text-center text-4xl font-bold">Our Story</h1>
-    <Card class="mb-12 p-6">
+    <Card class="mb-12 bg-base-200 p-6">
       <p class="text-lg leading-relaxed text-base-content/90">
         Ryan and Lachie grew up together and have been mates for over 20 years.
         They bring their life experience and skills together to solve an immense
@@ -71,6 +71,7 @@
             gradientColor={member.gradientColor}
             gradientOpacity={0.1}
             gradientSize={300}
+            class="bg-base-200"
           >
             <div class="group w-full p-6">
               <div class="mb-4 flex items-start justify-between">
@@ -94,7 +95,7 @@
     <!-- Our Vision Section -->
     <div class="mb-24">
       <h2 class="mb-8 text-center text-4xl font-bold">Our Vision</h2>
-      <Card class="p-6">
+      <Card class="bg-base-200 p-6">
         <p class="text-lg leading-relaxed text-base-content/90">
           To reduce input costs for farmers. We want to reduce machine hours and
           carbon emissions to make a genuine real world impact on modern day
