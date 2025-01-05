@@ -20,7 +20,7 @@
   <div class="text-center text-lg font-bold">Current Features</div>
 
   <!-- features Post 3 -->
-  <a href="old/features/agskan">
+  <a href="/old/features/agskan">
     <div class="card my-6 flex-row overflow-hidden bg-white shadow-xl">
       <div class="w-6 flex-none bg-info md:w-32"></div>
       <div class="px-6 py-6">
@@ -36,7 +36,7 @@
   <div class="text-center text-lg font-bold">Future Projects</div>
 
   <!-- features Post 1 -->
-  <a href="/features/paddock_path">
+  <a href="/old/features/paddock_path">
     <div class="card my-6 flex-row overflow-hidden bg-white shadow-xl">
       <div class="w-6 flex-none bg-secondary md:w-32"></div>
       <div class="px-6 py-6">
@@ -47,7 +47,7 @@
   </a>
 
   <!-- features Post 2 -->
-  <a href="/features/pipeline">
+  <a href="/old/features/pipeline">
     <div class="card my-6 flex-row overflow-hidden bg-white shadow-xl">
       <div class="w-6 flex-none bg-secondary md:w-32"></div>
       <div class="px-6 py-6">
