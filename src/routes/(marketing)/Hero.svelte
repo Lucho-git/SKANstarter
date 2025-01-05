@@ -62,7 +62,7 @@
         </div>
         <div class="flex space-x-4">
           <Button variant="default" asChild>
-            <a href="#contact" class="inline-flex items-center">
+            <a href="/login" class="inline-flex items-center">
               Get Started
               <ArrowRight class="ml-2 h-5 w-5" />
             </a>

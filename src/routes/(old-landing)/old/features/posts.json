@@ -7,19 +7,19 @@
     {
         "title": "AgSKAN",
         "description": "Live Interactive map to mark features, track operators and visualise completed work",
-        "link": "old/features/agskan",
+        "link": "/old/features/agskan",
         "date": "2024-08-07"
       },
     {
         "title": "PaddockPath",
         "description": "Optimise your farming routes",
-        "link": "old/features/paddock_path",
+        "link": "/old/features/paddock_path",
         "date": "2024-01-05"
       },
       {
         "title": "SKAN Pipeline",
         "description": "We have big dreams like the rest of you, read through our projects in the Pipeline and come along this journey with us, see how we can help your farm.",
-        "link": "/features/pipeline",
+        "link": "/old/features/pipeline",
         "date": "2024-01-01"
       }
   ]

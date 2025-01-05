@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from "$app/stores"
-  import { postList } from "./../posts.json"
+  import { postList } from "../posts.json"
   import { goto } from "$app/navigation"
 
   let currentPost: Post | null = null
@@ -27,7 +27,7 @@
   }
 
   function goBack() {
-    goto("/features")
+    goto("/old/features")
   }
 </script>
 
@@ -41,7 +41,7 @@
   />
 </svelte:head>
 
-<div class="py-12 px-6 font-sans">
+<div class="px-6 py-12 font-sans">
   <article class="prose mx-auto">
     <button class="btn btn-primary mb-6" on:click={goBack}>
       &larr; Back to Features
