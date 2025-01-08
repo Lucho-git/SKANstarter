@@ -67,7 +67,10 @@ const config: Config = {
                 'fade-up': 'fade-up 1000ms var(--animation-delay, 0ms) ease forwards',
                 shimmer: 'shimmer 8s infinite',
                 marquee: 'marquee var(--duration) infinite linear',
-                'marquee-vertical': 'marquee-vertical var(--duration) linear infinite'
+                'marquee-vertical': 'marquee-vertical var(--duration) linear infinite',
+                "spin-around": "spin-around calc(var(--speed) * 2) infinite linear",
+                "magicslide": "magicslide var(--speed) ease-in-out infinite alternate",
+                "gradient": "gradient 8s linear infinite",
             },
             keyframes: {
                 'accordion-down': {
@@ -119,7 +122,32 @@ const config: Config = {
                 'marquee-vertical': {
                     from: { transform: 'translateY(0)' },
                     to: { transform: 'translateY(calc(-100% - var(--gap)))' }
-                }
+                },
+                // Add the new keyframes here
+                "spin-around": {
+                    "0%": {
+                        transform: "translateZ(0) rotate(0)",
+                    },
+                    "15%, 35%": {
+                        transform: "translateZ(0) rotate(90deg)",
+                    },
+                    "65%, 85%": {
+                        transform: "translateZ(0) rotate(270deg)",
+                    },
+                    "100%": {
+                        transform: "translateZ(0) rotate(360deg)",
+                    },
+                },
+                magicslide: {
+                    to: {
+                        transform: "translate(calc(100cqw - 100%), 0)",
+                    },
+                },
+                gradient: {
+                    to: {
+                        "background-position": "200% center",
+                    },
+                },
             }
         },
     },

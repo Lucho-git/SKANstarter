@@ -1,16 +1,10 @@
 <script lang="ts">
-  import { ArrowRight } from "lucide-svelte"
-  import { Button } from "$lib/components/ui/button"
-  import {
-    Root,
-    Content,
-    Item,
-    Previous,
-    Next,
-  } from "$lib/components/ui/carousel"
+  import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-svelte"
+  import { Root, Content, Item } from "$lib/components/ui/carousel"
   import { cn } from "$lib/utils"
   import { onMount } from "svelte"
   import type { EmblaCarouselType } from "embla-carousel"
+  import AnimatedGradientText from "$lib/components/magic/animated-gradient-text/AnimatedGradientText.svelte"
 
   // Images array for carousel
   const images = [
@@ -30,9 +24,33 @@
     }
   }
 
+  const scrollPrev = () => {
+    if (carousel) {
+      carousel.scrollPrev()
+    }
+  }
+
+  const scrollNext = () => {
+    if (carousel) {
+      carousel.scrollNext()
+    }
+  }
+
   function onSelect() {
     if (carousel) {
       selectedIndex = carousel.selectedScrollSnap()
+    }
+  }
+
+  function startAutoplay() {
+    if (carousel) {
+      const interval = setInterval(() => {
+        if (carousel) {
+          carousel.scrollNext()
+        }
+      }, 5000)
+
+      return () => clearInterval(interval)
     }
   }
 
@@ -42,11 +60,12 @@
 
   $: if (carousel) {
     carousel.on("select", onSelect)
+    startAutoplay()
   }
 </script>
 
 <div class="relative bg-base-200">
-  <div class="mx-auto max-w-[1400px] px-4 py-20 sm:px-6 sm:py-32 lg:px-8">
+  <div class="mx-auto max-w-[1600px] px-4 py-20 sm:px-6 sm:py-16 lg:px-8">
     <div class="grid items-center gap-12 md:grid-cols-2">
       <div class="space-y-8">
         <h1
@@ -61,16 +80,21 @@
           </p>
         </div>
         <div class="flex space-x-4">
-          <Button variant="default" asChild>
-            <a href="/login" class="inline-flex items-center">
-              Get Started
-              <ArrowRight class="ml-2 h-5 w-5" />
-            </a>
-          </Button>
+          <a href="/login" class="group">
+            <AnimatedGradientText>
+              <span
+                class={cn(
+                  "animate-gradient inline-flex items-center bg-gradient-to-r from-primary via-accent to-primary bg-[length:var(--bg-size)_100%] bg-clip-text px-6 py-3 text-lg font-medium text-transparent",
+                )}
+              >
+                Sign-Up Free
+              </span>
+            </AnimatedGradientText>
+          </a>
         </div>
       </div>
 
-      <div class="relative">
+      <div class="group relative overflow-hidden">
         {#if mounted}
           <Root bind:api={carousel} opts={{ loop: true }} class="w-full">
             <Content>
@@ -85,8 +109,21 @@
               {/each}
             </Content>
 
-            <Previous />
-            <Next />
+            <!-- Internal Navigation Arrows -->
+            <button
+              on:click={scrollPrev}
+              class="absolute left-4 top-1/2 hidden -translate-y-1/2 items-center justify-center rounded-full bg-white/80 p-2 opacity-0 shadow-lg transition-opacity hover:bg-white group-hover:opacity-100 sm:flex"
+              aria-label="Previous slide"
+            >
+              <ChevronLeft class="h-6 w-6 text-gray-900" />
+            </button>
+            <button
+              on:click={scrollNext}
+              class="absolute right-4 top-1/2 hidden -translate-y-1/2 items-center justify-center rounded-full bg-white/80 p-2 opacity-0 shadow-lg transition-opacity hover:bg-white group-hover:opacity-100 sm:flex"
+              aria-label="Next slide"
+            >
+              <ChevronRight class="h-6 w-6 text-gray-900" />
+            </button>
 
             <div
               class="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-2"

@@ -2,11 +2,11 @@
   import Marquee from "$lib/components/magic/marquee/Marquee.svelte"
 
   const partners = [
-    {
-      name: "ABC Rural",
-      logo: "/images/partnerLogos/ABCRural.png",
-      alt: "ABC Rural logo",
-    },
+    // {
+    //   name: "ABC Rural",
+    //   logo: "/images/partnerLogos/ABCRural.png",
+    //   alt: "ABC Rural logo",
+    // },
     {
       name: "Agribusiness Connect",
       logo: "/images/partnerLogos/AgribusinessConnect.png",
