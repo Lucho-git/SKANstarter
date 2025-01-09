@@ -2,8 +2,8 @@
   import { Menu } from "lucide-svelte"
   import { Button } from "$lib/components/ui/button"
   import { KeySquare } from "lucide-svelte"
-  import AnimatedShinyText from "$lib/components/magic/animated-shiny-text/AnimatedShinyText.svelte"
   import { cn } from "$lib/utils"
+  import AnimatedShinyText from "$lib/components/magic/animated-shiny-text/AnimatedShinyText.svelte"
 
   let isMenuOpen = false
 </script>
@@ -11,7 +11,6 @@
 <nav class="z-50 w-full bg-neutral shadow-sm">
   <div class="container">
     <div class="flex h-24 items-center justify-between">
-      <!-- Logo section remains the same -->
       <a href="/" class="flex items-center gap-2">
         <div class="flex items-center rounded-2xl bg-secondary px-3 py-2">
           <div class="flex h-14 w-14 items-center justify-center">
@@ -47,25 +46,20 @@
           class="text-xl font-semibold text-neutral-content hover:text-secondary"
           >Pricing</a
         >
-        <a href="/login" class="group">
-          <div
-            class={cn(
-              "rounded-full bg-secondary px-6 py-3 transition-all duration-300 ease-in-out hover:bg-secondary/90",
-            )}
+        <div class="rounded-full bg-secondary px-6 py-3">
+          <AnimatedShinyText
+            shimmerWidth={200}
+            class="text-2xl font-bold text-secondary-content"
           >
-            <AnimatedShinyText>
-              <span
-                class="inline-flex items-center text-2xl font-bold text-secondary-content"
-              >
-                <KeySquare class="mr-2 h-6 w-6" />
-                Login
-              </span>
-            </AnimatedShinyText>
-          </div>
-        </a>
+            <a href="/login" class="inline-flex items-center">
+              <KeySquare class="mr-2 h-6 w-6" />
+              Login
+            </a>
+          </AnimatedShinyText>
+        </div>
       </nav>
 
-      <!-- Mobile Menu Button remains the same -->
+      <!-- Mobile Menu Button -->
       <Button
         variant="ghost"
         size="icon"
@@ -120,26 +114,21 @@
           >
             Pricing
           </a>
-          <a
-            href="/login"
-            class="group mt-4"
-            on:click={() => (isMenuOpen = false)}
-          >
-            <div
-              class={cn(
-                "rounded-full bg-secondary px-8 py-4 transition-all duration-300 ease-in-out hover:bg-secondary/90",
-              )}
+          <div class="rounded-full bg-secondary px-8 py-4">
+            <AnimatedShinyText
+              shimmerWidth={200}
+              class="text-2xl font-bold text-secondary-content"
             >
-              <AnimatedShinyText>
-                <span
-                  class="inline-flex items-center text-2xl font-bold text-secondary-content"
-                >
-                  <KeySquare class="mr-2 h-6 w-6" />
-                  Login
-                </span>
-              </AnimatedShinyText>
-            </div>
-          </a>
+              <a
+                href="/login"
+                class="inline-flex items-center"
+                on:click={() => (isMenuOpen = false)}
+              >
+                <KeySquare class="mr-2 h-6 w-6" />
+                Login
+              </a>
+            </AnimatedShinyText>
+          </div>
         </nav>
       </div>
     </div>

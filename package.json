@@ -84,6 +84,7 @@
     "shapefile": "^0.6.6",
     "shpjs": "^6.1.0",
     "stripe": "^13.3.0",
+    "svelte-inview": "^4.0.4",
     "svelte-motion": "^0.12.2",
     "svelte-sonner": "^0.3.24",
     "svelte-transition": "^0.0.17",

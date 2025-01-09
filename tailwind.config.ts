@@ -65,11 +65,11 @@ const config: Config = {
                 'image-glow': 'image-glow 4100ms 600ms ease-out forwards',
                 'fade-in': 'fade-in 1000ms var(--animation-delay, 0ms) ease forwards',
                 'fade-up': 'fade-up 1000ms var(--animation-delay, 0ms) ease forwards',
-                shimmer: 'shimmer 8s infinite',
+                shimmer: "shimmer 8s infinite",
                 marquee: 'marquee var(--duration) infinite linear',
                 'marquee-vertical': 'marquee-vertical var(--duration) linear infinite',
                 "spin-around": "spin-around calc(var(--speed) * 2) infinite linear",
-                "magicslide": "magicslide var(--speed) ease-in-out infinite alternate",
+                magicslide: "magicslide var(--speed) ease-in-out infinite alternate",
                 "gradient": "gradient 8s linear infinite",
             },
             keyframes: {
@@ -108,12 +108,12 @@ const config: Config = {
                     to: { opacity: '1', transform: 'none' }
                 },
                 shimmer: {
-                    '0%, 90%, 100%': {
-                        'background-position': 'calc(-100% - var(--shimmer-width)) 0'
+                    "0%, 90%, 100%": {
+                        "background-position": "calc(-100% - var(--shimmer-width)) 0",
                     },
-                    '30%, 60%': {
-                        'background-position': 'calc(100% + var(--shimmer-width)) 0'
-                    }
+                    "30%, 60%": {
+                        "background-position": "calc(100% + var(--shimmer-width)) 0",
+                    },
                 },
                 marquee: {
                     from: { transform: 'translateX(0)' },

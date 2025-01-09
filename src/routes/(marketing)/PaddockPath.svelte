@@ -2,10 +2,12 @@
   import { Navigation, Calculator, Droplet, MapPin } from "lucide-svelte"
   import { Button } from "$lib/components/ui/button"
   import * as Dialog from "$lib/components/ui/dialog"
+  import BlurFade from "$lib/components/magic/blur-fade/BlurFade.svelte"
 
   let waitlistDialogOpen = false
   let fullName = ""
   let email = ""
+  let BLUR_FADE_DELAY = 0.04
 
   const paddockFeatures = [
     {
@@ -34,59 +36,75 @@
 <section class="bg-base-200">
   <div class="mx-auto max-w-[1400px] px-4 py-20 sm:px-6 sm:py-32 lg:px-8">
     <div class="grid gap-12 lg:grid-cols-2">
-      <div class="relative order-2 flex items-center justify-center lg:order-1">
-        <div class="w-[90%] max-w-md">
-          <div class="aspect-[4/3] w-full overflow-hidden rounded-lg">
-            <img
-              src="/images/landing-pics/WEB01.png"
-              alt="Farm Management Hero 1"
-              class="h-full w-full object-cover opacity-90"
-            />
-            <div
-              class="absolute inset-0 flex items-center justify-center bg-base-200/10 backdrop-blur-sm"
-            >
-              <div class="rounded-lg bg-primary px-4 py-2 text-primary-content">
-                Coming Soon
+      <BlurFade delay={BLUR_FADE_DELAY * 1.4}>
+        <div
+          class="relative order-2 flex items-center justify-center lg:order-1"
+        >
+          <div class="w-[90%] max-w-md">
+            <div class="aspect-[4/3] w-full overflow-hidden rounded-lg">
+              <img
+                src="/images/landing-pics/WEB01.png"
+                alt="Farm Management Hero 1"
+                class="h-full w-full object-cover opacity-90"
+              />
+              <div
+                class="absolute inset-0 flex items-center justify-center bg-base-200/10 backdrop-blur-sm"
+              >
+                <div
+                  class="rounded-lg bg-primary px-4 py-2 text-primary-content"
+                >
+                  Coming Soon
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </BlurFade>
 
       <div class="order-1 space-y-8 lg:order-2">
-        <div class="space-y-4">
-          <h3 class="text-2xl font-bold text-base-content">PaddockPath</h3>
-          <p class="text-base-content/80">
-            Advanced AI-powered navigation and optimization for your paddock
-            operations
-          </p>
-        </div>
+        <BlurFade delay={BLUR_FADE_DELAY}>
+          <div class="space-y-4">
+            <h3 class="text-2xl font-bold text-base-content">PaddockPath</h3>
+            <p class="text-base-content/80">
+              Advanced AI-powered navigation and optimization for your paddock
+              operations
+            </p>
+          </div>
+        </BlurFade>
+
         <div class="grid gap-6 sm:grid-cols-2">
-          {#each paddockFeatures as feature}
-            <div
-              class="group relative rounded-lg bg-base-100 p-6 transition-all hover:bg-primary hover:text-primary-content"
-            >
-              <div class="flex items-start space-x-4">
-                <svelte:component
-                  this={feature.icon}
-                  class="h-6 w-6 flex-shrink-0 transition-colors group-hover:text-primary-content"
-                />
-                <div>
-                  <h4 class="font-semibold">{feature.title}</h4>
-                  <p class="mt-1 text-sm opacity-90">{feature.desc}</p>
+          {#each paddockFeatures as feature, i}
+            <BlurFade delay={BLUR_FADE_DELAY * 1.2 + i * 0.05}>
+              <div
+                class="group relative h-[160px] rounded-lg bg-base-100 p-6 transition-all hover:bg-primary hover:text-primary-content"
+              >
+                <div class="flex h-full items-start space-x-4">
+                  <svelte:component
+                    this={feature.icon}
+                    class="h-6 w-6 flex-shrink-0 transition-colors group-hover:text-primary-content"
+                  />
+                  <div class="flex flex-col">
+                    <h4 class="font-semibold">{feature.title}</h4>
+                    <p class="mt-1 text-sm opacity-90">{feature.desc}</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            </BlurFade>
           {/each}
         </div>
-        <div class="space-y-4">
-          <Button variant="outline" on:click={() => (waitlistDialogOpen = true)}
-            >Join the Waitlist</Button
-          >
-          <p class="text-sm text-base-content/70">
-            Be the first to know when PaddockPath launches
-          </p>
-        </div>
+
+        <BlurFade delay={BLUR_FADE_DELAY * 2}>
+          <div class="space-y-4">
+            <Button
+              variant="outline"
+              on:click={() => (waitlistDialogOpen = true)}
+              >Join the Waitlist</Button
+            >
+            <p class="text-sm text-base-content/70">
+              Be the first to know when PaddockPath launches
+            </p>
+          </div>
+        </BlurFade>
       </div>
     </div>
   </div>

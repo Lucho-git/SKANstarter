@@ -1,9 +1,11 @@
 <script lang="ts">
   import { Map, Clock, Upload, PinIcon } from "lucide-svelte"
   import * as Dialog from "$lib/components/ui/dialog"
+  import BlurFade from "$lib/components/magic/blur-fade/BlurFade.svelte"
 
   let dialogOpen = false
   let selectedFeature: (typeof agskanFeatures)[0] | null = null
+  let BLUR_FADE_DELAY = 0.04
 
   const agskanFeatures = [
     {
@@ -50,42 +52,49 @@
   <div class="mx-auto max-w-[1400px] px-4 py-20 sm:px-6 sm:py-32 lg:px-8">
     <div class="grid gap-12 lg:grid-cols-2">
       <div class="space-y-8">
-        <h3 class="text-2xl font-bold text-base-content">AgSKAN Features</h3>
+        <BlurFade delay={BLUR_FADE_DELAY}>
+          <h3 class="text-2xl font-bold text-base-content">AgSKAN Features</h3>
+        </BlurFade>
+
         <div class="grid gap-6 sm:grid-cols-2">
-          {#each agskanFeatures as feature}
-            <div
-              class="group cursor-pointer rounded-lg bg-base-200 p-6 transition-all hover:bg-primary hover:text-primary-content"
-              on:click={() => openDialog(feature)}
-              on:keydown={(e) => e.key === "Enter" && openDialog(feature)}
-              role="button"
-              tabindex="0"
-            >
-              <div class="flex items-start space-x-4">
-                <svelte:component
-                  this={feature.icon}
-                  class="h-6 w-6 flex-shrink-0 transition-colors group-hover:text-primary-content"
-                />
-                <div>
-                  <h4 class="font-semibold">{feature.title}</h4>
-                  <p class="mt-1 text-sm opacity-90">{feature.desc}</p>
+          {#each agskanFeatures as feature, i}
+            <BlurFade delay={BLUR_FADE_DELAY * 1.2 + i * 0.05}>
+              <div
+                class="group h-[130px] cursor-pointer rounded-lg bg-base-200 p-6 transition-all hover:bg-primary hover:text-primary-content"
+                on:click={() => openDialog(feature)}
+                on:keydown={(e) => e.key === "Enter" && openDialog(feature)}
+                role="button"
+                tabindex="0"
+              >
+                <div class="flex h-full items-start space-x-4">
+                  <svelte:component
+                    this={feature.icon}
+                    class="h-6 w-6 flex-shrink-0 transition-colors group-hover:text-primary-content"
+                  />
+                  <div class="flex flex-col">
+                    <h4 class="font-semibold">{feature.title}</h4>
+                    <p class="mt-1 text-sm opacity-90">{feature.desc}</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            </BlurFade>
           {/each}
         </div>
       </div>
 
-      <div class="relative flex items-center justify-center">
-        <div class="w-[90%] max-w-md">
-          <div class="aspect-[4/3] w-full overflow-hidden rounded-lg">
-            <img
-              src="/images/landing-pics/WEB01.png"
-              alt="Farm Management Hero 1"
-              class="h-full w-full object-cover"
-            />
+      <BlurFade delay={BLUR_FADE_DELAY * 1.4}>
+        <div class="relative flex items-center justify-center">
+          <div class="w-[90%] max-w-md">
+            <div class="aspect-[4/3] w-full overflow-hidden rounded-lg">
+              <img
+                src="/images/landing-pics/WEB01.png"
+                alt="Farm Management Hero 1"
+                class="h-full w-full object-cover"
+              />
+            </div>
           </div>
         </div>
-      </div>
+      </BlurFade>
     </div>
   </div>
 </section>
@@ -94,7 +103,6 @@
   <Dialog.Portal>
     <Dialog.Overlay class="bg-black/80" />
     <Dialog.Content class="mx-4 rounded-lg bg-base-100 p-6 sm:max-w-[600px]">
-      <!-- Added padding, rounded corners and margin -->
       {#if selectedFeature}
         <Dialog.Header>
           <Dialog.Title class="flex items-center gap-2">
@@ -102,13 +110,11 @@
             {selectedFeature.title}
           </Dialog.Title>
           <Dialog.Description class="mt-2">
-            <!-- Added margin top -->
             {selectedFeature.longDesc}
           </Dialog.Description>
         </Dialog.Header>
 
         <div class="relative mt-6 aspect-video overflow-hidden rounded-lg">
-          <!-- Increased margin top -->
           <div
             class={`h-full w-full ${selectedFeature.bgColor} flex items-center justify-center`}
           >
@@ -117,7 +123,6 @@
         </div>
 
         <Dialog.Footer class="mt-6">
-          <!-- Added margin top -->
           <Dialog.Close class="btn">Close</Dialog.Close>
         </Dialog.Footer>
       {/if}

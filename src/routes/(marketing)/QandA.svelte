@@ -5,12 +5,15 @@
     AccordionItem,
     AccordionTrigger,
   } from "$lib/components/ui/accordion"
+  import BlurFade from "$lib/components/magic/blur-fade/BlurFade.svelte"
+
+  let BLUR_FADE_DELAY = 0.04
 
   const faqs = [
     {
       question: "How do I setup AgSKAN?",
       answer:
-        "Follow this link to watch a short tutorial about setting up AgSKAN. How to setup AgSKAN in 4 minutes",
+        'Follow our <a href="/support?guide=quick-start" class="text-primary hover:underline">setup guide</a> to watch a short tutorial about setting up AgSKAN in under 4 minutes.',
     },
     {
       question: "How much does AgSKAN cost?",
@@ -35,12 +38,12 @@
     {
       question: "Do I need any hardware to run AgSKAN?",
       answer:
-        "No you don't. AgSKAN will run on any mobile device with an internet connection. You can use IOS and Android phones or tablets. We are completely machine agnostic meaning we will work in any colour/brand/age of machine. You can setup AgSKAN in under 10 minutes.",
+        'No you don\'t. AgSKAN will run on any mobile device with an internet connection. You can use IOS and Android phones or tablets. We are completely machine agnostic meaning we will work in any colour/brand/age of machine. Check out our <a href="/support?guide=mobile-setup" class="text-primary hover:underline">mobile setup guide</a> to get started.',
     },
     {
       question: "Can I upload my paddock boundaries onto the AgSKAN map?",
       answer:
-        "Yes you can. It is a very simple process and shouldn't take more than 5 minutes if you have the paddock files on hand. Follow this short video to find out how to do it. How to setup AgSKAN in 4 minutes",
+        'Yes you can. It is a very simple process and shouldn\'t take more than 5 minutes if you have the paddock files on hand. Check out our <a href="/support?guide=upload-boundaries" class="text-primary hover:underline">paddock boundary guide</a> to see how.',
     },
     {
       question: "Will AgSKAN work if I don't have paddock boundary files?",
@@ -50,7 +53,7 @@
     {
       question: "How do I connect people to my map?",
       answer:
-        "You are looking for the map ID link, share this between your operators so you can join onto a live map. If you can't find that, watch this short 4 minute video. How to setup AgSKAN in 4 minutes",
+        'You are looking for the map ID link, share this between your operators so you can join onto a live map. If you can\'t find that, check out our <a href="/support?guide=share-map" class="text-primary hover:underline">sharing guide</a> for detailed instructions.',
     },
   ]
 </script>
@@ -58,22 +61,35 @@
 <section class="bg-base-100">
   <div class="mx-auto max-w-[1400px] px-4 py-20 sm:px-6 sm:py-32 lg:px-8">
     <div class="mx-auto max-w-3xl">
-      <h2 class="mb-12 text-center text-3xl font-bold text-base-content">
-        Frequently Asked Questions
-      </h2>
+      <BlurFade delay={BLUR_FADE_DELAY}>
+        <h2 class="mb-12 text-center text-3xl font-bold text-base-content">
+          Frequently Asked Questions
+        </h2>
+      </BlurFade>
 
-      <Accordion type="single" collapsible class="w-full">
+      <Accordion type="single" collapsible class="w-full space-y-4">
         {#each faqs as faq, i}
-          <AccordionItem value="item-{i}">
-            <AccordionTrigger class="text-left">
-              {faq.question}
-            </AccordionTrigger>
-            <AccordionContent>
-              {faq.answer}
-            </AccordionContent>
-          </AccordionItem>
+          <BlurFade delay={BLUR_FADE_DELAY * 1.2 + i * 0.05}>
+            <AccordionItem value="item-{i}" class="border-b-0">
+              <AccordionTrigger
+                class="rounded-lg bg-base-200 px-6 py-4 text-left hover:bg-base-300 [&[data-state=open]]:bg-base-300"
+              >
+                {faq.question}
+              </AccordionTrigger>
+              <AccordionContent class="px-6 py-4">
+                {@html faq.answer}
+              </AccordionContent>
+            </AccordionItem>
+          </BlurFade>
         {/each}
       </Accordion>
     </div>
   </div>
 </section>
+
+<style>
+  /* Remove default border from accordion items */
+  :global([data-state="open"] > .accordion-trigger) {
+    background-color: hsl(var(--b3));
+  }
+</style>
