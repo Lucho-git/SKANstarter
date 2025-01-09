@@ -3,6 +3,16 @@
   import { Card } from "$lib/components/ui/card"
   import { Linkedin } from "lucide-svelte"
   import MagicCard from "$lib/components/magic/magiccard/MagicCard.svelte"
+  import BoxReveal from "$lib/components/magic/box-reveal/BoxReveal.svelte"
+  import BlurFade from "$lib/components/magic/blur-fade/BlurFade.svelte"
+  import { onMount } from "svelte"
+
+  let BLUR_FADE_DELAY = 0.04
+  let isLoaded = false
+
+  onMount(() => {
+    isLoaded = true
+  })
 
   interface TeamMember {
     name: string
@@ -35,73 +45,100 @@
 
   <!-- Our Story Section -->
   <div class="mx-auto max-w-4xl">
-    <h1 class="mb-8 text-center text-4xl font-bold">Our Story</h1>
-    <Card class="mb-12 bg-base-200 p-6">
-      <p class="text-lg leading-relaxed text-base-content/90">
-        Ryan and Lachie grew up together and have been mates for over 20 years.
-        They bring their life experience and skills together to solve an immense
-        problem in the agricultural industry. Innovation and teamwork are at the
-        heart of SKAN.
-      </p>
-    </Card>
+    <BlurFade delay={BLUR_FADE_DELAY}>
+      <h1 class="mb-8 text-center text-4xl font-bold">Our Story</h1>
+    </BlurFade>
+
+    <BlurFade delay={BLUR_FADE_DELAY * 1.5}>
+      <Card
+        class="mb-12 transform bg-base-200 p-6 transition-all duration-300 hover:scale-[1.02]"
+      >
+        <p class="text-lg leading-relaxed text-base-content/90">
+          Ryan and Lachie grew up together and have been mates for over 20
+          years. They bring their life experience and skills together to solve
+          an immense problem in the agricultural industry. Innovation and
+          teamwork are at the heart of SKAN.
+        </p>
+      </Card>
+    </BlurFade>
 
     <!-- Team Photo -->
     <div class="mb-12">
-      <div class="overflow-hidden rounded-xl bg-base-100">
-        <div class="aspect-video">
-          <img
-            src="/images/team.jpg"
-            alt="SKAN Team"
-            class="h-full w-full object-cover"
-          />
+      <BoxReveal>
+        <div
+          class="transform overflow-hidden rounded-xl bg-base-100 transition-all duration-500 hover:scale-[1.02]"
+        >
+          <div class="aspect-video">
+            <img
+              src="/images/team.jpg"
+              alt="SKAN Team"
+              class="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+            />
+          </div>
         </div>
-      </div>
+      </BoxReveal>
     </div>
 
     <!-- Team Member Bios -->
     <div class="mb-24 grid gap-8 md:grid-cols-2">
-      {#each teamMembers as member}
-        <a
-          href={member.linkedIn}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="block h-full"
-        >
-          <MagicCard
-            gradientColor={member.gradientColor}
-            gradientOpacity={0.1}
-            gradientSize={300}
-            class="bg-base-200"
+      {#each teamMembers as member, i}
+        <BlurFade delay={BLUR_FADE_DELAY * (3 + i)}>
+          <a
+            href={member.linkedIn}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="block h-full"
           >
-            <div class="group w-full p-6">
-              <div class="mb-4 flex items-start justify-between">
-                <div>
-                  <h3 class="mb-2 text-2xl font-bold">
-                    {member.name}
-                  </h3>
-                  <h4 class="text-xl text-primary">{member.role}</h4>
+            <MagicCard
+              gradientColor={member.gradientColor}
+              gradientOpacity={0.1}
+              gradientSize={300}
+              class="transform bg-base-200 transition-all duration-300 hover:scale-[1.02]"
+            >
+              <div class="group w-full p-6">
+                <div class="mb-4 flex items-start justify-between">
+                  <div>
+                    <h3
+                      class="mb-2 text-2xl font-bold transition-colors duration-300 group-hover:text-[{member.gradientColor}]"
+                    >
+                      {member.name}
+                    </h3>
+                    <h4 class="text-xl text-primary">{member.role}</h4>
+                  </div>
+                  <Linkedin
+                    class="h-5 w-5 text-primary transition-all duration-300 group-hover:scale-110 group-hover:text-[{member.gradientColor}]"
+                  />
                 </div>
-                <Linkedin
-                  class="h-5 w-5 text-primary transition-all duration-300 group-hover:text-[{member.gradientColor}]"
-                />
+                <p class="text-base-content/90">{@html member.bio}</p>
               </div>
-              <p class="text-base-content/90">{@html member.bio}</p>
-            </div>
-          </MagicCard>
-        </a>
+            </MagicCard>
+          </a>
+        </BlurFade>
       {/each}
     </div>
 
     <!-- Our Vision Section -->
     <div class="mb-24">
-      <h2 class="mb-8 text-center text-4xl font-bold">Our Vision</h2>
-      <Card class="bg-base-200 p-6">
-        <p class="text-lg leading-relaxed text-base-content/90">
-          To reduce input costs for farmers. We want to reduce machine hours and
-          carbon emissions to make a genuine real world impact on modern day
-          agriculture, one paddock at a time. SKAN the horizon.
-        </p>
-      </Card>
+      <BlurFade delay={BLUR_FADE_DELAY * 5}>
+        <h2 class="mb-8 text-center text-4xl font-bold">Our Vision</h2>
+        <Card
+          class="transform bg-base-200 p-6 transition-all duration-300 hover:scale-[1.02]"
+        >
+          <p class="text-lg leading-relaxed text-base-content/90">
+            To reduce input costs for farmers. We want to reduce machine hours
+            and carbon emissions to make a genuine real world impact on modern
+            day agriculture, one paddock at a time. SKAN the horizon.
+          </p>
+        </Card>
+      </BlurFade>
     </div>
   </div>
 </div>
+
+<style>
+  /* Smooth transitions */
+  :global(*) {
+    transition-property: transform, opacity, color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+</style>
