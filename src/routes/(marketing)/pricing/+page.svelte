@@ -55,7 +55,7 @@
 <div class="relative overflow-x-hidden">
   <div class="container mx-auto px-4 py-16">
     <BlurFade delay={BLUR_FADE_DELAY}>
-      <div class="mb-16 text-center">
+      <div class="mb-8 text-center">
         <h1 class="mb-4 text-4xl font-bold">Pricing plans</h1>
         <p class="text-lg text-base-content/80">
           Start for free, upgrade when you're ready
@@ -65,19 +65,19 @@
 
     <!-- Controls Container -->
     <BlurFade delay={BLUR_FADE_DELAY * 1.5}>
-      <div class="mb-16">
+      <div class="mb-8">
         <!-- Original split layout (visible on md and up) -->
         <div
           class="hidden md:flex md:flex-wrap md:items-center md:justify-center md:gap-4"
         >
           <!-- Billing Period Tabs -->
-          <div class="rounded-lg bg-base-200 p-1.5">
+          <div class="flex h-[52px] items-center rounded-lg bg-base-200 p-1.5">
             <Tabs.Root
               value={$billingPeriod}
               onValueChange={(value) => billingPeriod.set(value)}
               class="w-[200px]"
             >
-              <Tabs.List class="grid grid-cols-2">
+              <Tabs.List class="grid h-full grid-cols-2">
                 <Tabs.Trigger
                   value="monthly"
                   class="rounded-lg px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
@@ -99,12 +99,14 @@
           </div>
 
           <!-- Seats Counter -->
-          <div class="flex items-center gap-2 rounded-lg bg-base-200 p-1.5">
+          <div
+            class="flex h-[52px] items-center gap-2 rounded-lg bg-base-200 p-1.5"
+          >
             <Users class="ml-3 h-5 w-5 text-base-content/70" />
             <Button
               size="icon"
-              variant="ghost"
-              class="h-8 w-8 rounded-lg"
+              variant="outline"
+              class="h-8 w-8 rounded-lg border-base-content/20 hover:bg-base-100"
               on:click={decrementSeats}
             >
               <Minus class="h-4 w-4" />
@@ -116,8 +118,8 @@
             </div>
             <Button
               size="icon"
-              variant="ghost"
-              class="h-8 w-8 rounded-lg"
+              variant="outline"
+              class="h-8 w-8 rounded-lg border-base-content/20 hover:bg-base-100"
               on:click={incrementSeats}
             >
               <Plus class="h-4 w-4" />
@@ -162,8 +164,8 @@
               <Users class="mr-1 h-4 w-4 text-base-content/70" />
               <Button
                 size="icon"
-                variant="ghost"
-                class="h-8 w-8 rounded-lg"
+                variant="outline"
+                class="h-8 w-8 rounded-lg border-base-content/20 hover:bg-base-100"
                 on:click={decrementSeats}
               >
                 <Minus class="h-4 w-4" />
@@ -176,8 +178,8 @@
               </div>
               <Button
                 size="icon"
-                variant="ghost"
-                class="h-8 w-8 rounded-lg"
+                variant="outline"
+                class="h-8 w-8 rounded-lg border-base-content/20 hover:bg-base-100"
                 on:click={incrementSeats}
               >
                 <Plus class="h-4 w-4" />
@@ -262,12 +264,14 @@
             <div class="mb-4">
               <ShineBorder
                 color={["#FF057A", "#FF7700"]}
-                class="!block !min-h-0 w-full cursor-pointer bg-transparent"
+                class="!block !min-h-0 w-full !min-w-0 cursor-pointer bg-transparent"
               >
                 <div
                   class="hover:from-secondary-focus hover:to-accent-focus -m-3 w-full rounded-lg bg-gradient-to-r from-secondary to-accent text-center font-semibold text-secondary-content transition-all duration-300"
                 >
-                  <button class="w-full px-4 py-2">Upgrade Now</button>
+                  <button class="w-full whitespace-nowrap px-4 py-2"
+                    >Upgrade Now</button
+                  >
                 </div>
               </ShineBorder>
             </div>
