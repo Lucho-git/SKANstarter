@@ -16,13 +16,14 @@
   // Number of seats counter
   let seats = 1
   const BASE_PRICE = 45
-  $: pricePerSeat = $billingPeriod === "annual" ? BASE_PRICE * 0.8 : BASE_PRICE
+  $: pricePerSeat =
+    $billingPeriod === "annual" ? BASE_PRICE * (2 / 3) : BASE_PRICE
   $: totalPrice = seats * pricePerSeat
 
   // Calculate annual savings
   $: monthlyTotal = seats * BASE_PRICE
   $: annualTotal = seats * BASE_PRICE * 12
-  $: annualDiscountedTotal = seats * (BASE_PRICE * 0.8) * 12
+  $: annualDiscountedTotal = seats * (BASE_PRICE * (2 / 3)) * 12
   $: annualSavings = annualTotal - annualDiscountedTotal
 
   function incrementSeats() {
@@ -84,8 +85,8 @@
             >
               Annual
               <span
-                class="absolute -right-1 -top-1 rounded-lg bg-orange-500 px-1.5 py-0.5 text-[10px] font-bold text-white"
-                >-20%</span
+                class="absolute -right-3 -top-2 rounded-lg bg-gradient-to-r from-secondary to-accent px-1.5 py-0.5 text-[10px] font-bold text-black"
+                >-33%</span
               >
             </Tabs.Trigger>
           </Tabs.List>
@@ -122,24 +123,28 @@
   <!-- Pricing Cards -->
   <div class="mx-auto grid max-w-5xl gap-8 md:grid-cols-2">
     <!-- Free Plan -->
-    <BlurFade delay={BLUR_FADE_DELAY * 2}>
+    <BlurFade delay={BLUR_FADE_DELAY * 2} class="order-last md:order-first">
       <article
-        class="h-full rounded-3xl border border-gray-700/70 bg-background p-8"
+        class="h-full rounded-3xl border border-gray-700/70 bg-base-300 bg-gradient-to-br from-base-300 via-base-300 to-base-200 p-8"
       >
-        <div>
+        <div class="text-center">
           <h3 class="mb-2 text-2xl font-bold">🚜 SKAN Member</h3>
-          <p class="mb-6 text-base-content/70">
+          <p class="mb-8 text-base-content/70">
             Join an existing map as an operator
           </p>
 
-          <div class="mb-8 flex items-baseline gap-2">
-            <div class="text-3xl font-bold">Free</div>
-            <div class="text-base-content/70">no credit card required</div>
+          <div
+            class="mx-auto mb-8 w-fit rounded-2xl border border-base-content/10 bg-base-200/50 p-6 shadow-sm"
+          >
+            <div class="flex flex-col items-center gap-2">
+              <div class="text-4xl font-bold">Free</div>
+              <div class="text-base-content/70">no credit card required</div>
+            </div>
           </div>
 
           <Button class="mb-8 w-full" variant="outline">Get Started</Button>
 
-          <div class="space-y-4">
+          <div class="space-y-4 text-left">
             {#each freePlanFeatures as feature}
               <div class="flex items-center gap-2">
                 <Check class="h-5 w-5 text-primary" />
@@ -152,45 +157,50 @@
     </BlurFade>
 
     <!-- Pro Plan -->
-    <BlurFade delay={BLUR_FADE_DELAY * 2.5}>
+    <BlurFade delay={BLUR_FADE_DELAY * 2.5} class="order-first md:order-last">
       <article
-        class="relative h-full rounded-3xl border border-gray-700/70 bg-background p-8"
+        class="relative h-full rounded-3xl border border-gray-700/70 bg-base-200 bg-gradient-to-br from-base-200 via-base-200 to-base-100 p-8"
       >
         <BorderBeam color="#FF7700" size={150} duration={12} />
-        <div>
+        <div class="text-center">
           <h3 class="mb-2 text-2xl font-bold">⭐ SKAN Founder</h3>
-          <p class="mb-6 text-base-content/70">Full access with custom seats</p>
+          <p class="mb-8 text-base-content/70">Full access with custom seats</p>
 
-          <div class="mb-8 flex items-baseline justify-between">
-            <div class="flex items-baseline gap-2">
-              <div class="text-3xl font-bold">${Math.round(totalPrice)}</div>
-              <div class="text-base-content/70">per month</div>
-            </div>
-            <div class="min-w-[120px] text-right">
-              {#if $billingPeriod === "annual"}
+          <div class="relative mx-auto mb-8 w-fit">
+            {#if $billingPeriod === "annual"}
+              <div class="absolute -right-2 -top-2 z-10">
                 <div
-                  class="inline-block rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-3 py-1 text-sm font-medium text-white shadow-sm"
+                  class="rounded-lg bg-gradient-to-r from-secondary to-accent px-3 py-1 text-sm font-medium text-black shadow-md"
                 >
                   Save ${Math.round(annualSavings)}
                 </div>
-              {/if}
+              </div>
+            {/if}
+            <div
+              class="relative rounded-2xl border border-base-content/10 bg-base-300/50 p-6 shadow-xl backdrop-blur-sm"
+            >
+              <BorderBeam color="#FF7700" size={80} duration={12} />
+              <div class="flex flex-col items-center gap-2">
+                <div class="text-4xl font-bold">${Math.round(totalPrice)}</div>
+                <div class="text-base-content/70">per month</div>
+              </div>
             </div>
           </div>
 
           <div class="mb-4">
             <ShineBorder
               color={["#FF057A", "#FF7700"]}
-              class="w-full cursor-pointer"
+              class="!block !min-h-0 w-full cursor-pointer bg-transparent"
             >
               <div
-                class="w-full rounded-lg bg-background px-4 py-2 text-center font-semibold"
+                class="hover:from-secondary-focus hover:to-accent-focus -m-3 w-full rounded-lg bg-gradient-to-r from-secondary to-accent text-center font-semibold text-secondary-content transition-all duration-300"
               >
-                Upgrade Now
+                <button class="w-full px-4 py-2">Upgrade Now</button>
               </div>
             </ShineBorder>
           </div>
 
-          <p class="mb-8 text-center text-sm text-base-content/70">
+          <p class="mb-8 text-sm text-base-content/70">
             {seats}
             {seats === 1 ? "license" : "licenses"} for A${Math.round(
               $billingPeriod === "annual"
@@ -199,7 +209,7 @@
             )}, billed {$billingPeriod === "annual" ? "annually" : "monthly"}
           </p>
 
-          <div class="space-y-4">
+          <div class="space-y-4 text-left">
             {#each proPlanFeatures as feature}
               <div class="flex items-center gap-2">
                 <Check class="h-5 w-5 text-primary" />

@@ -4,8 +4,8 @@
   type TColorProp = string | string[]
 
   export let borderRadius: number = 8
-  export let borderWidth: number = 1
-  export let duration: number = 14
+  export let borderWidth: number = 2
+  export let duration: number = 8
   export let color: TColorProp = ["#4FF9FF"]
   let className: string = ""
   export { className as class }
@@ -16,7 +16,7 @@
         --border-radius: {borderRadius}px;
       "
   class={cn(
-    "relative grid min-h-[60px] w-fit min-w-[300px] place-items-center rounded-[var(--border-radius)] bg-white p-3 text-black dark:bg-black dark:text-white",
+    "relative grid min-h-[60px] w-fit min-w-[300px] place-items-center rounded-[var(--border-radius)] bg-white text-black dark:bg-black dark:text-white",
     className,
   )}
 >

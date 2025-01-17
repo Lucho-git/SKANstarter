@@ -14,9 +14,9 @@ const config: Config = {
         },
         extend: {
             colors: {
-                border: "hsl(var(--border) / <alpha-value>)",
-                input: "hsl(var(--input) / <alpha-value>)",
-                ring: "hsl(var(--ring) / <alpha-value>)",
+                border: "var(--base-200)",
+                input: "var(--base-200)",
+                ring: "var(--primary)",
                 background: "var(--base-100)",
                 foreground: "var(--base-content)",
                 primary: {
@@ -34,19 +34,18 @@ const config: Config = {
                 accent: {
                     DEFAULT: "#D95D39",
                     foreground: "#fefbf6",
-
                 },
                 muted: {
-                    DEFAULT: "hsl(var(--muted) / <alpha-value>)",
-                    foreground: "hsl(var(--muted-foreground) / <alpha-value>)",
+                    DEFAULT: "var(--base-200)",
+                    foreground: "var(--base-content)",
                 },
                 popover: {
-                    DEFAULT: "#D95D39",
-                    foreground: "hsl(var(--popover-foreground) / <alpha-value>)",
+                    DEFAULT: "var(--base-200)",
+                    foreground: "var(--base-content)",
                 },
                 card: {
-                    DEFAULT: "hsl(var(--card) / <alpha-value>)",
-                    foreground: "hsl(var(--card-foreground) / <alpha-value>)",
+                    DEFAULT: "var(--base-200)",
+                    foreground: "var(--base-content)",
                 },
             },
             borderRadius: {
@@ -181,16 +180,24 @@ const config: Config = {
                     "neutral-content": "#fefbf6",
 
                     "base-100": "#ffffff",
-                    "base-200": "#f8fafc", // Lighter, more subtle gray
-                    "base-300": "#f1f5f9", // Slightly darker but still subtle
+                    "base-200": "#f1f5f9", // Light blue-gray
+                    "base-300": "#cbd5e1", // Medium blue-gray
                     "base-content": "#232322",
 
+                    "info": "#3b82f6",
+                    "success": "#22c55e",
+                    "warning": "#f59e0b",
+                    "error": "#ef4444",
                     // Add gradient colors
                     "--gradient-start": "var(--base-200)", // Uses your existing base-200 color
                     "--gradient-end": "var(--base-100)",   // Uses your existing base-100 color
 
                     "focus": "#FF00FF",
                     "focus-content": "#FFFFFF",
+                    "--radius": "0.5rem",
+                    "--border": "var(--base-200)",
+                    "--input": "var(--base-200)",
+                    "--ring": "var(--primary)",
                 },
             },
             {
@@ -204,13 +211,22 @@ const config: Config = {
                     "neutral": "#f9e58a",
                     "neutral-content": "#232322",
                     "base-100": "#1f2937",
-                    "base-200": "#374151",
-                    "base-300": "#4b5563",
+                    "base-200": "#111827", // Darker background for better contrast
+                    "base-300": "#374151",
                     "base-content": "#F7DB5C",
                     "info": "#93c5fd",
                     "success": "#a7f3d0",
                     "warning": "#fde68a",
                     "error": "#fca5a5",
+                    "error-content": "#ffffff",
+                    "--gradient-start": "var(--base-200)",
+                    "--gradient-end": "var(--base-100)",
+                    "focus": "#FF00FF",
+                    "focus-content": "#FFFFFF",
+                    "--radius": "0.5rem",
+                    "--border": "var(--base-200)",
+                    "--input": "var(--base-200)",
+                    "--ring": "var(--primary)",
                 },
             },
             "autumn",
