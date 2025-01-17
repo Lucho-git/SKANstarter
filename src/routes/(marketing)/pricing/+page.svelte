@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { goto } from "$app/navigation" // Add this import at the top
+
   import { Button } from "$lib/components/ui/button"
   import { Card } from "$lib/components/ui/card"
   import BlurFade from "$lib/components/magic/blur-fade/BlurFade.svelte"
@@ -198,7 +200,7 @@
           class="h-full rounded-3xl border border-gray-700/70 bg-base-300 bg-gradient-to-br from-base-300 via-base-300 to-base-200 p-8"
         >
           <div class="text-center">
-            <h3 class="mb-2 text-2xl font-bold">🚜 SKAN Member</h3>
+            <h3 class="mb-2 text-2xl font-bold">🚜 AgSKAN Free</h3>
             <p class="mb-8 text-base-content/70">
               Join an existing map as an operator
             </p>
@@ -212,7 +214,11 @@
               </div>
             </div>
 
-            <Button class="mb-8 w-full" variant="outline">Get Started</Button>
+            <Button
+              class="mb-8 w-full"
+              variant="outline"
+              on:click={() => goto("/login")}>Get Started</Button
+            >
 
             <div class="space-y-4 text-left">
               {#each freePlanFeatures as feature}
@@ -233,10 +239,8 @@
         >
           <BorderBeam color="#FF7700" size={150} duration={12} />
           <div class="text-center">
-            <h3 class="mb-2 text-2xl font-bold">⭐ SKAN Founder</h3>
-            <p class="mb-8 text-base-content/70">
-              Full access with custom seats
-            </p>
+            <h3 class="mb-2 text-2xl font-bold">⭐ AgSKAN Pro</h3>
+            <p class="mb-8 text-base-content/70">Share your map</p>
 
             <div class="relative mx-auto mb-8 w-fit">
               {#if $billingPeriod === "annual"}
@@ -262,18 +266,20 @@
             </div>
 
             <div class="mb-4">
-              <ShineBorder
-                color={["#FF057A", "#FF7700"]}
-                class="!block !min-h-0 w-full !min-w-0 cursor-pointer bg-transparent"
-              >
-                <div
-                  class="hover:from-secondary-focus hover:to-accent-focus -m-3 w-full rounded-lg bg-gradient-to-r from-secondary to-accent text-center font-semibold text-secondary-content transition-all duration-300"
+              <a href="/login">
+                <ShineBorder
+                  color={["#FF057A", "#FF7700"]}
+                  class="!block !min-h-0 w-full !min-w-0 cursor-pointer bg-transparent"
                 >
-                  <button class="w-full whitespace-nowrap px-4 py-2"
-                    >Upgrade Now</button
+                  <div
+                    class="hover:from-secondary-focus hover:to-accent-focus -m-3 w-full rounded-lg bg-gradient-to-r from-secondary to-accent text-center font-semibold text-secondary-content transition-all duration-300"
                   >
-                </div>
-              </ShineBorder>
+                    <button class="w-full whitespace-nowrap px-4 py-2"
+                      >Upgrade Now</button
+                    >
+                  </div>
+                </ShineBorder>
+              </a>
             </div>
 
             <p class="mb-8 text-sm text-base-content/70">
