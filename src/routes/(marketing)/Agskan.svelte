@@ -102,7 +102,9 @@
 <Dialog.Root bind:open={dialogOpen}>
   <Dialog.Portal>
     <Dialog.Overlay class="bg-black/80" />
-    <Dialog.Content class="mx-4 rounded-lg bg-base-100 p-6 sm:max-w-[600px]">
+    <Dialog.Content
+      class="fixed left-1/2 top-1/2 max-h-[90vh] w-[calc(100%-2rem)] max-w-[600px] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-lg bg-base-100 p-6 sm:w-full"
+    >
       {#if selectedFeature}
         <Dialog.Header>
           <Dialog.Title class="flex items-center gap-2">

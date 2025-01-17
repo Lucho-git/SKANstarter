@@ -113,7 +113,9 @@
 <Dialog.Root bind:open={waitlistDialogOpen}>
   <Dialog.Portal>
     <Dialog.Overlay class="bg-black/80" />
-    <Dialog.Content class="mx-4 rounded-lg bg-base-100 p-6 sm:max-w-[425px]">
+    <Dialog.Content
+      class="fixed left-1/2 top-1/2 max-h-[90vh] w-[calc(100%-2rem)] max-w-[425px] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-lg bg-base-100 p-6 sm:w-full"
+    >
       <Dialog.Header>
         <Dialog.Title class="text-xl font-semibold"
           >Join the Waitlist</Dialog.Title

@@ -99,14 +99,16 @@
                 <div class="mb-4 flex items-start justify-between">
                   <div>
                     <h3
-                      class="mb-2 text-2xl font-bold transition-colors duration-300 group-hover:text-[{member.gradientColor}]"
+                      class="mb-2 text-2xl font-bold text-base-content transition-colors duration-300"
+                      style="--hover-color: {member.gradientColor}"
                     >
                       {member.name}
                     </h3>
                     <h4 class="text-xl text-primary">{member.role}</h4>
                   </div>
                   <Linkedin
-                    class="h-5 w-5 text-primary transition-all duration-300 group-hover:scale-110 group-hover:text-[{member.gradientColor}]"
+                    class="h-5 w-5 text-primary transition-all duration-300 group-hover:scale-110"
+                    style="--hover-color: {member.gradientColor}"
                   />
                 </div>
                 <p class="text-base-content/90">{@html member.bio}</p>

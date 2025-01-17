@@ -125,18 +125,18 @@
     <Tabs.Root
       value={activeTab}
       onValueChange={(value) => (activeTab = value)}
-      class="rounded-lg bg-gray-100 p-1 shadow-inner"
+      class="w-[200px]"
     >
-      <Tabs.List class="flex">
+      <Tabs.List class="grid h-full grid-cols-2 rounded-lg bg-base-300 p-1">
         <Tabs.Trigger
           value="navigate"
-          class="rounded-md px-4 py-2 text-gray-700 transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-md"
+          class="rounded-lg px-4 py-2 text-base-content transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-content"
         >
           Navigate
         </Tabs.Trigger>
         <Tabs.Trigger
           value="manage"
-          class="rounded-md px-4 py-2 text-gray-700 transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-md"
+          class="rounded-lg px-4 py-2 text-base-content transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-content"
         >
           Manage
         </Tabs.Trigger>
@@ -169,7 +169,7 @@
               icon="solar:chair-bold"
               width="40"
               height="40"
-              style="color: black"
+              class="text-base-content"
             />
           {/if}
         </div>
@@ -243,8 +243,8 @@
           {/if}
         {:else}
           <button
-            class="btn {buttonClass} btn-sm m-auto"
-            class:btn-info={!vehicle}
+            class="btn btn-outline btn-sm m-auto"
+            class:btn-outline-info={!vehicle}
             on:click={() =>
               vehicle ? handleLocate(profile) : handleConnect(profile)}
             disabled={!vehicle && !is_user(profile.id)}
@@ -263,7 +263,7 @@
           icon="solar:user-plus-rounded-bold"
           width="40"
           height="40"
-          style="color: black"
+          class="text-base-content"
         />
       </div>
       <div class="flex-grow">

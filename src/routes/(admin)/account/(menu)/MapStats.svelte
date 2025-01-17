@@ -5,6 +5,7 @@
   import { mapActivityStore } from "../../../../stores/mapActivityStore"
   import { Card, CardContent } from "$lib/components/ui/card"
   import { MapPin, Truck, Route } from "lucide-svelte"
+
   function formatNumber(num: number): string {
     if (num >= 1000000) {
       return (num / 1000000).toFixed(1) + "M"
@@ -45,17 +46,17 @@
   <div class="container mx-auto px-2 py-2">
     <div class="grid grid-cols-3 gap-2 sm:gap-4">
       <Card
-        class="bg-gradient-to-br from-[#f8f9fa] to-[#e9ecef] text-[#1f2937]"
+        class="border border-base-300 bg-gradient-to-br from-base-100 to-base-200 backdrop-blur-sm"
       >
         <CardContent
           class="flex h-full flex-col items-center justify-center p-2"
         >
-          <MapPin class="mb-1 h-4 w-4" />
-          <p class="text-xs font-semibold">Pins</p>
-          <span class="text-base font-bold">
+          <MapPin class="mb-1 h-4 w-4 text-primary" />
+          <p class="text-xs font-semibold text-base-content">Pins</p>
+          <span class="text-base font-bold text-base-content">
             {mapMarkers}{#if !isPaidSubscription}/{masterSubscription.marker_limit}{/if}
           </span>
-          <p class="mt-1 text-center text-[10px]">
+          <p class="mt-1 text-center text-[10px] text-base-content/70">
             {#if isPaidSubscription}
               Unlimited Drops
             {:else}
@@ -66,32 +67,34 @@
       </Card>
 
       <Card
-        class="bg-gradient-to-br from-[#f8f9fa] to-[#e9ecef] text-[#1f2937]"
+        class="border border-base-300 bg-gradient-to-br from-base-100 to-base-200 backdrop-blur-sm"
       >
         <CardContent
           class="flex h-full flex-col items-center justify-center p-2"
         >
-          <Truck class="mb-1 h-4 w-4" />
-          <p class="text-xs font-semibold">Vehicles</p>
-          <span class="text-base font-bold"
+          <Truck class="mb-1 h-4 w-4 text-primary" />
+          <p class="text-xs font-semibold text-base-content">Vehicles</p>
+          <span class="text-base font-bold text-base-content"
             >{vehicles}/{masterSubscription.current_seats}</span
           >
-          <p class="mt-1 text-center text-[10px]">Active Vehicles</p>
+          <p class="mt-1 text-center text-[10px] text-base-content/70">
+            Active Vehicles
+          </p>
         </CardContent>
       </Card>
 
       <Card
-        class="bg-gradient-to-br from-[#f8f9fa] to-[#e9ecef] text-[#1f2937]"
+        class="border border-base-300 bg-gradient-to-br from-base-100 to-base-200 backdrop-blur-sm"
       >
         <CardContent
           class="flex h-full flex-col items-center justify-center p-2"
         >
-          <Route class="mb-1 h-4 w-4" />
-          <p class="text-xs font-semibold">Trail Points</p>
-          <span class="text-base font-bold"
+          <Route class="mb-1 h-4 w-4 text-primary" />
+          <p class="text-xs font-semibold text-base-content">Trail Points</p>
+          <span class="text-base font-bold text-base-content"
             >{formatNumber(trailCoordinates)}</span
           >
-          <p class="mt-1 text-center text-[10px]">
+          <p class="mt-1 text-center text-[10px] text-base-content/70">
             {#if isPaidSubscription}
               Unlimited Trails
             {:else}
