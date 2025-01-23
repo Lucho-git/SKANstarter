@@ -12,48 +12,110 @@
   const faqs = [
     {
       question: "How do I setup AgSKAN?",
-      answer:
-        'Follow our <a href="/support?guide=quick-start" class="text-primary hover:underline">setup guide</a> to watch a short tutorial about setting up AgSKAN in under 4 minutes.',
+      answer: `
+          <p>Getting started is quick and easy. Follow our <a href="/support?guide=quick-start" class="text-primary hover:underline">setup guide</a> to watch a short tutorial about setting up AgSKAN in under 4 minutes.</p>`,
     },
     {
       question: "How much does AgSKAN cost?",
-      answer:
-        "AgSKAN costs $1 per day, per user. In the billing section a 'seat' is a person who will be using the app on your farm, including you as the owner/manager. Select as many seats as you need for your operation, you as the owner of the account will pay for these seats which will give your account the authority to host all of the other users on your live map. ie. You (map owner) + 2 full time operators = 3 seats. This would be $3 per day to make sure the farm is running smoothly, priceless!",
+      answer: `
+          <p class="mb-4">AgSKAN costs $1 per day, per user.</p>
+          <p>In the billing section, a 'seat' represents each person who will be using the app on your farm, including you as the owner/manager. As the account owner, you'll pay for all seats, which gives your account the authority to host other users on your live map.</p>
+          <p class="mt-4 p-4 bg-base-300 rounded-lg">
+            <strong>Example:</strong> You (map owner) + 2 full-time operators = 3 seats<br>
+            Total cost: $3 per day for complete farm operation visibility
+          </p>`,
     },
     {
       question: "Will AgSKAN work for seeding?",
-      answer:
-        "It certainly will. Use AgSKAN in the sprayer to 'paint' a live map of where treflan has been sprayed. The seeder driver will be able to see this on his shared live map, ensuring they never seed anything that hasn't been sprayed yet. Use the pin drop function to mark where the fill up truck is parked so the whole seeding crew can stay in the loop. Everyone can access the map on their phone on the go. This will save you time and money. Setup the seeding rig with AgSKAN so the operator can use our one touch function to mark rocks and stumps on the fly. You can see these obstacles live on everyone's map making stump/rock picking a breeze. To set up a sprayer and seeder for 2025 it would only cost you $2 a day, all you need is a phone or tablet!",
+      answer: `
+          <div class="space-y-4">
+            <p>AgSKAN transforms your seeding operation with real-time mapping and collaboration:</p>
+            <ul class="list-disc pl-6 space-y-2">
+              <li>Use the sprayer to 'paint' a live map of sprayed areas</li>
+              <li>Seeder operators can view the live map to ensure they only seed sprayed areas</li>
+              <li>Mark fill-up truck locations with pin drops for the entire seeding crew</li>
+              <li>Track and mark obstacles like rocks and stumps with one-touch marking</li>
+              <li>Access the map on any mobile device</li>
+            </ul>
+            <p class="mt-4 p-4 bg-base-300 rounded-lg">
+              <strong>Cost Example:</strong> Setting up a sprayer and seeder for 2025 costs just $2 per day, using only phones or tablets
+            </p>
+          </div>`,
     },
     {
       question: "Will AgSKAN work for harvest?",
-      answer:
-        "It certainly will. Use AgSKAN in the headers to 'paint' a live map of what has been harvested. The chaser bin driver will be able to see this on his shared live map and know where to find the headers at all times. Avoiding that two-way radio going off all day in your ear! \"Copy, headers? Where are you guys?\" Use the pin drop function to mark where the field bins are parked so the whole harvest crew (including the trucks) can stay in the loop. Everyone can access the map on their phone on the go. This will save you time and money. To setup 2 headers, a chaser bin and a truck it would only cost you $4 a day!",
+      answer: `
+          <div class="space-y-4">
+            <p>AgSKAN streamlines harvest operations by connecting your entire team:</p>
+            <ul class="list-disc pl-6 space-y-2">
+              <li>Headers 'paint' a live map of harvested areas</li>
+              <li>Chaser bin drivers can locate headers instantly without radio calls</li>
+              <li>Mark field bin locations visible to all crew members</li>
+              <li>Complete visibility for truck drivers and the entire harvest team</li>
+              <li>Access from any mobile device</li>
+            </ul>
+            <p class="mt-4 p-4 bg-base-300 rounded-lg">
+              <strong>Cost Example:</strong> Full harvest setup (2 headers + chaser bin + truck) = $4 per day
+            </p>
+          </div>`,
     },
     {
       question: "Will AgSKAN work for rock/stump picking?",
-      answer:
-        "It certainly will. Set up any of your tractors with AgSKAN so the operator can use our one touch function to mark rocks and stumps on the fly. You can see these obstacles live on everyone's map making stump/rock picking a breeze.",
+      answer: `
+          <div class="space-y-4">
+            <p>AgSKAN simplifies obstacle management across your operation:</p>
+            <ul class="list-disc pl-6 space-y-2">
+              <li>One-touch function to mark rocks and stumps instantly</li>
+              <li>Live updates visible to all operators</li>
+              <li>Streamlined obstacle clearing process</li>
+              <li>Works in any tractor or vehicle</li>
+            </ul>
+          </div>`,
     },
     {
       question: "Do I need any hardware to run AgSKAN?",
-      answer:
-        'No you don\'t. AgSKAN will run on any mobile device with an internet connection. You can use IOS and Android phones or tablets. We are completely machine agnostic meaning we will work in any colour/brand/age of machine. Check out our <a href="/support?guide=mobile-setup" class="text-primary hover:underline">mobile setup guide</a> to get started.',
+      answer: `
+          <div class="space-y-4">
+            <p>AgSKAN is designed to work with devices you already own:</p>
+            <ul class="list-disc pl-6 space-y-2">
+              <li>Works on any iOS or Android phone or tablet</li>
+              <li>Only requires an internet connection</li>
+              <li>Compatible with all machine brands and ages</li>
+              <li>No additional hardware needed</li>
+            </ul>
+            <p>Check out our <a href="/support?guide=mobile-setup" class="text-primary hover:underline">mobile setup guide</a> to get started.</p>
+          </div>`,
     },
     {
       question: "Can I upload my paddock boundaries onto the AgSKAN map?",
-      answer:
-        'Yes you can. It is a very simple process and shouldn\'t take more than 5 minutes if you have the paddock files on hand. Check out our <a href="/support?guide=upload-boundaries" class="text-primary hover:underline">paddock boundary guide</a> to see how.',
+      answer: `
+          <div class="space-y-4">
+            <p>Yes, uploading paddock boundaries is quick and simple:</p>
+            <ul class="list-disc pl-6 space-y-2">
+              <li>Takes less than 5 minutes with existing paddock files</li>
+              <li>Simple step-by-step process</li>
+              <li>Supports common boundary file formats</li>
+            </ul>
+            <p>Follow our <a href="/support?guide=upload-boundaries" class="text-primary hover:underline">paddock boundary guide</a> for detailed instructions.</p>
+          </div>`,
     },
     {
       question: "Will AgSKAN work if I don't have paddock boundary files?",
-      answer:
-        "It certainly will. Just jump straight onto the map and start trailing, skip the map upload step.",
+      answer: `
+          <p>You can start using AgSKAN immediately without paddock boundaries. Simply open the map and begin tracking - the boundary files are optional and can be added later if needed.</p>`,
     },
     {
       question: "How do I connect people to my map?",
-      answer:
-        'You are looking for the map ID link, share this between your operators so you can join onto a live map. If you can\'t find that, check out our <a href="/support?guide=share-map" class="text-primary hover:underline">sharing guide</a> for detailed instructions.',
+      answer: `
+          <div class="space-y-4">
+            <p>Connecting team members is straightforward using the map ID link:</p>
+            <ul class="list-disc pl-6 space-y-2">
+              <li>Share the map ID link with your operators</li>
+              <li>Team members can instantly join your live map</li>
+              <li>No complicated setup required</li>
+            </ul>
+            <p>Need help finding the map ID? Check our <a href="/support?guide=share-map" class="text-primary hover:underline">sharing guide</a> for step-by-step instructions.</p>
+          </div>`,
     },
   ]
 </script>
