@@ -6,9 +6,30 @@
   import Partners from "./PartnerSection.svelte"
   import QandA from "./QandA.svelte"
   import SignupSection from "./SignupSection.svelte"
+  import { onMount } from "svelte"
+  import { afterNavigate } from "$app/navigation"
 
   export let data
-  $: ({ supabase, url } = data)
+  $: ({ supabase, url, session } = data)
+
+  // Function to reset focus and scroll
+  const resetFocusAndScroll = () => {
+    window.scrollTo(0, 0)
+    document.activeElement?.blur()
+  }
+
+  // Handle after navigation
+  afterNavigate(() => {
+    resetFocusAndScroll()
+  })
+
+  // Handle initial mount
+  onMount(() => {
+    resetFocusAndScroll()
+
+    // Additional safety measure
+    setTimeout(resetFocusAndScroll, 0)
+  })
 </script>
 
 <main class="w-full">
@@ -17,7 +38,7 @@
   <PaddockPath />
   <Partners />
   <QandA />
-  {#if supabase}
+  {#if supabase && !session}
     <SignupSection {supabase} {url} />
   {/if}
 </main>

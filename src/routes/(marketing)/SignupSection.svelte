@@ -12,6 +12,7 @@
 
   onMount(() => {
     mounted = true
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event) => {
@@ -26,7 +27,7 @@
   })
 </script>
 
-<section class="bg-base-100 py-16">
+<section class="bg-base-100 py-16" tabindex="-1">
   <div class="container mx-auto px-4">
     <div class="mx-auto max-w-md text-center">
       <h2 class="mb-2 text-3xl font-bold">Get Started Today</h2>
