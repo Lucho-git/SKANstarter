@@ -1,4 +1,3 @@
-<!-- +page.svelte -->
 <script lang="ts">
   import Hero from "./Hero.svelte"
   import Features from "./Features.svelte"
@@ -6,6 +5,10 @@
   import PaddockPath from "./PaddockPath.svelte"
   import Partners from "./PartnerSection.svelte"
   import QandA from "./QandA.svelte"
+  import SignupSection from "./SignupSection.svelte"
+
+  export let data
+  $: ({ supabase, url } = data)
 </script>
 
 <main class="w-full">
@@ -14,5 +17,7 @@
   <PaddockPath />
   <Partners />
   <QandA />
-  <!-- Add other sections here -->
+  {#if supabase}
+    <SignupSection {supabase} {url} />
+  {/if}
 </main>

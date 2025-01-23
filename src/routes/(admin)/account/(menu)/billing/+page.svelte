@@ -61,9 +61,9 @@
       <h1 class="mb-4 text-center text-4xl font-bold">Select a Plan</h1>
 
       <PricingSection
-        freePlanName="🚜 SKAN Member"
+        freePlanName="AgSKAN Free"
         freePlanDescription="Join an existing map as an operator, or test out our features free"
-        proPlanName="⭐ SKAN Founder"
+        proPlanName="AgSKAN Pro"
         proPlanDescription="Invite other users to your map, completely adjustable # of seats"
         {freePlanFeatures}
         {proPlanFeatures}

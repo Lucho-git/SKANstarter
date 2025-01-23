@@ -58,7 +58,7 @@
   ]
 </script>
 
-<section class="bg-base-100">
+<section class="bg-base-200">
   <div class="mx-auto max-w-[1400px] px-4 py-20 sm:px-6 sm:py-32 lg:px-8">
     <div class="mx-auto max-w-3xl">
       <BlurFade delay={BLUR_FADE_DELAY}>

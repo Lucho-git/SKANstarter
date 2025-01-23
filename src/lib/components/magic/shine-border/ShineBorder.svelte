@@ -4,7 +4,7 @@
   type TColorProp = string | string[]
 
   export let borderRadius: number = 8
-  export let borderWidth: number = 2
+  export let borderWidth: number = 1
   export let duration: number = 8
   export let color: TColorProp = ["#4FF9FF"]
   let className: string = ""

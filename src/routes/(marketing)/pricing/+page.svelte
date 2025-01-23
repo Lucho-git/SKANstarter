@@ -34,9 +34,9 @@
     </p>
 
     <PricingSection
-      freePlanName="🚜 SKAN Member"
+      freePlanName="AgSKAN Free"
       freePlanDescription="Join an existing map as an operator"
-      proPlanName="⭐ SKAN Founder"
+      proPlanName="AgSKAN Pro"
       proPlanDescription="Share your map"
       {currentPlanId}
       stripePriceIds={{

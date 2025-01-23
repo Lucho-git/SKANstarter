@@ -9,9 +9,9 @@
   import { Check, Minus, Plus, Users } from "lucide-svelte"
   import { writable } from "svelte/store"
 
-  export let freePlanName = "🚜 AgSKAN Free"
+  export let freePlanName = "AgSKAN Free"
   export let freePlanDescription = "Join an existing map as an operator"
-  export let proPlanName = "⭐ AgSKAN Pro"
+  export let proPlanName = "AgSkan Pro"
   export let proPlanDescription = "Share your map"
   export let currentPlanId: string | null = null
   export let stripePriceIds = {
