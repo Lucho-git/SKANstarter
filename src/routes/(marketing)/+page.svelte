@@ -38,7 +38,7 @@
   <PaddockPath />
   <Partners />
   <QandA />
-  {#if supabase && !session}
+  {#if supabase}
     <SignupSection {supabase} {url} />
   {/if}
 </main>
