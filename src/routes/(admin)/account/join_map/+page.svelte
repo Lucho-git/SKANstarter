@@ -1,5 +1,7 @@
 <!-- src/routes/(admin)/account/join_map/+page.svelte -->
 <script lang="ts">
+  import { goto } from "$app/navigation"
+
   import { enhance } from "$app/forms"
   import { Map, User } from "lucide-svelte"
   import { supabase } from "$lib/supabaseClient"
@@ -11,14 +13,15 @@
   let skipMapId = false
   let joinMapId = ""
   let isValidMapId = false
-  let connectedMap: { map_name: string; owner: string } | null = null
+  let connectedMap: { id: string; map_name: string; owner: string } | null =
+    null
   let isLoading = false
   let fullName = ""
 
   // Computed property for form validation
   $: isFormValid =
     fullName.trim().length > 0 && // Name must not be empty
-    (skipMapId || connectedMap) // Either skip map ID or have a connected map
+    (skipMapId || connectedMap || data.connected_map) // Either skip map ID or have a connected map
 
   async function checkMapIdValidity() {
     if (!joinMapId) {
@@ -38,9 +41,9 @@
   function handleEnhance() {
     return async ({ result }) => {
       if (result.type === "success") {
-        if (skipMapId) {
-          toast.success("Setup completed successfully!")
-        }
+        toast.success("Setup completed successfully!")
+        // Use goto for client-side navigation
+        goto("/account")
       } else {
         formError = result.data?.error || "Something went wrong"
         toast.error(formError)
@@ -58,13 +61,13 @@
         .from("master_maps")
         .select(
           `
-            id,
-            map_name,
-            master_user_id,
-            profiles:master_user_id (
-              full_name
-            )
-          `,
+              id,
+              map_name,
+              master_user_id,
+              profiles:master_user_id (
+                full_name
+              )
+            `,
         )
         .eq("id", joinMapId)
         .single()
@@ -87,6 +90,7 @@
 
       // Update local state to show success
       connectedMap = {
+        id: mapData.id,
         map_name: mapData.map_name,
         owner: mapData.profiles.full_name,
       }
@@ -143,10 +147,16 @@
               />
             </div>
 
+            <input
+              type="hidden"
+              name="map_id"
+              value={data.connected_map?.id || connectedMap?.id}
+            />
+
             <button
               type="submit"
               class="btn btn-primary w-full"
-              disabled={!isFormValid}
+              disabled={!fullName.trim()}
             >
               Continue
             </button>
