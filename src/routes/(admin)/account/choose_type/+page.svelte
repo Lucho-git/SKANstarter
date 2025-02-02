@@ -6,14 +6,31 @@
     Users,
     MapPin,
     ClipboardCheck,
-    Settings,
     UserPlus,
     Navigation,
-    Users2,
   } from "lucide-svelte"
 
   let selectedRole: "manager" | "operator" | null = null
   let formError: string | null = null
+  export let data
+
+  console.log("role data", data)
+  const colorScheme = [
+    {
+      color: "bg-gradient-to-br from-info/10 to-info/20",
+      borderColor: "border-info/30",
+      iconColor: "text-info",
+      cardStyle:
+        "after:absolute after:inset-0 after:bg-info/5 after:opacity-40 after:rounded-box hover:after:opacity-60 after:transition-opacity",
+    },
+    {
+      color: "bg-gradient-to-br from-warning/10 to-warning/20",
+      borderColor: "border-warning/30",
+      iconColor: "text-warning",
+      cardStyle:
+        "after:absolute after:inset-0 after:bg-warning/5 after:opacity-40 after:rounded-box hover:after:opacity-60 after:transition-opacity",
+    },
+  ]
 
   const roles = [
     {
@@ -21,9 +38,7 @@
       title: "Farm Manager",
       Icon: Users,
       description: "Create and oversee farm operations",
-      color: "bg-success/10",
-      borderColor: "border-success/20",
-      iconColor: "text-success",
+      ...colorScheme[0],
       features: [
         { text: "Manage Maps", icon: MapPin },
         { text: "Team Control", icon: UserPlus },
@@ -34,9 +49,7 @@
       title: "Field Operator",
       Icon: Tractor,
       description: "Execute field operations",
-      color: "bg-primary/10",
-      borderColor: "border-primary/20",
-      iconColor: "text-primary",
+      ...colorScheme[1],
       features: [
         { text: "View Tasks", icon: ClipboardCheck },
         { text: "Track Progress", icon: Navigation },
@@ -62,25 +75,27 @@
           class="h-6 w-6 shrink-0 stroke-current"
           fill="none"
           viewBox="0 0 24 24"
-          ><path
+        >
+          <path
             stroke-linecap="round"
             stroke-linejoin="round"
             stroke-width="2"
             d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-          /></svg
-        >
+          />
+        </svg>
         <span>{formError}</span>
       </div>
     {/if}
 
     <form
       method="POST"
-      use:enhance={({ data }) => {
-        if (data?.error) {
-          formError = data.error
-        }
-        return async () => {
-          formError = null
+      use:enhance={({ form, data, action, cancel }) => {
+        return async ({ result }) => {
+          if (result.type === "failure") {
+            formError = result.data?.error || "Something went wrong"
+          } else if (result.data?.redirect) {
+            window.location.href = result.data.redirect
+          }
         }
       }}
     >
@@ -108,15 +123,20 @@
 
             <!-- Card -->
             <div
-              class="card cursor-pointer border-2 bg-base-100 shadow-xl transition-transform hover:scale-105
-                {role.color} {role.borderColor} 
-                {selectedRole === role.id
-                ? 'ring-4 ring-primary ring-offset-4'
-                : ''}"
+              class="card relative cursor-pointer overflow-hidden border-2 bg-base-100 shadow-xl transition-all hover:scale-105
+                  {role.color} {role.borderColor} {role.cardStyle}
+                  {selectedRole === role.id ? 'ring-0 ring-offset-4' : ''}"
             >
-              <div class="card-body items-center p-8 text-center">
-                <!-- Large Icon -->
-                <div class={`${role.iconColor} mb-6`}>
+              <div class="card-body relative z-10 items-center p-8 text-center">
+                <!-- Large Icon with Glow -->
+                <div class={`${role.iconColor} relative mb-6`}>
+                  <div class="absolute inset-0 scale-150 opacity-30 blur-xl">
+                    <svelte:component
+                      this={role.Icon}
+                      size={80}
+                      strokeWidth={1.5}
+                    />
+                  </div>
                   <svelte:component
                     this={role.Icon}
                     size={80}
@@ -169,7 +189,7 @@
         {/each}
       </div>
 
-      <!-- Submit Button -->
+      <!-- Submit Button and Disclaimer -->
       <div class="mt-12 text-center">
         <button
           type="submit"

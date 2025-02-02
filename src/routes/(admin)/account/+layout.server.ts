@@ -1,10 +1,12 @@
+// routes/(admin)/account/+layout.server.ts
 import { redirect } from "@sveltejs/kit"
 import type { LayoutServerLoad } from "./$types"
 
 export const load: LayoutServerLoad = async ({
-    locals: { supabase, getSession },
+    locals: { supabase, getSession }, cookies
 }) => {
     const session = await getSession()
+
 
     // Log server-side auth state
     console.log('Server Auth State:', {
@@ -28,6 +30,29 @@ export const load: LayoutServerLoad = async ({
 
     const userId = session.user.id
 
+
+    // Check for pending map cookie and join it if exists
+    const pendingMapId = cookies.get('pending_map_id')
+    if (pendingMapId) {
+        // Consume the cookie immediately
+        cookies.delete('pending_map_id', { path: '/' })
+
+        // Update the profile with the new map_id
+        const { error } = await supabase
+            .from('profiles')
+            .update({ master_map_id: pendingMapId })
+            .eq('id', userId)
+
+        if (!error) {
+            // Redirect to refresh the page with new map connection
+            throw redirect(303, '/account')
+        }
+    }
+
+
+
+
+
     // Rest of your existing code without additional logging
     const [profileResult, subscriptionResult] = await Promise.all([
         supabase
@@ -46,7 +71,15 @@ export const load: LayoutServerLoad = async ({
     const subscription = subscriptionResult.data
 
     if (!profile?.master_map_id) {
-        return { session, profile, subscription, connectedMap: null, mapActivity: null, masterSubscription: null, operations: null }
+        return {
+            session,
+            profile,
+            subscription,
+            connected_map: null,  // changed from connectedMap
+            map_activity: null,   // changed from mapActivity
+            master_subscription: null, // changed from masterSubscription
+            operations: null
+        }
     }
 
     const [masterMapResult, mapActivityResult, operationsResult] = await Promise.all([
@@ -79,20 +112,20 @@ export const load: LayoutServerLoad = async ({
         session,
         profile,
         subscription: subscription || null,
-        connectedMap: {
+        connected_map: {  // changed from connectedMap
             id: masterMap.id,
             map_name: masterMap.map_name,
             master_user_id: masterMap.master_user_id,
             owner: ownerProfileResult.data?.full_name || 'Unknown',
             is_owner: userId === masterMap.master_user_id
         },
-        mapActivity: {
+        map_activity: {   // changed from mapActivity
             marker_count: markerCount.count || 0,
             trail_count: trailCount.count || 0,
             connected_profiles: connectedProfiles.data || [],
             vehicle_states: vehicleStatesResult.data || []
         },
-        masterSubscription: masterSubscriptionResult.data || null,
+        master_subscription: masterSubscriptionResult.data || null,  // changed from masterSubscription
         operations: operations || null
     }
 }

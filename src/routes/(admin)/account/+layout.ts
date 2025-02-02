@@ -23,35 +23,41 @@ export const load = async ({ fetch, data, url }) => {
     const { data: { session } } = await supabase.auth.getSession()
     const { profile, subscription, connected_map, map_activity, master_subscription, operations } = data
 
-    // Onboarding flow
     const onboarding = {
         choose_type: '/account/choose_type',
-        create_profile: (type: 'farmer' | 'operator') => `/account/create_profile/${type}`,
         join_map: '/account/join_map',
-        survey: '/account/survey',
+        create_map: '/account/create_map',
         select_plan: '/account/select_plan'
     }
 
-    if (!profile) throw redirect(303, onboarding.choose_type)
-    if (!profile.user_type && url.pathname !== onboarding.choose_type) throw redirect(303, onboarding.choose_type)
-    if (profile.user_type && !profile.full_name && !url.pathname.startsWith('/account/create_profile')) {
-        throw redirect(303, onboarding.create_profile(profile.user_type))
-    }
-    if (profile.user_type === 'farmer' && !profile.survey_completed && url.pathname !== onboarding.survey) {
-        throw redirect(303, onboarding.survey)
-    }
-    if (profile.user_type === 'operator' && !profile.master_map_id && url.pathname !== onboarding.join_map) {
-        throw redirect(303, onboarding.join_map)
+    const isOnboardingPath = Object.values(onboarding).some(path =>
+        url.pathname === path || url.pathname.startsWith(path)
+    )
+
+    if (!isOnboardingPath) {
+        if (!profile) {
+            throw redirect(303, onboarding.choose_type)
+        }
+
+        if (!profile.role) {
+            throw redirect(303, onboarding.choose_type)
+        }
+
+        if (profile.role === 'operator' && !profile.master_map_id) {
+            throw redirect(303, onboarding.join_map)
+        }
+
+        if (profile.role === 'manager' && !connected_map) {
+            throw redirect(303, onboarding.create_map)
+        }
     }
 
-    // Initialize core stores
     profileStore.set({
         id: profile.id,
         full_name: profile.full_name,
         company_name: profile.company_name,
         website: profile.website,
-        user_type: profile.user_type,
-        survey_completed: profile.survey_completed,
+        user_type: profile.role,
         master_map_id: profile.master_map_id,
         recent_maps: profile.recent_maps,
         selected_operation_id: profile.selected_operation_id
@@ -66,7 +72,6 @@ export const load = async ({ fetch, data, url }) => {
         next_billing_date: subscription?.next_billing_date
     })
 
-    // Handle map-related stores
     if (connected_map) {
         connectedMapStore.set({
             id: connected_map.id,
@@ -91,7 +96,6 @@ export const load = async ({ fetch, data, url }) => {
         )
         selectedOperationStore.set(selectedOp || null)
     } else {
-        // Reset all map-related stores
         connectedMapStore.set({
             id: null,
             map_name: null,
