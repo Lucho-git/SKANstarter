@@ -21,21 +21,18 @@ export const getOrCreateCustomerId = async ({
         .eq("user_id", session.user.id)
         .single()
 
-    // console.log("Database query result:", { dbCustomer, error });
-
     if (error && error.code != "PGRST116") {
         console.error("Error retrieving customer ID:", error);
-        return { error: error }
+        return { error: error, customerId: null }  // Modified
     }
 
     if (dbCustomer?.stripe_customer_id) {
         console.log("Existing customer ID found:", dbCustomer.stripe_customer_id);
-        return { customerId: dbCustomer.stripe_customer_id }
+        return { error: null, customerId: dbCustomer.stripe_customer_id }  // Modified
     }
 
     console.log("No existing customer ID found. Creating new customer.");
 
-    // Fetch data needed to create customer
     const { data: profile, error: profileError } = await supabaseServiceRole
         .from("profiles")
         .select(`full_name, website, company_name`)
@@ -46,13 +43,11 @@ export const getOrCreateCustomerId = async ({
 
     if (profileError) {
         console.error("Error fetching profile:", profileError);
-        return { error: profileError }
+        return { error: profileError, customerId: null }  // Modified
     }
 
-    // Create a stripe customer
-    let customer
     try {
-        customer = await stripe.customers.create({
+        const customer = await stripe.customers.create({
             email: session.user.email,
             name: profile.full_name ?? "",
             metadata: {
@@ -62,51 +57,34 @@ export const getOrCreateCustomerId = async ({
             },
         })
         console.log("New Stripe customer created:", customer.id);
+
+        if (!customer.id) {
+            console.error("Unknown stripe user creation error");
+            return { error: "Unknown stripe user creation error", customerId: null }  // Modified
+        }
+
+        const { error: stripeCustomerError } = await supabaseServiceRole
+            .from("stripe_customers")
+            .insert({
+                user_id: session.user.id,
+                stripe_customer_id: customer.id,
+                updated_at: new Date(),
+            })
+
+        if (stripeCustomerError) {
+            console.error("Error inserting new customer ID:", stripeCustomerError);
+            return { error: stripeCustomerError, customerId: null }  // Modified
+        }
+
+        console.log("Successfully created and stored new customer ID:", customer.id);
+        console.log('Creating a new user subscription')
+
+        return { error: null, customerId: customer.id }  // Modified
+
     } catch (e) {
         console.error("Error creating Stripe customer:", e);
-        return { error: e }
+        return { error: e, customerId: null }  // Modified
     }
-
-    if (!customer.id) {
-        console.error("Unknown stripe user creation error");
-        return { error: "Unknown stripe user creation error" }
-    }
-
-    // Insert the new Stripe customer
-    const { error: stripeCustomerError } = await supabaseServiceRole
-        .from("stripe_customers")
-        .insert({
-            user_id: session.user.id,
-            stripe_customer_id: customer.id,
-            updated_at: new Date(),
-        })
-
-    if (stripeCustomerError) {
-        console.error("Error inserting new customer ID:", stripeCustomerError);
-        return { error: stripeCustomerError }
-    }
-
-    console.log("Successfully created and stored new customer ID:", customer.id);
-    console.log('Creating a new user subscription')
-    //   // Create or update the user_subscription entry
-    //   const { error: userSubscriptionError } = await supabaseServiceRole
-    //     .from("user_subscriptions")
-    //     .upsert({
-    //       user_id: session.user.id,
-    //       subscription: 'FREE',
-    //       current_seats: 1,
-    //       updated_at: new Date()
-    //     }, {
-    //       onConflict: 'user_id'
-    //     })
-
-    //   if (userSubscriptionError) {
-    //     console.error("Error upserting user subscription:", userSubscriptionError);
-    //     return { error: userSubscriptionError }
-    //   }
-
-    //   console.log("Successfully created and stored new customer ID and user subscription:", customer.id);
-    //   return { customerId: customer.id }
 }
 
 

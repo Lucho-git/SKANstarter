@@ -26,45 +26,74 @@ export const load: PageServerLoad = async ({
         console.error('Error updating onboarded status:', updateError)
     }
 
-    const { error: idError, customerId } = await getOrCreateCustomerId({
-        supabaseServiceRole,
-        session,
-    })
-    if (idError || !customerId) {
+    // Add error handling around this call
+    try {
+        const result = await getOrCreateCustomerId({
+            supabaseServiceRole,
+            session,
+        })
+
+        // Guard against undefined or malformed response
+        if (!result || typeof result !== 'object') {
+            console.error('Invalid response from getOrCreateCustomerId:', result)
+            return {
+                logMessages: ['Invalid response from customer creation'],
+                isActiveCustomer: false,
+                hasEverHadSubscription: false,
+                currentPlanId: null,
+                subscriptionData: null,
+            }
+        }
+
+        const { error: idError, customerId } = result
+
+        if (idError || !customerId) {
+            return {
+                logMessages: [`Error creating customer ID: ${idError}`],
+                isActiveCustomer: false,
+                hasEverHadSubscription: false,
+                currentPlanId: null,
+                subscriptionData: null,
+            }
+        }
+
+        const {
+            primarySubscription,
+            hasEverHadSubscription,
+            error: fetchErr,
+        } = await fetchSubscription({
+            customerId,
+        })
+
+        if (fetchErr) {
+            return {
+                logMessages: [`Error fetching subscription: ${fetchErr}`],
+                isActiveCustomer: false,
+                hasEverHadSubscription: false,
+                currentPlanId: null,
+                subscriptionData: null,
+            }
+        }
+
         return {
-            logMessages: [`Error creating customer ID: ${idError}`],
+            logMessages: [
+                `Primary Subscription: ${JSON.stringify(primarySubscription)}`,
+                `Has Ever Had Subscription: ${hasEverHadSubscription}`,
+            ],
+            isActiveCustomer: !!primarySubscription,
+            hasEverHadSubscription,
+            currentPlanId: primarySubscription?.appSubscription?.id,
+            subscriptionData: primarySubscription,
+        }
+
+    } catch (err) {
+        console.error('Error in payment_plans load function:', err)
+        return {
+            logMessages: [`Unexpected error: ${err.message}`],
             isActiveCustomer: false,
             hasEverHadSubscription: false,
             currentPlanId: null,
             subscriptionData: null,
         }
-    }
-
-    const {
-        primarySubscription,
-        hasEverHadSubscription,
-        error: fetchErr,
-    } = await fetchSubscription({
-        customerId,
-    })
-    if (fetchErr) {
-        return {
-            logMessages: [`Error fetching subscription: ${fetchErr}`],
-            isActiveCustomer: false,
-            hasEverHadSubscription: false,
-            currentPlanId: null,
-            subscriptionData: null,
-        }
-    }
-
-    return {
-        logMessages: [
-            `Primary Subscription: ${JSON.stringify(primarySubscription)}`,
-            `Has Ever Had Subscription: ${hasEverHadSubscription}`,
-        ],
-        isActiveCustomer: !!primarySubscription,
-        hasEverHadSubscription,
-        currentPlanId: primarySubscription?.appSubscription?.id,
-        subscriptionData: primarySubscription,
     }
 }
