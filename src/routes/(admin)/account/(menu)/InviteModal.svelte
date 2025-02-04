@@ -1,10 +1,19 @@
 <script>
-  import { Check, Copy, Share2, UserPlus, Phone, Mail } from "lucide-svelte"
+  import {
+    Check,
+    Copy,
+    Share2,
+    UserPlus,
+    Phone,
+    Mail,
+    Link,
+  } from "lucide-svelte"
   import { connectedMapStore } from "../../../../stores/connectedMapStore"
   import Icon from "@iconify/svelte"
   import { toast } from "svelte-sonner"
 
-  let copied = false
+  let mapIdCopied = false
+  let linkCopied = false
   let showShareModal = false
   let shareType = "" // 'email' or 'phone'
   let recipientInput = ""
@@ -12,10 +21,18 @@
   function copyMapId() {
     if ($connectedMapStore.id) {
       navigator.clipboard.writeText($connectedMapStore.id)
-      copied = true
-      setTimeout(() => (copied = false), 2000)
-      toast.success("Copied to Clipboard")
+      mapIdCopied = true
+      setTimeout(() => (mapIdCopied = false), 2000)
+      toast.success("Map ID Copied to Clipboard")
     }
+  }
+
+  function copyLink() {
+    const shareUrl = `https://www.skanfarming.com.au/login?map_id=${$connectedMapStore.id}`
+    navigator.clipboard.writeText(shareUrl)
+    linkCopied = true
+    setTimeout(() => (linkCopied = false), 2000)
+    toast.success("Link Copied to Clipboard")
   }
 
   function shareViaSMS() {
@@ -63,28 +80,64 @@
       <div class="mb-6 rounded-full bg-[#F7DB5C] p-4">
         <Icon icon="mdi:account-group" class="h-16 w-16 text-[#232322]" />
       </div>
-      <p class="vibrant-text mb-6 text-center">Share your AgSKAN ID:</p>
-      <div class="form-control mb-6 w-full max-w-xs">
-        <div class="input-group">
-          <input
-            type="text"
-            class="vibrant-input input flex-grow text-[#232322]"
-            value={$connectedMapStore.id}
-            readonly
-          />
-          <button class="vibrant-button btn btn-square" on:click={copyMapId}>
-            {#if copied}
-              <Check class="h-5 w-5" />
-            {:else}
-              <Copy class="h-5 w-5" />
-            {/if}
-          </button>
+
+      <!-- Copy Options Container -->
+      <div class="w-full max-w-xl space-y-6">
+        <!-- Map ID Section -->
+        <div class="sharing-option">
+          <h4 class="mb-2 font-semibold">Map ID</h4>
+          <div class="form-control w-full">
+            <div class="input-group">
+              <input
+                type="text"
+                class="vibrant-input input flex-grow text-[#232322]"
+                value={$connectedMapStore.id}
+                readonly
+              />
+              <button
+                class="vibrant-button btn btn-square"
+                on:click={copyMapId}
+              >
+                {#if mapIdCopied}
+                  <Check class="h-5 w-5" />
+                {:else}
+                  <Copy class="h-5 w-5" />
+                {/if}
+              </button>
+            </div>
+          </div>
+          <p class="mt-2 text-sm text-gray-600">
+            Share this ID with other users to join your map
+          </p>
+        </div>
+
+        <!-- Share Link Section -->
+        <div class="sharing-option">
+          <h4 class="mb-2 font-semibold">Share Link</h4>
+          <div class="form-control w-full">
+            <div class="input-group">
+              <input
+                type="text"
+                class="vibrant-input input flex-grow text-[#232322]"
+                value={`https://www.skanfarming.com.au/login?map_id=${$connectedMapStore.id}`}
+                readonly
+              />
+              <button class="vibrant-button btn btn-square" on:click={copyLink}>
+                {#if linkCopied}
+                  <Check class="h-5 w-5" />
+                {:else}
+                  <Link class="h-5 w-5" />
+                {/if}
+              </button>
+            </div>
+          </div>
+          <p class="mt-2 text-sm text-gray-600">
+            Share this link for direct access to your map
+          </p>
         </div>
       </div>
-      <p class="vibrant-text text-center text-sm opacity-80">
-        Other users can join the map using this ID.
-      </p>
     </div>
+
     <div class="modal-action mt-8">
       <div class="flex w-full justify-end">
         <div class="dropdown dropdown-end dropdown-top mr-2">
