@@ -1,4 +1,4 @@
-<!-- src/routes/(admin)/account/choose_type/+page.svelte -->
+<!-- src/routes/(admin)/account/select_role/+page.svelte -->
 <script lang="ts">
   import { enhance } from "$app/forms"
   import {
@@ -9,10 +9,11 @@
     UserPlus,
     Navigation,
   } from "lucide-svelte"
+  import type { PageData } from "./$types"
 
   let selectedRole: "manager" | "operator" | null = null
   let formError: string | null = null
-  export let data
+  export let data: PageData
 
   console.log("role data", data)
   const colorScheme = [

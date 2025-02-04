@@ -1,4 +1,4 @@
-// src/routes/(admin)/account/choose_type/+page.server.ts
+// src/routes/(admin)/account/select_role/+page.server.ts
 import { redirect, type Actions } from '@sveltejs/kit';
 
 export const actions = {
@@ -32,7 +32,7 @@ export const actions = {
             if (role === 'operator') {
                 return { status: 303, redirect: '/account/join_map' };
             } else if (role === 'manager') {
-                return { status: 303, redirect: '/account/create_map' };
+                return { status: 303, redirect: '/account/onboard_manager' };
             }
         } catch (error) {
             console.error('Error:', error);

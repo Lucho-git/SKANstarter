@@ -40,11 +40,11 @@
 
   function handleEnhance() {
     return async ({ result }) => {
-      if (result.type === "success") {
+      if (result.type === "redirect") {
         toast.success("Setup completed successfully!")
-        // Use goto for client-side navigation
-        goto("/account")
-      } else {
+        // Instead of using goto(), just reload the page
+        window.location.href = "/account"
+      } else if (result.type === "failure") {
         formError = result.data?.error || "Something went wrong"
         toast.error(formError)
       }

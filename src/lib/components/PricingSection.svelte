@@ -74,6 +74,8 @@
   function decrementSeats() {
     if (seats > 1) seats--
   }
+
+  console.log("Current plan", currentPlanId)
 </script>
 
 <div class="relative overflow-hidden">

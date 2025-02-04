@@ -12,6 +12,57 @@ import { connectedMapStore } from '../../../stores/connectedMapStore';
 import { mapActivityStore } from '../../../stores/mapActivityStore';
 import { operationStore, selectedOperationStore } from '$lib/stores/operationStore.js'
 
+const checkOnboardingStatus = async (profile: any, connected_map: any, subscription: any, url: URL) => {
+    const onboarding = {
+        select_role: '/account/select_role',
+        join_map: '/account/join_map',
+        onboard_manager: '/account/onboard_manager',
+        payment_plans: '/account/payment_plans',
+        user_survey: '/account/user_survey',
+        select_plan: '/account/select_plan'
+    }
+
+    const isOnboardingPath = Object.values(onboarding).some(path =>
+        url.pathname === path || url.pathname.startsWith(path)
+    )
+
+    if (!isOnboardingPath) {
+        console.log('Checking onboarding status:', {
+            hasProfile: !!profile,
+            role: profile?.role,
+            onboarded: profile?.onboarded,
+            hasConnectedMap: !!connected_map,
+            hasSubscription: !!subscription
+        })
+
+        // Add delay only for specific redirects
+        if (profile?.role === 'manager' && !profile?.onboarded && !subscription) {
+            await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+
+        if (!profile) {
+            throw redirect(303, onboarding.select_role)
+        }
+
+        if (!profile.role) {
+            throw redirect(303, onboarding.select_role)
+        }
+
+        if (!profile.onboarded) {
+            if (profile.role === 'operator') {
+                if (!connected_map) {
+                    throw redirect(303, onboarding.join_map)
+                }
+            } else if (profile.role === 'manager') {
+                if (!subscription) {
+                    throw redirect(303, onboarding.payment_plans)
+                }
+                throw redirect(303, onboarding.onboard_manager)
+            }
+        }
+    }
+}
+
 export const load = async ({ fetch, data, url }) => {
     const supabase = createSupabaseLoadClient({
         supabaseUrl: PUBLIC_SUPABASE_URL,
@@ -23,34 +74,10 @@ export const load = async ({ fetch, data, url }) => {
     const { data: { session } } = await supabase.auth.getSession()
     const { profile, subscription, connected_map, map_activity, master_subscription, operations } = data
 
-    const onboarding = {
-        choose_type: '/account/choose_type',
-        join_map: '/account/join_map',
-        create_map: '/account/create_map',
-        select_plan: '/account/select_plan'
-    }
+    console.log('Profile data', data)
 
-    const isOnboardingPath = Object.values(onboarding).some(path =>
-        url.pathname === path || url.pathname.startsWith(path)
-    )
-
-    if (!isOnboardingPath) {
-        if (!profile) {
-            throw redirect(303, onboarding.choose_type)
-        }
-
-        if (!profile.role) {
-            throw redirect(303, onboarding.choose_type)
-        }
-
-        if (profile.role === 'operator' && !profile.master_map_id) {
-            throw redirect(303, onboarding.join_map)
-        }
-
-        if (profile.role === 'manager' && !connected_map) {
-            throw redirect(303, onboarding.create_map)
-        }
-    }
+    // Use the async check function
+    await checkOnboardingStatus(profile, connected_map, subscription, url)
 
     profileStore.set({
         id: profile.id,

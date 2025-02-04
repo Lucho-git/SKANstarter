@@ -116,51 +116,57 @@ export const fetchSubscription = async ({
     customerId: string
 }) => {
     // Fetch user's subscriptions
-    let stripeSubscriptions
     try {
-        stripeSubscriptions = await stripe.subscriptions.list({
+        const stripeSubscriptions = await stripe.subscriptions.list({
             customer: customerId,
             limit: 100,
             status: "all",
         })
-    } catch (e) {
-        return { error: e }
-    }
 
-    // find "primary". The user may have several old ones, we want an active one (including trials, and past_due in grace period).
-    const primaryStripeSubscription = stripeSubscriptions.data.find((x) => {
-        return (
-            x.status === "active" ||
-            x.status === "trialing" ||
-            x.status === "past_due"
-        )
-    })
-    let appSubscription = null
-    if (primaryStripeSubscription) {
-        const productId =
-            primaryStripeSubscription?.items?.data?.[0]?.price.product ?? ""
-        appSubscription = pricingPlans.find((x) => {
-            return x.stripe_product_id === productId
+        // find "primary" subscription
+        const primaryStripeSubscription = stripeSubscriptions.data.find((x) => {
+            return (
+                x.status === "active" ||
+                x.status === "trialing" ||
+                x.status === "past_due"
+            )
         })
-        if (!appSubscription) {
-            return {
-                error:
-                    "Stripe subscription does not have matching app subscription in pricing_plans.ts (via product id match)",
+
+        let appSubscription = null
+        if (primaryStripeSubscription) {
+            const productId =
+                primaryStripeSubscription?.items?.data?.[0]?.price.product ?? ""
+            appSubscription = pricingPlans.find((x) => {
+                return x.stripe_product_id === productId
+            })
+
+            if (!appSubscription) {
+                return {
+                    error: "No matching app subscription found",
+                    primarySubscription: null,
+                    hasEverHadSubscription: stripeSubscriptions.data.length > 0
+                }
             }
         }
-    }
-    let primarySubscription = null
-    if (primaryStripeSubscription && appSubscription) {
-        primarySubscription = {
-            stripeSubscription: primaryStripeSubscription,
-            appSubscription: appSubscription,
+
+        const primarySubscription = primaryStripeSubscription && appSubscription
+            ? {
+                stripeSubscription: primaryStripeSubscription,
+                appSubscription: appSubscription,
+            }
+            : null
+
+        return {
+            primarySubscription,
+            hasEverHadSubscription: stripeSubscriptions.data.length > 0,
         }
-    }
 
-    const hasEverHadSubscription = stripeSubscriptions.data.length > 0
-
-    return {
-        primarySubscription,
-        hasEverHadSubscription,
+    } catch (e) {
+        console.error("Error fetching subscription:", e)
+        return {
+            error: e,
+            primarySubscription: null,
+            hasEverHadSubscription: false
+        }
     }
 }

@@ -1,37 +1,17 @@
+<!-- Parent component -->
 <script lang="ts">
   import FeatheryForm from "../../../../components/FeatheryForm.svelte"
   import { goto } from "$app/navigation"
-  import { enhance } from "$app/forms"
 
-  let surveyCompleted = false
+  export let data
   let loading = false
 
-  const handleSurveyCompletion = async () => {
-    surveyCompleted = true
+  async function handleSkipSurvey() {
     loading = true
-
     try {
-      await updateSurveyStatus(true)
-      // Reload the page to refresh the profile data
-      window.location.reload()
+      await goto("/account/payment_plans")
     } catch (error) {
-      console.error("Error updating survey status:", error)
-      // Handle the error, display a message, or take appropriate action
-    } finally {
-      loading = false
-    }
-  }
-
-  const handleSkipSurvey = async () => {
-    loading = true
-
-    try {
-      await updateSurveyStatus(true)
-      // Reload the page to refresh the profile data
-      window.location.reload()
-    } catch (error) {
-      console.error("Error updating survey status:", error)
-      // Handle the error, display a message, or take appropriate action
+      console.error("Error navigating:", error)
     } finally {
       loading = false
     }
@@ -48,31 +28,17 @@
   <div class="flex w-full flex-col px-6">
     <div>
       <h1 class="mb-6 text-2xl font-bold">User Survey</h1>
-      {#if !surveyCompleted}
-        <form
-          id="surveyForm"
-          method="POST"
-          action="/account/api?/updateProfile"
-          use:enhance={() => {
-            return async ({ result }) => {
-              loading = false
-              if (result.type === "success") {
-                window.location.reload()
-              }
-            }
-          }}
+      <div class="form-container">
+        <FeatheryForm />
+        <button
+          type="button"
+          class="btn btn-secondary mt-4"
+          on:click={handleSkipSurvey}
+          disabled={loading}
         >
-          <input type="hidden" name="surveyCompleted" value="true" />
-          <FeatheryForm on:complete={handleSurveyCompletion} />
-          <button
-            type="submit"
-            class="btn btn-secondary mt-4"
-            on:click={handleSkipSurvey}
-          >
-            Skip Survey
-          </button>
-        </form>
-      {/if}
+          {loading ? "Processing..." : "Skip Survey"}
+        </button>
+      </div>
     </div>
   </div>
 </div>

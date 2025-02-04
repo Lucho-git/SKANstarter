@@ -4,6 +4,7 @@
   import { page } from "$app/stores"
   import { supabase } from "$lib/supabaseClient"
   import { createEventDispatcher } from "svelte"
+  import { goto } from "$app/navigation"
 
   const dispatch = createEventDispatcher()
 
@@ -11,7 +12,6 @@
   const formName = "AgSkan SurveyReal"
 
   let isFormCompleted = false
-  let responseData = null
   let userId
 
   onMount(async () => {
@@ -27,7 +27,6 @@
     script.onload = () => {
       Feathery.init(formId)
 
-      // Update the Feathery user ID to match the Supabase user ID
       if (userId) {
         Feathery.updateUserId(userId)
       }
@@ -37,49 +36,51 @@
         initialLoader: {
           show: true,
           loader: `
-              <div class="flex flex-col items-center space-y-4">
-                <div class="border-t-4 border-primary animate-spin rounded-full w-12 h-12 mb-4"></div>
-                <p class="text-lg text-primary-content">Loading form...</p>
-              </div>
-            `,
+                  <div class="flex flex-col items-center space-y-4">
+                    <div class="border-t-4 border-primary animate-spin rounded-full w-12 h-12 mb-4"></div>
+                    <p class="text-lg text-primary-content">Loading form...</p>
+                  </div>
+                `,
           initialContainerHeight: "600px",
           initialContainerWidth: "100%",
         },
         onFormComplete: async (response) => {
           isFormCompleted = true
-          responseData = {
-            id: response.userId,
-          }
-          for (const fieldKey in response.fields) {
-            if (response.fields.hasOwnProperty(fieldKey)) {
-              const field = response.fields[fieldKey]
-              const columnName = fieldKey.replace(/[#\s]/g, "_").toLowerCase()
-              const fieldValue = Array.isArray(field.value)
-                ? field.value.join(", ")
-                : field.value
 
-              if (fieldValue !== undefined) {
-                responseData[columnName] = fieldValue
-              }
+          const processedFields = {}
+          for (const [key, field] of Object.entries(response.fields)) {
+            if (!key.startsWith("feathery.")) {
+              processedFields[key] = field.value || null
             }
           }
 
           try {
-            const { data, error } = await supabase
-              .from("survey_response")
-              .upsert(responseData, { onConflict: "id" })
+            const { error } = await supabase.from("user_survey").upsert(
+              {
+                user_id: userId,
+                response: {
+                  answers: processedFields,
+                  form_id: formId,
+                  form_name: formName,
+                  submitted_at: new Date().toISOString(),
+                },
+              },
+              {
+                onConflict: "user_id",
+              },
+            )
 
             if (error) {
-              console.error("Error inserting survey response:", error)
+              console.error("Error storing survey response:", error)
             } else {
-              console.log("Survey response inserted successfully:", data)
+              console.log("Survey response stored successfully")
+              dispatch("complete")
+              // Redirect to payment plans after successful storage
+              goto("/account/payment_plans")
             }
           } catch (error) {
-            console.error("Error inserting survey response:", error)
+            console.error("Error storing survey response:", error)
           }
-
-          dispatch("complete")
-          console.log(responseData)
         },
       })
     }
@@ -93,26 +94,7 @@
 
 <!-- Main form component -->
 <div
-  class="max-w-2xl mx-auto p-4 bg-green-200 rounded-lg shadow-md overflow-auto"
+  class="mx-auto max-w-2xl overflow-auto rounded-lg bg-green-200 p-4 shadow-md"
 >
-  {#if isFormCompleted}
-    <div class="text-center">
-      <h2 class="text-2xl font-bold mb-4">Form Completed!</h2>
-      {#if userId}
-        <p class="text-lg">
-          Thank you {$page.data.session?.user.user_metadata.name}
-        </p>
-      {:else}
-        <p class="text-lg">Thank you for submitting the form!</p>
-      {/if}
-      <button
-        class="btn btn-primary mt-6"
-        on:click={() => (location.href = "/account")}
-      >
-        Dashboard
-      </button>
-    </div>
-  {:else}
-    <div id="container_{formId}" class="min-h-[90vh] overflow-auto"></div>
-  {/if}
+  <div id="container_{formId}" class="min-h-[90vh] overflow-auto"></div>
 </div>
