@@ -10,6 +10,7 @@ export const load: PageServerLoad = async ({
 }) => {
     const session = await getSession()
     if (!session) {
+        console.log('No sesion found redirecting')
         throw redirect(303, "/login")
     }
 
