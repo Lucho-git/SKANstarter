@@ -5,6 +5,9 @@
   import { toast } from "svelte-sonner"
 
   let copied = false
+  let showShareModal = false
+  let shareType = "" // 'email' or 'phone'
+  let recipientInput = ""
 
   function copyMapId() {
     if ($connectedMapStore.id) {
@@ -15,8 +18,32 @@
     }
   }
 
-  function comingSoon() {
-    toast.info("Coming soon")
+  function shareViaSMS() {
+    const shareUrl = `https://www.skanfarming.com.au/login?map_id=${$connectedMapStore.id}`
+    const messageText = `Join my SKAN farming map using this link: ${shareUrl}`
+    const encodedMessage = encodeURIComponent(messageText)
+    window.location.href = `sms:?&body=${encodedMessage}`
+    showShareModal = false
+  }
+
+  function shareViaEmail() {
+    const shareUrl = `https://www.skanfarming.com.au/login?map_id=${$connectedMapStore.id}`
+    const emailSubject = "Join my SKAN farming map"
+    const messageText = `Join my SKAN farming map using this link: ${shareUrl}`
+    const encodedSubject = encodeURIComponent(emailSubject)
+    const encodedBody = encodeURIComponent(messageText)
+    window.location.href = `mailto:?subject=${encodedSubject}&body=${encodedBody}`
+    showShareModal = false
+  }
+
+  function openShareModal(type) {
+    shareType = type
+    showShareModal = true
+    recipientInput = ""
+  }
+
+  function handleAgSKANSend() {
+    toast.info("This feature is coming soon!")
   }
 </script>
 
@@ -25,7 +52,7 @@
   <Icon icon="mdi:plus" width="24" height="24" />
 </label>
 
-<!-- Invite Modal -->
+<!-- Main Invite Modal -->
 <input type="checkbox" id="invite-modal" class="modal-toggle" />
 <div class="modal">
   <div class="vibrant-theme modal-box p-8">
@@ -67,13 +94,17 @@
           </label>
           <ul
             tabindex="0"
-            class="menu dropdown-content rounded-box w-52 bg-base-100 p-2 shadow"
+            class="menu dropdown-content w-52 rounded-box bg-base-100 p-2 shadow"
           >
             <li>
-              <a on:click={comingSoon}><Phone class="h-5 w-5" /> Via Phone</a>
+              <a on:click={() => openShareModal("phone")}
+                ><Phone class="h-5 w-5" /> Via Phone</a
+              >
             </li>
             <li>
-              <a on:click={comingSoon}><Mail class="h-5 w-5" /> Via Email</a>
+              <a on:click={() => openShareModal("email")}
+                ><Mail class="h-5 w-5" /> Via Email</a
+              >
             </li>
           </ul>
         </div>
@@ -90,6 +121,87 @@
     </div>
   </div>
 </div>
+
+<!-- Share Method Selection Modal -->
+{#if showShareModal}
+  <div class="modal modal-open">
+    <div class="vibrant-theme modal-box p-8">
+      <h3 class="vibrant-text mb-6 text-center text-xl font-bold">
+        Share via {shareType === "phone" ? "Phone" : "Email"}
+      </h3>
+
+      <div class="flex flex-col space-y-8">
+        <!-- You Send Option -->
+        <div class="sharing-option">
+          <h4 class="mb-4 text-lg font-semibold">Share Directly</h4>
+          <div class="flex flex-col space-y-2">
+            <button
+              class="vibrant-button btn w-full"
+              on:click={shareType === "phone" ? shareViaSMS : shareViaEmail}
+            >
+              Share via Your {shareType === "phone" ? "Phone" : "Email"}
+            </button>
+            <p class="text-center text-sm text-gray-600">
+              Opens your default {shareType === "phone" ? "messaging" : "email"}
+              app
+            </p>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="divider text-gray-400">OR</div>
+
+        <!-- AgSKAN Sends Option -->
+        <div class="sharing-option">
+          <h4 class="mb-4 text-lg font-semibold">Let AgSKAN Share</h4>
+          <div class="flex flex-col space-y-2">
+            <div
+              class="form-control tooltip tooltip-info w-full"
+              data-tip="Coming soon!"
+            >
+              {#if shareType === "email"}
+                <input
+                  type="email"
+                  placeholder="Enter email address"
+                  class="vibrant-input input w-full"
+                  bind:value={recipientInput}
+                  disabled
+                />
+              {:else}
+                <input
+                  type="tel"
+                  placeholder="Enter phone number"
+                  class="vibrant-input input w-full"
+                  bind:value={recipientInput}
+                  disabled
+                />
+              {/if}
+            </div>
+            <button
+              class="vibrant-button-outlined btn w-full"
+              on:click={handleAgSKANSend}
+              disabled
+            >
+              Send via AgSKAN
+            </button>
+            <p class="text-center text-sm text-gray-600">
+              We'll send it directly to the recipient
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-action mt-8">
+        <button
+          class="vibrant-button-outlined btn"
+          on:click={() => (showShareModal = false)}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}
 
 <style>
   @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
@@ -122,11 +234,34 @@
     background: #63a375;
     color: #fefbf6;
   }
+  .vibrant-button:disabled {
+    background: #a3c2b0;
+    cursor: not-allowed;
+  }
   .vibrant-input {
     border: 2px solid #f7db5c;
     background: #fefbf6;
   }
+  .vibrant-input:disabled {
+    background: #f0f0f0;
+    cursor: not-allowed;
+  }
   .icon {
     color: #63a375;
+  }
+  .sharing-option {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+  .divider {
+    margin: 1rem 0;
+    text-align: center;
+    font-weight: 500;
+  }
+  .divider::before,
+  .divider::after {
+    background-color: #e5e7eb;
   }
 </style>
