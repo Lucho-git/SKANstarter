@@ -17,7 +17,7 @@ export const load: LayoutServerLoad = async ({
             httpOnly: true,
             secure: true,
             sameSite: 'strict',
-            maxAge: 60 * 60 * 24 // 24 hours
+            maxAge: 60 * 60 * 24 * 400 // 24 hours
         })
     }
 
