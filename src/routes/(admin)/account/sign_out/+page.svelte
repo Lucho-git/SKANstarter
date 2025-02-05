@@ -1,154 +1,210 @@
 <script lang="ts">
-  import { goto } from "$app/navigation"
+  import { invalidateAll } from "$app/navigation"
+  import { supabase } from "$lib/supabaseClient"
   import { onMount } from "svelte"
-  import { toast } from "svelte-sonner"
-  import { invalidate } from "$app/navigation"
+  import { fade } from "svelte/transition"
 
-  export let data
-  let { supabase } = data
-  let message = "Signing out..."
+  let message = "Preparing to sign out..."
+  let subMessage = "Initializing..."
+  let progress = 0
   let isSigningOut = false
-  const REDIRECT_DELAY = 3000 // 3 seconds delay
+  const REDIRECT_DELAY = 3000
 
-  const logAuthState = async (stage: string) => {
-    try {
-      const { data: session } = await supabase.auth.getSession()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      console.group(`Auth State - ${stage}`)
-      console.log("Session:", {
-        sessionId: session?.session?.id,
-        accessToken: session?.session?.access_token?.substring(0, 20) + "...",
-        refreshToken: session?.session?.refresh_token?.substring(0, 20) + "...",
-        expiresAt: session?.session?.expires_at,
-        userId: session?.session?.user?.id,
-      })
-      console.log("User:", {
-        id: user?.id,
-        email: user?.email,
-        lastSignInAt: user?.last_sign_in_at,
-      })
-      console.groupEnd()
-      return session
-    } catch (error) {
-      console.error(`Error logging auth state at ${stage}:`, error)
-      return null
-    }
+  const updateStatus = (
+    mainMsg: string,
+    subMsg: string,
+    progressValue: number,
+  ) => {
+    message = mainMsg
+    subMessage = subMsg
+    progress = progressValue
   }
 
-  const clearLocalStorage = () => {
-    console.group("Local Storage Cleanup")
-    const keysToRemove: string[] = []
+  const clearBrowserStorage = () => {
+    console.group("Storage Cleanup")
+    let clearedItems = 0
+    let totalItems = 0
 
     try {
-      // Log all existing keys first
-      console.log("Existing localStorage keys:", Object.keys(localStorage))
-
-      for (const key of Object.keys(localStorage)) {
-        if (key.startsWith("sb-") || key.includes("supabase")) {
-          keysToRemove.push(key)
-          localStorage.removeItem(key)
-        }
+      // Count total items first
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key?.includes("supabase") || key?.includes("sb-")) totalItems++
       }
-      console.log("Removed storage keys:", keysToRemove)
-
-      // Clear all cookies
-      console.log("Clearing all cookies...")
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i)
+        if (key?.includes("supabase") || key?.includes("sb-")) totalItems++
+      }
       document.cookie.split(";").forEach((cookie) => {
         const name = cookie.split("=")[0].trim()
-        if (name.startsWith("sb-")) {
-          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`
+        if (name.includes("supabase") || name.includes("sb-")) totalItems++
+      })
+
+      // Clear localStorage
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key?.includes("supabase") || key?.includes("sb-")) {
+          localStorage.removeItem(key)
+          clearedItems++
+          console.log(`Cleared localStorage: ${key}`)
+        }
+      }
+
+      // Clear sessionStorage
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i)
+        if (key?.includes("supabase") || key?.includes("sb-")) {
+          sessionStorage.removeItem(key)
+          clearedItems++
+          console.log(`Cleared sessionStorage: ${key}`)
+        }
+      }
+
+      // Clear cookies
+      const domains = [
+        window.location.hostname,
+        `.${window.location.hostname}`,
+        window.location.hostname.split(".").slice(1).join("."),
+        "",
+      ]
+      const paths = ["/", ""]
+
+      document.cookie.split(";").forEach((cookie) => {
+        const name = cookie.split("=")[0].trim()
+        if (name.includes("supabase") || name.includes("sb-")) {
+          domains.forEach((domain) => {
+            paths.forEach((path) => {
+              document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}${domain ? `; domain=${domain}` : ""}`
+            })
+          })
+          clearedItems++
           console.log(`Cleared cookie: ${name}`)
         }
       })
-    } catch (error) {
-      console.error("Error clearing localStorage:", error)
-    }
-    console.groupEnd()
-  }
 
-  const delayedRedirect = (url: string) => {
-    message = "Logout complete. Redirecting in 3 seconds..."
-    console.log(`Will redirect to ${url} in ${REDIRECT_DELAY}ms`)
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        window.location.href = url
-        resolve(null)
-      }, REDIRECT_DELAY)
-    })
+      return { success: true, clearedItems, totalItems }
+    } catch (error) {
+      console.error("Error clearing storage:", error)
+      return { success: false, error }
+    } finally {
+      console.groupEnd()
+    }
   }
 
   const handleSignOut = async () => {
-    if (isSigningOut) {
-      console.log("Sign-out already in progress")
-      return
-    }
+    if (isSigningOut) return
 
     isSigningOut = true
     console.group("Sign-out Process")
     console.time("Total Sign-out Duration")
 
     try {
-      // 1. Initial state logging
-      console.log("Step 1: Checking initial state")
-      const initialSession = await logAuthState("Initial State")
+      // 1. Server-side signout
+      updateStatus("Signing out...", "Contacting server...", 20)
+      const formData = new FormData()
+      const response = await fetch("?/signout", {
+        method: "POST",
+        body: formData,
+      })
 
-      // 2. Attempt global signOut first, while we still have valid tokens
-      console.log("Step 2: Executing global sign-out")
-      const { error: signOutError } = await supabase.auth.signOut()
+      if (!response.ok) {
+        throw new Error("Server-side logout failed")
+      }
 
-      if (signOutError) {
-        console.warn("SignOut error:", signOutError)
-        if (signOutError.status !== 403) {
-          throw signOutError
+      // 2. Client-side signout
+      updateStatus("Signing out...", "Clearing authentication...", 40)
+      const { error: signOutError } = await supabase.auth.signOut({
+        scope: "global",
+      })
+
+      if (signOutError) throw signOutError
+
+      // 3. Clear browser storage
+      updateStatus("Cleaning up...", "Removing stored data...", 60)
+      const clearResult = clearBrowserStorage()
+      if (!clearResult.success) {
+        console.warn("Storage cleanup had issues")
+      }
+
+      updateStatus("Verifying...", "Making sure everything is cleared...", 80)
+
+      // 4. Verify cleanup after delay
+      setTimeout(async () => {
+        // Second cleanup pass
+        clearBrowserStorage()
+
+        // Verify session state
+        const {
+          data: { session },
+        } = await supabase.auth.getSession()
+
+        if (session) {
+          updateStatus(
+            "Additional cleanup needed...",
+            "Performing final checks...",
+            90,
+          )
+          await supabase.auth.signOut({ scope: "global" })
+          clearBrowserStorage()
+
+          updateStatus("Redirecting...", "Taking you to login...", 100)
+          setTimeout(() => {
+            window.location.href = "/login?force_logout=true"
+          }, 1000)
+        } else {
+          updateStatus("Success!", "Taking you to login...", 100)
+          setTimeout(() => {
+            window.location.href = "/login"
+          }, 1000)
         }
-      }
-
-      // 3. Now clear storage after sign-out attempt
-      console.log("Step 3: Clearing local storage")
-      clearLocalStorage()
-
-      // 4. Final session check
-      console.log("Step 4: Final session verification")
-      const finalState = await logAuthState("Post-Signout")
-
-      if (finalState?.session) {
-        console.warn("Warning: Session still persists after cleanup")
-        await delayedRedirect("/login?force_logout=true")
-      } else {
-        console.log("Success: Session cleared successfully")
-        await delayedRedirect("/login")
-      }
+      }, 1500)
     } catch (error) {
-      console.group("Sign-out Error Details")
       console.error("Sign-out failed:", error)
-      console.log("Error type:", typeof error)
-      console.log("Error message:", error.message)
-      console.log("Error stack:", error.stack)
-      console.groupEnd()
+      updateStatus(
+        "Error during sign-out",
+        "Attempting emergency cleanup...",
+        100,
+      )
 
-      // Force cleanup and redirect only after sign-out attempt
-      clearLocalStorage()
-      await delayedRedirect("/login?error=true")
+      // Recovery attempt
+      try {
+        clearBrowserStorage()
+        await supabase.auth.signOut({ scope: "global" })
+      } catch (recoveryError) {
+        console.error("Recovery attempt failed:", recoveryError)
+      }
+
+      setTimeout(() => {
+        window.location.href = "/login?error=true"
+      }, REDIRECT_DELAY)
     } finally {
       console.timeEnd("Total Sign-out Duration")
       console.groupEnd()
-      isSigningOut = false
     }
   }
+
   onMount(() => {
-    console.log("Sign-out page mounted")
     handleSignOut()
   })
 </script>
 
-<div class="flex min-h-screen items-center justify-center">
-  <div class="text-center">
-    <h1 class="m-6 text-2xl font-bold">{message}</h1>
-    {#if isSigningOut}
-      <div class="loading loading-spinner loading-lg"></div>
-    {/if}
+<div class="flex min-h-screen items-center justify-center bg-gray-50">
+  <div class="w-full max-w-md p-8 text-center">
+    <div class="rounded-lg bg-white p-8 shadow-lg" transition:fade>
+      <h1 class="mb-2 text-2xl font-bold text-gray-900">{message}</h1>
+      <p class="mb-6 text-sm text-gray-600">{subMessage}</p>
+
+      {#if isSigningOut}
+        <div class="mb-4">
+          <div class="h-2 w-full rounded-full bg-gray-200">
+            <div
+              class="h-2 rounded-full bg-blue-600 transition-all duration-500"
+              style="width: {progress}%"
+            />
+          </div>
+        </div>
+        <div class="loading loading-spinner loading-md text-blue-600" />
+      {/if}
+    </div>
   </div>
 </div>
