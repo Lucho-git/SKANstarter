@@ -3,6 +3,7 @@
   import { supabase } from "$lib/supabaseClient"
   import { invalidateAll } from "$app/navigation"
   import { page } from "$app/stores"
+  import { enhance } from "$app/forms"
 
   let sessionData: any = null
   let logoutStatus: string = ""
@@ -64,52 +65,118 @@
       loading = true
       error = ""
 
-      // Use Supabase client directly to sign out
+      // First, clear all browser storage
+      const clearBrowserStorage = () => {
+        // Clear localStorage
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i)
+          if (key?.includes("supabase") || key?.includes("sb-")) {
+            localStorage.removeItem(key)
+          }
+        }
+
+        // Clear sessionStorage
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i)
+          if (key?.includes("supabase") || key?.includes("sb-")) {
+            sessionStorage.removeItem(key)
+          }
+        }
+
+        // Clear cookies - try multiple domain variations
+        const domains = [
+          window.location.hostname,
+          `.${window.location.hostname}`,
+          window.location.hostname.split(".").slice(1).join("."),
+          "",
+        ]
+
+        const paths = ["/", ""]
+
+        document.cookie.split(";").forEach((cookie) => {
+          const name = cookie.split("=")[0].trim()
+          if (name.includes("supabase") || name.includes("sb-")) {
+            domains.forEach((domain) => {
+              paths.forEach((path) => {
+                document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}${domain ? `; domain=${domain}` : ""}`
+              })
+            })
+          }
+        })
+      }
+
+      // Call server-side logout action first
+      const formData = new FormData()
+      const response = await fetch("?/logout", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error("Server-side logout failed")
+      }
+
+      // Sign out from Supabase client
       const { error: signOutError } = await supabase.auth.signOut({
-        scope: "global", // This will clear all sessions across all tabs/windows
+        scope: "global",
       })
 
       if (signOutError) throw signOutError
 
-      // Clear all Supabase-related cookies
-      document.cookie.split(";").forEach((cookie) => {
-        const name = cookie.split("=")[0].trim()
-        if (name.includes("supabase") || name.includes("sb-")) {
-          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=${window.location.hostname}`
-        }
-      })
+      // Clear browser storage
+      clearBrowserStorage()
 
-      // Clear localStorage
-      Object.keys(localStorage).forEach((key) => {
-        if (key.includes("supabase") || key.includes("sb-")) {
-          localStorage.removeItem(key)
-        }
-      })
-
-      // Clear sessionStorage
-      Object.keys(sessionStorage).forEach((key) => {
-        if (key.includes("supabase") || key.includes("sb-")) {
-          sessionStorage.removeItem(key)
-        }
-      })
-
-      // Invalidate all page data to refresh session state
+      // Force reload all data
       await invalidateAll()
 
+      // Reset local state
       sessionData = null
       cookies = []
       logoutStatus = "Successfully logged out and cleared session"
 
-      // After 5 seconds, verify session state
+      // Log cleanup attempt
+      console.log("Initial cleanup completed")
+
+      // Verify after a delay
       setTimeout(async () => {
+        // Clear storage again to be sure
+        clearBrowserStorage()
+
         logoutStatus = "Verifying session state..."
         await findSession()
-        logoutStatus = sessionData
-          ? "WARNING: Session still exists!"
-          : "Verification complete: No active session found"
-      }, 5000)
+
+        // Check if session still exists
+        const {
+          data: { session },
+        } = await supabase.auth.getSession()
+
+        if (session || sessionData) {
+          console.log("Session still detected - attempting final cleanup")
+          // If session still exists, try one last time with a page reload
+          logoutStatus = "Session still detected - forcing page reload..."
+
+          // Final cleanup attempt
+          await supabase.auth.signOut({ scope: "global" })
+          clearBrowserStorage()
+
+          // Redirect to login page
+          window.location.href = "/login"
+        } else {
+          logoutStatus = "Verification complete: No active session found"
+          console.log("Logout successful - no session detected")
+        }
+      }, 2000)
     } catch (e) {
+      console.error("Logout error:", e)
       error = e.message || "Failed to logout"
+
+      // Attempt recovery
+      try {
+        clearBrowserStorage()
+        await supabase.auth.signOut({ scope: "global" })
+      } catch (recoveryError) {
+        console.error("Recovery attempt failed:", recoveryError)
+      }
     } finally {
       loading = false
     }
@@ -145,13 +212,27 @@
       </button>
 
       {#if sessionData}
-        <button
-          on:click={handleLogout}
-          disabled={loading}
-          class="flex w-full justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
+        <form
+          method="POST"
+          action="?/logout"
+          use:enhance={() => {
+            loading = true
+            return async ({ result }) => {
+              if (result.error) {
+                error = result.error
+              }
+              await handleLogout()
+            }
+          }}
         >
-          {loading ? "Loading..." : "Logout"}
-        </button>
+          <button
+            type="submit"
+            disabled={loading}
+            class="flex w-full justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
+          >
+            {loading ? "Loading..." : "Logout"}
+          </button>
+        </form>
       {/if}
     </div>
 

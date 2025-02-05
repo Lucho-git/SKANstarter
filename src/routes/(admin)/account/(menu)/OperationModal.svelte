@@ -22,12 +22,10 @@
   }
 
   async function handleOperationSelect(event) {
-    console.log("Selected New Operation:", event.target.value)
     const selectedId = event.target.value
     const selectedOperation = $operationStore.find((op) => op.id === selectedId)
 
     if (selectedOperation) {
-      console.log("Selected Operation:", selectedOperation)
       selectedOperationStore.set(selectedOperation)
 
       try {
@@ -53,8 +51,8 @@
         }
 
         console.log(
-          "Successfully updated selected operation in database:",
-          result.profile,
+          "Selected Operation Store after update:",
+          $selectedOperationStore,
         )
         toast.success("Successfully updated selected operation")
       } catch (error) {
