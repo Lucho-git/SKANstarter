@@ -9,7 +9,7 @@
   import { profileStore } from "../../../../stores/profileStore"
   import { onMount } from "svelte"
   import { toast } from "svelte-sonner"
-  import { invalidate } from "$app/navigation"
+  import { invalidate, invalidateAll } from "$app/navigation"
 
   onMount(() => {
     console.log("Initial Operation Store:", $operationStore)
@@ -72,10 +72,21 @@
           "7. After Store Update - New Store:",
           $selectedOperationStore,
         )
-        await Promise.all([
-          invalidate("/(admin)/account"),
-          invalidate("data:profile"), // Add a custom dependency key
-        ])
+
+        invalidateAll((url) => {
+          return url.pathname.startsWith("/(admin)/account")
+            ? {
+                data: (existing) => ({
+                  ...existing,
+                  profile: {
+                    ...existing.profile,
+                    selected_operation_id: selectedId,
+                  },
+                  operations: $operationStore,
+                }),
+              }
+            : undefined
+        })
 
         toast.success("Successfully updated selected operation")
       } catch (error) {

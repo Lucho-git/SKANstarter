@@ -3,10 +3,8 @@ import { redirect } from "@sveltejs/kit"
 import type { LayoutServerLoad } from "./$types"
 
 export const load: LayoutServerLoad = async ({
-    locals: { supabase, getSession }, cookies, depends
+    locals: { supabase, getSession }, cookies
 }) => {
-
-    depends('data:profile')
     console.log('1. Layout Server Load Starting')
     const session = await getSession()
 
