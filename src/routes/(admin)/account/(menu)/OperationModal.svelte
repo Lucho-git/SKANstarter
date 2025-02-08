@@ -73,20 +73,20 @@
           $selectedOperationStore,
         )
 
-        invalidateAll((url) => {
-          return url.pathname.startsWith("/(admin)/account")
-            ? {
-                data: (existing) => ({
-                  ...existing,
-                  profile: {
-                    ...existing.profile,
-                    selected_operation_id: selectedId,
-                  },
-                  operations: $operationStore,
-                }),
-              }
-            : undefined
-        })
+        // invalidateAll((url) => {
+        //   return url.pathname.startsWith("/(admin)/account")
+        //     ? {
+        //         data: (existing) => ({
+        //           ...existing,
+        //           profile: {
+        //             ...existing.profile,
+        //             selected_operation_id: selectedId,
+        //           },
+        //           operations: $operationStore,
+        //         }),
+        //       }
+        //     : undefined
+        // })
 
         toast.success("Successfully updated selected operation")
       } catch (error) {

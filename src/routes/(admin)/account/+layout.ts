@@ -1,3 +1,4 @@
+import { get } from 'svelte/store'
 import {
     PUBLIC_SUPABASE_ANON_KEY,
     PUBLIC_SUPABASE_URL,
@@ -55,10 +56,6 @@ const checkOnboardingStatus = async (profile: any, connected_map: any, subscript
 }
 
 export const load = async ({ fetch, data, url }) => {
-    console.log('1. Layout Load Starting:', {
-        url: url.pathname
-    });
-
     const supabase = createSupabaseLoadClient({
         supabaseUrl: PUBLIC_SUPABASE_URL,
         supabaseKey: PUBLIC_SUPABASE_ANON_KEY,
@@ -69,86 +66,96 @@ export const load = async ({ fetch, data, url }) => {
     const { data: { session } } = await supabase.auth.getSession()
     const { profile, subscription, connected_map, map_activity, master_subscription, operations } = data
 
-    console.log('2. Server Data:', {
-        profileSelectedOpId: profile?.selected_operation_id,
-        operationsAvailable: operations?.length > 0
-    });
-
     await checkOnboardingStatus(profile, connected_map, subscription, url)
 
-    profileStore.set({
-        id: profile.id,
-        full_name: profile.full_name,
-        company_name: profile.company_name,
-        website: profile.website,
-        user_type: profile.role,
-        master_map_id: profile.master_map_id,
-        recent_maps: profile.recent_maps,
-        selected_operation_id: profile.selected_operation_id
-    })
+    // Only set stores if they're empty
+    const currentProfile = get(profileStore)
+    if (!currentProfile?.id) {
+        profileStore.set({
+            id: profile.id,
+            full_name: profile.full_name,
+            company_name: profile.company_name,
+            website: profile.website,
+            user_type: profile.role,
+            master_map_id: profile.master_map_id,
+            recent_maps: profile.recent_maps,
+            selected_operation_id: profile.selected_operation_id
+        })
+    }
 
-    subscriptionStore.set({
-        subscription: subscription?.subscription,
-        marker_limit: subscription?.marker_limit,
-        trail_limit: subscription?.trail_limit,
-        lingering_seats: subscription?.lingering_seats,
-        current_seats: subscription?.current_seats,
-        next_billing_date: subscription?.next_billing_date
-    })
+    const currentSubscription = get(subscriptionStore)
+    if (!currentSubscription?.subscription) {
+        subscriptionStore.set({
+            subscription: subscription?.subscription,
+            marker_limit: subscription?.marker_limit,
+            trail_limit: subscription?.trail_limit,
+            lingering_seats: subscription?.lingering_seats,
+            current_seats: subscription?.current_seats,
+            next_billing_date: subscription?.next_billing_date
+        })
+    }
 
     if (connected_map) {
-        console.log('3. Setting Operation Stores:', {
-            profileSelectedOpId: profile?.selected_operation_id,
-            availableOps: operations?.map(op => ({ id: op.id, name: op.name }))
-        });
+        const currentConnectedMap = get(connectedMapStore)
+        const currentMapActivity = get(mapActivityStore)
+        const currentOperations = get(operationStore)
+        const currentSelectedOp = get(selectedOperationStore)
 
-        connectedMapStore.set({
-            id: connected_map.id,
-            map_name: connected_map.map_name,
-            master_user_id: connected_map.master_user_id,
-            owner: connected_map.owner,
-            is_owner: connected_map.is_owner,
-            masterSubscription: master_subscription,
-            is_connected: true
-        })
+        if (!currentConnectedMap?.id) {
+            connectedMapStore.set({
+                id: connected_map.id,
+                map_name: connected_map.map_name,
+                master_user_id: connected_map.master_user_id,
+                owner: connected_map.owner,
+                is_owner: connected_map.is_owner,
+                masterSubscription: master_subscription,
+                is_connected: true
+            })
+        }
 
-        mapActivityStore.set({
-            marker_count: map_activity.marker_count,
-            trail_count: map_activity.trail_count,
-            connected_profiles: map_activity.connected_profiles,
-            vehicle_states: map_activity.vehicle_states
-        })
+        if (!currentMapActivity) {
+            mapActivityStore.set({
+                marker_count: map_activity.marker_count,
+                trail_count: map_activity.trail_count,
+                connected_profiles: map_activity.connected_profiles,
+                vehicle_states: map_activity.vehicle_states
+            })
+        }
 
-        operationStore.set(operations || [])
-        const selectedOp = operations?.find(op =>
-            op.id === profile.selected_operation_id
-        )
-        selectedOperationStore.set(selectedOp || null)
+        if (!currentOperations?.length) {
+            operationStore.set(operations || [])
+        }
 
-        console.log('4. Operation Stores Set:', {
-            selectedOpId: selectedOp?.id,
-            selectedOpName: selectedOp?.name
-        });
+        if (!currentSelectedOp) {
+            const selectedOp = operations?.find(op =>
+                op.id === profile.selected_operation_id
+            )
+            selectedOperationStore.set(selectedOp || null)
+        }
     } else {
-        connectedMapStore.set({
-            id: null,
-            map_name: null,
-            master_user_id: null,
-            owner: null,
-            is_owner: false,
-            masterSubscription: null,
-            is_connected: false
-        })
+        // Only reset stores if they're not already empty
+        const currentConnectedMap = get(connectedMapStore)
+        if (currentConnectedMap?.id) {
+            connectedMapStore.set({
+                id: null,
+                map_name: null,
+                master_user_id: null,
+                owner: null,
+                is_owner: false,
+                masterSubscription: null,
+                is_connected: false
+            })
 
-        mapActivityStore.set({
-            marker_count: 0,
-            trail_count: 0,
-            connected_profiles: [],
-            vehicle_states: []
-        })
+            mapActivityStore.set({
+                marker_count: 0,
+                trail_count: 0,
+                connected_profiles: [],
+                vehicle_states: []
+            })
 
-        operationStore.set([])
-        selectedOperationStore.set(null)
+            operationStore.set([])
+            selectedOperationStore.set(null)
+        }
     }
 
     return {
