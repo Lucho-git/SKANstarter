@@ -9,6 +9,7 @@
   import { profileStore } from "../../../../stores/profileStore"
   import { onMount } from "svelte"
   import { toast } from "svelte-sonner"
+  import { invalidate } from "$app/navigation"
 
   onMount(() => {
     console.log("Initial Operation Store:", $operationStore)
@@ -23,12 +24,15 @@
 
   async function handleOperationSelect(event) {
     const selectedId = event.target.value
+    console.log("1. Select Event - Selected ID:", selectedId)
+    console.log("2. Current Operation Store:", $operationStore)
+
     const selectedOperation = $operationStore.find((op) => op.id === selectedId)
+    console.log("3. Found Selected Operation:", selectedOperation)
 
     if (selectedOperation) {
-      selectedOperationStore.set(selectedOperation)
-
       try {
+        console.log("4. Starting API Call...")
         const response = await fetch(
           "/api/profiles/update-selected-operation",
           {
@@ -44,6 +48,8 @@
         )
 
         const result = await response.json()
+        console.log("5. API Response:", result)
+
         if (!response.ok) {
           console.error("Failed to update selected operation:", result.error)
           toast.error(`Failed to update selected operation: ${result.error}`)
@@ -51,9 +57,26 @@
         }
 
         console.log(
-          "Selected Operation Store after update:",
+          "6. Before Store Update - Current Store:",
           $selectedOperationStore,
         )
+
+        // Update both the selected operation store and the profile store
+        selectedOperationStore.set(selectedOperation)
+        profileStore.update((profile) => ({
+          ...profile,
+          selected_operation_id: selectedId,
+        }))
+
+        console.log(
+          "7. After Store Update - New Store:",
+          $selectedOperationStore,
+        )
+        await Promise.all([
+          invalidate("/(admin)/account"),
+          invalidate("data:profile"), // Add a custom dependency key
+        ])
+
         toast.success("Successfully updated selected operation")
       } catch (error) {
         console.error("Error updating selected operation:", error)

@@ -3,57 +3,39 @@ import { redirect } from "@sveltejs/kit"
 import type { LayoutServerLoad } from "./$types"
 
 export const load: LayoutServerLoad = async ({
-    locals: { supabase, getSession }, cookies
+    locals: { supabase, getSession }, cookies, depends
 }) => {
-    const session = await getSession()
 
+    depends('data:profile')
+    console.log('1. Layout Server Load Starting')
+    const session = await getSession()
 
     // Log server-side auth state
     console.log('Server Auth State:', {
         hasSession: !!session,
-        hasAccessToken: !!session?.access_token,
-        accessToken: session?.access_token?.substring(0, 10) + '...', // First 10 chars for debugging
-        tokenExpiry: session?.expires_at,
-        hasUser: !!session?.user,
         userId: session?.user?.id,
-        userEmail: session?.user?.email,
-        authProvider: session?.user?.app_metadata?.provider,
-        lastSignIn: session?.user?.last_sign_in_at,
-        aud: session?.user?.aud, // Audience claim from JWT
-        role: session?.user?.role // User's role if any
     })
 
     if (!session) {
-        console.log('Server: No session found, redirecting to login')
         throw redirect(303, "/login")
     }
 
     const userId = session.user.id
 
-
     // Check for pending map cookie and join it if exists
     const pendingMapId = cookies.get('pending_map_id')
     if (pendingMapId) {
-        // Consume the cookie immediately
         cookies.delete('pending_map_id', { path: '/' })
-
-        // Update the profile with the new map_id
         const { error } = await supabase
             .from('profiles')
             .update({ master_map_id: pendingMapId })
             .eq('id', userId)
 
         if (!error) {
-            // Redirect to refresh the page with new map connection
             throw redirect(303, '/account')
         }
     }
 
-
-
-
-
-    // Rest of your existing code without additional logging
     const [profileResult, subscriptionResult] = await Promise.all([
         supabase
             .from("profiles")
@@ -67,6 +49,10 @@ export const load: LayoutServerLoad = async ({
             .single()
     ])
 
+    console.log('2. Profile Query Result:', {
+        selectedOperationId: profileResult.data?.selected_operation_id,
+    });
+
     const profile = profileResult.data
     const subscription = subscriptionResult.data
 
@@ -75,9 +61,9 @@ export const load: LayoutServerLoad = async ({
             session,
             profile,
             subscription,
-            connected_map: null,  // changed from connectedMap
-            map_activity: null,   // changed from mapActivity
-            master_subscription: null, // changed from masterSubscription
+            connected_map: null,
+            map_activity: null,
+            master_subscription: null,
             operations: null
         }
     }
@@ -91,6 +77,10 @@ export const load: LayoutServerLoad = async ({
         ]),
         supabase.from("operations").select("*").eq("master_map_id", profile.master_map_id)
     ])
+
+    console.log('3. Operations Query Result:', {
+        operations: operationsResult.data?.map(op => ({ id: op.id, name: op.name })),
+    });
 
     const masterMap = masterMapResult.data
     const [markerCount, trailCount, connectedProfiles] = mapActivityResult
@@ -108,24 +98,29 @@ export const load: LayoutServerLoad = async ({
             .in("vehicle_id", connectedProfiles.data?.map(profile => profile.id) || [])
     ])
 
+    console.log('4. Final Data:', {
+        profileSelectedOpId: profile?.selected_operation_id,
+        availableOpIds: operations?.map(op => op.id),
+    });
+
     return {
         session,
         profile,
         subscription: subscription || null,
-        connected_map: {  // changed from connectedMap
+        connected_map: {
             id: masterMap.id,
             map_name: masterMap.map_name,
             master_user_id: masterMap.master_user_id,
             owner: ownerProfileResult.data?.full_name || 'Unknown',
             is_owner: userId === masterMap.master_user_id
         },
-        map_activity: {   // changed from mapActivity
+        map_activity: {
             marker_count: markerCount.count || 0,
             trail_count: trailCount.count || 0,
             connected_profiles: connectedProfiles.data || [],
             vehicle_states: vehicleStatesResult.data || []
         },
-        master_subscription: masterSubscriptionResult.data || null,  // changed from masterSubscription
+        master_subscription: masterSubscriptionResult.data || null,
         operations: operations || null
     }
 }

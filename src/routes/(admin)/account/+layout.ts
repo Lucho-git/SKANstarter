@@ -27,15 +27,6 @@ const checkOnboardingStatus = async (profile: any, connected_map: any, subscript
     )
 
     if (!isOnboardingPath) {
-        console.log('Checking onboarding status:', {
-            hasProfile: !!profile,
-            role: profile?.role,
-            onboarded: profile?.onboarded,
-            hasConnectedMap: !!connected_map,
-            hasSubscription: !!subscription
-        })
-
-        // Add delay only for specific redirects
         if (profile?.role === 'manager' && !profile?.onboarded && !subscription) {
             await new Promise(resolve => setTimeout(resolve, 1000))
         }
@@ -64,6 +55,10 @@ const checkOnboardingStatus = async (profile: any, connected_map: any, subscript
 }
 
 export const load = async ({ fetch, data, url }) => {
+    console.log('1. Layout Load Starting:', {
+        url: url.pathname
+    });
+
     const supabase = createSupabaseLoadClient({
         supabaseUrl: PUBLIC_SUPABASE_URL,
         supabaseKey: PUBLIC_SUPABASE_ANON_KEY,
@@ -74,9 +69,11 @@ export const load = async ({ fetch, data, url }) => {
     const { data: { session } } = await supabase.auth.getSession()
     const { profile, subscription, connected_map, map_activity, master_subscription, operations } = data
 
-    console.log('Profile data', data)
+    console.log('2. Server Data:', {
+        profileSelectedOpId: profile?.selected_operation_id,
+        operationsAvailable: operations?.length > 0
+    });
 
-    // Use the async check function
     await checkOnboardingStatus(profile, connected_map, subscription, url)
 
     profileStore.set({
@@ -100,6 +97,11 @@ export const load = async ({ fetch, data, url }) => {
     })
 
     if (connected_map) {
+        console.log('3. Setting Operation Stores:', {
+            profileSelectedOpId: profile?.selected_operation_id,
+            availableOps: operations?.map(op => ({ id: op.id, name: op.name }))
+        });
+
         connectedMapStore.set({
             id: connected_map.id,
             map_name: connected_map.map_name,
@@ -122,6 +124,11 @@ export const load = async ({ fetch, data, url }) => {
             op.id === profile.selected_operation_id
         )
         selectedOperationStore.set(selectedOp || null)
+
+        console.log('4. Operation Stores Set:', {
+            selectedOpId: selectedOp?.id,
+            selectedOpName: selectedOp?.name
+        });
     } else {
         connectedMapStore.set({
             id: null,
