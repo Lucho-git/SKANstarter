@@ -29,6 +29,7 @@
     deletePins,
     type MapMarker,
   } from "$lib/utils/pinsFromMapId"
+  import IconSVG from "../../../../components/IconSVG.svelte"
 
   export let mapMarkers: number
   export let isPaidSubscription: boolean
@@ -41,6 +42,31 @@
   let searchQuery = ""
   let sortDirection: "asc" | "desc" = "desc"
   let selectedPins = new Set<number>()
+
+  // Pagination variables
+  let itemsPerPage = 40
+  let currentPage = 1
+
+  function getMarkerIcon(iconName: string) {
+    const cleanIconName = iconName.replace("custom-svg-", "")
+
+    if (iconName.startsWith("custom-svg-")) {
+      return {
+        type: "svg",
+        name: cleanIconName,
+      }
+    } else if (iconName.startsWith("ionic-")) {
+      return {
+        type: "ionic",
+        name: iconName.replace("ionic-", ""),
+      }
+    } else {
+      return {
+        type: "default",
+        name: "📍",
+      }
+    }
+  }
 
   async function loadPins() {
     loading = true
@@ -90,9 +116,28 @@
       return sortDirection === "asc" ? dateA - dateB : dateB - dateA
     })
 
+  $: paginatedMarkers = filteredMarkers.slice(0, currentPage * itemsPerPage)
+  $: hasMorePages = filteredMarkers.length > currentPage * itemsPerPage
+
   $: isAllSelected =
     filteredMarkers.length > 0 &&
     filteredMarkers.every((marker) => selectedPins.has(marker.id))
+
+  function loadMore() {
+    if (hasMorePages) {
+      currentPage++
+    }
+  }
+
+  function handleScroll(e: Event) {
+    const target = e.target as HTMLElement
+    if (
+      target.scrollHeight - target.scrollTop <= target.clientHeight + 100 &&
+      hasMorePages
+    ) {
+      loadMore()
+    }
+  }
 
   function toggleSort() {
     sortDirection = sortDirection === "asc" ? "desc" : "asc"
@@ -213,7 +258,7 @@
         </div>
       </div>
 
-      <div class="max-h-[60vh] overflow-y-auto">
+      <div class="max-h-[60vh] overflow-y-auto" on:scroll={handleScroll}>
         <div class="space-y-2 px-4">
           {#if loading}
             {#each Array(5) as _}
@@ -235,7 +280,7 @@
               Failed to load pins. Please try again.
             </div>
           {:else}
-            {#each filteredMarkers as marker (marker.id)}
+            {#each paginatedMarkers as marker (marker.id)}
               <div
                 class="group flex cursor-pointer items-center justify-between rounded-lg bg-base-200 p-3 hover:bg-base-300"
                 on:click={() => togglePin(marker.id)}
@@ -249,7 +294,25 @@
                 tabindex="0"
               >
                 <div class="flex flex-1 items-center gap-3">
-                  <div class="text-xl">📍</div>
+                  <div
+                    class="flex h-8 w-8 items-center justify-center rounded-full bg-base-300"
+                  >
+                    {#if getMarkerIcon(marker.marker_data.properties.icon).type === "svg"}
+                      <IconSVG
+                        icon={getMarkerIcon(marker.marker_data.properties.icon)
+                          .name}
+                        size="24px"
+                      />
+                    {:else if getMarkerIcon(marker.marker_data.properties.icon).type === "ionic"}
+                      <ion-icon
+                        name={getMarkerIcon(marker.marker_data.properties.icon)
+                          .name}
+                        style="font-size: 24px;"
+                      />
+                    {:else}
+                      <span class="text-xl">📍</span>
+                    {/if}
+                  </div>
                   <div class="flex-1">
                     <h4 class="text-sm font-semibold text-base-content">
                       {marker.marker_data.properties.icon}
@@ -265,6 +328,14 @@
                 </div>
               </div>
             {/each}
+
+            {#if hasMorePages}
+              <div class="flex justify-center py-4">
+                <button class="btn btn-ghost btn-sm" on:click={loadMore}>
+                  Load More ({filteredMarkers.length - paginatedMarkers.length} remaining)
+                </button>
+              </div>
+            {/if}
           {/if}
         </div>
       </div>
