@@ -36,3 +36,12 @@ export async function getPinsFromMapId(mapId: string): Promise<PinsResponse> {
 
     return { data, error }
 }
+
+export async function deletePins(pinIds: number[]): Promise<PostgrestError | null> {
+    const { error } = await supabase
+        .from('map_markers')
+        .delete()
+        .in('id', pinIds)
+
+    return error
+}

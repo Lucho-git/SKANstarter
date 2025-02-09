@@ -24,12 +24,16 @@
     X,
   } from "lucide-svelte"
   import { DateTime } from "luxon"
-  import { getPinsFromMapId, type MapMarker } from "$lib/utils/pinsFromMapId"
+  import {
+    getPinsFromMapId,
+    deletePins,
+    type MapMarker,
+  } from "$lib/utils/pinsFromMapId"
 
   export let mapMarkers: number
   export let isPaidSubscription: boolean
   export let markerLimit: number
-  export let mapId: string // Add this prop
+  export let mapId: string
 
   let loading = true
   let error: any = null
@@ -51,6 +55,23 @@
 
     markers = data || []
     loading = false
+  }
+
+  async function handleBulkDelete() {
+    try {
+      const pinIdsToDelete = Array.from(selectedPins)
+      const error = await deletePins(pinIdsToDelete)
+
+      if (error) {
+        console.error("Error deleting pins:", error)
+        return
+      }
+
+      await loadPins()
+      clearSelection()
+    } catch (err) {
+      console.error("Error in handleBulkDelete:", err)
+    }
   }
 
   onMount(() => {
@@ -107,7 +128,6 @@
 
 <Dialog>
   <DialogTrigger>
-    <!-- Card trigger remains the same -->
     <Card
       class="group relative cursor-pointer border border-base-300 bg-gradient-to-br from-base-100 to-base-200 backdrop-blur-sm transition-all duration-200 hover:scale-[1.02] hover:bg-base-200/80 hover:shadow-lg"
     >
@@ -229,10 +249,7 @@
                 tabindex="0"
               >
                 <div class="flex flex-1 items-center gap-3">
-                  <div class="text-xl">
-                    <!-- Placeholder icon until we implement the actual icons -->
-                    📍
-                  </div>
+                  <div class="text-xl">📍</div>
                   <div class="flex-1">
                     <h4 class="text-sm font-semibold text-base-content">
                       {marker.marker_data.properties.icon}
@@ -263,6 +280,13 @@
                 {selectedPins.size} selected
               </span>
             </div>
+            <button
+              class="btn btn-error btn-sm gap-2"
+              on:click={handleBulkDelete}
+            >
+              <Trash2 class="h-4 w-4" />
+              Delete
+            </button>
           </div>
         {/if}
         <DialogClose class="btn">Close</DialogClose>
@@ -280,6 +304,13 @@
               {selectedPins.size} selected
             </span>
           </div>
+          <button
+            class="btn btn-error btn-sm gap-2"
+            on:click={handleBulkDelete}
+          >
+            <Trash2 class="h-4 w-4" />
+            Delete
+          </button>
         </div>
       {/if}
     </DialogContent>
