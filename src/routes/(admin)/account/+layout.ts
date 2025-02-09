@@ -56,6 +56,10 @@ const checkOnboardingStatus = async (profile: any, connected_map: any, subscript
 }
 
 export const load = async ({ fetch, data, url }) => {
+    console.log('1. Layout Load Starting:', {
+        url: url.pathname
+    });
+
     const supabase = createSupabaseLoadClient({
         supabaseUrl: PUBLIC_SUPABASE_URL,
         supabaseKey: PUBLIC_SUPABASE_ANON_KEY,
@@ -66,10 +70,23 @@ export const load = async ({ fetch, data, url }) => {
     const { data: { session } } = await supabase.auth.getSession()
     const { profile, subscription, connected_map, map_activity, master_subscription, operations } = data
 
+    console.log('2. Server Data:', {
+        profileSelectedOpId: profile?.selected_operation_id,
+        operationsAvailable: operations?.length > 0,
+        mapActivity: map_activity // Debug log to verify incoming data
+    });
+
     await checkOnboardingStatus(profile, connected_map, subscription, url)
 
-    // Only set stores if they're empty
+    // Get current store values
     const currentProfile = get(profileStore)
+    const currentSubscription = get(subscriptionStore)
+    const currentConnectedMap = get(connectedMapStore)
+    const currentMapActivity = get(mapActivityStore)
+    const currentOperations = get(operationStore)
+    const currentSelectedOp = get(selectedOperationStore)
+
+    // Initialize stores only if they're empty
     if (!currentProfile?.id) {
         profileStore.set({
             id: profile.id,
@@ -83,7 +100,6 @@ export const load = async ({ fetch, data, url }) => {
         })
     }
 
-    const currentSubscription = get(subscriptionStore)
     if (!currentSubscription?.subscription) {
         subscriptionStore.set({
             subscription: subscription?.subscription,
@@ -96,11 +112,7 @@ export const load = async ({ fetch, data, url }) => {
     }
 
     if (connected_map) {
-        const currentConnectedMap = get(connectedMapStore)
-        const currentMapActivity = get(mapActivityStore)
-        const currentOperations = get(operationStore)
-        const currentSelectedOp = get(selectedOperationStore)
-
+        // Initialize connected map if empty
         if (!currentConnectedMap?.id) {
             connectedMapStore.set({
                 id: connected_map.id,
@@ -111,52 +123,58 @@ export const load = async ({ fetch, data, url }) => {
                 masterSubscription: master_subscription,
                 is_connected: true
             })
-        }
 
-        if (!currentMapActivity) {
+            // Initialize map activity data at the same time
             mapActivityStore.set({
                 marker_count: map_activity.marker_count,
                 trail_count: map_activity.trail_count,
-                connected_profiles: map_activity.connected_profiles,
-                vehicle_states: map_activity.vehicle_states
+                connected_profiles: map_activity.connected_profiles || [],
+                vehicle_states: map_activity.vehicle_states || []
             })
         }
 
+        // Always ensure operations are available
         if (!currentOperations?.length) {
             operationStore.set(operations || [])
-        }
 
-        if (!currentSelectedOp) {
+            // Set selected operation only if operations were just set
             const selectedOp = operations?.find(op =>
                 op.id === profile.selected_operation_id
             )
-            selectedOperationStore.set(selectedOp || null)
+            if (!currentSelectedOp && selectedOp) {
+                selectedOperationStore.set(selectedOp)
+            }
         }
-    } else {
-        // Only reset stores if they're not already empty
-        const currentConnectedMap = get(connectedMapStore)
-        if (currentConnectedMap?.id) {
-            connectedMapStore.set({
-                id: null,
-                map_name: null,
-                master_user_id: null,
-                owner: null,
-                is_owner: false,
-                masterSubscription: null,
-                is_connected: false
-            })
 
-            mapActivityStore.set({
-                marker_count: 0,
-                trail_count: 0,
-                connected_profiles: [],
-                vehicle_states: []
-            })
+    } else if (currentConnectedMap?.id) {
+        // Reset stores only when disconnecting from a map
+        connectedMapStore.set({
+            id: null,
+            map_name: null,
+            master_user_id: null,
+            owner: null,
+            is_owner: false,
+            masterSubscription: null,
+            is_connected: false
+        })
 
-            operationStore.set([])
-            selectedOperationStore.set(null)
-        }
+        mapActivityStore.set({
+            marker_count: 0,
+            trail_count: 0,
+            connected_profiles: [],
+            vehicle_states: []
+        })
+
+        operationStore.set([])
+        selectedOperationStore.set(null)
     }
+
+    // Debug log final store states
+    console.log('3. Final Store States:', {
+        mapActivity: get(mapActivityStore),
+        connectedMap: get(connectedMapStore),
+        connectedProfiles: get(mapActivityStore)?.connected_profiles
+    });
 
     return {
         supabase,
