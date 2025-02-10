@@ -23,7 +23,7 @@
   }
 
   let markerLimit = 100
-  let yourMapId = "f9265c5c-2333-4601-93e0-e30b54c3c919"
+  let yourMapId = $connectedMapStore.id
 </script>
 
 {#if loading}
