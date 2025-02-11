@@ -12,6 +12,8 @@
   import GeoJSONMap from "$lib/components/GeoJsonMap.svelte"
   import { toast } from "svelte-sonner"
 
+  import { connectedMapStore } from "../../../../../../stores/connectedMapStore"
+
   export let data
 
   interface Paddock {
@@ -94,8 +96,7 @@
 
   async function finish() {
     console.log("Finished processing paddocks:", paddocks)
-
-    const map_id = data.connectedMap.id
+    const map_id = $connectedMapStore.id
 
     const promise = fetch("/api/files/upload_fields", {
       method: "POST",
