@@ -3,6 +3,7 @@
   import { onMount } from "svelte"
   import { goto } from "$app/navigation"
   import { userFilesStore } from "../../../../../stores/userFilesStore" // Adjust path if necessary
+  import { menuStore } from "../../../../../stores/menuStore"
 
   import type { FileUpload } from "$lib/types"
   import MapCarousel from "./MapCarousel.svelte"
