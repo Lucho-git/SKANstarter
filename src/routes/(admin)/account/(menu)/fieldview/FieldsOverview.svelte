@@ -128,7 +128,7 @@
     {#if farmName && fields.length > 0}
       {#if isExpanded}
         <div class="overflow-x-auto">
-          <Table class="text-black">
+          <Table>
             <TableHeader>
               <TableRow>
                 <TableHead style={fieldNameStyle}>Field</TableHead>

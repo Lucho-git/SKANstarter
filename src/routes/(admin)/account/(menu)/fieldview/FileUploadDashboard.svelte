@@ -194,7 +194,7 @@
         </div>
       {:else}
         <div class="overflow-x-auto">
-          <Table class="text-black ">
+          <Table>
             <TableCaption>A list of your uploaded files</TableCaption>
 
             <TableHeader>
