@@ -169,7 +169,7 @@
         <Carousel.Content>
           {#each paddocks as paddock, index (index)}
             <Carousel.Item class="w-full">
-              <Card.Root class="bg-white shadow-md dark:bg-gray-700">
+              <Card.Root>
                 <div class="flex flex-col space-y-2 p-2 sm:space-y-4 sm:p-4">
                   <Input
                     type="text"

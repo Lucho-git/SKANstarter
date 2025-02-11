@@ -127,9 +127,10 @@
 >
   <path
     d={pathData}
-    fill="rgba(0, 128, 0, 0.5)"
-    stroke="#006400"
-    stroke-width="1"
+    fill="rgba(16, 185, 129, 0.5)"
+    stroke="rgba(255, 255, 255, 0.95)"
+    stroke-width="3"
+    filter="drop-shadow(0 0 2px rgba(0, 0, 0, 0.5))"
     fill-rule="evenodd"
   />
 </svg>
