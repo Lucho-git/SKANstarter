@@ -45,7 +45,7 @@
 
   const billingPeriod = writable("annual")
 
-  let seats = 1
+  let seats = 2
   const BASE_PRICE = 45.625
   $: pricePerSeat =
     $billingPeriod === "annual" ? BASE_PRICE * (2 / 3) : BASE_PRICE
@@ -330,31 +330,45 @@
               {#if currentPlanId === "pro"}
                 <ShineBorder
                   color={["#FF057A", "#FF7700"]}
-                  class="!block !min-h-0 w-full !min-w-0 cursor-pointer bg-transparent"
+                  class="!block !min-h-0 w-full !min-w-0 bg-transparent"
+                  borderWidth={1}
                 >
                   <div
                     class="hover:from-secondary-focus hover:to-accent-focus -m-3 w-full rounded-lg bg-gradient-to-r from-secondary to-accent text-center font-semibold text-secondary-content transition-all duration-300"
                   >
-                    <button class="w-full whitespace-nowrap px-4 py-2" disabled
-                      >Current Plan</button
-                    >
+                    <button class="w-full whitespace-nowrap px-4 py-2" disabled>
+                      Current Plan
+                    </button>
                   </div>
                 </ShineBorder>
               {:else}
-                <a href={proUpgradeUrl}>
+                <div class="relative">
+                  <form
+                    method="GET"
+                    action={proUpgradeUrl}
+                    class="absolute inset-0 z-20 opacity-0"
+                  >
+                    <input type="hidden" name="seats" value={seats} />
+
+                    <button type="submit" class="h-full w-full">
+                      <span class="sr-only">Upgrade Now</span>
+                    </button>
+                  </form>
+
                   <ShineBorder
                     color={["#FF057A", "#FF7700"]}
-                    class="!block !min-h-0 w-full !min-w-0 cursor-pointer bg-transparent"
+                    class="!block !min-h-0 w-full !min-w-0 bg-transparent"
+                    borderWidth={2}
                   >
                     <div
                       class="hover:from-secondary-focus hover:to-accent-focus -m-3 w-full rounded-lg bg-gradient-to-r from-secondary to-accent text-center font-semibold text-secondary-content transition-all duration-300"
                     >
-                      <button class="w-full whitespace-nowrap px-4 py-2">
+                      <div class="w-full whitespace-nowrap px-4 py-2">
                         Upgrade Now
-                      </button>
+                      </div>
                     </div>
                   </ShineBorder>
-                </a>
+                </div>
               {/if}
             </div>
 
