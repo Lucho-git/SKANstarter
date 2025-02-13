@@ -17,12 +17,23 @@
     CardTitle,
   } from "$lib/components/ui/card"
   import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+  } from "$lib/components/ui/dialog"
+  import { Input } from "$lib/components/ui/input"
+
+  import {
     MapPinned,
     Trash2,
     ChevronDown,
     ChevronUp,
     LandPlot,
+    SquarePen,
   } from "lucide-svelte"
+
   import { connectedMapStore } from "../../../../../stores/connectedMapStore"
   import { fieldStore } from "../../../../../stores/fieldStore"
   import { get } from "svelte/store"
@@ -34,6 +45,9 @@
   $: farmName = connectedMap.is_connected ? connectedMap.map_name : null
 
   let isExpanded = true
+  let editDialogOpen = false
+  let currentEditingField: { field_id: string; name: string } | null = null
+  let newFieldName = ""
 
   function toggleExpand() {
     isExpanded = !isExpanded
@@ -44,6 +58,49 @@
       type: "Feature",
       geometry: boundary,
       properties: {},
+    }
+  }
+
+  function openEditDialog(field: any) {
+    currentEditingField = field
+    newFieldName = field.name
+    editDialogOpen = true
+  }
+
+  async function handleEditField() {
+    if (!currentEditingField || !newFieldName.trim()) return
+
+    try {
+      const response = await fetch("/api/files/update_field", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fieldId: currentEditingField.field_id,
+          name: newFieldName.trim(),
+        }),
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        // Update the field name in the store
+        fieldStore.update((fields: any) =>
+          fields.map((field: any) =>
+            field.field_id === currentEditingField?.field_id
+              ? { ...field, name: newFieldName.trim() }
+              : field,
+          ),
+        )
+        toast.success("Field name updated successfully")
+        editDialogOpen = false
+      } else {
+        throw new Error(result.error || "Failed to update field name")
+      }
+    } catch (error) {
+      console.error("Error updating field name:", error)
+      toast.error("Failed to update field name. Please try again.")
     }
   }
 
@@ -107,6 +164,29 @@
   let actionsCellStyle = "width: 20%; min-width: 20vw;"
 </script>
 
+<Dialog bind:open={editDialogOpen}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Edit Field Name</DialogTitle>
+    </DialogHeader>
+    <div class="grid gap-4 py-4">
+      <div class="grid gap-2">
+        <Input
+          id="name"
+          bind:value={newFieldName}
+          placeholder="Enter new field name"
+        />
+      </div>
+    </div>
+    <DialogFooter>
+      <Button variant="outline" on:click={() => (editDialogOpen = false)}>
+        Cancel
+      </Button>
+      <Button on:click={handleEditField}>Save changes</Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
 <Card>
   <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
     <div class="flex items-center space-x-2">
@@ -155,6 +235,16 @@
                   >
                   <TableCell style={actionsCellStyle}>
                     <div class="flex space-x-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        class="h-8 w-8"
+                        aria-label="Edit field"
+                        on:click={() => openEditDialog(field)}
+                      >
+                        <SquarePen class="h-4 w-4" />
+                      </Button>
+
                       <Button
                         variant="ghost"
                         size="icon"
