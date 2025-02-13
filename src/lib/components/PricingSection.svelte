@@ -56,6 +56,8 @@
   $: {
     const discountCode = $page.url.searchParams.get("discountcode")
     isTestDiscount = discountCode === "test"
+    console.log("Discount code:", discountCode)
+    console.log("Is test discount:", isTestDiscount)
   }
 
   $: pricePerSeat =
@@ -73,25 +75,54 @@
     : seats * (BASE_PRICE * (2 / 3)) * 12
   $: annualSavings = annualTotal - annualDiscountedTotal
 
-  $: stripePriceId =
-    $billingPeriod === "monthly"
-      ? stripePriceIds.monthly
-      : isTestDiscount
-        ? stripePriceIds.yearly.test
-        : useFullPrice
-          ? stripePriceIds.yearly.full
-          : stripePriceIds.yearly.discount
+  $: {
+    console.log("Billing period:", $billingPeriod)
+    console.log("Use full price:", useFullPrice)
+    console.log("Is test discount:", isTestDiscount)
+    console.log("Price IDs:", stripePriceIds)
+  }
 
-  $: proUpgradeUrl = `/account/subscribe/${stripePriceId}?seats=${seats}${
+  $: stripePriceId = (() => {
+    if (!stripePriceIds) {
+      console.error("stripePriceIds is not initialized")
+      return ""
+    }
+
+    if ($billingPeriod === "monthly") {
+      return stripePriceIds.monthly || ""
+    }
+
+    if (isTestDiscount && stripePriceIds.yearly?.test) {
+      return stripePriceIds.yearly.test
+    }
+
+    if (useFullPrice && stripePriceIds.yearly?.full) {
+      return stripePriceIds.yearly.full
+    }
+
+    return stripePriceIds.yearly?.discount || ""
+  })()
+
+  $: {
+    console.log("Selected price ID:", stripePriceId)
+  }
+
+  $: proUpgradeUrl = `/account/subscribe/${stripePriceId || ""}?seats=${seats}${
     additionalDiscountActive ? "&discount=true" : ""
   }${isTestDiscount ? "&discountcode=test" : ""}`
 
+  $: {
+    console.log("Final upgrade URL:", proUpgradeUrl)
+  }
+
   function incrementSeats() {
     if (seats < 10) seats++
+    console.log("Upgrade url after increment:", proUpgradeUrl)
   }
 
   function decrementSeats() {
     if (seats > 1) seats--
+    console.log("Upgrade url after decrement:", proUpgradeUrl)
   }
 </script>
 
