@@ -6,11 +6,11 @@
   import BorderBeam from "$lib/components/magic/border-beam/BorderBeam.svelte"
   import ShineBorder from "$lib/components/magic/shine-border/ShineBorder.svelte"
   import * as Tabs from "$lib/components/ui/tabs"
-  import { Check, Minus, Plus, Users } from "lucide-svelte"
+  import { Check, Minus, Plus, Users, X } from "lucide-svelte"
   import { writable } from "svelte/store"
 
   export let freePlanName = "AgSKAN Free"
-  export let freePlanDescription = "Join an existing map as an operator"
+  export let freePlanDescription = "Try it yourself or join existing map"
   export let proPlanName = "AgSkan Pro"
   export let proPlanDescription = "Share your map"
   export let currentPlanId: string | null = null
@@ -25,20 +25,22 @@
   export let additionalDiscountActive = false
 
   export let freePlanFeatures = [
-    "Join other maps with unlimited resources",
-    "1 Map Creation",
-    "100 active pin drops",
-    "100,000 Trail tokens",
-    "Real time location updates",
+    "Join existing team maps",
+    "Create one personal map",
+    "Test all features",
+    "Basic support",
+    {
+      text: "Invite team members to your maps",
+      disabled: true,
+    },
   ]
 
   export let proPlanFeatures = [
-    "Invite others to share your map",
-    "Customizable number of seats",
-    "Unlimited map creation",
-    "Unlimited pin drops",
-    "Unlimited Trail credits",
-    "All vehicles unlocked",
+    "Invite team members to your maps",
+    "Priority phone support",
+    "Custom onboarding assistance",
+    "Unlimited maps & resources",
+    "Adjustable team size anytime",
   ]
 
   let BLUR_FADE_DELAY = 0.04
@@ -249,10 +251,17 @@
 
               <div class="space-y-4 text-left">
                 {#each freePlanFeatures as feature}
-                  <div class="flex items-center gap-2">
-                    <Check class="h-5 w-5 text-primary" />
-                    <span>{feature}</span>
-                  </div>
+                  <li class="flex items-center gap-2">
+                    {#if typeof feature === "string"}
+                      <Check class="h-5 w-5 text-success" />
+                      <span>{feature}</span>
+                    {:else}
+                      <X class="h-5 w-5 text-error" />
+                      <span class="text-base-content/50 line-through"
+                        >{feature.text}</span
+                      >
+                    {/if}
+                  </li>
                 {/each}
               </div>
             </div>
@@ -387,8 +396,8 @@
 
                 {#if seats === 1}
                   <div class="mt-2 text-center text-sm text-warning">
-                    ⚠️ At least 2 seats recommended to invite other users to
-                    your map
+                    ⚠️ At least 2 seats recommended to invite additional team
+                    members
                   </div>
                 {/if}
               {/if}
