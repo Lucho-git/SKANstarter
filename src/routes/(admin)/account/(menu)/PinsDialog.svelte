@@ -203,7 +203,9 @@
 
   <DialogPortal>
     <DialogOverlay class="bg-black/80" />
-    <DialogContent class="rounded-xl bg-base-100 sm:max-w-[425px]">
+    <DialogContent
+      class="min-h-screen rounded-none bg-base-100 sm:min-h-fit sm:max-w-[425px] sm:rounded-xl"
+    >
       <DialogHeader>
         <div class="flex items-center gap-2">
           <div class="rounded-lg bg-primary/10 p-2">

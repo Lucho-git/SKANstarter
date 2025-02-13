@@ -16,13 +16,6 @@
     CardHeader,
     CardTitle,
   } from "$lib/components/ui/card"
-  import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-  } from "$lib/components/ui/dialog"
   import { Input } from "$lib/components/ui/input"
 
   import {
@@ -45,7 +38,7 @@
   $: farmName = connectedMap.is_connected ? connectedMap.map_name : null
 
   let isExpanded = true
-  let editDialogOpen = false
+  let modalId = "edit-field-modal"
   let currentEditingField: { field_id: string; name: string } | null = null
   let newFieldName = ""
 
@@ -61,10 +54,16 @@
     }
   }
 
-  function openEditDialog(field: any) {
+  function openEditModal(field: any) {
     currentEditingField = field
     newFieldName = field.name
-    editDialogOpen = true
+    const modal = document.getElementById(modalId) as HTMLDialogElement
+    if (modal) modal.showModal()
+  }
+
+  function closeModal() {
+    const modal = document.getElementById(modalId) as HTMLDialogElement
+    if (modal) modal.close()
   }
 
   async function handleEditField() {
@@ -85,7 +84,6 @@
       const result = await response.json()
 
       if (response.ok) {
-        // Update the field name in the store
         fieldStore.update((fields: any) =>
           fields.map((field: any) =>
             field.field_id === currentEditingField?.field_id
@@ -94,7 +92,7 @@
           ),
         )
         toast.success("Field name updated successfully")
-        editDialogOpen = false
+        closeModal()
       } else {
         throw new Error(result.error || "Failed to update field name")
       }
@@ -110,7 +108,6 @@
   }
 
   async function handleDeleteField(fieldId: string) {
-    // Find the field to get its name
     const fieldToDelete = $fieldStore.find(
       (field) => field.field_id === fieldId,
     )
@@ -120,14 +117,11 @@
       return
     }
 
-    // Show confirmation dialog
     const isConfirmed = confirm(
       `Are you sure you want to delete the field "${fieldToDelete.name}"?`,
     )
 
-    if (!isConfirmed) {
-      return // User cancelled the deletion
-    }
+    if (!isConfirmed) return
 
     console.log("Deleting field with ID:", fieldId)
     try {
@@ -142,7 +136,6 @@
       const result = await response.json()
 
       if (response.ok) {
-        // Remove the deleted field from the store
         fieldStore.update((fields) =>
           fields.filter((field) => field.field_id !== fieldId),
         )
@@ -164,28 +157,49 @@
   let actionsCellStyle = "width: 20%; min-width: 20vw;"
 </script>
 
-<Dialog bind:open={editDialogOpen}>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>Edit Field Name</DialogTitle>
-    </DialogHeader>
-    <div class="grid gap-4 py-4">
-      <div class="grid gap-2">
-        <Input
-          id="name"
-          bind:value={newFieldName}
-          placeholder="Enter new field name"
-        />
+<!-- DaisyUI Modal -->
+<dialog id={modalId} class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box">
+    <div class="flex items-center gap-2">
+      <div class="rounded-lg bg-primary/10 p-2">
+        <SquarePen class="h-5 w-5 text-primary" />
+      </div>
+      <div>
+        <h3 class="text-lg font-bold">Edit Field Name</h3>
+        <p class="text-sm text-muted-foreground">
+          Change the name of your field
+        </p>
       </div>
     </div>
-    <DialogFooter>
-      <Button variant="outline" on:click={() => (editDialogOpen = false)}>
-        Cancel
-      </Button>
-      <Button on:click={handleEditField}>Save changes</Button>
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
+
+    <div class="space-y-4 p-4">
+      <Input
+        id="name"
+        bind:value={newFieldName}
+        placeholder="Enter new field name"
+        class="w-full"
+      />
+    </div>
+
+    <div class="modal-action">
+      <form method="dialog" class="flex w-full gap-2 sm:w-auto">
+        <Button
+          variant="outline"
+          class="flex-1 sm:flex-none"
+          on:click={closeModal}
+        >
+          Cancel
+        </Button>
+        <Button class="flex-1 sm:flex-none" on:click={handleEditField}>
+          Save changes
+        </Button>
+      </form>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
 
 <Card>
   <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -240,7 +254,7 @@
                         size="icon"
                         class="h-8 w-8"
                         aria-label="Edit field"
-                        on:click={() => openEditDialog(field)}
+                        on:click={() => openEditModal(field)}
                       >
                         <SquarePen class="h-4 w-4" />
                       </Button>

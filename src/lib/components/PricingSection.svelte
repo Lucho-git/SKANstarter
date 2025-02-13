@@ -8,6 +8,7 @@
   import * as Tabs from "$lib/components/ui/tabs"
   import { Check, Minus, Plus, Users, X } from "lucide-svelte"
   import { writable } from "svelte/store"
+  import { page } from "$app/stores"
 
   export let freePlanName = "AgSKAN Free"
   export let freePlanDescription = "Try it yourself or join existing map"
@@ -19,14 +20,15 @@
     yearly: {
       full: "price_1PdxlVK3At0l0k1HoEgkFynm",
       discount: "price_1PdxlUK3At0l0k1Hu6tlYnHe",
+      test: "price_1Qrxo8K3At0l0k1Hz7ybpTts",
     },
   }
   export let useFullPrice = true
   export let additionalDiscountActive = false
 
   export let freePlanFeatures = [
-    "Join existing team maps",
-    "Create one personal map",
+    "Join existing teams map",
+    "Create your own map",
     "Test all features",
     "Basic support",
     {
@@ -36,7 +38,7 @@
   ]
 
   export let proPlanFeatures = [
-    "Invite team members to your maps",
+    "Invite team members to your map",
     "Priority phone support",
     "Custom onboarding assistance",
     "Unlimited maps & resources",
@@ -44,30 +46,45 @@
   ]
 
   let BLUR_FADE_DELAY = 0.04
+  let isTestDiscount = false
 
   const billingPeriod = writable("annual")
 
   let seats = 2
   const BASE_PRICE = 45.625
-  $: pricePerSeat =
-    $billingPeriod === "annual" ? BASE_PRICE * (2 / 3) : BASE_PRICE
-  $: totalPrice = seats * pricePerSeat
 
+  $: {
+    const discountCode = $page.url.searchParams.get("discountcode")
+    isTestDiscount = discountCode === "test"
+  }
+
+  $: pricePerSeat =
+    isTestDiscount && $billingPeriod === "annual"
+      ? BASE_PRICE * 0.25
+      : $billingPeriod === "annual"
+        ? BASE_PRICE * (2 / 3)
+        : BASE_PRICE
+
+  $: totalPrice = seats * pricePerSeat
   $: monthlyTotal = seats * BASE_PRICE
   $: annualTotal = seats * BASE_PRICE * 12
-  $: annualDiscountedTotal = seats * (BASE_PRICE * (2 / 3)) * 12
+  $: annualDiscountedTotal = isTestDiscount
+    ? seats * (BASE_PRICE * 0.25) * 12
+    : seats * (BASE_PRICE * (2 / 3)) * 12
   $: annualSavings = annualTotal - annualDiscountedTotal
 
   $: stripePriceId =
     $billingPeriod === "monthly"
       ? stripePriceIds.monthly
-      : useFullPrice
-        ? stripePriceIds.yearly.full
-        : stripePriceIds.yearly.discount
+      : isTestDiscount
+        ? stripePriceIds.yearly.test
+        : useFullPrice
+          ? stripePriceIds.yearly.full
+          : stripePriceIds.yearly.discount
 
   $: proUpgradeUrl = `/account/subscribe/${stripePriceId}?seats=${seats}${
     additionalDiscountActive ? "&discount=true" : ""
-  }`
+  }${isTestDiscount ? "&discountcode=test" : ""}`
 
   function incrementSeats() {
     if (seats < 10) seats++
@@ -76,20 +93,15 @@
   function decrementSeats() {
     if (seats > 1) seats--
   }
-
-  console.log("Current plan", currentPlanId)
 </script>
 
 <div class="relative overflow-hidden">
   <div class="container mx-auto px-4">
-    <!-- Controls Container -->
     <BlurFade delay={BLUR_FADE_DELAY * 1.5}>
       <div class="mb-8">
-        <!-- Original split layout (visible on md and up) -->
         <div
           class="hidden md:flex md:flex-wrap md:items-center md:justify-center md:gap-4"
         >
-          <!-- Billing Period Tabs -->
           <div class="flex h-[52px] items-center rounded-lg bg-base-200 p-1.5">
             <Tabs.Root
               value={$billingPeriod}
@@ -117,7 +129,6 @@
             </Tabs.Root>
           </div>
 
-          <!-- Seats Counter -->
           <div
             class="flex h-[52px] items-center gap-2 rounded-lg bg-base-200 p-1.5"
           >
@@ -146,10 +157,8 @@
           </div>
         </div>
 
-        <!-- Compact combined layout (visible only on small screens) -->
         <div class="flex justify-center md:hidden">
           <div class="inline-flex rounded-xl bg-base-200 p-1.5">
-            <!-- Billing Period Tabs -->
             <Tabs.Root
               value={$billingPeriod}
               onValueChange={(value) => billingPeriod.set(value)}
@@ -175,10 +184,8 @@
               </Tabs.List>
             </Tabs.Root>
 
-            <!-- Divider -->
             <div class="mx-2 my-1 w-px bg-base-content/10"></div>
 
-            <!-- Seats Counter -->
             <div class="flex items-center gap-1">
               <Users class="mr-1 h-4 w-4 text-base-content/70" />
               <Button
@@ -209,14 +216,11 @@
       </div>
     </BlurFade>
 
-    <!-- Pricing Cards -->
     <div
       class="mx-auto grid max-w-{currentPlanId === 'free'
         ? '2xl'
         : '5xl'} gap-8 md:grid-cols-{currentPlanId === 'free' ? '1' : '2'}"
     >
-      <!-- Free Plan - Only show if not on free plan -->
-
       {#if currentPlanId !== "free"}
         <BlurFade delay={BLUR_FADE_DELAY * 2} class="order-last md:order-first">
           <article
@@ -269,7 +273,6 @@
         </BlurFade>
       {/if}
 
-      <!-- Pro Plan -->
       <BlurFade
         delay={BLUR_FADE_DELAY * 2.5}
         class={currentPlanId === "free"
