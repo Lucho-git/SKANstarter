@@ -285,15 +285,31 @@
                   </div>
                 </div>
               {/if}
+
               <div
                 class="relative rounded-2xl border border-base-content/10 bg-base-300/50 p-6 shadow-xl backdrop-blur-sm"
               >
                 <BorderBeam color="#FF7700" size={80} duration={12} />
-                <div class="flex flex-col items-center gap-2">
-                  <div class="text-4xl font-bold">
-                    ${Math.round(totalPrice)}
+                <div class="flex flex-col items-center gap-4">
+                  <div class="flex flex-col items-center gap-2">
+                    <div class="text-4xl font-bold">
+                      ${Math.round(totalPrice)}
+                    </div>
+                    <div class="text-base-content/70">per month</div>
                   </div>
-                  <div class="text-base-content/70">per month</div>
+                  <div class="rounded-lg bg-base-200/80 px-4 py-2">
+                    <div class="flex items-center gap-3">
+                      <Users class="h-5 w-5 text-primary" />
+                      <div class="flex flex-col">
+                        <span class="font-semibold"
+                          >{seats} {seats === 1 ? "seat" : "seats"}</span
+                        >
+                        <span class="text-xs text-base-content/70"
+                          >Team size</span
+                        >
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -349,7 +365,6 @@
                     class="absolute inset-0 z-20 opacity-0"
                   >
                     <input type="hidden" name="seats" value={seats} />
-
                     <button type="submit" class="h-full w-full">
                       <span class="sr-only">Upgrade Now</span>
                     </button>
@@ -369,6 +384,13 @@
                     </div>
                   </ShineBorder>
                 </div>
+
+                {#if seats === 1}
+                  <div class="mt-2 text-center text-sm text-warning">
+                    ⚠️ At least 2 seats recommended to invite other users to
+                    your map
+                  </div>
+                {/if}
               {/if}
             </div>
 
