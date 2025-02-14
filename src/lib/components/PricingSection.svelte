@@ -14,6 +14,8 @@
   export let freePlanDescription = "Try it yourself or join existing map"
   export let proPlanName = "AgSkan Pro"
   export let proPlanDescription = "Share your map"
+  export let ignoreUrlParams = false // Add this new prop
+
   export let currentPlanId: string | null = null
   export let stripePriceIds = {
     monthly: "price_1PkkO8K3At0l0k1HqvxEEBw2",
@@ -54,10 +56,14 @@
   const BASE_PRICE = 45.625
 
   $: {
-    const discountCode = $page.url.searchParams.get("discountcode")
-    isTestDiscount = discountCode === "test"
-    console.log("Discount code:", discountCode)
-    console.log("Is test discount:", isTestDiscount)
+    if (!ignoreUrlParams) {
+      const discountCode = $page.url.searchParams.get("discountcode")
+      isTestDiscount = discountCode === "test"
+      console.log("Discount code:", discountCode)
+      console.log("Is test discount:", isTestDiscount)
+    } else {
+      isTestDiscount = false
+    }
   }
 
   $: pricePerSeat =

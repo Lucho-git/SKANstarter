@@ -10,6 +10,10 @@
       Start for free, upgrade when you're ready
     </p>
 
-    <PricingSection {currentPlanId} />
+    <PricingSection
+      {currentPlanId}
+      defaultInterval="monthly"
+      ignoreUrlParams={true}
+    />
   </div>
 </div>
