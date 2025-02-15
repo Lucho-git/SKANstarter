@@ -1,10 +1,11 @@
-// src/routes/webhook/stripe/+server.ts
+import { createClient } from '@supabase/supabase-js';
 import { error, json } from '@sveltejs/kit';
-import { PRIVATE_STRIPE_API_KEY, STRIPE_WEBHOOK_SECRET } from '$env/static/private';
+import { PRIVATE_STRIPE_API_KEY, STRIPE_WEBHOOK_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } from '$env/static/private';
 import Stripe from 'stripe';
 import type { RequestEvent } from './$types';
 
 const stripe = new Stripe(PRIVATE_STRIPE_API_KEY, { apiVersion: "2023-08-16" });
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 export async function POST({ request }: RequestEvent) {
     const body = await request.text();
@@ -16,35 +17,89 @@ export async function POST({ request }: RequestEvent) {
     }
 
     try {
-        // Verify the webhook signature
+        console.log('Verifying Stripe signature...');
         const event = stripe.webhooks.constructEvent(
             body,
             signature,
             STRIPE_WEBHOOK_SECRET
         );
 
-        // Log the event details
         console.log('Received Stripe webhook event:', {
             type: event.type,
             id: event.id,
             created: new Date(event.created * 1000).toISOString(),
-            data: event.data.object
-        });
-        console.error('Received Stripe webhook event:', {
-            type: event.type,
-            id: event.id,
-            created: new Date(event.created * 1000).toISOString(),
-            data: event.data.object
+            data: JSON.stringify(event.data.object, null, 2)
         });
 
-        // Return a 200 success response to Stripe
+        switch (event.type) {
+            case 'customer.subscription.updated': {
+                const subscription = event.data.object as Stripe.Subscription;
+
+                console.log('Processing subscription update:', {
+                    customer_id: subscription.customer,
+                    subscription_id: subscription.id,
+                    status: subscription.status,
+                    current_period_end: new Date(subscription.current_period_end * 1000).toISOString()
+                });
+
+                // Get user_id from stripe_customers table using stripe_customer_id
+                console.log('Looking up user from stripe_customer_id:', subscription.customer);
+                const { data: customerData, error: customerError } = await supabase
+                    .from('stripe_customers')
+                    .select('user_id')
+                    .eq('stripe_customer_id', subscription.customer)
+                    .single();
+
+                if (customerError) {
+                    console.error('Error fetching customer data:', customerError);
+                    throw new Error(`No customer found for stripe_customer_id: ${subscription.customer}`);
+                }
+
+                console.log('Found user:', customerData);
+
+                // Get subscription interval from the first price object
+                const interval = subscription.items.data[0]?.price.recurring?.interval || 'month';
+
+                const updateData = {
+                    subscription: subscription.items.data[0]?.price.nickname || null,
+                    current_seats: subscription.items.data[0]?.quantity || 1,
+                    updated_at: new Date().toISOString(),
+                    next_billing_date: new Date(subscription.current_period_end * 1000).toISOString(),
+                    payment_interval: interval
+                };
+
+                console.log('Updating subscription with data:', {
+                    user_id: customerData.user_id,
+                    ...updateData
+                });
+
+                // Update user_subscriptions
+                const { error: updateError } = await supabase
+                    .from('user_subscriptions')
+                    .update(updateData)
+                    .eq('user_id', customerData.user_id);
+
+                if (updateError) {
+                    console.error('Error updating subscription:', updateError);
+                    throw new Error(`Failed to update subscription: ${updateError.message}`);
+                }
+
+                console.log('Successfully updated subscription:', {
+                    user_id: customerData.user_id,
+                    subscription_id: subscription.id,
+                    update_time: new Date().toISOString()
+                });
+                break;
+            }
+        }
+
         return json({ received: true });
 
     } catch (err) {
-        // Log any errors
         console.error('Error processing webhook:', {
             error: err instanceof Error ? err.message : 'Unknown error',
-            body: body.slice(0, 500) // Log first 500 chars of body for debugging
+            stack: err instanceof Error ? err.stack : undefined,
+            body: body.slice(0, 500)
         });
 
         throw error(400, (err instanceof Error ? err.message : 'Unknown error'));
