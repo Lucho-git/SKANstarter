@@ -1,11 +1,10 @@
-import { createClient } from '@supabase/supabase-js';
 import { error, json } from '@sveltejs/kit';
-import { PRIVATE_STRIPE_API_KEY, STRIPE_WEBHOOK_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } from '$env/static/private';
+import { PRIVATE_STRIPE_API_KEY, STRIPE_WEBHOOK_SECRET } from '$env/static/private';
 import Stripe from 'stripe';
 import type { RequestEvent } from './$types';
+import { supabaseServiceRole } from '$lib/supabaseAdmin.server';
 
 const stripe = new Stripe(PRIVATE_STRIPE_API_KEY, { apiVersion: "2023-08-16" });
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 export async function POST({ request }: RequestEvent) {
     const body = await request.text();
@@ -42,9 +41,8 @@ export async function POST({ request }: RequestEvent) {
                     current_period_end: new Date(subscription.current_period_end * 1000).toISOString()
                 });
 
-                // Get user_id from stripe_customers table using stripe_customer_id
                 console.log('Looking up user from stripe_customer_id:', subscription.customer);
-                const { data: customerData, error: customerError } = await supabase
+                const { data: customerData, error: customerError } = await supabaseServiceRole
                     .from('stripe_customers')
                     .select('user_id')
                     .eq('stripe_customer_id', subscription.customer)
@@ -57,7 +55,6 @@ export async function POST({ request }: RequestEvent) {
 
                 console.log('Found user:', customerData);
 
-                // Get subscription interval from the first price object
                 const interval = subscription.items.data[0]?.price.recurring?.interval || 'month';
 
                 const updateData = {
@@ -73,8 +70,7 @@ export async function POST({ request }: RequestEvent) {
                     ...updateData
                 });
 
-                // Update user_subscriptions
-                const { error: updateError } = await supabase
+                const { error: updateError } = await supabaseServiceRole
                     .from('user_subscriptions')
                     .update(updateData)
                     .eq('user_id', customerData.user_id);
