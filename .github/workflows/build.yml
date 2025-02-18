@@ -28,3 +28,4 @@ jobs:
 
       - name: SvelteKit Build 
         run: npm run build
+
