@@ -23,7 +23,7 @@ export async function POST({ request }: RequestEvent) {
             PRIVATE_STRIPE_WEBHOOK_SECRET
         );
 
-        console.log('Received Stripe webhook event:', {
+        console.log('Received Stripe webhook eventy:', {
             type: event.type,
             id: event.id,
             created: new Date(event.created * 1000).toISOString(),
