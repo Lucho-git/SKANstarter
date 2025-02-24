@@ -188,11 +188,11 @@
   })
 </script>
 
-<div class="flex min-h-screen items-center justify-center bg-gray-50">
+<div class="flex min-h-screen items-center justify-center">
   <div class="w-full max-w-md p-8 text-center">
-    <div class="rounded-lg bg-white p-8 shadow-lg" transition:fade>
-      <h1 class="mb-2 text-2xl font-bold text-gray-900">{message}</h1>
-      <p class="mb-6 text-sm text-gray-600">{subMessage}</p>
+    <div class="rounded-lg p-8 shadow-lg" transition:fade>
+      <h1 class="mb-2 text-2xl font-bold">{message}</h1>
+      <p class="mb-6 text-sm">{subMessage}</p>
 
       {#if isSigningOut}
         <div class="mb-4">
