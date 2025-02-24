@@ -1,5 +1,5 @@
 import { error, json } from '@sveltejs/kit';
-import { PRIVATE_STRIPE_API_KEY, STRIPE_WEBHOOK_SECRET } from '$env/static/private';
+import { PRIVATE_STRIPE_API_KEY, PRIVATE_STRIPE_WEBHOOK_SECRET } from '$env/static/private';
 import Stripe from 'stripe';
 import type { RequestEvent } from './$types';
 import { supabaseServiceRole } from '$lib/supabaseAdmin.server';
@@ -20,7 +20,7 @@ export async function POST({ request }: RequestEvent) {
         const event = stripe.webhooks.constructEvent(
             body,
             signature,
-            STRIPE_WEBHOOK_SECRET
+            PRIVATE_STRIPE_WEBHOOK_SECRET
         );
 
         console.log('Received Stripe webhook event:', {
